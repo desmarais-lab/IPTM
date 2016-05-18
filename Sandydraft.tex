@@ -30,11 +30,11 @@ First we generate the global (corpus-wide) variables. There are two main sets of
 topics people talk about and those that describe how people interact (interaction patterns). These variables are linked by a
 third set of variables that associate each topic with the pattern that best describes how people interact when talking about
 that topic. There are T topics. Each topic $\phi^{(t)}$ is a discrete distribution over V word types \textbf{[See Algorithm 1].} There are C
-interaction patterns. \\ \newline \textcolor{red}{1) Univariate Hawkes approach:} Each interaction pattern consists of a matrix of stochastic intensity $\lambda^{(c)}(t)$ that model the rate at which each sender $a$ sends email at time $t$ given all messages received by $a$ at times
+interaction patterns. \\ \newline \textcolor{red}{1) Univariate Hawkes approach:} Each interaction pattern consists of a A-dimensional vector of stochastic intensity $\lambda^{(c)}(t)$ that model the rate at which each sender $a$ sends email at time $t$ given all messages received by $a$ at times
 $r_k^{a}< t$ ($r_k^{a}$ is the timestamp of $k^{th}$ email received by $a$)  \textbf{[See Algorithm 2].}  \\ \newline
- \textcolor{red}{2) Multivariate Hawkes approach:} Each interaction pattern consists of a matrix of stochastic intensity $\lambda^{(c)}(t)$ that model the rate at which each sender $a$ sends email at time $t$ given all messages received by $a$ at times
- 	$r_k^{a}< t$ ($r_k^{a}$ is the timestamp of $k^{th}$ email received by $a$)  \textbf{[See Algorithm 3].}  \\\newline  We also associate each sender–recipient pair with an observed P-dimensional
-vector of covariates $x^{(ar)}$; however, we assume that our generative process is ocnditioned on these covariates. The topics and interaction patterns are tied together via a set of T categorical variables (one per topic). These variables
+ \textcolor{red}{2) Multivariate Hawkes approach:} Each interaction pattern consists of a A$\times$A matrix of stochastic intensity $\lambda^{(c)}(t)$ that model the rate at which each sender $a$ sends email to actor $r$ at time $t$ given all messages received by $a$ from $r$ at times
+ 	$r_k^{ar}< t$ ($r_k^{ar}$ is the timestamp of $k^{th}$ email received by $a$ from $r$)  \textbf{[See Algorithm 3].}  \\\newline  (Later goal: We also associate each sender–recipient pair with an observed P-dimensional
+vector of covariates $x^{(ar)}$; however, we assume that our generative process is ocnditioned on these covariates.)  The topics and interaction patterns are tied together via a set of T categorical variables (one per topic). These variables
 associate each topic with a single interaction pattern \textbf{[See Algorithm 4].} Then, we generate the local variables. There are D
 emails. We assume that each email’s sender $a^{(d)}\in [A]$, timestamp $t^{(d)} \in [0, T]$, and length $N^{(d)} \in N_0$ are observed; we do not generate these variables  \textbf{[See Algorithm 5].}
  \begin{algorithm}[H]
@@ -49,7 +49,7 @@ emails. We assume that each email’s sender $a^{(d)}\in [A]$, timestamp $t^{(d)
 	\caption{Interaction Patterns using univariate Hawkes Process}
 	\For{c=1 to C}{
 		\For{a=1 to A}{
-			set $\lambda_a^{(c)}(t)=\mu_{a}+\theta_{a}\sum\limits_{r_k^{a}< t}g_a(t-r_k^{a}) \quad (=\mu_{a}+\theta_{a}\sum\limits_{r_k^{a}< t}w_{a} e^{-w_a(t-r_k^{a})})$}
+			set $\lambda_a^{(c)}(t)=\mu_{a}+\theta_{a}\sum\limits_{r_k^{a}< t}g_a(t-r_k^{a}) \quad (=\mu_{a}+\theta_{a}\sum\limits_{r_k^{a}< t}w_{a} e^{-w_a(t-r_k^{a})})$
 			
 			Note: In the context of e-mails, the background rate $\mu_a$ can be interpreted as that rate at
 			which actor $a$ sends email that are not replies to emails received from other actors. In other words, $\mu_a$ is the baseline rate at which $a$ initiates new email threads.
@@ -59,7 +59,8 @@ emails. We assume that each email’s sender $a^{(d)}\in [A]$, timestamp $t^{(d)
 			, through the triggering function, which is assumed
 			to be exponential. $\theta_a$ can be interpreted as the reply rate for actor $a$, since it is the total expected number of replies, on average, sent by actor $a$ per email received from another actor in the network. The speed at
 which actor $a$ replies to emails is governed by the parameter $w_a$, with larger values of
-$w_a$ indicating faster response times for actor $a$. Indeed, ${w_a}^{-1}$ is the expected number of hours it takes for actor $a$ to reply to a typical email.}}
+$w_a$ indicating faster response times for actor $a$. Indeed, ${w_a}^{-1}$ is the expected number of hours it takes for actor $a$ to reply to a typical email.}
+} 
 \end{algorithm}
 \begin{algorithm}[H]
 		\SetAlgoLined
@@ -67,7 +68,7 @@ $w_a$ indicating faster response times for actor $a$. Indeed, ${w_a}^{-1}$ is th
 	\For{c=1 to C}{
 			\For{a=1 to A}{
 	set $\lambda_a^{(c)}(t)$ as the A-dimensional vector of rates defined by a point process $N_t^a$.\\
-		\For{r=1 to A}{$\lambda_{ar}^{(c)}(t)=\mu_{ar}+\theta_{ar}\sum\limits_{r_k^{ar}< t}g_{ar}(t-r_k^{ar}) (=\mu_{ar}+\theta_{ar}\sum\limits_{r_k^{ar}< t}w_{ar} e^{-w_a(t-r_k^{ar})})$}
+		\For{r=1 to A}{$\lambda_{ar}^{(c)}(t)=\mu_{ar}+\theta_{ar}\sum\limits_{r_k^{ar}< t}g_{ar}(t-r_k^{ar}) (=\mu_{ar}+\theta_{ar}\sum\limits_{r_k^{ar}< t}w_{ar} e^{-w_a(t-r_k^{ar})})$
 
 	Note: In the context of e-mails, the background rate $\mu_{ar}$ can be interpreted as that rate at
 which actor $a$ sends email that are not replies to emails received from actor $r$. In other words, $\mu_{ar}$ is the baseline rate at which $a$ initiates new email threads to $r$.
@@ -76,11 +77,17 @@ elevates the overall rate of sending
 emails at time $t >r_k^{ar}$
 , through the triggering function, which is assumed
 to be exponential. $\theta_{ar}$ can be interpreted as the reply rate for actor $a$ to actor $r$, since it is the total expected number of replies, on average, sent by actor $a$ per email received from actor $r$ in the network. The speed at
-which actor $a$ replies to actor $r$ is governed by the parameter $w_{ar}$, with larger values of
-$w_{ar}$ indicating faster response times for actor $a$ to actor $r$. Indeed, ${w_{ar}}^{-1}$ is the expected number of hours it takes for actor $a$ to reply to actor $r$ a typical email.}}
+which actor $a$ replies to actor $r$ is governed by the parameter $w_{ar}$, with larger values of $w_{ar}$ indicating faster response times for actor $a$ to actor $r$. Indeed, ${w_{ar}}^{-1}$ is the expected number of hours it takes for actor $a$ to reply to actor $r$ a typical email.}}}
 \end{algorithm}
 \begin{algorithm}[H]
 		\SetAlgoLined
+	\caption{Topic-Interaction Pattern Assginments}
+	\For{t=1 to T}{
+		draw $l_t$ $\sim$ Unif(1, C)
+	}
+\end{algorithm}
+\begin{algorithm}[H]
+	\SetAlgoLined
 	\caption{Topic-Interaction Pattern Assginments}
 	\For{t=1 to T}{
 		draw $l_t$ $\sim$ Unif(1, C)
