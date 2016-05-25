@@ -58,7 +58,13 @@ while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, inv
 Here, $g(t-t_d)$ reflects the difference between current time $t$ and the timestamp of previous email $t_d$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t_d)=we^{-w(t-t_d)}$ where $w$ is the parameter of speed at
 which sender replies to emails, with larger values indicating faster response times. Indeed, $w^{-1}$ is the expected number of hours it takes to reply to a typical email. \textcolor{red}{NOTE: First, we can let $w$ to be hyperparameter to be specified (since $\beta$ will be adjusted to the scale of $w$). However, later we can try to estimate it via Bayesian approach, or even consider sender-specific $w_a$ or pair-specific $w_{ar}$ and estimate them.}
 \subsection{Inference}
-Assuming each interaction has a single receiver (no multicast), we model the stochastic intensity of the multivariate counting process $N$ as \begin{equation}\lambda_t(i,j)=\bar\lambda_t(i)\cdot \mbox{exp}\{\beta^Tx_t(i, j)\}\cdot 1\{j \in \mathcal{J}_t(i)\},
+First of all, we figure out how to obtain the 6 covariates in $x^{(c)}(a, r, t)$ defined in the previous section. Notice that one special thing about this approach is that for each term we put weights in front of typical network statistics, that is, $$\frac{\bar N^{(c|d)}}{\bar N^{(d)}}.$$
+Similar to the generative process of CPME, define $$\bar N^{(d)}=\mbox{max}(1, N^{(d)})\quad\mbox{and}\quad \bar N^{(c|d)}=\sum_{n=1}^{\bar N^{(d)}}\delta(l_{z_n^{(d)}}=c).$$
+In order to obtain $\bar N^{(c|d)}$, we need the probability that a token is assgined to a particular topic related to specific interaction pattern conditional on the topic assignments of all other tokens, the word-types of all other tokens, and hyper-parameters. Since we use uniform distribution for topic-interaction pattern assignments (i.e. $l_t \sim \mbox{Unif}(1, C)$), 
+$$P(l_{z_n^{(d)}}=c|\mathcal{W}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{n}, \alpha, \boldsymbol{m})=\frac{1}{C}P({z_n^{(d)}}=t | \mathcal{W}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{n}, \alpha, \boldsymbol{m}).$$ 
+Now following the existing derivation from the work of Matthew Denny, by applying Bayes rule, we get $$\frac{1}{C}P({z_n^{(d)}}=t | \mathcal{W}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{n}, \alpha, \boldsymbol{m})=\frac{1}{C}P({z_n^{(d)}}=t, w_n^{(d)} | \mathcal{W}_{\backslash d, n}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{n}, \alpha, \boldsymbol{m})$$
+$$\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad=\frac{1}{C}\cdot \frac{N_{\backslash d, n}^{(t|d)}+\alpha m_t}{N^{d}-1+\alpha}\cdot \frac{N_{\backslash d, n}^{(w_n^{(d)}|t)}+\beta n_v}{N_{\backslash d, n}^{(t)}+\beta} $$\\\newline
+After we fully construct the matrix of covariates $x^{(c)}(a, r, t)$, we move to estimation steps. Assuming each interaction has a single receiver (no multicast), we model the stochastic intensity of the multivariate counting process $N$ as \begin{equation}\lambda_t(i,j)=\bar\lambda_t(i)\cdot \mbox{exp}\{\beta^Tx_t(i, j)\}\cdot 1\{j \in \mathcal{J}_t(i)\},
 \end{equation} 
 where $\beta$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$. After treating the baseline rate $\bar\lambda_t(i)$ as a nuisance parameter, estimation for $\beta$ proceeds by maximizing the so-called partial likelihood of \cite{cox1992regression}: 
 \begin{equation}
@@ -218,7 +224,6 @@ Before Sandy ranges from 2012-09-04 to 2012-10-21 (7 weeks), During Sandy ranges
 	\caption{Frequency of Vance county emails from 2012-09-04 to 2012-11-30  }
 	\label{fig:Emailplots22}
 \end{figure}
-
 \bibliographystyle{apalike}
 \bibliography{BominBib}
 
