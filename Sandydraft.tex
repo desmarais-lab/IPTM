@@ -32,19 +32,18 @@ Before we build up the ultimate joint model of LDA, LSM, and point process appro
 \subsection{General framework}
 In this section, we introduce multiplicative Cox regression model for the edge formation process in a longitudinal communication network. For concreteness, we frame our discussion of this model in terms of email data, although it is generally applicable to any similarly-structured communication data.\\ \newline A single email, indexed by d, is represented by a set of tokens $w^{(d)} = \{w^{(d)}_n \}_{n=1}^{N^{(d)}}$ that comprise the
 text of that email, an integer $a^{(d)} \in \{1,...,A\}$ indicating the identity of that email’s author, and an integer $t^{(d)} \in [0, T]$ indicating the (unix time-based) timestamp of that email. \\ \newline
-As in LDA, each email, indexed by d, has a discrete distribution over topics $\theta^{(d)}$. A Dirichlet prior
-with concentration parameter $\alpha$ is placed (i.e. $\theta^{(d)}\sim \mbox{Dir}(\alpha, m)$). Then, a “topic” t is characterized by a discrete distribution over $V$ word types with probability vector $\phi^{(t)}$. A symmetric Dirichlet prior with concentration parameter $\beta$ is placed (i.e. $\phi^{(t)} \sim \mbox{Dir}(\beta, n)$). Now, each topic t is associated with one ``interaction pattern" among C different types, which is assigned by $l_t \sim \mbox{Unif}(1, C)$. \\ \newline
+As in LDA, each email, indexed by d, has a discrete distribution over topics $\theta^{(d)}$. A Dirichlet prior
+with concentration parameter $\alpha$ is placed (i.e. $\theta^{(d)}\sim \mbox{Dir}(\alpha, m)$). Then, a “topic” t is characterized by a discrete distribution over $V$ word types with probability vector $\phi^{(t)}$. A symmetric Dirichlet prior with concentration parameter $\beta$ is placed (i.e. $\phi^{(t)} \sim \mbox{Dir}(\beta, n)$). Now, each topic t is associated with one ``interaction pattern" among C different types, which is assigned by $l_t \sim \mbox{Unif}(1, C)$. \\ \newline
 To capture the relationship between the interaction patterns expressed in an email and that email’s recipients, topics that share $C$ are associated with an $A\times A$ matrix of $N^{(c)}_{ar}(t)$, a counting process denoting the number of edges (emails) from actor $a$ to actor $r$ up to time $t$. \textcolor{red}{NOTE: We use the partition $C$ since we expect that some topics/interaction patterns have little variation among the pairs of actors (e.g. broadcasting), while some have large variation (e.g. meeting scheduling, personal affairs).} Combining the individual counting processes of all potential edges,  $\mathbf{N}^{(c)}(t)$ is the multivariate counting process with $\mathbf{N}^{(c)}(t)=(N^{(c)}_{ar}(t): a, r \in {1, ..., A}, a \neq r)$. Here we make no assumption about the independence of individual edge counting process. As in Vu et al. (2011b), we model the multivariate counting process via Doob-Meyer decomposition:
 \begin{equation}
 \mathbf{N}^{(c)}(t)=\int_0^t\boldsymbol{\lambda}^{(c)}(s)ds + \mathbf{M}(t)
 \end{equation}
-where essentially $\boldsymbol{\lambda}^{(c)}(t)$ and $\mathbf{M}(t)$ may be viewed as the (deterministic) signal and (martingale) noise, respectively.\\ \newline
+where essentially $\boldsymbol{\lambda}^{(c)}(t)$ and $\mathbf{M}(t)$ may be viewed as the (deterministic) signal and (martingale) noise, respectively.\\ \newline
 Following the multiplicative Cox model of the intensity process $\boldsymbol{\lambda}^{(c)}(t)$ given $\boldsymbol{H}^{(c)}_{t-}$, the entire past of the network related to $C$ up to but not including time $t$, we consider for each potential directed edge $(a, r)$ the intensity forms:
 \begin{equation}
- \lambda^{(c)}_{ar}(t|\boldsymbol{H}^{(c)}_{t-})=\lambda_0^{(c)}(t)\cdot \mbox{exp}\{\beta^{(c)}^Tx^{(c)}(a, r, t)\}\}\cdot 1\{r \in \mathcal{A}^{(c)}_{(a, t)}\}
+ \lambda^{(c)}_{ar}(t|\boldsymbol{H}^{(c)}_{t-})=\lambda^{(c)}_0(t)\cdot \mbox{exp}(\beta^{(c)T}x^{(c)}(a, r, t))\cdot 1\{r \in \mathcal{A}^{(c)}_{(a, t)}\}
 \end{equation}
-where $\lambda_0^{(c)}(t)$ is the baseline
-hazards for the interactin pattern $C$, $\beta^{(c)}$ is an unknown vector of coefficients in $\mathbb{R}^{p}$, $x^{(c)}(a, r, t)$ is a vector of $p$ statistics for directed edge $(a, r)$ constructed based on
+where $\lambda_0^{(c)}(t)$ is the baseline hazards for the interaction pattern $C$, $\beta^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$, $x^{(c)}(a, r, t)$ is a vector of $p$ statistics for directed edge $(a, r)$ constructed based on
 $\boldsymbol{H}^{(c)}_{t-}$ (examples of these statistics are given in the next section), and $\mathcal{A}^{(c)}_{(a, t)}$ is the predictable receiver set of sender $a$ at time $t$ within all actors $A^{(c)}$. \textcolor{red}{NOTE: We assume that all possible actor set $A^{(c)}$ varies depending on the interaction pattern (e.g. confidential communication do not move outside of certain actors) }
 \subsection{Dynamic covariates to measure network effects}
 The network statistics $x^{(c)}(a, r, t)$ of equations (2), corresponding to the ordered pair $(a, r)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $a$ to $r$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\ \newline
@@ -59,10 +58,29 @@ while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, inv
 Here, $g(t-t_d)$ reflects the difference between current time $t$ and the timestamp of previous email $t_d$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t_d)=we^{-w(t-t_d)}$ where $w$ is the parameter of speed at
 which sender replies to emails, with larger values indicating faster response times. Indeed, $w^{-1}$ is the expected number of hours it takes to reply to a typical email. \textcolor{red}{NOTE: First, we can let $w$ to be hyperparameter to be specified (since $\beta$ will be adjusted to the scale of $w$). However, later we can try to estimate it via Bayesian approach, or even consider sender-specific $w_a$ or pair-specific $w_{ar}$ and estimate them.}
 \subsection{Inference}
-Following Perry and Wolfe (2013), after treating the baseline rate $\lambda_0(t)$ as a nuisance parameter, we can estimate the coefficient vector $\beta$ using the log-partial likelihood at time $t$:
+Assuming each interaction has a single receiver (no multicast), we model the stochastic intensity of the multivariate counting process $N$ as \begin{equation}\lambda_t(i,j)=\bar\lambda_t(i)\cdot \mbox{exp}\{\beta^Tx_t(i, j)\}\cdot 1\{j \in \mathcal{J}_t(i)\},
+\end{equation} 
+where $\beta$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$. After treating the baseline rate $\bar\lambda_t(i)$ as a nuisance parameter, estimation for $\beta$ proceeds by maximizing the so-called partial likelihood of \cite{cox1992regression}: 
 \begin{equation}
-\mbox{log}PL_t(\beta)=\sum_{t_m\leq t} \Big\{\beta^Tx(a_m, r_m, t_m)-\mbox{log}\big[\sum_{j\in \mathcal{J}_{t_m}(i_m)} \mbox{exp}\{\beta_0^Tx_{t_m}(i_m, j)\}\big]\Big\}.
+PL_t(\beta)=\prod_{t_m\leq t} \frac{\mbox{exp}(\beta^Tx_{t_m}(i_m, j_m))}{\sum_{j\in \mathcal{J}_{t_m}(i_m)} \mbox{exp}(\beta^Tx_{t_m}(i_m, j))},
 \end{equation}
+where $t_m$, $i_m$, and $j_m$ are the time, sender, and receiver
+of the $m$th event.
+Further, we can estimate the coefficient vector $\beta$ using the log-partial likelihood at time $t$:
+\begin{equation}
+\mbox{log}PL_t(\beta)=\sum_{t_m\leq t} \Big\{\beta^Tx_{t_m}(i_m, j_m)-\mbox{log}\big[\sum_{j\in \mathcal{J}_{t_m}(i_m)} \mbox{exp}\{\beta^Tx_{t_m}(i_m, j)\}\big]\Big\}.
+\end{equation}
+The function $\mbox{log}PL_t(\cdot)$ is concave, so it can be maximized using the first two derivatives, the gradient $U_t(\beta)=\bigtriangledown[\mbox{log}PL_t(\beta)]$ and negative Hessian $I_t(\beta)=-\bigtriangledown^2[\mbox{log}PL_t(\beta)]$ via the Newton-Raphson algorithm. See \cite{PerryWolfe2012} for the details.\\\\
+The model can be extended for interactions that possibly involve a single sender and multiple receivers such as emails, which we call a multicast interaction. Let the tuple $(t, i, J)$ indicate that at time $t$, sender $i$ interacted with receiver set $J$. In addition, let $|J|$ denote the cardinality of the receiver set $J$. Then, we can write the modified version of (3) and (5) as below:
+\begin{equation}\lambda_t(i,J)=\bar\lambda_t(i; |J|)\cdot \mbox{exp}\{\sum_{j\in J}\beta_0^Tx_t(i, j)\}\cdot\prod_{j\in J} 1\{j \in \mathcal{J}_t(i)\},
+\end{equation}
+\begin{equation}
+\mbox{log}PL_t(\beta)=\sum_{t_m\leq t} \Big\{\sum_{j\in J_m}\beta^Tx_{t_m}(i_m, j)-\mbox{log}\big[\sum_{\substack{j\subseteq \mathcal{J}_{t_m}(i_m)\\|J|=|J_m|}}\mbox{exp}\{\sum_{j\in  J}\beta^Tx_{t_m}(i_m, j)\}\big]\Big\}.
+\end{equation}
+Fitting the model above is quite complicated due to the double sums. Thus, instead of using the multicast model, we can use the alternative, the approximate partial loglikelihood, which is obtained by treating the multicast interaction as multiple pairwise interactions. For instance, an email with the tuple $(t, i, J=(j_1, j_2))$ is treated as two separate emails $(t, i, j_1)$ and $(t, i, j_2)$. Under this transformation, the obtained approximate partial loglikelihood is:\begin{equation}
+\mbox{log}\widetilde{PL}_t(\beta)=\sum_{t_m\leq t} \Big\{\sum_{j\in J_m}\beta^Tx_{t_m}(i_m, j)-|J_m|\mbox{log}\big[\sum_{j\subseteq \mathcal{J}_{t_m}(i_m)}\mbox{exp}\{\beta^Tx_{t_m}(i_m, j)\}\big]\Big\}
+\end{equation}
+and $\mbox{log}PL_t(\beta)\approx \mbox{log}\widetilde{PL}_t(\beta)$. To fit the model in a simpler way, we use (8) when estimating the coefficitients $\beta$. For implementation and simulation processes in detail, see \cite{PerryWolfe2012}.  This framework can be viewed as one version of relational event model \cite{Butts2008}, accounting for repeated directed actions and multicast inteactions. Therefore, the coefficients measuring the common effects such as homophily or transitivity can be interpreted in the same context as in \cite{Butts2008}.
 \begin{comment}
 \subsection{Generative process (From Mattew Denny)}
 First we generate the global (corpus-wide) variables. There are two main sets of global variables: those that describe the
@@ -200,4 +218,8 @@ Before Sandy ranges from 2012-09-04 to 2012-10-21 (7 weeks), During Sandy ranges
 	\caption{Frequency of Vance county emails from 2012-09-04 to 2012-11-30  }
 	\label{fig:Emailplots22}
 \end{figure}
+
+\bibliographystyle{apalike}
+\bibliography{BominBib}
+
 \end{document}
