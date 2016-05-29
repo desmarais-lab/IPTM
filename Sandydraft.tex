@@ -13,7 +13,7 @@
 \usepackage{algorithmic}  
 \usepackage{algorithm}
 \usepackage{comment}
-\title{Joint Modeling of Content-Partitioned Multinetwork Embeddings (CPME) and Point Process Approach}
+\title{Interaction-Partitioned Topic Models (IPTM) using Point Process Approach}
 \author{Bomin Kim}
 
 \begin{document}
@@ -22,9 +22,9 @@
 Current CPME model does not involve any of temporal component, which plays a key role in email interactions. Intuitively, past interaction behaviors significantly influence future ones; for example, if an actor $i$ sent an email to actor $j$, then $j$ is highly likely to send an email back to $i$ as a response (i.e. reciprocity). Moreover, the recency and frequency of past interactions can also be considered to effectively predict future interactions. Thus, as an exploratory data analysis, point process model for directional interaction is applied to the North Carolina email data. Starting from the existing framework focused on the analysis of content-partitioned subnetworks, I would suggest an extended approach to analyze the data using the timestamps in the email, aiming to develop a joint dynamic or longitudinal model of text-valued ties.\\ \newline
  CPME model is a Bayesian framework using two well-known methods: Latent Dirichlet Allocation (LDA) and Latent Space Model (LSM). Basically, existence of edge depends on topic assignment $k$ (LDA) and its corresponding interaction pattern c. Each topic $k=1,…,K$ has one interaction pattern c=1,…,C, and each interaction pattern posits unique latent space (LSM), thus generating $A\times A$ matrix of probabilities $P^{(c)}$ that a message author
 a will include recipient $r$ on the message, given that it is about
-a topic in cluster $c$.  Incorporating point process approach, now assume that under each interaction pattern, we have $A\times A$ matrix of stochastic intensities at time $t$, $\lambda^{(c)}(t)$, which depend on the history of interaction between the sender and receiver. 
+a topic in cluster $c$.  Incorporating point process approach, now assume that under each interaction pattern, we have $A\times A$ matrix of stochastic intensities at time $t$, $\lambda^{(c)}(t)$, which depend on the history of interaction between the sender and receiver. We will refer this as  interaction-partitioned topic models (IPTM). 
 \newpage
-\section{CPME + Point Process Model}
+\section{IPTM Model}
 In this section, we introduce multiplicative Cox regression model for the edge formation process in a longitudinal communication network. For concreteness, we frame our discussion of this model in terms of email data, although it is generally applicable to any similarly-structured communication data.
 \subsection{Point Process Framework}
 A single email, indexed by $d$, is represented by a set of tokens $w^{(d)} = \{w^{(d)}_m \}_{m=1}^{M^{(d)}}$ that comprise the
@@ -33,36 +33,34 @@ text of that email, an integer $i^{(d)} \in \{1,...,A\}$ indicating the identity
 \mathbf{N}^{(c)}(t)=\int_0^t\boldsymbol{\lambda}^{(c)}(s)ds + \mathbf{M}(t)
 \end{equation}
 where essentially $\boldsymbol{\lambda}^{(c)}(t)$ and $\mathbf{M}(t)$ may be viewed as the (deterministic) signal and (martingale) noise, respectively.\\ \newline
-Following the multiplicative Cox model of the intensity process $\boldsymbol{\lambda}^{(c)}(t)$ given $\boldsymbol{H}^{(c)}_{t-}$, the entire past of the network related to the interaction pattern $c$ up to but not including time $t$, we consider for each potential directed edge $(i, j)$ the intensity forms:
+Following the multiplicative Cox model of the intensity process $\boldsymbol{\lambda}^{(c)}(t)$ given $\boldsymbol{H}_{t-}$, the entire past of the network up to but not including time $t$, we consider for each potential directed edge $(i, j)$ the intensity forms:
 \begin{equation}
-\lambda^{(c)}_{ij}(t|\boldsymbol{H}^{(c)}_{t-})=\lambda^{(c)}_0(t)\cdot \mbox{exp}(\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}(i, j, t))\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}
+\lambda^{(c)}_{ij}(t|\boldsymbol{H}_{t-})=\lambda_0\cdot \mbox{exp}(\boldsymbol{\beta}^{(c)T}\boldsymbol{x}(i, j, t))\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}
 \end{equation}
-where $\lambda_0^{(c)}(t)$ is the baseline hazards for the interaction pattern $C$, $\boldsymbol{\beta}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$, $\boldsymbol{x}^{(c)}(i, j, t)$ is a vector of $p$ statistics for directed edge $(i, j)$ constructed based on
-$\boldsymbol{H}^{(c)}_{t-}$, and $\mathcal{J}^{(c)}_{(i, t)}$ is the predictable receiver set of sender $i$ at time $t$ within all actors $A^{(c)}$. NOTE: We assume that all possible actor set $A^{(c)}$ varies depending on the interaction pattern (e.g. confidential communication do not move outside of certain actors).
+where $\lambda_0$ is the common baseline hazards for the overall interaction, $\boldsymbol{\beta}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$, $\boldsymbol{x}(i, j, t)$ is a vector of $p$ statistics for directed edge $(i, j)$ constructed based on
+$\boldsymbol{H}_{t-}$, and $\mathcal{J}^{(c)}_{(i, t)}$ is the predictable receiver set of sender $i$ at time $t$ within all actors $A^{(c)}$. NOTE: We assume that all possible actor set $A^{(c)}$ varies depending on the interaction pattern (e.g. confidential communication do not move outside of certain actors).
 \subsection{Generative Process}
-The generative process of this model follows that of \cite{Blei2003} and \cite{rosen2004author}. Same as LDA, documents are represented as random mixtures over latent topics, where each topic is characterized by a distribution over words. However, one difference is that each documents is connected to one interaction pattern, and the topic distributions vary depending on the interaction pattern. Following is the generative process for each document in a corpus $D$:
+The generative process of this model follows that of \cite{Blei2003} and \cite{rosen2004author}. Same as LDA, documents are represented as random mixtures over latent topics, where each topic is characterized by a distribution over words. However, one difference is that each documents is connected to one interaction pattern, and the topic distributions vary depending on the interaction pattern. Following are the generative process for each document in a corpus $D$ and its plate notation (Figure 1):
 \begin{itemize}
-	\item[1.] {Choose $\phi^{(k)} \sim \mbox{Dir}(\delta, \bf n)$}\\
+	\item[1.] {$\phi^{(k)} \sim \mbox{Dir}(\delta, \bf n)$}\\
 	- A “topic” $k$ is characterized by a discrete distribution over $V$ word types with probability vector $\phi^{(k)}$. A symmetric Dirichlet prior with concentration parameter $\delta$ is placed \textbf{[See Algorithm 1]}.
 \item[2.] For each of the $C$ interaction patterns \textbf{[See Algorithm 2]}:
 \begin{itemize}
-	\item[(a)] Choose $\boldsymbol{\theta}^{(c)}\sim \mbox{Dir}(\alpha, \bf m)$\\
-- As an extension of LDA, each email, indexed by $d$, has a discrete distribution over topics $\boldsymbol{\theta}^{(c)}$. A Dirichlet prior
-with concentration parameter $\alpha$ is placed.
-\item[(b)] Choose $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$\\ 
-- $\mbox{Normal}(\textbf{0}, \sigma^2I_P)$ is just one example.
+	\item[(a)] $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$\\ 
+	- The vector of coefficients depends on the interaction pattern $c$. This means that there exist differences in the degree of influence from the network statistics $\boldsymbol{x}(i, j, t)$ that rely on the history of interactions.
+\item[(b)] $\boldsymbol{N}^{(c)}(t) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c)}(t))$\\
+- The actual update of the counting process $N^{(c)}_{ij}(t)$ of the email $d$ is  $N^{(c^{(d)})}_{i^{(d)}j^{(d)}}(t^{(d)})=N^{(c^{(d)})}_{i^{(d)}j^{(d)}}(t^{(d)}-)+1$.
 \end{itemize}
 \item[3.] For each of the $D$ documents \textbf{[See Algorithm 3]}:
 \begin{itemize}
-	\item[(a)] Choose $c^{(d)}\sim \mbox{Multinomial}(\gamma)$\\
+	\item[(a)] $c^{(d)}\sim \mbox{Multinomial}(\gamma)$\\
 	- Each document $d$ is associated with one ``interaction pattern" among $C$ different types, with parameter $\gamma$.
-	\item[(b)] Choose $\boldsymbol{N}^{(c^{(d)})}(t) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c^{(d)})}(t))$\\
-	- The actual update of the counting process $N^{(c)}_{ij}(t)$ of the email $d$ will be  $N^{(c^{(d)})}_{i^{(d)}j^{(d)}}(t^{(d)})=N^{(c^{(d)})}_{i^{(d)}j^{(d)}}(t^{(d)}-)+1$. This one increment of $N^{(c)}_{ij}(t)$ is related to $\bar{M}^{(d)}$ tokens, which will be used for the next algorithm.
+	\item[(b)] $\boldsymbol{\theta}^{(d|c^{(d)})}\sim \mbox{Dir}(\alpha_{c^{(d)}}, \bf m)$\\
+	- Each email has a discrete distribution over topics $\boldsymbol{\theta}^{(d|c)}$, since the topic proportions for documents in the same cluster are drawn from the same distribution. Thus, A Dirichlet prior with cluster-specific concentration parameter $\alpha^{(c)}$ is placed.
 \end{itemize}
 \item[4.] For each of the $M$ words \textbf{[See Algorithm 4]}:
 \begin{itemize}
-	\item[(a)] $z_m^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(c)})$\\ 
-- In this case, we use interaction-based $\boldsymbol{\theta}^{(c)}$, unlike CPME.
+	\item[(a)] $z_m^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(d|c^{(d)})})$
 \item[(b)] $w_m^{(d)} \sim\mbox{Multinomial} (\phi^{(z_m^{(d)})})$
 \end{itemize}
 \end{itemize} 
@@ -77,14 +75,13 @@ with concentration parameter $\alpha$ is placed.
  	\SetAlgoLined
  	\caption{Interaction Patterns}
  	\For{c=1 to C}{
- 		draw $\boldsymbol{\theta}^{(c)}$ $\sim$ Dir($\alpha, \bf m$)\\
  		draw $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$\\
  	\For{i=1 to A}{
  	\For{j=1 to A}{
- 		\If{i $\neq$ j}{ set $\lambda^{(c)}_{ij}(t)=\lambda^{(c)}_0(t)\cdot \mbox{exp}(\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}(i, j, t))\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$ }
+ 		\If{i $\neq$ j}{ set $\lambda^{(c)}_{ij}(t)=\lambda_0\cdot \mbox{exp}(\boldsymbol{\beta}^{(c)T}\boldsymbol{x}(i, j, t))\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$ }
  	\Else {set $\lambda^{(c)}_{ij}(t)=0$}
- 	\textcolor{red}{Q: Do we need to estimate $\lambda^{(c)}_0(t)$? How? Maybe can have one common parameter $\lambda$ and sample $c$ different baseline intensities.  }
  		}}
+ 			draw $\boldsymbol{N}^{(c)}(t) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c)}(t))$
  	}
  \end{algorithm}
  \begin{algorithm}[H]
@@ -92,7 +89,7 @@ with concentration parameter $\alpha$ is placed.
  	\caption{Document-Interaction Pattern Assginments}
  	\For{d=1 to D}{
  		draw $c^{(d)}$ $\sim$ Multinomial($\gamma$)\\
- 			draw $\boldsymbol{N}^{(c^{(d)})}(t) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c^{(d)})}(t))$
+ 		draw $\boldsymbol{\theta}^{(d|c^{(d)})}$ $\sim$ Dir($\alpha^{c^{(d)}}, \bf m$)\\
  	}
  \end{algorithm}
  \begin{algorithm}[H]
@@ -101,33 +98,32 @@ with concentration parameter $\alpha$ is placed.
  	\For{d=1 to $D$}{
  		set $\bar{M}^{(d)}=\mbox{max}(1,{M}^{(d)})$\\
  		\For{m=1 to $\bar{M}^{(d)}$}{
- 			draw $z_m^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(c)})$\\
+ 			draw $z_m^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(d|c^{(d)})})$\\
  			\If{${M}^{(d)}\neq 0$}{draw $w_m^{(d)} \sim\mbox{Multinomial} (\phi^{(z_m^{(d)})})$
  				} }
 }
  \end{algorithm}
- 	\textcolor{red}{Q: As in CPME, the topic assignments $z_m^{(d)}$ should have some connection to $N_{ij}^{(c)}(t)$ (the topics used in the document affects the number of emails between $i$ and $j$). How? Currently the plate notation in Figure 1 has the arrow, but in the generative process it isn't. Or, is it fine to delete the arrow and use the current generative process?}
  \small
  \begin{figure}[ht]
  	\centering
  	\begin{tikzpicture}
- 	\tikzstyle{main}=[circle, minimum size = 10mm, thick, draw =black!80, node distance = 15mm]
+ 	\tikzstyle{main}=[circle, minimum size = 12mm, thick, draw =black!80, node distance = 15mm]
  	\tikzstyle{connect}=[-latex, thick]
  	\tikzstyle{box}=[rectangle, draw=black!100]
  	\node[main, fill = white!100] (gamma) [label=center:$\gamma$] { };
- 	\node[main] (c) [right=of gamma,label=center:$c^{(d)}$] { };
- 	\node[main] (z) [right=of c,label=center:$z_m^{(d)}$] {};
+ 	\node[main] (c) [below=of gamma,label=center:$c^{(d)}$] { };
+ 		\node[main] (theta) [right=of c,label=center:$\theta^{(d|c)}$] { };
+ 	\node[main] (z) [right=of theta,label=center:$z_m^{(d)}$] {};
  	\node[main, fill = black!10] (w) [right=of z,label=center:$w_m^{(d)}$] { };
- 		\node[main] (theta) [above=of z,label=center:$\theta^{(c)}$] { };
- 		 	\node[main] (alpha) [left=of theta,label=center:$\alpha$] { };
+ 		 	\node[main] (alpha) [above=of theta,label=center:$\alpha^{(c)}$] { };
  	\node[main] (phi) [right=of w,label=center:$\phi^{(k)}$] { };
- 	\node[main] (delta) [right=of phi,label=center:$\delta$] { };
- 	 	\node[main] (beta) [above=of w,label=center:$\beta^{(c)}$] { };
- 	 		\node[main, fill = black!10] (x) [above=of theta,label=center:$x_{ij}^{(c)}$] { };
- 	 			\node[main, fill = black!10] (N) [above=of beta,label=center:$N_{ij}^{(c)}$] { };
- 	 		\node[main] (sigma) [right=of beta,label=center:$\sigma^2$] { };
+ 	\node[main] (delta) [above=of phi,label=center:$\delta$] { };
+ 	 	\node[main] (beta) [below=of theta,label=center:$\beta^{(c)}$] { };
+ 	 		\node[main] (sigma) [left=of beta,label=center:$\sigma^2$] { };
+ 	 		 	 			\node[main, fill = black!10] (N) [right=of beta,label=center:$N_{ij}^{(c)}$] { };
+ 	 		 	 					\node[main, fill = black!10] (x) [right=of N,label=center:$x_{ij}(t)$] { };
  	\path (gamma) edge [connect] (c)
- 	(c) edge [connect] (z)
+ 	(c) edge [connect] (theta)
  	(z) edge [connect] (w)
  	(theta) edge [connect] (z)
  	(alpha) edge [connect] (theta)
@@ -136,36 +132,37 @@ with concentration parameter $\alpha$ is placed.
  	(sigma) edge [connect] (beta)
  	(x) edge [connect] (N)
  	(beta) edge [connect] (N)
- 	(z) edge [connect] (N);
- 	\node[rectangle, inner sep=5.5mm, draw=black!100, fit= (theta) (beta) (x) (N)] {};
- 		\node[rectangle, inner sep=0mm, fit=  (theta) (beta),label=below right:$C$, xshift=13mm, yshift=0mm] {};
- 			\node[rectangle, inner sep=0mm, fit=  (x) (N),label=below right:$A$, xshift=11mm, yshift=1mm] {};
- 	\node[rectangle, inner sep=3.2mm, draw=black!100, fit= (phi)] {};
- 		\node[rectangle, inner sep=3.2mm, draw=black!100, fit= (x) (N)] {};
- 		\node[rectangle, inner sep=0mm, fit= (phi),label=below right:$K$, xshift=-2mm, yshift=1mm] {};
- 	\node[rectangle, inner sep=0mm, fit= (w),label=below right:$M^{(d)}$, xshift=-5mm, yshift=1mm] {};
- 		\node[rectangle, inner sep=0mm, fit= (w),label=below right:$\bar{M}^{(d)}$, xshift=-30mm, yshift=1mm] {};
- 	\node[rectangle, inner sep=4.4mm,draw=black!100, fit= (w)] {};
- 		\node[rectangle, inner sep=4.4mm,draw=black!100, fit= (z)] {};
- 	\node[rectangle, inner sep=4mm, fit= (z) (w),label=below right:$D$, xshift=12mm] {};
- 	\node[rectangle, inner sep=8mm, draw=black!100, fit = (c) (z) (w)] {};
+ 		(c) edge [connect] (beta);
+ 			\node[rectangle, inner sep=2.2mm, fit=  (x),label=above right:$A$, xshift=-3mm, yshift=-3mm] {};
+ 			\node[rectangle, inner sep=4mm,draw=black!100, fit= (beta)(N)] {};
+ 				\node[rectangle, inner sep=4mm, fit=  (beta) (N),label=above right:$C$, xshift=6mm, yshift=-5mm] {};
+ 	\node[rectangle, inner sep=4mm, draw=black!100, fit= (phi)] {};
+ 		\node[rectangle, inner sep=4mm, draw=black!100, fit= (x) ] {};
+ 		\node[rectangle, inner sep=0mm, fit= (phi),label=above right:$K$, xshift=-1mm, yshift=-1mm] {};
+ 	\node[rectangle, inner sep=0mm, fit= (w),label=above right:$M^{(d)}$, xshift=-5mm, yshift=-1mm] {};
+ 		\node[rectangle, inner sep=0mm, fit= (w),label=above right:$\bar{M}^{(d)}$, xshift=-32mm, yshift=-1mm] {};
+ 	\node[rectangle, inner sep=4mm,draw=black!100, fit= (w)] {};
+ 		\node[rectangle, inner sep=4mm,draw=black!100, fit= (z)] {};
+ 	\node[rectangle, inner sep=6mm, fit= (c) (theta) (z) (w),label=above right:$D$, xshift=38mm, yshift=-3mm] {};
+ 	\node[rectangle, inner sep=8mm, draw=black!100, fit = (theta) (c) (z) (w)] {};
  	\end{tikzpicture}
- 	\caption{Plate notation of the CPME+Point process model}
+ 	\caption{Plate notation of IPME}
  	\label{fig:plate}
  \end{figure}
  \normalsize
+
 \subsection{Dynamic covariates to measure network effects}
-The network statistics $x^{(c)}(i, j, t)$ of equations (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\ \newline
-Following \cite{PerryWolfe2012}, we use 6 effects as components of $x^{(c)}(i, j, t)$. The first two behaviors (send and receive) are dyadic, involving exactly two actors,
-while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, involving exactly three actors. However, different from \cite{PerryWolfe2012}, we define the effects not based on finite sub-interval, which require large number of dimention. Instead, we create single statistic for each effect by incorporating the recency of event into the statistic itself. Moreover, we take the interaction pattern $c$ into account as well, based on the topic-token-interaction pattern assignment from LDA. \\ \newline 
-1. $\textbf{send}^{(c)}(a, r, t)=\sum\limits_{d: t_d<t} \frac{\bar N^{(c|d)}}{\bar N^{(d)}}\cdot I\{a\rightarrow r\}\cdot g(t-t_d)$\\
-2. $\textbf{receive}^{(c)}(a, r, t)=\sum\limits_{d: t_d<t} \frac{\bar N^{(c|d)}}{\bar N^{(d)}}\cdot I\{r\rightarrow a\}\cdot g(t-t_d)$\\
-3. $\textbf{2-send}^{(c)}(a, r, t)=\sum\limits_{h \neq a, r}\Large(\sum\limits_{d: t_d<t} \frac{\bar N^{(c|d)}}{\bar N^{(d)}}\cdot I\{a\rightarrow h\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} \frac{\bar N^{(c|d)}}{\bar N^{(d)}}\cdot I\{h\rightarrow r\}\cdot g(t-t_d)\Large)$\\
-4. $\textbf{2-receive}^{(c)}(a, r, t)=\sum\limits_{h \neq a, r}\Large(\sum\limits_{d: t_d<t} \frac{\bar N^{(c|d)}}{\bar N^{(d)}}\cdot I\{h\rightarrow a\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} \frac{\bar N^{(c|d)}}{\bar N^{(d)}}\cdot I\{r\rightarrow h\}\cdot g(t-t_d)\Large)$\\
-5. $\textbf{sibling}^{(c)}(a, r, t)=\sum\limits_{h \neq a, r}\Large(\sum\limits_{d: t_d<t} \frac{\bar N^{(c|d)}}{\bar N^{(d)}}\cdot I\{h\rightarrow a\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} \frac{\bar N^{(c|d)}}{\bar N^{(d)}}\cdot I\{h\rightarrow r\}\cdot g(t-t_d)\Large)$\\
-6. $\textbf{cosibling}^{(c)}(a, r, t)=\sum\limits_{h \neq a, r}\Large(\sum\limits_{d: t_d<t} \frac{\bar N^{(c|d)}}{\bar N^{(d)}}\cdot I\{a\rightarrow h\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} \frac{\bar N^{(c|d)}}{\bar N^{(d)}}\cdot I\{r\rightarrow h\}\cdot g(t-t_d)\Large)$\\\newline
+The network statistics $\boldsymbol{x}(i, j, t)$ of equations (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\ \newline
+Following \cite{PerryWolfe2012}, we use 6 effects as components of $\boldsymbol{x}(i, j, t)$. The first two behaviors (send and receive) are dyadic, involving exactly two actors,
+while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, involving exactly three actors. However, we take different approach by defining the effects not to be based on finite sub-interval, which require large number of dimention. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. \\ \newline 
+1. $\mbox{send}(i, j, t)=\sum\limits_{d: t_d<t} I\{i\rightarrow j\}\cdot g(t-t_d)$\\
+2. $\mbox{receive}(i, j, t)=\sum\limits_{d: t_d<t} I\{j\rightarrow i\}\cdot g(t-t_d)$\\
+3. $\mbox{2-send}(i, j, t)=\sum\limits_{h \neq i, j}\Large(\sum\limits_{d: t_d<t}  I\{i\rightarrow h\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} I\{h\rightarrow j\}\cdot g(t-t_d)\Large)$\\
+4. $\mbox{2-receive}(i, j, t)=\sum\limits_{h \neq i, j}\Large(\sum\limits_{d: t_d<t} I\{h\rightarrow i\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} I\{j\rightarrow h\}\cdot g(t-t_d)\Large)$\\
+5. $\mbox{sibling}(i, j, t)=\sum\limits_{h \neq i, j}\Large(\sum\limits_{d: t_d<t} I\{h\rightarrow i\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} I\{h\rightarrow j\}\cdot g(t-t_d)\Large)$\\
+6. $\mbox{cosibling}(i, j, t)=\sum\limits_{h \neq i, j}\Large(\sum\limits_{d: t_d<t} I\{i\rightarrow h\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} I\{j\rightarrow h\}\cdot g(t-t_d)\Large)$\\\newline
 Here, $g(t-t_d)$ reflects the difference between current time $t$ and the timestamp of previous email $t_d$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t_d)=we^{-w(t-t_d)}$ where $w$ is the parameter of speed at
-which sender replies to emails, with larger values indicating faster response times. Indeed, $w^{-1}$ is the expected number of hours it takes to reply to a typical email.
+which sender replies to emails, with larger values indicating faster response times. Indeed, $w^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, we can fix $w=1$.
 \subsection{Inference}
 First of all, we figure out how to obtain the 6 covariates in $x^{(c)}(a, r, t)$ defined in the previous section. Notice that one special thing about this approach is that for each term we put weights in front of typical network statistics, that is, $$\frac{\bar N^{(c|d)}}{\bar N^{(d)}}.$$
 Similar to the generative process of CPME, define $$\bar N^{(d)}=\mbox{max}(1, N^{(d)})\quad\mbox{and}\quad \bar N^{(c|d)}=\sum_{n=1}^{\bar N^{(d)}}\delta(l_{z_n^{(d)}}=c).$$
