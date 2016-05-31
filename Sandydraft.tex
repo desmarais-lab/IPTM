@@ -6,6 +6,8 @@
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+		\node[shape=circle,draw,inner sep=0.5pt] (char) {#1};}}
 \usetikzlibrary{fit,positioning}
 \usepackage{authblk}
 \usepackage{natbib}
@@ -35,9 +37,9 @@ text of that email, an integer $i^{(d)} \in \{1,...,A\}$ indicating the identity
 where essentially $\boldsymbol{\lambda}^{(c)}(t)$ and $\mathbf{M}(t)$ may be viewed as the (deterministic) signal and (martingale) noise, respectively.\\ \newline
 Following the multiplicative Cox model of the intensity process $\boldsymbol{\lambda}^{(c)}(t)$ given $\boldsymbol{H}_{t-}$, the entire past of the network up to but not including time $t$, we consider for each potential directed edge $(i, j)$ the intensity forms:
 \begin{equation}
-\lambda^{(c)}_{ij}(t|\boldsymbol{H}_{t-})=\lambda_0\cdot \mbox{exp}(\boldsymbol{\beta}^{(c)T}\boldsymbol{x}(i, j, t))\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}
+\lambda^{(c)}_{ij}(t|\boldsymbol{H}_{t-})=\lambda_0\cdot \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}
 \end{equation}
-where $\lambda_0$ is the common baseline hazards for the overall interaction, $\boldsymbol{\beta}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$, $\boldsymbol{x}(i, j, t)$ is a vector of $p$ statistics for directed edge $(i, j)$ constructed based on
+where $\lambda_0$ is the common baseline hazards for the overall interaction, $\boldsymbol{\beta}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$, $\boldsymbol{x}_t(i, j)$ is a vector of $p$ statistics for directed edge $(i, j)$ constructed based on
 $\boldsymbol{H}_{t-}$, and $\mathcal{J}^{(c)}_{(i, t)}$ is the predictable receiver set of sender $i$ at time $t$ within all actors $A^{(c)}$. NOTE: We assume that all possible actor set $A^{(c)}$ varies depending on the interaction pattern (e.g. confidential communication do not move outside of certain actors).
 \subsection{Generative Process}
 The generative process of this model follows that of \cite{Blei2003} and \cite{rosen2004author}. Same as LDA, documents are represented as random mixtures over latent topics, where each topic is characterized by a distribution over words. However, one difference is that each documents is connected to one interaction pattern, and the topic distributions vary depending on the interaction pattern. Following are the generative process for each document in a corpus $D$ and its plate notation (Figure 1):
@@ -47,7 +49,7 @@ The generative process of this model follows that of \cite{Blei2003} and \cite{r
 \item[2.] For each of the $C$ interaction patterns \textbf{[See Algorithm 2]}:
 \begin{itemize}
 	\item[(a)] $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$\\ 
-	- The vector of coefficients depends on the interaction pattern $c$. This means that there exist differences in the degree of influence from the network statistics $\boldsymbol{x}(i, j, t)$ that rely on the history of interactions.
+	- The vector of coefficients depends on the interaction pattern $c$. This means that there exist differences in the degree of influence from the network statistics $\boldsymbol{x}_t(i, j)$ that rely on the history of interactions.
 \item[(b)] $\boldsymbol{N}^{(c)}(t) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c)}(t))$\\
 - The actual update of the counting process $N^{(c)}_{ij}(t)$ of the email $d$ is  $N^{(c^{(d)})}_{i^{(d)}j^{(d)}}(t^{(d)})=N^{(c^{(d)})}_{i^{(d)}j^{(d)}}(t^{(d)}-)+1$.
 \end{itemize}
@@ -78,7 +80,7 @@ The generative process of this model follows that of \cite{Blei2003} and \cite{r
  		draw $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$\\
  	\For{i=1 to A}{
  	\For{j=1 to A}{
- 		\If{i $\neq$ j}{ set $\lambda^{(c)}_{ij}(t)=\lambda_0\cdot \mbox{exp}(\boldsymbol{\beta}^{(c)T}\boldsymbol{x}(i, j, t))\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$ }
+ 		\If{i $\neq$ j}{ set $\lambda^{(c)}_{ij}(t)=\lambda_0\cdot \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$ }
  	\Else {set $\lambda^{(c)}_{ij}(t)=0$}
  		}}
  			draw $\boldsymbol{N}^{(c)}(t) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c)}(t))$
@@ -120,7 +122,7 @@ The generative process of this model follows that of \cite{Blei2003} and \cite{r
  	\node[main] (delta) [above=of phi,label=center:$\delta$] { };
  	 	\node[main] (beta) [below=of theta,label=center:$\beta^{(c)}$] { };
  	 		\node[main] (sigma) [left=of beta,label=center:$\sigma^2$] { };
- 	 		 	 			\node[main, fill = black!10] (N) [right=of beta,label=center:$N_{ij}^{(c)}$] { };
+ 	 		 	 			\node[main, fill = black!10] (N) [right=of beta,label=center:$N_{ij}^{(c)}(t)$] { };
  	 		 	 					\node[main, fill = black!10] (x) [right=of N,label=center:$x_{ij}(t)$] { };
  	\path (gamma) edge [connect] (c)
  	(c) edge [connect] (theta)
@@ -132,7 +134,8 @@ The generative process of this model follows that of \cite{Blei2003} and \cite{r
  	(sigma) edge [connect] (beta)
  	(x) edge [connect] (N)
  	(beta) edge [connect] (N)
- 		(c) edge [connect] (beta);
+ 		(c) edge [connect] (beta)
+ 		(c) edge [connect] (alpha);
  			\node[rectangle, inner sep=2.2mm, fit=  (x),label=above right:$A$, xshift=-3mm, yshift=-3mm] {};
  			\node[rectangle, inner sep=4mm,draw=black!100, fit= (beta)(N)] {};
  				\node[rectangle, inner sep=4mm, fit=  (beta) (N),label=above right:$C$, xshift=6mm, yshift=-5mm] {};
@@ -146,53 +149,122 @@ The generative process of this model follows that of \cite{Blei2003} and \cite{r
  	\node[rectangle, inner sep=6mm, fit= (c) (theta) (z) (w),label=above right:$D$, xshift=38mm, yshift=-3mm] {};
  	\node[rectangle, inner sep=8mm, draw=black!100, fit = (theta) (c) (z) (w)] {};
  	\end{tikzpicture}
- 	\caption{Plate notation of IPME}
+ 	\caption{Plate notation of IPTM}
  	\label{fig:plate}
  \end{figure}
  \normalsize
-
 \subsection{Dynamic covariates to measure network effects}
-The network statistics $\boldsymbol{x}(i, j, t)$ of equations (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\ \newline
-Following \cite{PerryWolfe2012}, we use 6 effects as components of $\boldsymbol{x}(i, j, t)$. The first two behaviors (send and receive) are dyadic, involving exactly two actors,
+The network statistics $\boldsymbol{x}_t(i, j)$ of equations (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\ \newline
+Following \cite{PerryWolfe2012}, we use 6 effects as components of $\boldsymbol{x}_t(i, j)$. The first two behaviors (send and receive) are dyadic, involving exactly two actors,
 while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, involving exactly three actors. However, we take different approach by defining the effects not to be based on finite sub-interval, which require large number of dimention. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. \\ \newline 
-1. $\mbox{send}(i, j, t)=\sum\limits_{d: t_d<t} I\{i\rightarrow j\}\cdot g(t-t_d)$\\
-2. $\mbox{receive}(i, j, t)=\sum\limits_{d: t_d<t} I\{j\rightarrow i\}\cdot g(t-t_d)$\\
-3. $\mbox{2-send}(i, j, t)=\sum\limits_{h \neq i, j}\Large(\sum\limits_{d: t_d<t}  I\{i\rightarrow h\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} I\{h\rightarrow j\}\cdot g(t-t_d)\Large)$\\
-4. $\mbox{2-receive}(i, j, t)=\sum\limits_{h \neq i, j}\Large(\sum\limits_{d: t_d<t} I\{h\rightarrow i\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} I\{j\rightarrow h\}\cdot g(t-t_d)\Large)$\\
-5. $\mbox{sibling}(i, j, t)=\sum\limits_{h \neq i, j}\Large(\sum\limits_{d: t_d<t} I\{h\rightarrow i\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} I\{h\rightarrow j\}\cdot g(t-t_d)\Large)$\\
-6. $\mbox{cosibling}(i, j, t)=\sum\limits_{h \neq i, j}\Large(\sum\limits_{d: t_d<t} I\{i\rightarrow h\}\cdot g(t-t_d)\Large)\Large(\sum\limits_{d: t_d<t} I\{j\rightarrow h\}\cdot g(t-t_d)\Large)$\\\newline
+1. $\mbox{send}_t(i, j)=\sum\limits_{d: t_d<t} I\{i\rightarrow j\}\cdot g(t-t_d)$\\
+2. $\mbox{receive}_t(i, j)=\sum\limits_{d: t_d<t} I\{j\rightarrow i\}\cdot g(t-t_d)$\\
+3. $\mbox{2-send}_t(i, j)=\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t_d<t}  I\{i\rightarrow h\}\cdot g(t-t_d)\Big)\Big(\sum\limits_{d: t_d<t} I\{h\rightarrow j\}\cdot g(t-t_d)\Big)$\\
+4. $\mbox{2-receive}_t(i, j)=\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t_d<t} I\{h\rightarrow i\}\cdot g(t-t_d)\Big)\Big(\sum\limits_{d: t_d<t} I\{j\rightarrow h\}\cdot g(t-t_d)\Big)$\\
+5. $\mbox{sibling}_t(i, j)=\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t_d<t} I\{h\rightarrow i\}\cdot g(t-t_d)\Big)\Big(\sum\limits_{d: t_d<t} I\{h\rightarrow j\}\cdot g(t-t_d)\Big)$\\
+6. $\mbox{cosibling}_t(i, j)=\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t_d<t} I\{i\rightarrow h\}\cdot g(t-t_d)\Big)\Big(\sum\limits_{d: t_d<t} I\{j\rightarrow h\}\cdot g(t-t_d)\Big)$\\\newline
 Here, $g(t-t_d)$ reflects the difference between current time $t$ and the timestamp of previous email $t_d$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t_d)=we^{-w(t-t_d)}$ where $w$ is the parameter of speed at
 which sender replies to emails, with larger values indicating faster response times. Indeed, $w^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, we can fix $w=1$.
 \subsection{Inference}
-First of all, we figure out how to obtain the 6 covariates in $x^{(c)}(a, r, t)$ defined in the previous section. Notice that one special thing about this approach is that for each term we put weights in front of typical network statistics, that is, $$\frac{\bar N^{(c|d)}}{\bar N^{(d)}}.$$
-Similar to the generative process of CPME, define $$\bar N^{(d)}=\mbox{max}(1, N^{(d)})\quad\mbox{and}\quad \bar N^{(c|d)}=\sum_{n=1}^{\bar N^{(d)}}\delta(l_{z_n^{(d)}}=c).$$
-In order to obtain $\bar N^{(c|d)}$, we need the probability that a token is assgined to a particular topic related to specific interaction pattern conditional on the topic assignments of all other tokens, the word-types of all other tokens, and hyper-parameters. Since we use uniform distribution for topic-interaction pattern assignments (i.e. $l_t \sim \mbox{Unif}(1, C)$), 
-$$P(l_{z_n^{(d)}}=c|\mathcal{W}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{n}, \alpha, \boldsymbol{m})=\sum\limits_{t:l_t=c}P({z_n^{(d)}}=t | \mathcal{W}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{n}, \alpha, \boldsymbol{m}).$$ 
-Now following the existing derivation from the work of Matthew Denny, by applying Bayes rule, we get $$\sum\limits_{t:l_t=c}P({z_n^{(d)}}=t | \mathcal{W}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{n}, \alpha, \boldsymbol{m})=\sum\limits_{t:l_t=c}P({z_n^{(d)}}=t, w_n^{(d)} | \mathcal{W}_{\backslash d, n}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{n}, \alpha, \boldsymbol{m})$$
-$$\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad=\sum\limits_{t:l_t=c} \frac{N_{\backslash d, n}^{(t|d)}+\alpha m_t}{N^{d}-1+\alpha}\cdot \frac{N_{\backslash d, n}^{(w_n^{(d)}|t)}+\beta n_v}{N_{\backslash d, n}^{(t)}+\beta} $$\\\newline
-After we fully construct the matrix of covariates $x^{(c)}(a, r, t)$, we move to estimation steps. Assuming each interaction has a single receiver (no multicast), we model the stochastic intensity of the multivariate counting process $N$ as \begin{equation}\lambda_t(i,j)=\bar\lambda_t(i)\cdot \mbox{exp}\{\beta^Tx_t(i, j)\}\cdot 1\{j \in \mathcal{J}_t(i)\},
-\end{equation} 
-where $\beta$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$. After treating the baseline rate $\bar\lambda_t(i)$ as a nuisance parameter, estimation for $\beta$ proceeds by maximizing the so-called partial likelihood of \cite{cox1992regression}: 
+The inference for IPTM is similar to that of CPME. In this case, what we actually observe are the  tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the counting process $\mathcal{N}=\{\boldsymbol{N}(t_d) \}_{d=1}^{D}.$ $\mathcal{X}=\{\boldsymbol{x}_{t_d}(i, j)\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\phi^{(t)}\}_{t=1}^{T}, \Theta=\{\boldsymbol{\theta}^{(d|c)} \}_{d=1}^{D}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}^{(d)} \}_{d=1}^{D},$ and $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$.\\
+\newline \textcolor{red}{Q1. What we observe is $\{\boldsymbol{N}(t_d) \}_{d=1}^{D}$, not $\{\boldsymbol{N}^{(c)}(t_d) \}_{d=1}^{D}$ which is of our interest. Which one should we use?\\Q2. Do we use $\mathcal{A}$ as our metadata (such as CPME)? This requires the assumption that we know who the author is, but it is actually not in IPTM.\\
+	Q3. We now use $\alpha^{(c)}$ for Dirichlet prior. However, they are still hyper-parameter. So, is it fine to define $\boldsymbol{\alpha}=\{\alpha^{(c)}\}_{c=1}^{C}$ and use $\boldsymbol{\alpha}$ as before?}\\ \newline
+Below is the the big joint distribution
 \begin{equation}
-PL_t(\beta)=\prod_{t_m\leq t} \frac{\mbox{exp}(\beta^Tx_{t_m}(i_m, j_m))}{\sum_{j\in \mathcal{J}_{t_m}(i_m)} \mbox{exp}(\beta^Tx_{t_m}(i_m, j))},
+\begin{aligned}
+& P(\Phi, \Theta, \mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B}, \mathcal{N}| \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}) \\& = P( \mathcal{W}| \mathcal{Z}, \Phi)P(\mathcal{N}|\mathcal{X}, \mathcal{C}, \mathcal{B})P(\mathcal{Z}|\Theta)P(\Phi|\delta, \boldsymbol{n})P(\Theta, \alpha, \boldsymbol{m})P(\mathcal{C})P(\mathcal{B})
+\end{aligned}
 \end{equation}
-where $t_m$, $i_m$, and $j_m$ are the time, sender, and receiver
-of the $m$th event.
-Further, we can estimate the coefficient vector $\beta$ using the log-partial likelihood at time $t$:
+Now we can integrate out $\Phi$ and $\Theta$ in latent Dirichlet allocation by applying Dirichlet-multinomial conjugacy as we did in CPME. 
 \begin{equation}
-\mbox{log}PL_t(\beta)=\sum_{t_m\leq t} \Big\{\beta^Tx_{t_m}(i_m, j_m)-\mbox{log}\big[\sum_{j\in \mathcal{J}_{t_m}(i_m)} \mbox{exp}\{\beta^Tx_{t_m}(i_m, j)\}\big]\Big\}.
+\propto P( \mathcal{Z}|\delta, \boldsymbol{n}, \alpha, \boldsymbol{m})P(\mathcal{W}|\mathcal{Z})P(\mathcal{N}|\mathcal{X}, \mathcal{C}, \mathcal{B})P(\mathcal{C})P(\mathcal{B})
 \end{equation}
-The function $\mbox{log}PL_t(\cdot)$ is concave, so it can be maximized using the first two derivatives, the gradient $U_t(\beta)=\bigtriangledown[\mbox{log}PL_t(\beta)]$ and negative Hessian $I_t(\beta)=-\bigtriangledown^2[\mbox{log}PL_t(\beta)]$ via the Newton-Raphson algorithm. See \cite{PerryWolfe2012} for the details.\\\\
-The model can be extended for interactions that possibly involve a single sender and multiple receivers such as emails, which we call a multicast interaction. Let the tuple $(t, i, J)$ indicate that at time $t$, sender $i$ interacted with receiver set $J$. In addition, let $|J|$ denote the cardinality of the receiver set $J$. Then, we can write the modified version of (3) and (5) as below:
-\begin{equation}\lambda_t(i,J)=\bar\lambda_t(i; |J|)\cdot \mbox{exp}\{\sum_{j\in J}\beta_0^Tx_t(i, j)\}\cdot\prod_{j\in J} 1\{j \in \mathcal{J}_t(i)\},
-\end{equation}
+Then, we only have to perform inference over the remaining unobserved latent variables $\mathcal{Z}, \mathcal{C},$ and $\mathcal{B}$, using the equation below:
 \begin{equation}
-\mbox{log}PL_t(\beta)=\sum_{t_m\leq t} \Big\{\sum_{j\in J_m}\beta^Tx_{t_m}(i_m, j)-\mbox{log}\big[\sum_{\substack{j\subseteq \mathcal{J}_{t_m}(i_m)\\|J|=|J_m|}}\mbox{exp}\{\sum_{j\in  J}\beta^Tx_{t_m}(i_m, j)\}\big]\Big\}.
+P( \mathcal{Z}, \mathcal{C}, \mathcal{B}|\mathcal{W}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}) \propto P(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{W}, \mathcal{N} | \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})
 \end{equation}
-Fitting the model above is quite complicated due to the double sums. Thus, instead of using the multicast model, we can use the alternative, the approximate partial loglikelihood, which is obtained by treating the multicast interaction as multiple pairwise interactions. For instance, an email with the tuple $(t, i, J=(j_1, j_2))$ is treated as two separate emails $(t, i, j_1)$ and $(t, i, j_2)$. Under this transformation, the obtained approximate partial loglikelihood is:\begin{equation}
-\mbox{log}\widetilde{PL}_t(\beta)=\sum_{t_m\leq t} \Big\{\sum_{j\in J_m}\beta^Tx_{t_m}(i_m, j)-|J_m|\mbox{log}\big[\sum_{j\subseteq \mathcal{J}_{t_m}(i_m)}\mbox{exp}\{\beta^Tx_{t_m}(i_m, j)\}\big]\Big\}
+ Gibbs sampling or Metropolis-Hastings algorithm is applied by sequentially resampling each latent variables from their respective conditional posterior.
+\subsubsection{Resampling $\mathcal{Z}$}
+First, the new values of $z^{(d)}_m$ are sampled using the conditional posterior probability of being topic $k$:
+\begin{equation}
+\begin{aligned} & P(z^{(d)}_m=k|\mathcal{W}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}, \mathcal{B}, \mathcal{N}, \mathcal{X})\\ &\propto P(z^{(d)}_m=k, w^{(d)}_m, N{(t_d)}|\mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X})\\
+& = P(z^{(d)}_m=k, w^{(d)}_m|\mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, C, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})\times P(N(t_d)|\mathcal{C}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X})
+\end{aligned}
 \end{equation}
-and $\mbox{log}PL_t(\beta)\approx \mbox{log}\widetilde{PL}_t(\beta)$. To fit the model in a simpler way, we use (8) when estimating the coefficitients $\beta$. For implementation and simulation processes in detail, see \cite{PerryWolfe2012}.  This framework can be viewed as one version of relational event model \cite{Butts2008}, accounting for repeated directed actions and multicast inteactions. Therefore, the coefficients measuring the common effects such as homophily or transitivity can be interpreted in the same context as in \cite{Butts2008}.
+where the subscript $``{\backslash d,n}"$ denotes the exclsuion of position $n$ in email $d$. In the last line of equation (6), the left part is the contribution of LDA, while the right part is the contribution of counting process. Similar to CPME, we can write the conditional probability in two ways based on the number of words in the email:
+\begin{itemize}
+	\item[$\circled{1}$] The case where the email contains words ($M^{(d)}>0$)
+	\begin{equation}
+	\begin{aligned} 
+	& \propto (\bar{M}^{(k|d)}_{\backslash d, m}+\alpha^{(c^{(d)})}m_k)\cdot \frac{\bar{M}^{(w_m^{(d)}|k)}_{\backslash d, m}+\beta n_v}{\bar{M}^{(k)}_{\backslash d, m}+\beta}\\& \times \mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)t_d}\Big\}\cdot \prod_{i \in A^{(c^{(d)})}}\prod_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\frac{(\lambda_{ij}^{(c^{(d)})}t_d)^{n^{(ij)}}}{n^{(ij)}!}
+	\end{aligned}
+	\end{equation}
+	with $\lambda_{ij}^{(c)}=\lambda_0\cdot \mbox{exp}(\boldsymbol{\beta}^{(c)T}\boldsymbol{x}_t(i, j))\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$. Note that the upper part of (7) comes from LDA, which is the same as CPME, while the lower part of (7) represents the multivariate counting process contribution based on \cite{zocher2006multivariate}.\\
+\newline \textcolor{red}{Q1. If we assume we know the author (Q2 in previous page), we can drop the sum/prod for $i$ and only use $j$ as CPME. \\
+		Q2. The term $1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$ is actually repetitive. But if I just use $A^{(c)}$ for $j$, the numerator in the last part of (7) becomes zero.}\\\newline
+	To avoid numerical problem coming form the large product, we can take the log of the equation (7) and work in log space using the log-conditional probability:
+		\begin{equation}
+		\begin{aligned} 
+		& \mbox{log}\Big\{(\bar{M}^{(k|d)}_{\backslash d, m}+\alpha^{(c^{(d)})}m_k)\cdot \frac{\bar{M}^{(w_m^{(d)}|k)}_{\backslash d, m}+\beta n_v}{\bar{M}^{(k)}_{\backslash d, m}+\beta} \Big\}\\& -t_d\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\mbox{log}{(\lambda_{ij}^{(c^{(d)})}t_d)}-\mbox{log}(n^{(ij)}!)\Big)
+		\end{aligned}
+		\end{equation}
+		Here, since we still contain product form in the later part of equaiton (8), we can apply Stirling's approximation for factorials, $\mbox{log}(n!)\approx \mbox{log}(n)-n+1$, and obtain approximate log-conditional probability:
+				\begin{equation}
+				\begin{aligned} 
+				&\approx\mbox{log}\Big\{(\bar{M}^{(k|d)}_{\backslash d, m}+\alpha^{(c^{(d)})}m_k)\cdot \frac{\bar{M}^{(w_m^{(d)}|k)}_{\backslash d, m}+\beta n_v}{\bar{M}^{(k)}_{\backslash d, m}+\beta} \Big\}\\& -t_d\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\mbox{log}{(\lambda_{ij}^{(c^{(d)})}t_d)}-n^{(ij)}\mbox{log}(n^{(ij)})-n^{(ij)}+1\Big)\\
+				& = \mbox{log}\Big\{(\bar{M}^{(k|d)}_{\backslash d, m}+\alpha^{(c^{(d)})}m_k)\cdot \frac{\bar{M}^{(w_m^{(d)}|k)}_{\backslash d, m}+\beta n_v}{\bar{M}^{(k)}_{\backslash d, m}+\beta} \Big\}\\& -t_d\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\big(\mbox{log}(\lambda_{ij}^{(c^{(d)})}t_d)-\mbox{log}(n^{(ij)})-1\big)+1\Big) 
+				\end{aligned}
+				\end{equation}
+			 with $\lambda_{ij}^{(c)}=\lambda_0\cdot \mbox{exp}(\boldsymbol{\beta}^{(c)T}\boldsymbol{x}_t(i, j))\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$, same as before.
+\item[$\circled{2}$] The case where the email does not contain words ($M^{(d)}=0$)
+In this case, we assign a dummy token that can take a topic assignment as a way to associate the document to an interaction pattern. Since the LDA contributions becomes constant, thus, we can igore it an only use the counting process part:
+\begin{equation}
+\begin{aligned} & P(z^{(d)}_m=k|\mathcal{W}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}, \mathcal{B}, \mathcal{N}, \mathcal{X})\\ &\propto \mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)t_d}\Big\}\cdot \prod_{i \in A^{(c^{(d)})}}\prod_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\frac{(\lambda_{ij}^{(c^{(d)})}t_d)^{n^{(ij)}}}{n^{(ij)}!}
+\end{aligned}
+\end{equation}
+Again, if we take th log, we end up with the approximate log-conditional probability:
+				\begin{equation}
+				\begin{aligned} 
+				& \approx -t_d\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\big(\mbox{log}(\lambda_{ij}^{(c^{(d)})}t_d)-\mbox{log}(n^{(ij)})-1\big)+1\Big) 
+				\end{aligned}
+				\end{equation}
+\end{itemize}
+ \subsubsection{Resampling $\mathcal{C}$}
+ The next variable we are going to resample is the document-interaction pattern assignments. The conditional posterior probability we want to calculate is:
+ \begin{equation}
+ \begin{aligned} & P(c^{(d)}=c|\mathcal{Z}, \mathcal{W}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})\\ &\propto  P(c^{(d)}=c, N{(t_d)}|\mathcal{Z}, \mathcal{W}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}\mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})\\ &= P(c^{(d)}=c)\cdot P( N{(t_d)} |\mathcal{Z}, \mathcal{W}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})\\ &\propto P(N{(t_d)}| \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X})\\ 
+ & =
+ \mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)t_d}\Big\}\cdot \prod_{i \in A^{(c^{(d)})}}\prod_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\frac{(\lambda_{ij}^{(c^{(d)})}t_d)^{n^{(ij)}}}{n^{(ij)}!}
+ \end{aligned}
+ \end{equation}
+ which is the same as the formula used for resampling of $\mathcal{Z}$. Of course, we can speed up the computation time by taking the log of equation (12), which is identical to (11).
+\subsubsection{Resampling $\mathcal{B}$}
+Finally, we wan to update the interaction pattern parameter $\boldsymbol{\beta}^{(c)}$. For this, we will use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with variance $\sigma^2$, centered on the current values of $\boldsymbol{\beta}^{(c)}$. Then we draw a proposal $\boldsymbol{\beta}'^{(c)}$ at each iteration. Under symmetric proposal distribution (such as multivariate Gaussian), we cancel out Q-ration and obtain the acceptance probability equal to:
+\begin{equation}
+\begin{split}
+& \mbox{Acceptance Probability}=
+\begin{cases}  \frac{P(\mathcal{B'}|\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{N}, \mathcal{X})}{P(\mathcal{B}|\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{N}, \mathcal{X})}\quad\text{if}  <1\\
+1 \quad \text{else}
+\end{cases}
+\end{split}
+\end{equation}
+After factorization, we get
+\begin{equation}
+\begin{aligned}
+\frac{P(\mathcal{B'}|\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{N}, \mathcal{X})}{P(\mathcal{B}|\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{N}, \mathcal{X})} &=\frac{P(\mathcal{N}|\mathcal{B'}, \mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{X})P(\mathcal{B'})}{P(\mathcal{N}|\mathcal{B}, \mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{X})P(\mathcal{B})}\\&=\frac{P(\mathcal{N}|\mathcal{B'}, \mathcal{C}, \mathcal{X})P(\mathcal{B'})}{P(\mathcal{N}|\mathcal{B}, \mathcal{C}, \mathcal{X})P(\mathcal{B})}
+\end{aligned}
+\end{equation}
+and apply the equation (12) for $P(\mathcal{N}|\mathcal{B}, \mathcal{C}, \mathcal{X})$, which is the probability of observing the edges under the interaction pattern parameters. For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. After taking the log, the equation we will use for the inference is:
+	\begin{equation}
+	\begin{aligned} 
+	&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))\\&-t_d\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\big(\mbox{log}(\lambda_{ij}^{(c^{(d)})}t_d)-\mbox{log}(n^{(ij)})-1\big)+1\Big), 
+	\end{aligned}
+	\end{equation}
+	and then the log of the acceptance ratio we have is:
+		\begin{equation}
+		\mbox{log(Acceptance Probability) = min(Log of (13), 0) }
+			\end{equation}
+To determine whether we accept the proposed update or not, we take the usual approacy, by comparing the log of acceptance ratio we have to the log of a sample from uniform(0,1).
 \section{Preliminary Analysis}
 Hurricane Sandy was the most destructive hurricane in 2012, which hit North Carolina on late October (October 28, Governor Bev Perdue declared a state of emergency in 24 western counties due to snow and strong winds). In our dataset, there are three counties which cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012), so we focus on the three counties, since the timestamp of email in this case is much more important than usual case without any disastrous event.
 \subsection{Dare County}
