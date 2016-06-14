@@ -200,12 +200,19 @@ P( \mathcal{Z}, \mathcal{C}, \mathcal{B}|\mathcal{W}, \mathcal{N}, \mathcal{X}, 
   \begin{aligned} & P(c^{(d)}=c|\mathcal{Z}, \mathcal{W}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\ &\propto  P(c^{(d)}=c, z^{(d)}_m, w^{(d)}_m, N{(t^{(d)})}|\mathcal{Z}_{\backslash d, m}, \mathcal{W}_{\backslash d, m}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\ & \propto P(c^{(d)}=c, N{(t^{(d)})}| \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) \\ & \propto P(c^{(d)}=c|\boldsymbol{\gamma}, \boldsymbol{\eta}) \times P( N{(t^{(d)})} | \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}, \sigma^2)  \\ & \propto P(c^{(d)}=c|\boldsymbol{\gamma}) \times P( N{(t^{(d)})} | \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}) \\ & =\Big(\prod_{c=1}^{C} \gamma_{c}^{I(c^{(d)}=c)}\Big)\times \mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)t^{(d)}}\Big\}\cdot \prod_{i \in A^{(c^{(d)})}}\prod_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\frac{(\lambda_{ij}^{(c^{(d)})}t^{(d)})^{n^{(ij)}}}{n^{(ij)}!} 
  \end{aligned}
   \end{equation}
-  	with $\lambda_{ij}^{(c)}=\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$. \\\newline
+  	with $\lambda_{ij}^{(c)}=\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$. Furthermore, we can speed up the computation time by taking the log of equation (7), which becomes:
+  	\begin{equation}
+  	\begin{aligned} 
+& \sum\limits_{c=1}^{C} \Big({I(c^{(d)}=c)} \cdot\mbox{log}(\gamma_{c})\Big)\\&-t^{(d)}\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\big(\mbox{log}(\lambda_{ij}^{(c^{(d)})}t^{(d)})\big)-\mbox{log}(n^{(ij)}!)\Big), 
+  	\end{aligned}
+  	\end{equation} 
   	Since our $n^{(ij)}$ is either 0 or 1, it can be simplified as below:
   	\begin{equation} \gamma_{c^{(d)}}\times \mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)t^{(d)}}\Big\}\times \Big(\lambda_{i^{(d)}j^{(d)}}^{(c^{(d)})}t^{(d)}\Big)
   	   \end{equation}
-  	  Now, we can speed up the computation time by taking the log of equation (8), which becomes:
-  	 
+  	  Again, we can speed up the computation time by taking the log of equation (9), which becomes:
+  	 \begin{equation}
+  \mbox{log}(\gamma_{c^{(d)}})-t^{(d)}\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\mbox{log}(\lambda_{i^{(d)}j^{(d)}}^{(c^{(d)})}t^{(d)})
+  	 \end{equation}
   	    %Of course, we can speed up the computation time by taking the log of equation (12), which is identical to (11).
   	%Here, since we still contain product form in the later part of equaiton (8), we can apply Stirling's approximation for factorials, $\mbox{log}(n!)\approx \mbox{log}(n)-n+1$, and obtain approximate log-conditional probability:
   	%\begin{equation}
@@ -223,14 +230,14 @@ First, the new values of $z^{(d)}_m$ are sampled using the conditional posterior
 & \propto P(z^{(d)}_m=k, w^{(d)}_m|\mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, C, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})
 \end{aligned}
 \end{equation}
-where the subscript $``{\backslash d, m}"$ denotes the exclsuion of position $m$ in email $d$. In the last line of equation (9), it is the contribution of LDA, so similar to CPME we can write the conditional probability:
+where the subscript $``{\backslash d, m}"$ denotes the exclsuion of position $m$ in email $d$. In the last line of equation (11), it is the contribution of LDA, so similar to CPME we can write the conditional probability:
 	\begin{equation}
 	\begin{aligned} 
 	& \propto ({M}^{(k|d)}_{\backslash d, m}+\alpha^{(c^{(d)})}m_k)\cdot \frac{{M}^{(w_m^{(d)}|k)}_{\backslash d, m}+\delta n_v}{{M}^{(k)}_{\backslash d, m}+\delta}
 	\end{aligned}
 	\end{equation}
 \newline 
-	For faster computation, we can take the log of the equation (9) and work in log space using the log-conditional probability:
+	For faster computation, we can take the log of the equation (12) and work in log space using the log-conditional probability:
 		\begin{equation}
 		\begin{aligned} 
 		& \mbox{log}({M}^{(k|d)}_{\backslash d, m}+\alpha^{(c^{(d)})}m_k)+\mbox{log}( {{M}^{(w_m^{(d)}|k)}_{\backslash d, m}+\delta n_v)-\mbox{log}({M}^{(k)}_{\backslash d, m}+\delta}) 
@@ -253,19 +260,25 @@ After factorization, we get
 \end{aligned}
 \end{equation}
 Since $P(\mathcal{N}|\mathcal{B}, \mathcal{C}, \mathcal{X})$ represents the multivariate counting process contribution in \cite{zocher2006multivariate}, we will use put the equation below: \begin{equation}
-\mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)t_d}\Big\}\cdot \prod_{i \in A^{(c^{(d)})}}\prod_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\frac{(\lambda_{ij}^{(c^{(d)})}t_d)^{n^{(ij)}}}{n^{(ij)}!}
+\mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)t^{(d)}}\Big\}\cdot \prod_{i \in A^{(c^{(d)})}}\prod_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\frac{(\lambda_{ij}^{(c^{(d)})}t^{(d)})^{n^{(ij)}}}{n^{(ij)}!},
 \end{equation}
-we apply later part of the equation (12), which is the probability of observing the edges under the interaction pattern parameters. For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. The equation we will use for the inference is:
-	\begin{equation}
-	\begin{aligned} 
-	&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))\\&-t_d\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\big(\mbox{log}(\lambda_{ij}^{(c^{(d)})}t_d)-\mbox{log}(n^{(ij)})-1\big)+1\Big), 
-	\end{aligned}
-	\end{equation}
-	and then the log of the acceptance ratio we have is:
-		\begin{equation}
-		\mbox{log(Acceptance Probability) = min(Log of (13), 0) }
-			\end{equation}
-To determine whether we accept the proposed update or not, we take the usual approacy, by comparing the log of acceptance ratio we have to the log of a sample from uniform(0,1).
+which is the later part of the equation (7), the probability of observing the edges under the interaction pattern parameters. For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. After taking the log, the equation we will use for the inference is:
+\begin{equation}
+\begin{aligned} 
+&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))\\&-t^{(d)}\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\big(\mbox{log}(\lambda_{ij}^{(c^{(d)})}t^{(d)})\big)-\mbox{log}(n^{(ij)}!)\Big), 
+\end{aligned}
+\end{equation}
+or equivalently, since our $n^{(ij)}$ is either 0 or 1, we take the simplified equation and take the log as we did in (9) and (10):
+\begin{equation}
+\begin{aligned} 
+&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))\\&-t^{(d)}\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\mbox{log}(\lambda_{i^{(d)}j^{(d)}}^{(c^{(d)})}t^{(d)}). 
+\end{aligned}
+\end{equation}
+Then the log of the acceptance ratio we have is:
+\begin{equation}
+\mbox{log(Acceptance Probability) = min((17) or (18), 0) }
+\end{equation}
+To determine whether we accept the proposed update or not, we take the usual approach, by comparing the log of acceptance ratio we have to the log of a sample from uniform(0,1).
 \section{Preliminary Analysis}
 Hurricane Sandy was the most destructive hurricane in 2012, which hit North Carolina on late October (October 28, Governor Bev Perdue declared a state of emergency in 24 western counties due to snow and strong winds). In our dataset, there are three counties which cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012), so we focus on the three counties, since the timestamp of email in this case is much more important than usual case without any disastrous event.
 \subsection{Dare County}
