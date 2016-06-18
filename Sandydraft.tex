@@ -38,16 +38,16 @@ text of that email, an integer $i^{(d)} \in \{1,...,A\}$ indicating the identity
 where essentially $\boldsymbol{\lambda}^{(c)}(t)$ and $\mathbf{M}(t)$ may be viewed as the (deterministic) signal and (martingale) noise, respectively.\\ \newline
 Following the multiplicative Cox model of the intensity process $\boldsymbol{\lambda}^{(c)}(t)$ given $\boldsymbol{H}_{t-}$, the entire past of the network up to but not including time $t$, we consider for each potential directed edge $(i, j)$ the intensity forms:
 \begin{equation}
-\lambda^{(c)}_{ij}(t|\boldsymbol{H}_{t-})=\lambda_0\cdot \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}
+\lambda^{(c)}_{ij}(t|\boldsymbol{H}_{t-})=\lambda_0\cdot \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}
 \end{equation}
 where $\lambda_0$ is the common baseline hazards for the overall interaction, $\boldsymbol{\beta}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$, $\boldsymbol{x}_t(i, j)$ is a vector of $p$ statistics for directed edge $(i, j)$ constructed based on
-$\boldsymbol{H}_{t-}$, and $\mathcal{J}^{(c)}_{(i, t)}$ is the predictable receiver set of sender $i$ at time $t$ within all possible actors $A^{(c)}$. We assume that $A^{(c)}$ may vary depending on the interaction pattern. Equivalently, we can rewrite (2): 
+$\boldsymbol{H}_{t-}$, and $\mathcal{A}^{(c)}$ is the predictable receiver set of sender $i$ corresponding to the interaction pattern $c$ within the set of all possible actors $\mathcal{A}$. Equivalently, we can rewrite (2): 
 \begin{equation}
-\lambda^{(c)}_{ij}(t|\boldsymbol{H}_{t-})= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}
+\lambda^{(c)}_{ij}(t|\boldsymbol{H}_{t-})= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}
 \end{equation}
 where the first element of $\boldsymbol{\beta}^{(c)}$ corresponds to $\lambda_0$ by setting $\boldsymbol{x}^*_t(i, j)=(\boldsymbol{1}, \boldsymbol{x}_t(i, j))$.
 \subsection{Generative Process}
-The generative process of this model follows those of \cite{Blei2003} and \cite{rosen2004author}. Same as LDA, documents are represented as random mixtures over latent topics, where each topic is characterized by a distribution over words. However, one difference is that each documents is connected to one interaction pattern, and the topic distributions vary depending on the interaction pattern. Following are the generative process for each document in a corpus $D$ and its plate notation (Figure 1):
+The generative process of this model follows those of \cite{Blei2003} and \cite{rosen2004author}. Same as LDA, documents are represented as random mixtures over latent topics, where each topic is characterized by a distribution over words. However, one difference is that each documents is connected to one interaction pattern, and the topic distributions vary depending on the interaction pattern. \\ \newline Conditioned on the interaction pattern and their distributions over topics, the process by which a document is generated can be summarized as follows: first, an interaction pattern is chosen by multinomial for each document; next, a topic is sampled for each word from the distribution over topics associated with the interaction pattern of the document; finally, words themselves are sampled from the distribution over words associated with each topic. At the same time, the unique sender-recipient pair of the document is determined by the rate of intensities associated with the interaction pattern and history of interactions until the time the document is written. Below are the detailed generative process for each document in a corpus $D$ and its plate notation (Figure 1), and Table 1 summarizes the notations used in this paper:
 \begin{itemize}
 	\item[1.] {$\boldsymbol{\phi}^{(k)} \sim \mbox{Dir}(\delta, \bf n)$}\\
 	- A “topic” $k$ is characterized by a discrete distribution over $V$ word types with probability vector $\phi^{(k)}$. A symmetric Dirichlet prior with concentration parameter $\delta$ is placed \textbf{[See Algorithm 1]}.
@@ -57,19 +57,19 @@ The generative process of this model follows those of \cite{Blei2003} and \cite{
 	- The vector of coefficients depends on the interaction pattern $c$. This means that there is variation in the degree of influence from the network statistics $\boldsymbol{x}_t(i, j)$ that rely on the history of interactions.
 	\item[(b)] Using $\boldsymbol{\beta}^{(c)}$ in (a), update $\boldsymbol{\lambda}^{(c)}(t)$\\
 	- We use the equation $\lambda^{(c)}_{ij}(t)= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$ for all $i \in A, j \in A, i\neq j$.
+	\item[(c)] $\boldsymbol{\theta}^{(c)}\sim \mbox{Dir}(\alpha, \textbf{m})$\\
+	- Each email has a discrete distribution over topics $\boldsymbol{\theta}^{(c)}$, since the topic proportions for documents in the same cluster are drawn from the same distribution. The Dirichlet parameters $\alpha$ and $\textbf{m}$ may or may not vary by interaction patterns.
 \end{itemize}
 \item[3.] For each of the $D$ documents \textbf{[See Algorithm 3]}:
 \begin{itemize}
 	\item[(a)] $c^{(d)}\sim \mbox{Multinomial}(\boldsymbol{\gamma})$\\
-	- Each document $d$ is associated with one ``interaction pattern" among $C$ different types, with parameter $\boldsymbol{\gamma}$. Here, we assign the prior for the multinomial parameter $\boldsymbol{\gamma} \sim \mbox{Dir}(\boldsymbol{\eta})$
+	- Each document $d$ is associated with one ``interaction pattern" among $C$ different types, with parameter $\boldsymbol{\gamma}$. Here, we assign the prior for the multinomial parameter $\boldsymbol{\gamma} \sim \mbox{Dir}({\eta}, \boldsymbol{l})$
 	\item[(b)] $\mathbf{N}^{(d|c^{(d)})}(t) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c^{(d)})}(t))$\\
 	- The actual update of the counting process $\mathbf{N}^{(d|c^{(d)})}(t)$ of the email $d$ is  $N^{(d|c^{(d)})}_{i^{(d)}j^{(d)}}(t^{(d)})=1$ and the rest $N^{(d|c^{(d)})}_{(i, j) \neq (i^{(d)}, j^{(d)})}(t^{(d)})=0$.
-	\item[(c)] $\boldsymbol{\theta}^{(d|c^{(d)})}\sim \mbox{Dir}(\alpha^{(c^{(d)})}, \textbf{m}^{(c^{(d)})})$\\
-	- Each email has a discrete distribution over topics $\boldsymbol{\theta}^{(d|c)}$, since the topic proportions for documents in the same cluster are drawn from the same distribution. The Dirichlet parameters $\alpha$ and $\textbf{m}$ may or may not vary by interaction patterns (here $c^{(d)}$ is used as an index).
 \end{itemize}
 \item[4.] For each of the $M$ words \textbf{[See Algorithm 4]}:
 \begin{itemize}
-	\item[(a)] $z_m^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(d|c^{(d)})})$
+	\item[(a)] $z_m^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(c^{(d)})})$
 \item[(b)] $w_m^{(d)} \sim\mbox{Multinomial} (\phi^{(z_m^{(d)})})$
 \end{itemize}
 \end{itemize} 
@@ -87,9 +87,10 @@ The generative process of this model follows those of \cite{Blei2003} and \cite{
  		draw $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$\\
  	\For{i=1 to A}{
  	\For{j=1 to A}{
- 		\If{i $\neq$ j}{ set $\lambda^{(c)}_{ij}(t)= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$}
+ 		\If{i $\neq$ j}{ set $\lambda^{(c)}_{ij}(t)= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}$}
  	\Else {set $\lambda^{(c)}_{ij}(t)=0$}
  		}}
+ 			draw $\boldsymbol{\theta}^{(c)}$ $\sim$ Dir($\alpha, \textbf{m}$)
  	}
  \end{algorithm}
  \begin{algorithm}[H]
@@ -97,8 +98,7 @@ The generative process of this model follows those of \cite{Blei2003} and \cite{
  	\caption{Document-Interaction Pattern Assginments}
  	\For{d=1 to D}{
  		draw $c^{(d)}$ $\sim$ Multinomial($\boldsymbol{\gamma}$)\\
- 			draw $\mathbf{N}^{(d|c^{(d)})}(t) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c^{(d)})}(t))$\\
- 		draw $\boldsymbol{\theta}^{(d|c^{(d)})}$ $\sim$ Dir($\alpha^{(c^{(d)})}, \textbf{m}^{(c^{(d)})}$)\\
+ 			draw $\mathbf{N}^{(d|c^{(d)})}(t) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c^{(d)})}(t))$
  	}
  \end{algorithm}
  \begin{algorithm}[H]
@@ -107,7 +107,7 @@ The generative process of this model follows those of \cite{Blei2003} and \cite{
  	\For{d=1 to $D$}{
  		set ${M}^{(d)}$ = the number of words in document $d$\\
  		\For{m=1 to ${M}^{(d)}$}{
- 			draw $z_m^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(d|c^{(d)})})$\\
+ 			draw $z_m^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(c^{(d)})})$\\
  		{draw $w_m^{(d)} \sim\mbox{Multinomial} (\boldsymbol{\phi}^{(z_m^{(d)})})$
  		}}
 }
@@ -115,26 +115,24 @@ The generative process of this model follows those of \cite{Blei2003} and \cite{
  \small
  \begin{figure}[ht]
  	\centering
- 	\begin{tikzpicture}
- 	\tikzstyle{main}=[circle, minimum size = 14mm, thick, draw =black!80, node distance = 11mm]
+ 	\scalebox{0.78}{ \begin{tikzpicture}
+ 	\tikzstyle{main}=[circle, minimum size = 13mm, thick, draw =black!80, node distance = 9mm]
  	\tikzstyle{connect}=[-latex, thick]
  	\tikzstyle{box}=[rectangle, draw=black!100]
  	\node[main, fill = white!100] (gamma) [label=center:$\boldsymbol{\gamma}$] { };
- 	\node[main] (c) [right=of gamma,label=center:$c^{(d)}$] { };
- 		\node[main] (theta) [right=of c,label=center:$\boldsymbol{\theta}^{(d|c)}$] { };
- 	\node[main] (z) [right=of theta,label=center:$z_m^{(d)}$] {};
+ 	\node[main] (c) [below=of gamma,label=center:$c^{(d)}$] { };
+ 		\node[main, fill = black!10] (N) [right=of c ,label=center:$\mathbf{N}^{(d|c)}(t)$] { };	
+ 		\node[main] (z) [below=of N,label=center:$z_m^{(d)}$] {};
  	\node[main, fill = black!10] (w) [right=of z,label=center:$w_m^{(d)}$] { };
- 		 	\node[main] (alpha) [above=of theta,label=center:$\alpha$] { };
  	\node[main] (phi) [right=of w,label=center:$\boldsymbol{\phi}^{(k)}$] { };
  	\node[main] (delta) [above=of phi,label=center:$\delta$] { };
- 	 			\node[main] (eta) [above=of gamma,label=center:$\boldsymbol{\eta}$] { };
- 	 		 	 			\node[main, fill = black!10] (N) [below=of c ,label=center:$\mathbf{N}^{(d|c)}(t)$] { };
- 	 		 	 					\node[main, fill = black!10] (x) [right=of N,label=center:$\boldsymbol{x}_{ij}(t)$] { };
- 	 		 	 						\node[main] (beta) [below=of gamma ,label=center:$\boldsymbol{\beta}^{(c)}$] { };
- 	 		 	 						 	 		\node[main] (sigma) [below=of beta,label=center:$\sigma^2$] { };
- 	 		 	 						\node[main,  fill = black!10] (t) [right=of x,label=center:$t^{(d)}$] { };
+ 	 			\node[main] (eta) [above=of gamma,label=center:${\eta}$] { };
+\node[main, fill = black!10] (x) [right=of N,label=center:$\boldsymbol{x}_t{(i,j)}$] { };
+ 	 		 	 						\node[main] (beta) [above=of N ,label=center:$\boldsymbol{\beta}^{(c)}$] { };
+ 	 		 	 							\node[main] (theta) [above=of x,label=center:$\boldsymbol{\theta}^{(c)}$] { };
+ 	 		 	 										 	\node[main] (alpha) [above=of theta,label=center:$\alpha$] { };
+ 	 		 	 						 	 		\node[main] (sigma) [above=of beta,label=center:$\sigma^2$] { };
  	\path (gamma) edge [connect] (c)
- 	(c) edge [connect] (theta)
  	(z) edge [connect] (w)
  	(theta) edge [connect] (z)
  	(alpha) edge [connect] (theta)
@@ -143,24 +141,97 @@ The generative process of this model follows those of \cite{Blei2003} and \cite{
  	(sigma) edge [connect] (beta)
  	(x) edge [connect] (N)
  	(beta) edge [connect] (N)
- 		(c) edge [connect] (beta)
- 		(eta) edge [connect] (gamma)
- 		(t) edge [connect] (x);
- 			\node[rectangle, inner sep=3mm, fit=  (x),label=below right:$A$, xshift=-5mm, yshift=5mm] {};
- 			\node[rectangle, inner sep=3mm,draw=black!100, fit= (beta)] {};
- 				\node[rectangle, inner sep=4mm, fit=  (beta) ,label= below right:$C$, xshift=-6mm, yshift=6mm] {};
+ 	(c) edge [connect] (N)
+ 	(c) edge [connect] (z)
+ 		(eta) edge [connect] (gamma);
+ 			\node[rectangle, inner sep=3mm, fit=  (x),label=below left:$A$, xshift=5mm, yshift=5mm] {};
+ 			\node[rectangle, inner sep=3mm,draw=black!100, fit= (beta)(theta)] {};
+ 				\node[rectangle, inner sep=4mm, fit=  (beta)(theta) ,label= below left:$C$, xshift=-5mm, yshift=6mm] {};
  	\node[rectangle, inner sep=3mm, draw=black!100, fit= (phi)] {};
  		\node[rectangle, inner sep=3mm, draw=black!100, fit= (x) ] {};
- 		\node[rectangle, inner sep=0mm, fit= (phi),label=below right:$K$, xshift=-2mm, yshift=1mm] {};
- 	\node[rectangle, inner sep=0mm, fit= (w),label=below right:$M^{(d)}$, xshift=-6mm, yshift=2mm] {};
+ 		\node[rectangle, inner sep=0mm, fit= (phi),label=below left:$K$, xshift=2.5mm, yshift=1.5mm] {};
+ 	\node[rectangle, inner sep=0mm, fit= (w),label=below left:$M^{(d)}$, xshift=-16.5mm, yshift=2mm] {};
  	\node[rectangle, inner sep=3mm,draw=black!100, fit= (w)(z)] {};
- 	\node[rectangle, inner sep=3mm, fit= (c) (theta) (z) (w) (N) (x) (t),label=below right:$D$, xshift=22mm, yshift=2mm] {};
- 	\node[rectangle, inner sep=5mm, draw=black!100, fit = (theta) (c) (z) (w) (N) (x) (t)] {};
- 	\end{tikzpicture}
+ 	\node[rectangle, inner sep=3mm, fit= (c) (z) (w) (N) (x) ,label=below left:$D$, xshift=-8mm, yshift=3mm] {};
+ 	\node[rectangle, inner sep=5mm, draw=black!100, fit =(c) (z) (w) (N) (x) ] {};
+ 	\end{tikzpicture}}
  	\caption{Plate notation of IPTM}
  	\label{fig:plate}
  \end{figure}
- \normalsize
+ \begin{table}[ht]
+ 	 \centering
+\scalebox{0.8}{ 	\begin{tabular}{ |c|c|c|} 
+	\hline
+ 		\hline
+ 	Authors of the corpus &$\mathcal{A}$ & Set\\
+ 		\hline
+ 			Authors of the corpus given interaction pattern $c$ &$\mathcal{A}^{(c)}$ & Set\\
+ 			\hline
+ 	Number of authors &$A$ & Scalar \\
+ 		\hline
+ 		 	Number of documents &$D$ & Scalar \\
+ 		 	\hline
+ 		 	 	Number of words in the $d^{th}$ document &$M^{(d)}$ & Scalar \\
+ 		 	 	\hline
+  	Number of topics & $K$ & Scalar \\
+  	\hline
+  	  Vocabulary size & $W$ & Scalar \\
+  	  	\hline
+  	 	Number of interaction patterns &$C$ & Scalar \\
+  	 	\hline
+  	 		Number of words assigned to interaction pattern and topic&$M^{CK}$ & Scalar \\
+  	 		\hline
+  	 			Number of words assigned to word and topic&$M^{WK}$ & Scalar \\
+  	 			\hline
+  	 	Interaction pattern of the $d^{th}$ document&$c^{(d)}$ & Scalar\\
+  	 	\hline 
+  	 	Time of the $d^{th}$ document&$t^{(d)}$ & Scalar\\
+  	 		\hline 
+  		Words in the $d^{th}$ document&$\boldsymbol{w}^{(d)}$ & $M^{(d)}$-dimensional vector\\
+  		\hline 
+  			$m^{th}$ word in the $d^{th}$ document&${w}_m^{(d)}$ & $m^{th}$  component of $\boldsymbol{w}^{(d)}$\\
+  			\hline 	
+  				Topic assignments in the $d^{th}$ document&$\boldsymbol{z}^{(d)}$ & $M^{(d)}$-dimensional vector\\
+  				\hline 
+  				Topic assignments for $m^{th}$ word in the $d^{th}$ document&${z}_m^{(d)}$ & $m^{th}$  component of $\boldsymbol{z}^{(d)}$\\
+  				\hline 	
+  				Dirichlet concentration prior&$\alpha$ & Scalar \\
+  					\hline	
+  				Dirichlet base prior&$\boldsymbol{m}$ & $K$-dimensional vector \\
+  									\hline			
+  							Dirichlet concentration prior&$\delta$ & Scalar \\
+  							\hline			 
+  								Dirichlet base prior&$\boldsymbol{n}$ & $W$-dimensional vector  \\
+  								\hline				 	
+  									Dirichlet concentration  prior&$\eta$ & Scalar \\
+  									\hline		
+  										Dirichlet base prior&$\boldsymbol{l}$ & $C$-dimensional vector  \\
+  										\hline			
+  				Multinomial prior&$\gamma$ & $C$-dimensional vector \\
+  				\hline
+  				Variance of Normal prior&$\sigma^2$ & Scalar \\
+  				\hline		
+  					Probabilities of the words given topics &$\Phi$ & $W \times K$ matrix \\
+  					\hline		
+  						Probabilities of the words given topic $k$ &$\boldsymbol{\phi}^{(k)}$ & $W$-dimensional vector\\
+  						\hline
+  							Probabilities of the topics given interaction patterns &$\Theta$ & $K \times C$ matrix \\
+  							\hline		
+  							Probabilities of the topics given interaction pattern $c$ &$\boldsymbol{\theta}^{(c)}$ & $K$-dimensional vector\\
+  						\hline		
+  						Coefficient of the intensity process given interaction pattern $c$ &$\boldsymbol{\beta}^{(c)}$ & $p$-dimensional vector\\
+  							\hline		
+  					Network statistics for directed edge $(i, j)$ &$\boldsymbol{x}_t{(i,j)}$ & $p$-dimensional vector\\
+  						\hline		
+  				Counting process in the $d^{th}$ document given interaction pattern &	$\mathbf{N}^{(d|c)}(t)$ & $A\times A$ matrix\\
+  						\hline
+  						\hline
+ 	\end{tabular}}
+ 	\caption {Symbols associated with IPTM, as used in this work}
+ 	\label{table:AlexanderMCMC}
+ \end{table}
+\normalsize
+\newpage
 \subsection{Dynamic covariates to measure network effects}
 The network statistics $\boldsymbol{x}_t(i, j)$ of equations (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\ \newline
 Following \cite{PerryWolfe2012}, we use 6 effects as components of $\boldsymbol{x}_t(i, j)$. The first two behaviors (send and receive) are dyadic, involving exactly two actors,
@@ -174,81 +245,70 @@ while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, inv
 \item [5.] $\mbox{sibling}_t(i, j)=\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)}<t} I\{h\rightarrow i\}\cdot g(t-t^{(d)})\Big)\Big(\sum\limits_{d: t^{(d)}<t} I\{h\rightarrow j\}\cdot g(t-t^{(d)})\Big)$
 \item [6.] $\mbox{cosibling}_t(i, j)=\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)}<t} I\{i\rightarrow h\}\cdot g(t-t^{(d)})\Big)\Big(\sum\limits_{d: t^{(d)}<t} I\{j\rightarrow h\}\cdot g(t-t^{(d)})\Big)$
 \end{itemize}
-Here, $g(t-t^{(d)})$ reflects the difference between current time $t$ and the timestamp of previous email $t^{(d)}$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t^{(d)})=we^{-w(t-t^{(d)})}$ where $w$ is the parameter of speed at
-which sender replies to emails, with larger values indicating faster response times. Indeed, $w^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, we can fix $w=1$.
+Here, $g(t-t^{(d)})$ reflects the difference between current time $t$ and the timestamp of previous email $t^{(d)}$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t^{(d)})=\lambda e^{-\lambda(t-t^{(d)})}$ where $\lambda$ is the parameter of speed at
+which sender replies to emails, with larger values indicating faster response times. Indeed, $\lambda^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, we can fix $\lambda=1$.
 \subsection{Inference}
-The inference for IPTM is similar to that of CPME. In this case, what we actually observe are the  tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the counting process $\mathcal{N}=\{\boldsymbol{N}^{(d)}(t^{(d)}) \}_{d=1}^{D}.$ Next,  $\mathcal{X}=\{\boldsymbol{x}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(t)}\}_{t=1}^{T}, \Theta=\{\boldsymbol{\theta}^{(d|c)} \}_{d=1}^{D}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}^{(d)} \}_{d=1}^{D},$ and $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$.\\
+The inference for IPTM is similar to that of CPME. In this case, what we actually observe are the  tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the counting process $\mathcal{N}=\{\boldsymbol{N}^{(d)}(t^{(d)}) \}_{d=1}^{D}.$ Next,  $\mathcal{X}=\{\boldsymbol{x}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(c)} \}_{c=1}^{C}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}^{(d)} \}_{d=1}^{D},$ and $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$.\\
 \newline 
 Below is the the big joint distribution
 \begin{equation}
 \begin{aligned}
-& P(\Phi, \Theta, \mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B}, \mathcal{N}| \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) \\& = P( \mathcal{W}| \mathcal{Z}, \Phi)P(\mathcal{N}|\mathcal{X}, \mathcal{C}, \mathcal{B})P(\mathcal{Z}|\Theta)P(\Phi|\delta, \boldsymbol{n})P(\Theta|\alpha, \boldsymbol{m})P(\mathcal{C}|\boldsymbol{\gamma})P(\boldsymbol{\gamma}|\boldsymbol{\eta})P(\mathcal{B}|\sigma^2)
+& P(\Phi, \Theta, \mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}| \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) \\& 
+=  P(\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}| \Phi, \Theta, \mathcal{X}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) P(\Phi, \Theta |\delta, \boldsymbol{n}, \alpha, \boldsymbol{m})
+\\&= P( \mathcal{W}| \mathcal{Z}, \Phi)P(\mathcal{Z}|\Theta)P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})P(\mathcal{B}|\mathcal{C}, \sigma^2)P(\Phi|\delta, \boldsymbol{n})P(\Theta|\mathcal{C}, \alpha, \boldsymbol{m})P(\mathcal{C}|\boldsymbol{\gamma})P(\boldsymbol{\gamma}|\boldsymbol{\eta})
 \end{aligned}
 \end{equation}
-Now we can integrate out $\Phi$ and $\Theta$ in latent Dirichlet allocation by applying Dirichlet-multinomial conjugacy as we did in CPME. 
+Now we can integrate out $\Phi$ and $\Theta$ in latent Dirichlet allocation by applying Dirichlet-multinomial conjugacy as we did in CPME. See APPENDIX A for the detailed steps. After integration, we obtain below:
 \begin{equation}
-\propto P( \mathcal{Z}|\delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta})P(\mathcal{W}|\mathcal{Z})P(\mathcal{N}|\mathcal{X}, \mathcal{C}, \mathcal{B})P(\mathcal{C}|\boldsymbol{\gamma})P(\mathcal{B}|\sigma^2)
+\propto P(\mathcal{W}|\mathcal{Z})P( \mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})P(\mathcal{N}|\mathcal{C}, \mathcal{B}, \mathcal{X})P(\mathcal{B}|\mathcal{C}, \sigma^2)P(\mathcal{C}|\boldsymbol{\gamma})
 \end{equation}
 Then, we only have to perform inference over the remaining unobserved latent variables $\mathcal{Z}, \mathcal{C},$ and $\mathcal{B}$, using the equation below:
 \begin{equation}
-P( \mathcal{Z}, \mathcal{C}, \mathcal{B}|\mathcal{W}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) \propto P(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{W}, \mathcal{N} | \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)
+P( \mathcal{Z}, \mathcal{C}, \mathcal{B}|\mathcal{W}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) \propto P(\mathcal{W},  \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N} | \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)
 \end{equation}
  Gibbs sampling or Metropolis-Hastings algorithm is applied by sequentially resampling each latent variables from their respective conditional posterior.
   \subsubsection{Resampling $\mathcal{C}$}
-  The next variable we are going to resample is the document-interaction pattern assignments. The conditional posterior probability we want to calculate is:
+  The first variable we are going to resample is the document-interaction pattern assignments. To obtain the Gibbs sampling equation, we need to obtain an expression for $P(c^{(d)}=c|\mathcal{W}, \mathcal{Z},  \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)$. 
+  The conditional posterior probability we want to calculate is:
   \begin{equation}
-  \begin{aligned} & P(c^{(d)}=c|\mathcal{Z}, \mathcal{W}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\ &\propto  P(c^{(d)}=c, z^{(d)}_m, w^{(d)}_m, N{(t^{(d)})}|\mathcal{Z}_{\backslash d, m}, \mathcal{W}_{\backslash d, m}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\ & \propto P(c^{(d)}=c, N{(t^{(d)})}| \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) \\ & \propto P(c^{(d)}=c|\boldsymbol{\gamma}, \boldsymbol{\eta}) \times P( N{(t^{(d)})} | \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}, \sigma^2)  \\ & \propto P(c^{(d)}=c|\boldsymbol{\gamma}) \times P( N{(t^{(d)})} | \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}) \\ & =\Big(\prod_{c=1}^{C} \gamma_{c}^{I(c^{(d)}=c)}\Big)\times \mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)t^{(d)}}\Big\}\cdot \prod_{i \in A^{(c^{(d)})}}\prod_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\frac{(\lambda_{ij}^{(c^{(d)})}t^{(d)})^{n^{(ij)}}}{n^{(ij)}!} 
+  \begin{aligned} & P(c^{(d)}=c|\mathcal{W}, \mathcal{Z}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\
+  &\propto P(c^{(d)}=c, \boldsymbol{w}^{(d)}, \boldsymbol{z}^{(d)},  \mathbf{N}{(t^{(d)})}|\mathcal{W}_{\backslash d}, \mathcal{Z}_{\backslash d},\mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\& \propto P(c^{(d)}=c|\mathcal{C}_{\backslash d}, \boldsymbol{\gamma}) P( \mathbf{N}{(t^{(d)})}=n| c^{(d)}=c, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X})P(\boldsymbol{w}^{(d)}, \boldsymbol{z}^{(d)}|c^{(d)}=c, \mathcal{W}_{\backslash d}, \mathcal{Z}_{\backslash d}, \mathcal{C}_{\backslash d}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}) 
  \end{aligned}
   \end{equation}
-  	with $\lambda_{ij}^{(c)}=\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$. Furthermore, we can speed up the computation time by taking the log of equation (7), which becomes:
-  	\begin{equation}
-  	\begin{aligned} 
-& \sum\limits_{c=1}^{C} \Big({I(c^{(d)}=c)} \cdot\mbox{log}(\gamma_{c})\Big)\\&-t^{(d)}\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\big(\mbox{log}(\lambda_{ij}^{(c^{(d)})}t^{(d)})\big)-\mbox{log}(n^{(ij)}!)\Big), 
-  	\end{aligned}
-  	\end{equation} 
-  	Since our $n^{(ij)}$ is either 0 or 1, it can be simplified as below:
-  	\begin{equation} \gamma_{c^{(d)}}\times \mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)t^{(d)}}\Big\}\times \Big(\lambda_{i^{(d)}j^{(d)}}^{(c^{(d)})}t^{(d)}\Big)
-  	   \end{equation}
-  	  Again, we can speed up the computation time by taking the log of equation (9), which becomes:
+  Using Bayes' theorem (See APPENDIX B for conditional probabilty of the last term), we have
+   \begin{equation}
+   \begin{aligned} &=\Big[\gamma_{c}\Big]\Big[\mbox{exp}\Big\{{-\big(\sum\limits_{i \in \mathcal{A}^{(c)}}\sum\limits_{j\in \mathcal{A}^{(c)}}\lambda_{ij}^{(c)}\big)t^{(d)}}\Big\}\cdot \prod_{i \in \mathcal{A}^{(c)}}\prod_{j\in \mathcal{A}^{(c)}}\frac{(\lambda_{ij}^{(c)}t^{(d)})^{n^{(ij)}}}{n^{(ij)}!}\Big]\Big[\prod_{m=1}^{M^{(d)}}
+    \frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}\Big]
+   \end{aligned}
+   \end{equation}
+  	with $\lambda_{ij}^{(c)}=\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c^{(d)})}\}$. Moreover, since our $n^{(ij)}$ is either 0 or 1, Equation (8) can be simplified as below:
+  	\begin{equation} \gamma_{c}\cdot \mbox{exp}\Big\{{-\big(\sum\limits_{i \in  \mathcal{A}^{(c)}}\sum\limits_{j\in \mathcal{A}^{(c)}}\lambda_{ij}^{(c)}\big)t^{(d)}}\Big\}\cdot \lambda_{i^{(d)}j^{(d)}}^{(c)}t^{(d)}\cdot \Big[\prod_{m=1}^{M^{(d)}}
+  	\frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}\Big]
+  	\end{equation}
+  	Furthermore, we can speed up the computation time by taking the log of Equation (9), which becomes:
   	 \begin{equation}
-  \mbox{log}(\gamma_{c^{(d)}})-t^{(d)}\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\mbox{log}(\lambda_{i^{(d)}j^{(d)}}^{(c^{(d)})}t^{(d)})
+  \mbox{log}(\gamma_{c})-t^{(d)}\big(\sum\limits_{i \in \mathcal{A}^{(c)}}\sum\limits_{j\in \mathcal{A}^{(c)}}\lambda_{ij}^{(c)}\big)+\mbox{log}(\lambda_{i^{(d)}j^{(d)}}^{(c)}t^{(d)})+\sum_{m=1}^{M^{(d)}}\mbox{log}(\frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha})
   	 \end{equation}
-  	    %Of course, we can speed up the computation time by taking the log of equation (12), which is identical to (11).
-  	%Here, since we still contain product form in the later part of equaiton (8), we can apply Stirling's approximation for factorials, $\mbox{log}(n!)\approx \mbox{log}(n)-n+1$, and obtain approximate log-conditional probability:
-  	%\begin{equation}
-  	%\begin{aligned} 
-  	%&\approx\mbox{log}\Big\{(\bar{M}^{(k|d)}_{\backslash d, m}+\alpha^{(c^{(d)})}m_k)\cdot \frac{\bar{M}^{(w_m^{(d)}|k)}_{\backslash d, m}+\beta n_v}{\bar{M}^{(k)}_{\backslash d, m}+\beta} \Big\}\\& -t_d\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\mbox{log}{(\lambda_{ij}^{(c^{(d)})}t_d)}-n^{(ij)}\mbox{log}(n^{(ij)})-n^{(ij)}+1\Big)\\
-  	%& = \mbox{log}\Big\{(\bar{M}^{(k|d)}_{\backslash d, m}+\alpha^{(c^{(d)})}m_k)\cdot \frac{\bar{M}^{(w_m^{(d)}|k)}_{\backslash d, m}+\beta n_v}{\bar{M}^{(k)}_{\backslash d, m}+\beta} \Big\}\\& -t_d\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\big(\mbox{log}(\lambda_{ij}^{(c^{(d)})}t_d)-\mbox{log}(%n^{(ij)})-1\big)+1\Big) 
-  	%\end{aligned}
-  	%\end{equation}
-  	%with $\lambda_{ij}^{(c)}=\lambda_0\cdot %\mbox{exp}(\boldsymbol{\beta}^{(c)T}\boldsymbol{x}_t(i, j))\cdot %1\{j \in \mathcal{J}^{(c)}_{(i, t)}\}$, same as before.
-  	
 \subsubsection{Resampling $\mathcal{Z}$}
-First, the new values of $z^{(d)}_m$ are sampled using the conditional posterior probability of being topic $k$:
+Next, the new values of $z^{(d)}_m$ are sampled using the conditional posterior probability of being topic $k$ as we derived in APPENDIX B:
 \begin{equation}
-\begin{aligned} & P(z^{(d)}_m=k|\mathcal{W}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}, \mathcal{B}, \mathcal{N}, \mathcal{X})\\ &\propto P(z^{(d)}_m=k, w^{(d)}_m|\mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}, \mathcal{B}, \mathcal{N}, \mathcal{X})\\
+\begin{aligned} & 
+P(z^{(d)}_m=k|\mathcal{W}, \mathcal{Z}_{\backslash d, m},  \mathcal{C}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\
 & \propto P(z^{(d)}_m=k, w^{(d)}_m|\mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, C, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})
 \end{aligned}
 \end{equation}
 where the subscript $``{\backslash d, m}"$ denotes the exclsuion of position $m$ in email $d$. In the last line of equation (11), it is the contribution of LDA, so similar to CPME we can write the conditional probability:
 	\begin{equation}
 	\begin{aligned} 
-	& \propto ({M}^{(k|d)}_{\backslash d, m}+\alpha^{(c^{(d)})}m_k)\cdot \frac{{M}^{(w_m^{(d)}|k)}_{\backslash d, m}+\delta n_v}{{M}^{(k)}_{\backslash d, m}+\delta}
+	& \propto (M^{CK}_{c^{(d)}k, \backslash d, m}+\alpha m_k)\cdot\frac{M_{w_m^{(d)}k, \backslash d, m}^{WK}+\delta n_w}{\sum_{w=1}^WM_{wk,  \backslash d, m}^{WK}+\delta}
 	\end{aligned}
 	\end{equation}
-\newline 
-	For faster computation, we can take the log of the equation (12) and work in log space using the log-conditional probability:
-		\begin{equation}
-		\begin{aligned} 
-		& \mbox{log}({M}^{(k|d)}_{\backslash d, m}+\alpha^{(c^{(d)})}m_k)+\mbox{log}( {{M}^{(w_m^{(d)}|k)}_{\backslash d, m}+\delta n_v)-\mbox{log}({M}^{(k)}_{\backslash d, m}+\delta}) 
-		\end{aligned}
-		\end{equation}
 \subsubsection{Resampling $\mathcal{B}$}
 Finally, we wan to update the interaction pattern parameter $\boldsymbol{\beta}^{(c)}$. For this, we will use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with variance $\sigma^2$, centered on the current values of $\boldsymbol{\beta}^{(c)}$. Then we draw a proposal $\boldsymbol{\beta}'^{(c)}$ at each iteration. Under symmetric proposal distribution (such as multivariate Gaussian), we cancel out Q-ration and obtain the acceptance probability equal to:
 \begin{equation}
 \begin{split}
 & \mbox{Acceptance Probability}=
-\begin{cases}  \frac{P(\mathcal{B'}|\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{N}, \mathcal{X})}{P(\mathcal{B}|\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{N}, \mathcal{X})}\quad\text{if}  <1\\
+\begin{cases}  \frac{P(\mathcal{B'}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{N}, \mathcal{X})}{P(\mathcal{B}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{N}, \mathcal{X})}\quad\text{if}  <1\\
 1 \quad \text{else}
 \end{cases}
 \end{split}
@@ -256,29 +316,25 @@ Finally, we wan to update the interaction pattern parameter $\boldsymbol{\beta}^
 After factorization, we get
 \begin{equation}
 \begin{aligned}
-\frac{P(\mathcal{B'}|\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{N}, \mathcal{X})}{P(\mathcal{B}|\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{N}, \mathcal{X})} &=\frac{P(\mathcal{N}|\mathcal{B'}, \mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{X})P(\mathcal{B'})}{P(\mathcal{N}|\mathcal{B}, \mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{X})P(\mathcal{B})}\\&=\frac{P(\mathcal{N}|\mathcal{B'}, \mathcal{C}, \mathcal{X})P(\mathcal{B'})}{P(\mathcal{N}|\mathcal{B}, \mathcal{C}, \mathcal{X})P(\mathcal{B})}.
+\frac{P(\mathcal{B'}|\mathcal{W},\mathcal{Z}, \mathcal{C}, \mathcal{N}, \mathcal{X})}{P(\mathcal{B}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{N}, \mathcal{X})} &=\frac{P(\mathcal{N}|\mathcal{B'}, \mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X})P(\mathcal{B'})}{P(\mathcal{N}|\mathcal{B}, \mathcal{W}, \mathcal{Z},  \mathcal{C}, \mathcal{X})P(\mathcal{B})}\\&=\frac{P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B'})P(\mathcal{B'})}{P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})P(\mathcal{B})}.
 \end{aligned}
 \end{equation}
-Since $P(\mathcal{N}|\mathcal{B}, \mathcal{C}, \mathcal{X})$ represents the multivariate counting process contribution in \cite{zocher2006multivariate}, we will use put the equation below: \begin{equation}
-\mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)t^{(d)}}\Big\}\cdot \prod_{i \in A^{(c^{(d)})}}\prod_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\frac{(\lambda_{ij}^{(c^{(d)})}t^{(d)})^{n^{(ij)}}}{n^{(ij)}!},
+Since $P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})$ represents the multivariate counting process contribution in \cite{zocher2006multivariate} we already used in Equation (8). The full probability of observing the edges under the interaction pattern parameters is: \begin{equation}
+\prod_{d=1}^D\Big(\mbox{exp}\Big\{{-\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{A}^{(c^{(d)})}}\lambda_{ij}^{(c^{(d)})}\big)t^{(d)}}\Big\}\cdot \prod_{i \in A^{(c^{(d)})}}\prod_{j\in \mathcal{A}^{(c^{(d)})}}\frac{(\lambda_{ij}^{(c^{(d)})}t^{(d)})^{n_d^{(ij)}}}{n_d^{(ij)}!}\Big).
 \end{equation}
-which is the later part of the equation (7), the probability of observing the edges under the interaction pattern parameters. For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. After taking the log, the equation we will use for the inference is:
+For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. Again, since our $n^{(ij)}$ is either 0 or 1, we can use the simplified equation as in Equatin (9) and also can take the log for faster computation as following:
 \begin{equation}
 \begin{aligned} 
-&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))\\&-t^{(d)}\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\sum_{i \in A^{(c^{(d)})}}\sum_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\Big(n^{(ij)}\big(\mbox{log}(\lambda_{ij}^{(c^{(d)})}t^{(d)})\big)-\mbox{log}(n^{(ij)}!)\Big), 
-\end{aligned}
-\end{equation}
-or equivalently, since our $n^{(ij)}$ is either 0 or 1, we take the simplified equation and take the log as we did in (9) and (10):
-\begin{equation}
-\begin{aligned} 
-&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))\\&-t^{(d)}\big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{J}^{(c^{(d)})}_{(i, t)}}\lambda_{ij}^{(c^{(d)})}\big)+\mbox{log}(\lambda_{i^{(d)}j^{(d)}}^{(c^{(d)})}t^{(d)}). 
+&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))\\&\quad \quad+\sum_{d=1}^D\Big(-t^{(d)}\Big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{A}^{(c^{(d)})}}\lambda_{ij}^{'(c^{(d)})}\Big)+\mbox{log}(\lambda_{i^{(d)}j^{(d)}}^{'(c^{(d)})}t^{(d)})\Big)\\&\quad\quad-\sum_{d=1}^D\Big(-t^{(d)}\Big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{A}^{(c^{(d)})}}\lambda_{ij}^{(c^{(d)})}\Big)+\mbox{log}(\lambda_{i^{(d)}j^{(d)}}^{(c^{(d)})}t^{(d)})\Big)\\&
+=\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))\\&-\sum_{d=1}^D\Big(t^{(d)}\Big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{A}^{(c^{(d)})}}\Big(\mbox{exp}\Big\{\boldsymbol{\beta'}^{(c^{(d)})T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}-\mbox{exp}\Big\{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\Big)\cdot 1\{j \in \mathcal{A}^{(c^{(d)})}\}\Big)\\&\quad \quad+\Big(\boldsymbol{\beta'}^{(c^{(d)})T}-\boldsymbol{\beta}^{(c^{(d)})T}\Big)\boldsymbol{x}^*_{t^{(d)}}(i^{(d)}, j^{(d)})
 \end{aligned}
 \end{equation}
 Then the log of the acceptance ratio we have is:
 \begin{equation}
-\mbox{log(Acceptance Probability) = min((17) or (18), 0) }
+\mbox{log(Acceptance Probability) = min((17), 0) }
 \end{equation}
 To determine whether we accept the proposed update or not, we take the usual approach, by comparing the log of acceptance ratio we have to the log of a sample from uniform(0,1).
+\begin{comment}
 \section{Preliminary Analysis}
 Hurricane Sandy was the most destructive hurricane in 2012, which hit North Carolina on late October (October 28, Governor Bev Perdue declared a state of emergency in 24 western counties due to snow and strong winds). In our dataset, there are three counties which cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012), so we focus on the three counties, since the timestamp of email in this case is much more important than usual case without any disastrous event.
 \subsection{Dare County}
@@ -367,6 +423,63 @@ Before Sandy ranges from 2012-09-04 to 2012-10-21 (7 weeks), During Sandy ranges
 	\caption{Frequency of Vance county emails from 2012-09-04 to 2012-11-30  }
 	\label{fig:Emailplots22}
 \end{figure}
+\end{comment}
+\section*{APPENDIX}
+\subsection*{APPENDIX A: Deriving the sampling equations for IPTM}
+\begin{equation}
+\begin{aligned}
+& P(\Phi, \Theta, \mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}| \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) \\& 
+=  P(\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}| \Phi, \Theta, \mathcal{X}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) P(\Phi, \Theta |\delta, \boldsymbol{n}, \alpha, \boldsymbol{m})
+\\&= P( \mathcal{W}| \mathcal{Z}, \Phi)P(\mathcal{Z}|\Theta)P(\mathcal{N}|\mathcal{C}, \mathcal{B}, \mathcal{X})P(\mathcal{B}|\mathcal{C}, \sigma^2)P(\Phi|\delta, \boldsymbol{n})P(\Theta|\mathcal{C}, \alpha, \boldsymbol{m})P(\mathcal{C}|\boldsymbol{\gamma})P(\boldsymbol{\gamma}|\boldsymbol{\eta})
+\\&= \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P( w_m^{(d)}| \phi_{z_m^{(d)}})\Big] \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P( z_m^{(d)}| \boldsymbol{\theta}^{(c)})\Big] \Big[\prod_{d=1}^{D} P( \mathbf{N}^{(d)}(t^{(d)})| c^{(d)}, \boldsymbol{x}(t^{(d)}), \boldsymbol{\beta}^{(c)})\Big]  \\&\quad \quad \Big[\prod_{c=1}^{C} P( \boldsymbol{\beta}^{(c)}| \sigma^2)\Big]\Big[\prod_{k=1}^{K} P( \boldsymbol{\phi}^{(k)}| \delta, \boldsymbol{n})\Big] \Big[\prod_{c=1}^{C} P( \boldsymbol{\theta}^{(c)}|\alpha, \boldsymbol{m})\Big] \Big[\prod_{d=1}^{D} P(c^{(d)}|\boldsymbol{\gamma})\Big]  P(\boldsymbol{\gamma}|\boldsymbol{\eta})
+\end{aligned}
+\end{equation}
+Since $P( \boldsymbol{\beta}^{(c)}| \sigma^2)$ is $\mbox{Normal}(\boldsymbol{0}, \sigma^2)$ and $P(\boldsymbol{\gamma}|\boldsymbol{\eta})$ is $\mbox{Dirichlet}(\boldsymbol{\eta})$, we can drop the two terms out and further rewrite the equation (20) as below:
+\begin{equation}
+\begin{aligned}
+& \propto \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P( w_m^{(d)}| \phi_{z_m^{(d)}})\Big] \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P( z_m^{(d)}| \boldsymbol{\theta}^{(c)})\Big] \Big[\prod_{d=1}^{D} P( \mathbf{N}^{(d)}(t^{(d)})|   c^{(d)}, \boldsymbol{x}(t^{(d)}), \boldsymbol{\beta}^{(c)})\Big]\\& \quad \quad  \Big[\prod_{k=1}^{K} P( \boldsymbol{\phi}^{(k)}| \delta, \boldsymbol{n})\Big] \Big[\prod_{c=1}^{C} P( \boldsymbol{\theta}^{(c)}|\alpha, \boldsymbol{m})\Big] \Big[\prod_{d=1}^{D} P(c^{(d)}|\boldsymbol{\gamma})\Big] \\&
+= \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} \phi_{w_m^{(d)}z_m^{(d)}}\Big] \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} \boldsymbol{\theta}^{(c)}_{z_m^{(d)}}\Big]\Big[\prod_{d=1}^{D} \Big(\mbox{exp}\Big\{{-\big(\sum\limits_{i \in \mathcal{A}^{(c^{(d)})}}\sum\limits_{j\in \mathcal{A}^{(c^{(d)})}}\lambda_{ij}^{(c^{(d)})}\big)t^{(d)}}\Big\}\prod_{i \in  \mathcal{A}^{(c^{(d)})}}\prod_{j\in \mathcal{A}^{(c^{(d)})}}\frac{(\lambda_{ij}^{(c^{(d)})}t^{(d)})^{n^{(ij)}}}{n^{(ij)}!}\Big)\Big]\\& \quad \quad  \Big[\prod_{k=1}^{K} \Big(\frac{\Gamma(\sum_{w=1}^{W}\delta n_w)}{\prod_{w=1}^{W}\Gamma(\delta n_w)}\prod_{w=1}^{W}\phi_{wk}^{\delta n_w-1} \Big)\Big] \Big[\prod_{c=1}^{C} \Big(\frac{\Gamma(\sum_{k=1}^{K}\alpha m_k)}{\prod_{k=1}^{K}\Gamma(\alpha m_k)}\prod_{k=1}^{K}(\boldsymbol{\theta}^{(c)}_{k})^{\alpha m_k-1} \Big)\Big] \Big[\prod_{d=1}^{D} \gamma_{c}^{I(c^{(d)}=c)}\Big] \\&
+=\Big[\frac{\Gamma(\sum_{w=1}^{W}\delta n_w)}{\prod_{w=1}^{W}\Gamma(\delta n_w)}\Big]^K \Big[\frac{\Gamma(\sum_{w=1}^{W}\delta n_w)}{\prod_{w=1}^{W}\Gamma(\delta n_w)}\Big]^C \Big[\prod_{d=1}^{D} \Big(\mbox{exp}\Big\{{-\big(\sum\limits_{i \in \mathcal{A}^{(c^{(d)})}}\sum\limits_{j\in \mathcal{A}^{(c^{(d)})}}\lambda_{ij}^{(c^{(d)})}\big)t^{(d)}}\Big\}\cdot\lambda_{i^{(d)}j^{(d)}}^{(c^{(d)})}t^{(d)}\Big)\Big]\Big[\prod_{d=1}^{D}\gamma_{c^{(d)}}\Big]\\& \quad \quad 
+\Big[\prod_{k=1}^{K}\prod_{w=1}^{W}\phi_{wk}^{M^{WK}_{wk}+\delta n_w-1}\Big]\Big[\prod_{c=1}^{C}\prod_{k=1}^{K}(\boldsymbol{\theta}^{(c)}_{k})^{M^{CK}_{ck}+\alpha m_k-1}\Big]
+\end{aligned}
+\end{equation}
+where $M^{WK}_{wk}$ is the number of times the $w^{th}$ word in the vocabulary is assigned to topic $k$, and $M^{CK}_{ck}$ is the number of times topic k shows up given the interaction pattern $c$. By looking at the forms of the terms involving  $\Theta$ and $\Phi$ in Equation (21), we integrate out the random variables $\Theta$ and $\Phi$, making use of the fact that the Dirichlet distribution is a conjugate prior of multinomial distribution. Applying the well-known formula $\int\prod_{m=1}^{M}[x_m^{k_m-1}dx_m]=\frac{\prod_{m=1}^M\Gamma(k_m)}{\Gamma(\sum_{m=1}^Mk_m)}$ to (22), we have:
+\begin{equation}
+\begin{aligned}
+&P(\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}| \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\&=\mbox{Const.}\int_{\Theta}\int_{\Phi}\Big[\prod_{k=1}^{K}\prod_{w=1}^{W}\phi_{wk}^{M^{WK}_{wk}+\delta n_w-1}\Big]\Big[\prod_{c=1}^{C}\prod_{k=1}^{K}(\boldsymbol{\theta}^{(c)}_{k})^{M^{CK}_{ck}+\alpha m_k-1}\Big]d\Phi d\Theta
+\\&=\mbox{Const.}\Big[\prod_{k=1}^{K}\int_{\phi_{:k}}\prod_{w=1}^{W}\phi_{wk}^{M^{WK}_{wk}+\delta n_w-1  }d\phi_{:k}\Big]\Big[\prod_{c=1}^{C}\int_{\theta_{:c}}\prod_{k=1}^{K}(\boldsymbol{\theta}^{(c)}_{k})^{M^{CK}_{ck}+\alpha m_k-1}d\theta_{:c}\Big]
+\\&=\mbox{Const.}\Big[\prod_{k=1}^{K}\frac{\prod_{w=1}^W\Gamma(M_{wk}^{WK}+\delta n_w)}{\Gamma(\sum_{w=1}^WM_{wk}^{WK}+\delta )}\Big]\Big[\prod_{c=1}^{C}\frac{\prod_{k=1}^K\Gamma(M^{CK}_{ck}+\alpha m_k)}{\Gamma(\sum_{k=1}^KM^{CK}_{ck}+\alpha)}\Big].
+\end{aligned}
+\end{equation}
+\subsection*{APPENDIX B: Computing conditional probability}
+\begin{equation}
+\begin{aligned}
+&P(\boldsymbol{w}^{(d)}, \boldsymbol{z}^{(d)}|c^{(d)}=c, \mathcal{W}_{\backslash d}, \mathcal{Z}_{\backslash d}, \mathcal{C}_{\backslash d}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}) \\& \propto \prod_{m=1}^{M^{(d)}}P(z^{(d)}_m=k, w^{(d)}_m=w| c^{(d)}=c, \mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}_{\backslash d}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})
+\end{aligned}
+\end{equation} 
+To obtain the Gibbs sampling equation, we need to obtain an expression for $P(z^{(d)}_m=k,  w^{(d)}_m=w, c^{(d)}=c|\mathcal{W}_{\backslash d}, \mathcal{Z}_{\backslash d}, \mathcal{C}_{\backslash d}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$,
+ From Bayes' theorem and Gamma identity $\Gamma(k+1)=k\Gamma(k)$,
+\begin{equation}
+\begin{aligned}
+&P(z^{(d)}_m=k, w^{(d)}_m=w, c^{(d)}=c|\mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}_{\backslash d}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}) \\& \propto
+\frac{P(\mathcal{W}, \mathcal{Z}, \mathcal{C}|\delta, \boldsymbol{n}, \alpha, \boldsymbol{m})}{P(\mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d, m}, \mathcal{C}|\delta, \boldsymbol{n}, \alpha, \boldsymbol{m})}\\& \propto \frac{\prod_{k=1}^{K}\frac{\prod_{w=1}^W\Gamma(M_{wk}^{WK}+\delta n_w)}{\Gamma(\sum_{w=1}^WM_{wk}^{WK}+\delta )}\prod_{c=1}^{C}\frac{\prod_{k=1}^K\Gamma(M^{CK}_{ck}+\alpha m_k)}{\Gamma(\sum_{k=1}^KM^{CK}_{ck}+\alpha)}}{\prod_{k=1}^{K}\frac{\prod_{w=1}^W\Gamma(M_{wk, \backslash d, m}^{WK}+\delta n_w)}{\Gamma(\sum_{w=1}^WM_{wk, \backslash d, m}^{WK}+\delta )}\prod_{c=1}^{C}\frac{\prod_{k=1}^K\Gamma(M^{CK}_{ck, \backslash d, m}+\alpha m_k)}{\Gamma(\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha)}}\\ & \propto
+\frac{M_{wk, \backslash d, m}^{WK}+\delta n_w}{\sum_{w=1}^WM_{wk,  \backslash d, m}^{WK}+\delta}\frac{M^{CK}_{ck, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}
+\end{aligned}
+\end{equation}
+Then, the conditional probability that a novel word generated in the document of interaction pattern $c^{(d)}=c$  would be assigned to topic $z_m^{(d)}=k$ is obtained by:
+ \begin{equation}
+ \begin{aligned}
+ &P(z^{(d)}_m=k|w^{(d)}_m=w, c^{(d)}=c, \mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}_{\backslash d}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}) \\& \propto
+ \frac{M^{CK}_{ck, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}
+ \end{aligned}
+ \end{equation}
+In addition, the conditional probability that a new word generated in the document would be $w_m^{(d)}=w$, given that it is generated from topic $z_m^{(d)}=k$ is obtained by:
+\begin{equation}
+\begin{aligned}
+&P(w^{(d)}_m=w|z^{(d)}_m=k, c^{(d)}=c, \mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}_{\backslash d}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}) \\& \propto
+\frac{M_{wk, \backslash d, m}^{WK}+\delta n_w}{\sum_{w=1}^WM_{wk, \backslash d, m}^{WK}+\delta}
+\end{aligned} 
+ \end{equation}
 \bibliographystyle{apalike}
 \bibliography{BominBib}
 
