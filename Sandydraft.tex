@@ -25,7 +25,7 @@
 Current CPME model does not involve any of temporal component, which plays a key role in email interactions. Intuitively, past interaction behaviors significantly influence future ones; for example, if an actor $i$ sent an email to actor $j$, then $j$ is highly likely to send an email back to $i$ as a response (i.e. reciprocity). Moreover, the recency and frequency of past interactions can also be considered to effectively predict future interactions. Thus, as an exploratory data analysis, point process model for directional interaction is applied to the North Carolina email data. Starting from the existing framework focused on the analysis of content-partitioned subnetworks, I would suggest an extended approach to analyze the data using the timestamps in the email, aiming to develop a joint dynamic or longitudinal model of text-valued ties.\\ \newline
  CPME model is a Bayesian framework using two well-known methods: Latent Dirichlet Allocation (LDA) and Latent Space Model (LSM). Basically, existence of edge depends on topic assignment $k$ (LDA) and its corresponding interaction pattern c. Each topic $k=1,…,K$ has one interaction pattern c=1,…,C, and each interaction pattern posits unique latent space (LSM), thus generating $A\times A$ matrix of probabilities $P^{(c)}$ that a message author
 a will include recipient $r$ on the message, given that it is about
-a topic in cluster $c$.  Incorporating point process approach, now assume that under each interaction pattern, we have $A\times A$ matrix of stochastic intensities at time $t$, $\lambda^{(c)}(t)$, which depend on the history of interaction between the sender and receiver. We will refer this as  interaction-partitioned topic models (IPTM). 
+a topic in cluster $c$.  Incorporating point process approach, now assume that under each interaction pattern, we have $A\times A$ matrix of stochastic intensities at time $t$, $\boldsymbol{\lambda}^{(c)}(t)$, which depend on the history of interaction between the sender and receiver. We will refer this as  interaction-partitioned topic models (IPTM). 
 \newpage
 \section{IPTM Model}
 In this section, we introduce multiplicative Cox regression model for the edge formation process in a longitudinal communication network. For concreteness, we frame our discussion of this model in terms of email data, although it is generally applicable to any similarly-structured communication data.
@@ -228,14 +228,14 @@ The generative process of this model follows those of \cite{Blei2003} and \cite{
   						\hline
  	\end{tabular}}
  	\caption {Symbols associated with IPTM, as used in this work}
- 	\label{table:AlexanderMCMC}
+ 	\label{table:SymbolsIPTM}
  \end{table}
 \normalsize
 \newpage
 \subsection{Dynamic covariates to measure network effects}
 The network statistics $\boldsymbol{x}_t(i, j)$ of equations (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\ \newline
 Following \cite{PerryWolfe2012}, we use 6 effects as components of $\boldsymbol{x}_t(i, j)$. The first two behaviors (send and receive) are dyadic, involving exactly two actors,
-while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, involving exactly three actors. However, we take different approach by defining the effects not to be based on finite sub-interval, which require large number of dimention. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. 
+while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, involving exactly three actors.  In addition, we include intercept term and use $\boldsymbol{x}^*_t(i, j)$ so that we can estimate the baseline intensities at the same time. One different thing is that we define the effects not to be based on finite sub-interval, which require large number of dimention. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. 
 \begin{itemize}[leftmargin=*,rightmargin=-1cm ]
 \item [0.] $\mbox{intercept}_t(i, j) = 1$
 \item [1.]  $\mbox{send}_t(i, j)=\sum\limits_{d: t^{(d)}<t} I\{i\rightarrow j\}\cdot g(t-t^{(d)})$
@@ -331,7 +331,7 @@ For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earli
 \end{equation}
 Then the log of the acceptance ratio we have is:
 \begin{equation}
-\mbox{log(Acceptance Probability) = min((17), 0) }
+\mbox{log(Acceptance Probability) = min((16, 0) }
 \end{equation}
 To determine whether we accept the proposed update or not, we take the usual approach, by comparing the log of acceptance ratio we have to the log of a sample from uniform(0,1).
 \begin{comment}
