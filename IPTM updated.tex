@@ -310,7 +310,7 @@ To obtain the acceptance probability, we need to obtain an expression for the co
     \frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}\Big]
    \end{aligned}
    \end{equation}
-where $M^{CK}_{ck}$ is the number of times topic k shows up given the interaction pattern $c$ and $\lambda_{ij}^{(c)}(t^{(d)})=\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c^{(d)})}\}$. Moreover, since our $n_d^{(ij)}$ is either 0 or 1, Equation (10) can be simplified as below:
+where $M^{CK}_{ck}$ is the number of times topic k shows up given the interaction pattern $c$ and $\lambda_{ij}^{(c)}(t^{(d)})=\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}$. Moreover, since our $n_d^{(ij)}$ is either 0 or 1, Equation (10) can be simplified as below:
   	\begin{equation} \gamma_{c}\cdot \mbox{exp}\Big\{{-(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in  \mathcal{A}^{(c)}}\sum\limits_{j\in \mathcal{A}^{(c)}}\lambda_{ij}^{(c)}(t^{(d)})\big)}\Big\}\cdot \lambda_{i^{(d)}j^{(d)}}^{(c)}(t^{(d)})(t^{(d)}-t^{(d-1)})\cdot \Big[\prod_{m=1}^{M^{(d)}}
   	\frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}\Big]
   	\end{equation}
@@ -320,7 +320,7 @@ where $M^{CK}_{ck}$ is the number of times topic k shows up given the interactio
   	 \end{equation}
   	 Then, by applying the above to Equation (8) and replacing $\lambda_{ij}^{(c)}(t^{(d)})$ to $\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}, $, the log of the acceptance ratio we have is:
   	   	 \begin{equation}
-  	   	 \begin{aligned} &\mbox{log}(\gamma_{c^\prime})-\mbox{log}(\gamma_{c}) +\Big(\boldsymbol{\beta}^{(c^{'(d)})T}-\boldsymbol{\beta}^{(c^{(d)})T}\Big)\boldsymbol{x}^*_{t^{(d)}}(i^{(d)}, j^{(d)})\\& \quad-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{A}^{(c^{(d)})}}\Big(\mbox{exp}\Big\{\boldsymbol{\beta}^{(c^{'(d)})T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}-\mbox{exp}\Big\{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\Big)\\&\quad+\sum_{m=1}^{M^{(d)}}\Big(\mbox{log}({M^{CK}_{c'z_m^{(d)}, \backslash d, m}+\alpha m_k})-\mbox{log}({\sum_{k=1}^KM^{CK}_{c'k, \backslash d, m}+\alpha})-\mbox{log}({M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k})+\mbox{log}({\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha})\Big)
+  	   	 \begin{aligned} &\mbox{log}(\gamma_{c^\prime})-\mbox{log}(\gamma_{c}) +\Big(\boldsymbol{\beta}^{(c')T}-\boldsymbol{\beta}^{(c)T}\Big)\boldsymbol{x}^*_{t^{(d)}}(i^{(d)}, j^{(d)})\\& \quad-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in A^{(c)}}\sum\limits_{j\in \mathcal{A}^{(c)}}\Big(\mbox{exp}\Big\{\boldsymbol{\beta}^{(c')T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}-\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\Big)\\&\quad+\sum_{m=1}^{M^{(d)}}\Big(\mbox{log}({M^{C'K}_{c'z_m^{(d)}, \backslash d, m}+\alpha m_k})-\mbox{log}({\sum_{k=1}^KM^{C'K}_{c'k, \backslash d, m}+\alpha})-\mbox{log}({M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k})+\mbox{log}({\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha})\Big)
   	 \end{aligned}
   	 \end{equation}
  Following the typical Metropolis-Hastings approach, we use the log of the acceptance ratio:
@@ -365,7 +365,7 @@ Since $P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})$ represents the mult
 For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. Similar to what we did in Section 2.4.1, we can use the simplified equation as in Equation (11) and take the log, then we obtain the log of acceptance ratio as following:
 \begin{equation}
 \begin{aligned} 
-&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))+\sum_{d:c^{(d)}=c}\Big(\boldsymbol{\beta'}^{(c^{(d)})T}-\boldsymbol{\beta}^{(c^{(d)})T}\Big)\boldsymbol{x}^*_{t^{(d)}}(i^{(d)}, j^{(d)})\\&-\sum_{d:c^{(d)}=c}\Big((t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{A}^{(c^{(d)})}}\Big(\mbox{exp}\Big\{\boldsymbol{\beta'}^{(c^{(d)})T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}-\mbox{exp}\Big\{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\Big)
+&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))+\sum_{d:c^{(d)}=c}\Big(\boldsymbol{\beta'}^{(c)T}-\boldsymbol{\beta}^{(c)T}\Big)\boldsymbol{x}^*_{t^{(d)}}(i^{(d)}, j^{(d)})\\&-\sum_{d:c^{(d)}=c}\Big((t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in A^{(c)}}\sum\limits_{j\in \mathcal{A}^{(c)}}\Big(\mbox{exp}\Big\{\boldsymbol{\beta'}^{(c)T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}-\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\Big)
 \end{aligned}
 \end{equation}
 Then the log of acceptance ratio we have is:
