@@ -84,7 +84,7 @@ The generative process of this model follows those of \cite{Blei2003} and \cite{
 \begin{itemize}
 	\item[(a)] $c^{(d)}\sim \mbox{Multinomial}(\boldsymbol{\gamma})$\\
 	- Each document $d$ is associated with one ``interaction pattern" among $C$ different types, with parameter $\boldsymbol{\gamma}$. Here, we assign the prior for the multinomial parameter $\boldsymbol{\gamma} \sim \mbox{Dir}({\eta}, \boldsymbol{l})$
-	\item[(b)] $\mathbf{N}^{(d|c^{(d)})}(\Delta t^{(d)}) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c^{(d)})}(t^{(d-1)}))$\\
+	\item[(b)] $\mathbf{N}^{(d|c^{(d)})}(\Delta t^{(d)}) \sim \mbox{CP}(\boldsymbol{\lambda}^{(c^{(d)})}(t^{(d)}))$\\
 	- The actual update of the counting process $\mathbf{N}^{(d|c^{(d)})}(t)$ of the email $d$ is  $N^{(d|c^{(d)})}_{i^{(d)}j^{(d)}}(\Delta t^{(d)})=1$ and the rest $N^{(d|c^{(d)})}_{(i, j) \neq (i^{(d)}, j^{(d)})}(\Delta t^{(d)})=0$.
 \end{itemize}
 \item[4.] For each of the $M$ words \textbf{[See Algorithm 4]}:
