@@ -365,7 +365,7 @@ Since $P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})$ represents the mult
 For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. Similar to what we did in Section 2.4.1, we can use the simplified equation as in Equation (11) and take the log, then we obtain the log of acceptance ratio as following:
 \begin{equation}
 \begin{aligned} 
-&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))+\sum_{d:c^{(d)}=c}\Big(\boldsymbol{\beta'}^{(c)T}-\boldsymbol{\beta}^{(c)T}\Big)\boldsymbol{x}^*_{t^{(d)}}(i^{(d)}, j^{(d)})\\&-\sum_{d:c^{(d)}=c}\Big((t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in A^{(c)}}\sum\limits_{j\in \mathcal{A}^{(c)}}\Big(\mbox{exp}\Big\{\boldsymbol{\beta'}^{(c)T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}-\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\Big)
+&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))+\sum_{d:c^{(d)}=c}\Big(\boldsymbol{\beta'}^{(c)T}-\boldsymbol{\beta}^{(c)T}\Big)\boldsymbol{x}^*_{t^{(d)}}(i^{(d)}, j^{(d)})\\&-\sum_{d:c^{(d)}=c}\Big((t^{(d)}-t^{(d-1)})\sum\limits_{i \in A^{(c)}}\sum\limits_{j\in \mathcal{A}^{(c)}}\Big(\mbox{exp}\Big\{\boldsymbol{\beta'}^{(c)T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}-\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\Big)\Big)
 \end{aligned}
 \end{equation}
 Then the log of acceptance ratio we have is:
