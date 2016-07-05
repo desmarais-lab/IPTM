@@ -360,12 +360,12 @@ After factorization, we get
 \end{aligned}
 \end{equation}
 Since $P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})$ represents the multivariate counting process contribution in \cite{zocher2006multivariate} we already used in Equation (8). The full probability of observing the edges under the interaction pattern parameters is: \begin{equation}
-\prod_{d=1}^D\Big(\mbox{exp}\Big\{{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}^{(c)}}\sum\limits_{j\in \mathcal{A}^{(c)}}\lambda_{ij}^{(c)}(t^{(d)})}\Big\}\cdot \prod_{i \in \mathcal{A}^{(c)}}\prod_{j\in \mathcal{A}^{(c)}}\frac{\Big(\lambda_{ij}^{(c)}(t^{(d)})\cdot(t^{(d)}-t^{(d-1)})\Big)^{n_d^{(ij)}}}{n_d^{(ij)}!}\Big).
+\prod_{d:c^{(d)}=c}\Big(\mbox{exp}\Big\{{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}^{(c)}}\sum\limits_{j\in \mathcal{A}^{(c)}}\lambda_{ij}^{(c)}(t^{(d)})}\Big\}\cdot \prod_{i \in \mathcal{A}^{(c)}}\prod_{j\in \mathcal{A}^{(c)}}\frac{\Big(\lambda_{ij}^{(c)}(t^{(d)})\cdot(t^{(d)}-t^{(d-1)})\Big)^{n_d^{(ij)}}}{n_d^{(ij)}!}\Big).
 \end{equation}
 For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. Similar to what we did in Section 2.4.1, we can use the simplified equation as in Equation (11) and take the log, then we obtain the log of acceptance ratio as following:
 \begin{equation}
 \begin{aligned} 
-&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))+\Big(\boldsymbol{\beta'}^{(c^{(d)})T}-\boldsymbol{\beta}^{(c^{(d)})T}\Big)\boldsymbol{x}^*_{t^{(d)}}(i^{(d)}, j^{(d)})\\&-\sum_{d=1}^D\Big((t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{A}^{(c^{(d)})}}\Big(\mbox{exp}\Big\{\boldsymbol{\beta'}^{(c^{(d)})T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}-\mbox{exp}\Big\{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\Big)
+&\mbox{log}(P(\mathcal{B'}))-\mbox{log}(P(\mathcal{B}))+\sum_{d:c^{(d)}=c}\Big(\boldsymbol{\beta'}^{(c^{(d)})T}-\boldsymbol{\beta}^{(c^{(d)})T}\Big)\boldsymbol{x}^*_{t^{(d)}}(i^{(d)}, j^{(d)})\\&-\sum_{d:c^{(d)}=c}\Big((t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in A^{(c^{(d)})}}\sum\limits_{j\in \mathcal{A}^{(c^{(d)})}}\Big(\mbox{exp}\Big\{\boldsymbol{\beta'}^{(c^{(d)})T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}-\mbox{exp}\Big\{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^*_{t^{(d)}}(i, j)\Big\}\Big)
 \end{aligned}
 \end{equation}
 Then the log of acceptance ratio we have is:
