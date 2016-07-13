@@ -8,8 +8,10 @@
 	top=30mm,
 	bottom= 30mm
 }
+\usepackage{tabu}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage{longtable}
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{enumitem}
@@ -24,6 +26,15 @@
 \usepackage{algorithmic}  
 \usepackage{algorithm}
 \usepackage{comment}
+\usepackage{array}% http://ctan.org/pkg/array
+\makeatletter
+\g@addto@macro{\endtabular}{\rowfont{}}% Clear row font
+\makeatother
+\newcommand{\rowfonttype}{}% Current row font
+\newcommand{\rowfont}[1]{% Set current row font
+	\gdef\rowfonttype{#1}#1%
+}
+\newcolumntype{L}{>{\rowfonttype}l}
 \title{Interaction-Partitioned Topic Models (IPTM) \\using a Point Process Approach}
 %\author{Bomin Kim}
 
@@ -62,12 +73,12 @@ $\boldsymbol{H}_{t-}$, and $\mathcal{A}^{(c)}$ is the predictable receiver set o
 where the first element of $\boldsymbol{\beta}^{(c)}$ corresponds to $\lambda_0$ by setting $\boldsymbol{x}^*_t(i, j)=(\boldsymbol{1}, \boldsymbol{x}_t(i, j))$.\\ \newline
 Based on the framework illustrated so far, the likelihood we will use for inference procedure is that of  \cite{PerryWolfe2012}. For each type of interaction pattern $c=1,...,C$, estimation for $\boldsymbol{\beta}^{(c)}$ proceeds by maximizing the so-called partial likelihood of \cite{cox1992regression}: 
 \begin{equation}
-PL_t(\boldsymbol{\beta}^{(c)})=\prod_{d=1}^{D} \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}},
+PL_t(\boldsymbol{\beta}^{(c)})=\prod_{d: c^{(d)}=c} \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}},
 \end{equation}
 where $t^{(d)}$, $i^{(d)}$, and $j^{(d)}$ are the time, sender, and receiver
 	of the $d$th document. For computational efficiency, we will use the log-partial likelihood:
 \begin{equation}
-\mbox{log}PL_t(\boldsymbol{\beta}^{(c)})=\sum_{d=1}^{D} \Big\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\}.
+\mbox{log}PL_t(\boldsymbol{\beta}^{(c)})=\sum_{d: c^{(d)}=c} \Big\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\}.
 \end{equation}
 \subsection{Generative Process}
 The generative process of this model follows the topic model (LDA) of \cite{Blei2003} and the author-topic model of \cite{rosen2004author}. Same as LDA, documents are represented as random mixtures over latent topics, where each topic is characterized by a distribution over words. However, one crucial difference is that each document is connected to one type of interaction pattern, and the topic distributions vary depending on the assigned interaction pattern. \\ \newline Conditioned on the interaction pattern and their distributions over topics, the process by which a document is generated can be summarized as follows: first, an interaction pattern is chosen by multinomial for each document; next, a topic is sampled for each word from the distribution over topics associated with the interaction pattern of the document; finally, words themselves are sampled from the distribution over words associated with each topic. At the same time, the unique sender-recipient pair of the document is determined by the rate of intensities associated with the interaction pattern and history of interactions until the time the document is written. Below are the detailed generative process for each document in a corpus $D$ and its plate notation (Figure 1), and Table 1 summarizes the notations used in this paper:
@@ -322,7 +333,8 @@ where the subscript $``{\backslash d, m}"$ denotes the exclsuion of position $m$
 	\end{equation}
 	which is the well-known form of collapsed Gibbs sampling equation for LDA.
 \subsection{Resampling $\mathcal{B}$}
-Finally, we wan to update the interaction pattern parameter $\boldsymbol{\beta}^{(c)}$, one interaction pattern at a time. For this, we will use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with variance $\sigma^2$, centered on the current values of $\boldsymbol{\beta}^{(c)}$. Then we draw a proposal $\boldsymbol{\beta}'^{(c)}$ at each iteration. Under symmetric proposal distribution (such as multivariate Gaussian), we cancel out Q-ratio and obtain the acceptance probability equal to:
+Finally, we wan to update the interaction pattern parameter $\boldsymbol{\beta}^{(c)}$, one interaction pattern at a time. For this, we will use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with variance $\delta^2_B$ (proposal distirbution variance parameters set by the
+user), centered on the current values of $\boldsymbol{\beta}^{(c)}$. Then we draw a proposal $\boldsymbol{\beta}'^{(c)}$ at each iteration. Under symmetric proposal distribution (such as multivariate Gaussian), we cancel out Q-ratio and obtain the acceptance probability equal to:
 \begin{equation}
 \begin{split}
 & \mbox{Acceptance Probability}=
@@ -340,7 +352,7 @@ After factorization, we get
 where $P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})$ is the partial likelihood in Equation (4).\\ \newline For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. Similar to what we did in Section 3.1, we can take the log and obtain the log of acceptance ratio as following:
 \begin{equation}
 \begin{aligned} 
-&\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)-\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)+\Big((\boldsymbol{\beta}^{\prime(c)T}-\boldsymbol{\beta}^{(c)T})x_{t^{(d)}}(i^{(d)}, j^{(d)})\Big)\\&-\Big(\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{\prime(c)T}x_{t^{(d)}}(i^{(d)}, j)\}\big]-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}\big]\Big),
+&\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)-\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&+\sum_{d:c^{(d)}=c}\Big\{\boldsymbol{\beta}^{\prime(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{\prime(c)T}x_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\}\\&-\sum_{d:c^{(d)}=c} \Big\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\},
 \end{aligned}
 \end{equation}
 where $\phi_d(\cdot;\mu, \Sigma)$ is the $d$-dimensional multivariate normal density.
@@ -350,9 +362,80 @@ Then the log of acceptance ratio we have is:
 \end{equation}
 To determine whether we accept the proposed update or not, we take the usual approach, by comparing the log of acceptance ratio we have to the log of a sample from uniform(0,1).
 \section{Application: North Carolina email data}
-To see the applicability of the model, I used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Exploratory analysis revealed that Dare county experienced significant change in the pattern of email exchanges, while Vance county did not. 
-
-\subsection{Examples of topic and interaction pattern distributions}
+To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Exploratory analysis revealed that Dare county experienced significant change in the pattern of email exchanges; specifically, during the emergency period, email interactions significanty less rely on previous history of interactions, compared to the normal period. On the other hand, Vance county did not experience any distinctive change, and the possible reason for the difference is the locations of two counties. Here we apply IPTM to both data to see the differences in detail, in terms of the interaction patterns and topics of the corpus.
+\subsection{Vance county email data}
+After treating multicast emails (those involving a single sender but multiple receivers) as multiple distinct emails, Vance county data contains 269 emails (only count the email with the number of words greater than 0) between 18 actors, including 620 vocabulary in total. We used $K=20$ topics assuming symmetric Dirichlet prior with the concentration parameter $\alpha=5$, and $C=5$ interaction patterns assuming multinomial prior with parameter $\gamma$ (coming from symmetric Dirichlet prior with the concentration parameter $\eta = 5$). For topic-word distributions, we assumed that $\phi$ follows symmectic Dirichlet distribution with the concentration parameter $\delta=5$. Markov chain Monte Carlo (MCMC) sampling was implemented based on the order and scheme illustrated in Section 3. We ran total 20,000 iterations, which took about 10.36 hours. Among the entire samples, 5,000 were discarded as a burn-in, and every 15th sample was taken for thinning. Below are the summary of interaction pattern-topic-word assignments. Each interaction pattern is illustrated with (a) posterior estimates (means) of dynamic network effects corresponding to the interaction pattern, (b) the top 3 topics most likely to be generated conditioned on the interaction pattern, and (c) the top 10 most likely words to have generated conditioned on the topic and the interaction pattern.
+\footnotesize
+\footnotesize
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{|c|c|c|c|c|c|} 
+		\hline
+		& \textbf{IP1} & \textbf{IP2} &\textbf{IP3}&\textbf{IP4}&\textbf{IP5}\\
+		\hline
+		intercept &-0.036& -0.113& 0.054& -0.024&-0.010\\
+		send& 0.555&  0.306& 0.869& 0.065&0.532\\
+		receive& 0.175& 0.090& 0.091& 0.119& 0.019\\
+		2-send&-0.055&-0.021& 0.072&0.044& -0.034\\
+		2-receive&-0.003&-0.010&0.051&-0.003&0.052\\
+		sibling&0.019&  0.019&0.054&-0.071&-0.008\\
+		cosibling&-0.028& 0.073& 0.019&  0.042& 0.007\\
+		\hline
+	\end{tabular}
+	\caption {Summary of posterior $\boldsymbol{\beta}^{(c)}$ estimates for Vance county}
+	\label{table:AlexanderMCMC}
+\end{table}
+\begin{table}[ht]
+		\centering
+\begin{tabular}{|l|l||l|l||l|l||l|l||l|l|}
+	\hline
+	\multicolumn{2}{|l||}{\textbf{IP1} (51 emails)}&\multicolumn{2}{l||}{\textbf{IP2} (46 emails)}&\multicolumn{2}{l||}{\textbf{IP3} (79 emails)}&\multicolumn{2}{l||}{\textbf{IP4} (29 emails)}&\multicolumn{2}{l|}{\textbf{IP5} (64 emails)}\\
+	\hline\hline
+	Topic 10&0.148&Topic 19&0.145&Topic 9 &0.194 & Topic 17 & 0.286 & Topic 2 & 0.194 \\
+	\hline
+\scriptsize emergency&\scriptsize 0.0448&\scriptsize description&\scriptsize 0.0431&\scriptsize message&\scriptsize 0.0452&\scriptsize will&\scriptsize 0.1045&\scriptsize will&\scriptsize 0.0807\\
+\scriptsize operations&\scriptsize 0.0439&\scriptsize director&\scriptsize  0.0259&\scriptsize electronic&\scriptsize 0.0440&\scriptsize phones&\scriptsize 0.0587&\scriptsize extension&\scriptsize 0.0333\\
+\scriptsize office&\scriptsize  0.0325&\scriptsize phone&\scriptsize 0.0241&\scriptsize department&\scriptsize 0.0320&\scriptsize week&\scriptsize 0.0357&\scriptsize latest&\scriptsize 0.0324\\
+\scriptsize henderson&\scriptsize 0.0283&\scriptsize planning&\scriptsize 0.0229&\scriptsize heads&\scriptsize 0.0285&\scriptsize october&\scriptsize 0.0346&\scriptsize directory&\scriptsize 0.0271\\
+\scriptsize director&\scriptsize 0.0277&\scriptsize henderson&\scriptsize  0.0196&\scriptsize request&\scriptsize 0.0235&\scriptsize system&\scriptsize 0.0285&\scriptsize jail&\scriptsize 0.0267\\
+\scriptsize fax&\scriptsize 0.0277&\scriptsize development&\scriptsize 0.0194&\scriptsize time&\scriptsize 0.0231&\scriptsize phone&\scriptsize 0.0252&\scriptsize folks&\scriptsize 0.0253\\
+\scriptsize street&\scriptsize 0.0259&\scriptsize street&\scriptsize 0.0191&\scriptsize review&\scriptsize 0.0214&\scriptsize department&\scriptsize 0.0238&\scriptsize attached&\scriptsize 0.0251\\
+\scriptsize church&\scriptsize 0.0245&\scriptsize suite&\scriptsize 0.0186&\scriptsize records&\scriptsize 0.0213&\scriptsize rest&\scriptsize 0.0229&\scriptsize director&\scriptsize 0.0170\\
+\scriptsize center&\scriptsize 0.0245&\scriptsize church&\scriptsize 0.0183&\scriptsize public&\scriptsize 0.0212&\scriptsize cutting&\scriptsize 0.0227&\scriptsize cutover&\scriptsize 0.0156\\
+\scriptsize suite&\scriptsize 0.0240&\scriptsize fax&\scriptsize  0.0181&\scriptsize ncgs&\scriptsize 0.0211&\scriptsize provided&\scriptsize 0.0227&\scriptsize henderson&\scriptsize0.0156\\
+	\hline\hline
+	Topic 13&0.123&Topic 18&0.134&Topic 5 &0.193& Topic 12 & 0.286 & Topic 1 & 0.193 \\
+	\hline
+	\scriptsize emergency&\scriptsize 0.0429&\scriptsize description&\scriptsize 0.0437&\scriptsize message&\scriptsize 0.0455&\scriptsize will&\scriptsize 0.1064&\scriptsize will&\scriptsize 0.0791\\
+	\scriptsize operations&\scriptsize0.0420&\scriptsize director&\scriptsize 0.0257&\scriptsize  electronic&\scriptsize 0.0432&\scriptsize phones&\scriptsize 0.0592&\scriptsize extension&\scriptsize  0.0336\\
+	\scriptsize office&\scriptsize 0.0323&\scriptsize phone&\scriptsize 0.0240&\scriptsize department&\scriptsize 0.0317&\scriptsize week&\scriptsize 0.0352&\scriptsize latest&\scriptsize 0.0323\\
+	\scriptsize director&\scriptsize 0.0288&\scriptsize planning&\scriptsize 0.0227&\scriptsize heads&\scriptsize 0.0284&\scriptsize october&\scriptsize 0.0345&\scriptsize jail&\scriptsize 0.0268\\
+	\scriptsize henderson&\scriptsize 0.0279&\scriptsize street&\scriptsize 0.0202&\scriptsize request&\scriptsize 0.0231&\scriptsize system&\scriptsize 0.0282&\scriptsize directory&\scriptsize 0.0264\\
+	\scriptsize fax&\scriptsize 0.0267&\scriptsize development&\scriptsize 0.0195&\scriptsize time&\scriptsize 0.0230&\scriptsize phone&\scriptsize 0.0252&\scriptsize folks&\scriptsize 0.0253\\
+	\scriptsize street&\scriptsize 0.0255&\scriptsize henderson&\scriptsize 0.0190&\scriptsize response&\scriptsize0.0217&\scriptsize cutting&\scriptsize 0.0232&\scriptsize attached&\scriptsize 0.0250\\
+	\scriptsize suite&\scriptsize 0.0252&\scriptsize fax&\scriptsize 0.0184&\scriptsize records&\scriptsize 0.0212&\scriptsize training&\scriptsize 0.0231&\scriptsize director&\scriptsize  0.0172\\
+	\scriptsize church&\scriptsize 0.0249&\scriptsize church&\scriptsize 0.0184&\scriptsize review&\scriptsize 0.0210&\scriptsize rest&\scriptsize 0.0231&\scriptsize henderson&\scriptsize 0.0161\\
+	\scriptsize center&\scriptsize 0.0240&\scriptsize suite&\scriptsize 0.0181&\scriptsize hereto&\scriptsize0.0209&\scriptsize provided&\scriptsize 0.0230&\scriptsize cutover&\scriptsize 0.0153\\
+	\hline\hline
+	Topic 4&0.123&Topic 3&0.106&Topic 7 &0.193& Topic 14 & 0.285& Topic 20 &0.192\\
+	\hline
+	\scriptsize emergency&\scriptsize 0.0432&\scriptsize description&\scriptsize0.0442&\scriptsize message&\scriptsize 0.0450&\scriptsize will&\scriptsize 0.1036&\scriptsize will&\scriptsize 0.0798\\
+	\scriptsize operations&\scriptsize 0.0432&\scriptsize director&\scriptsize 0.0275&\scriptsize electronic&\scriptsize0.0428&\scriptsize phones&\scriptsize 0.0600&\scriptsize extension&\scriptsize 0.0341\\
+	\scriptsize office&\scriptsize 0.0331&\scriptsize phone&\scriptsize  0.0240&\scriptsize department&\scriptsize 0.0320&\scriptsize week&\scriptsize 0.0352&\scriptsize latest&\scriptsize 0.0321\\
+	\scriptsize fax&\scriptsize 0.0297&\scriptsize planning&\scriptsize 0.0234&\scriptsize heads&\scriptsize 0.0283&\scriptsize october&\scriptsize 0.0347&\scriptsize jail&\scriptsize 0.0265\\
+	\scriptsize director&\scriptsize 0.0295&\scriptsize street&\scriptsize 0.0210&\scriptsize request&\scriptsize 0.0241&\scriptsize system&\scriptsize 0.0275&\scriptsize attached&\scriptsize 0.0254\\
+	\scriptsize henderson&\scriptsize 0.0291&\scriptsize henderson&\scriptsize 0.0209&\scriptsize time&\scriptsize 0.0232&\scriptsize phone&\scriptsize 0.0251&\scriptsize directory&\scriptsize  0.0254\\
+	\scriptsize street&\scriptsize 0.0265&\scriptsize development&\scriptsize 0.0205&\scriptsize review&\scriptsize 0.0213&\scriptsize department&\scriptsize 0.0242&\scriptsize folks&\scriptsize 0.0253\\
+	\scriptsize suite&\scriptsize 0.0261&\scriptsize fax&\scriptsize 0.0199&\scriptsize hereto&\scriptsize 0.0212&\scriptsize provided&\scriptsize 0.0227&\scriptsize director&\scriptsize 0.0171\\
+	\scriptsize church&\scriptsize 0.0260&\scriptsize church&\scriptsize 0.0199&\scriptsize records&\scriptsize 0.0210&\scriptsize training&\scriptsize 0.0227&\scriptsize henderson&\scriptsize 0.0163\\
+	\scriptsize center&\scriptsize 0.0245&\scriptsize suite&\scriptsize 0.0198&\scriptsize ncgs&\scriptsize 0.0209&\scriptsize rest&\scriptsize 0.0226&\scriptsize cutover&\scriptsize  0.0154\\
+	\hline
+\end{tabular}
+	 		\caption {Summary of MCMC sampling results for Vance county. Each interaction pattern is shown with the top 3 topics and words that have the highest probability conditioned on that topic.}
+	 		\label{table:VanceMCMC}
+	 		\end{table}
+\normalsize
+\subsection{Dare county email data}
 \begin{comment}
 \section{Preliminary Analysis}
 Hurricane Sandy was the most destructive hurricane in 2012, which hit North Carolina on late October (October 28, Governor Bev Perdue declared a state of emergency in 24 western counties due to snow and strong winds). In our dataset, there are three counties which cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012), so we focus on the three counties, since the timestamp of email in this case is much more important than usual case without any disastrous event.
