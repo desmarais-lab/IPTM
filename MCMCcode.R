@@ -1,6 +1,6 @@
 library(mvtnorm)
 library(gtools)
-
+library(reshape2)
 setwd("/Users/bomin8319/Desktop/SU16/Rcode")		#set directory
 load("Temporal_Email_Data.Rdata")
 Vance<-Temporal_Email_Data$Vance					 
@@ -239,15 +239,26 @@ for (c in 1:5){Bnew2[[c]]<-matrix(NA, nrow=7, ncol=1000)
 
 #Summary of result
 sapply(1:5, function(c){nrow(unique(t(try$B[[c]])))})/(2*10^4)		#acceptance rate for beta
-sapply(1:269, function(d){tabulate(Cnew2[d,], nbin=5)})				#table of IP for each document
-CofD<- unlist(sapply(1:269, function(d){which(tabulate(Cnew2[d,], nbin=5)==max(tabulate(Cnew2[d,], nbin=5)))[1]}))				#table of IP for each document
-sapply(1:5, function(c){colMeans(t(Bnew2[[c]]))})					#posterior mean for beta 
+CofD<-sapply(1:269, function(d){Cnew2[d,1000]})				#table of IP for each document
+data<-list()
+for(b in 1:7){
+	data[[b]] <- sapply(1:5, function(c){cbind(Bnew2[[c]][b,])})}
+forbox <-melt(data)
+boxplot<-boxplot(forbox$value~forbox$Var2+forbox$L1, at=c(1,2,3,4,5,7,8,9,10,11,13,14,15,16,17,19,20,21,22,23,25,26,27,28,29,31,32,33,34,35,37,38,39,40,41),
+col=gray.colors(5), axes=FALSE)
+title('Comparison of beta coefficients for IP1-IP5')
+axis(2, labels=TRUE)
+#axis(1, labels=FALSE)
+box()
+axis(side=1, at=c(3,9,15,21,27,33,39), labels=c('intercept','send','receive','2-send','2-recieve','sibling', 'co-sibling'), line=0.5, lwd=0 )
+
+#posterior mean for beta 
 exp(sapply(1:5, function(c){colMeans(t(Bnew2[[c]]))}))				#Take exponential if we want to interpret this
 
 Zsummary<-list()
 for (d in 1:269){
-	Zsummary[[d]]<-sapply(1:ncol(Znew2[[d]]), function(k){tabulate(Znew2[[d]][,k], nbins=20)})
-	colnames(Zsummary[[d]])<-c(wordlist[[d]])
+	Zsummary[[d]]<-Znew2[[d]][1000,]									#summarize using the last iteration
+	names(Zsummary[[d]])<-c(wordlist[[d]])
 }
 Zsummary																#table of word-topic assignment for each document
 
@@ -257,24 +268,23 @@ for (d in which(CofD==1)){
 	Zsummary1[[iter]]<-{Zsummary[[d]]}; iter=iter+1
 }
 #Vance_edge[which(CofD==1), 1]
-topicdist1<-rowSums(sapply(1:51, function(d){rowSums(Zsummary1[[d]])}))/sum(sapply(1:51, function(d){rowSums(Zsummary1[[d]])}))
+topicdist1<-tabulate(unlist(Zsummary1), nbins=20)
 names(topicdist1)<-c(1:20)
-topicdist1<-topicdist1[order(topicdist1, decreasing=TRUE)]
-Zsum<-Zsummary1[[1]]
-for(i in 1:50){Zsum<-cbind(Zsum, Zsummary1[[i+1]])}
-Zsum1 <- matrix(NA, nrow=20, ncol=length(unique(colnames(Zsum)))); colnames(Zsum1)<-unique(colnames(Zsum))
+topicdist1<-topicdist1[order(topicdist1, decreasing=TRUE)]/sum(topicdist1)
+Zsum<- unlist(Zsummary1)
+Zsum1 <- matrix(0, nrow=20, ncol=length(unique(names(Zsum)))); colnames(Zsum1)<-unique(names(Zsum))
 for (i in 1:ncol(Zsum1)){
-	listofi<-as.matrix(Zsum[,which(colnames(Zsum)==colnames(Zsum1)[i])])
-	Zsum1[,i]<-rowSums(listofi)}
-wordgiventopic10<-Zsum1[10,]/sum(Zsum1[10,])
-wordgiventopic10<-wordgiventopic10[order(wordgiventopic10, decreasing=TRUE)]
+	listofi<-tabulate(Zsum[which(names(Zsum)==colnames(Zsum1)[i])], nbins=20)
+	Zsum1[,i]<-listofi}
+wordgiventopic15<-Zsum1[15,]/sum(Zsum1[15,])
+wordgiventopic15<-wordgiventopic15[order(wordgiventopic15, decreasing=TRUE)]
 wordgiventopic4<-Zsum1[4,]/sum(Zsum1[4,])
 wordgiventopic4<-wordgiventopic4[order(wordgiventopic4, decreasing=TRUE)]
-wordgiventopic13<-Zsum1[13,]/sum(Zsum1[13,])
-wordgiventopic13<-wordgiventopic13[order(wordgiventopic13, decreasing=TRUE)]
-wordgiventopic6<-Zsum1[6,]/sum(Zsum1[6,])
-wordgiventopic6<-wordgiventopic6[order(wordgiventopic6, decreasing=TRUE)]
-wordgiventopic10[1:10];wordgiventopic13[1:10];wordgiventopic4[1:10];wordgiventopic6[1:10]
+wordgiventopic8<-Zsum1[8,]/sum(Zsum1[8,])
+wordgiventopic8<-wordgiventopic8[order(wordgiventopic8, decreasing=TRUE)]
+wordgiventopic10<-Zsum1[10,]/sum(Zsum1[10,])
+wordgiventopic10<-wordgiventopic10[order(wordgiventopic10, decreasing=TRUE)]
+wordgiventopic15[1:10];wordgiventopic4[1:10];wordgiventopic8[1:10];wordgiventopic10[1:10]
 
 
 Zsummary2<-list()
@@ -283,24 +293,23 @@ for (d in which(CofD==2)){
 	Zsummary2[[iter]]<-{Zsummary[[d]]}; iter=iter+1
 }
 #Vance_edge[which(CofD==2), 1]
-topicdist2<-rowSums(sapply(1:46, function(d){rowSums(Zsummary2[[d]])}))/sum(sapply(1:46, function(d){rowSums(Zsummary2[[d]])}))
+topicdist2<-tabulate(unlist(Zsummary2), nbins=20)
 names(topicdist2)<-c(1:20)
-topicdist2<-topicdist2[order(topicdist2, decreasing=TRUE)]
-Zsum<-Zsummary2[[1]]
-for(i in 1:45){Zsum<-cbind(Zsum, Zsummary2[[i+1]])}
-Zsum2 <- matrix(NA, nrow=20, ncol=length(unique(colnames(Zsum)))); colnames(Zsum2)<-unique(colnames(Zsum))
+topicdist2<-topicdist2[order(topicdist2, decreasing=TRUE)]/sum(topicdist2)
+Zsum<- unlist(Zsummary2)
+Zsum2 <- matrix(0, nrow=20, ncol=length(unique(names(Zsum)))); colnames(Zsum2)<-unique(names(Zsum))
 for (i in 1:ncol(Zsum2)){
-	listofi<-as.matrix(Zsum[,which(colnames(Zsum)==colnames(Zsum2)[i])])
-	Zsum2[,i]<-rowSums(listofi)}
-wordgiventopic19<-Zsum2[19,]/sum(Zsum2[19,])
-wordgiventopic19<-wordgiventopic19[order(wordgiventopic19, decreasing=TRUE)]
+	listofi<-tabulate(Zsum[which(names(Zsum)==colnames(Zsum2)[i])], nbins=20)
+	Zsum2[,i]<-listofi}
 wordgiventopic18<-Zsum2[18,]/sum(Zsum2[18,])
 wordgiventopic18<-wordgiventopic18[order(wordgiventopic18, decreasing=TRUE)]
+wordgiventopic19<-Zsum2[19,]/sum(Zsum2[19,])
+wordgiventopic19<-wordgiventopic19[order(wordgiventopic19, decreasing=TRUE)]
 wordgiventopic3<-Zsum2[3,]/sum(Zsum2[3,])
 wordgiventopic3<-wordgiventopic3[order(wordgiventopic3, decreasing=TRUE)]
-wordgiventopic15<-Zsum2[15,]/sum(Zsum2[15,])
-wordgiventopic15<-wordgiventopic15[order(wordgiventopic15, decreasing=TRUE)]
-wordgiventopic19[1:10];wordgiventopic18[1:10]; wordgiventopic3[1:10]; wordgiventopic15[1:10]
+wordgiventopic13<-Zsum2[13,]/sum(Zsum2[13,])
+wordgiventopic13<-wordgiventopic13[order(wordgiventopic13, decreasing=TRUE)]
+wordgiventopic18[1:10];wordgiventopic19[1:10];wordgiventopic3[1:10];wordgiventopic13[1:10]
 
 
 Zsummary3<-list()
@@ -309,24 +318,23 @@ for (d in which(CofD==3)){
 	Zsummary3[[iter]]<-{Zsummary[[d]]}; iter=iter+1
 }
 #Vance_edge[which(CofD==3), 1]
-topicdist3<-rowSums(sapply(1:79, function(d){rowSums(Zsummary3[[d]])}))/sum(sapply(1:79, function(d){rowSums(Zsummary3[[d]])}))
+topicdist3<-tabulate(unlist(Zsummary3), nbins=20)
 names(topicdist3)<-c(1:20)
-topicdist3<-topicdist3[order(topicdist3, decreasing=TRUE)]
-Zsum<-Zsummary3[[1]]
-for(i in 1:78){Zsum<-cbind(Zsum, Zsummary3[[i+1]])}
-Zsum3 <- matrix(NA, nrow=20, ncol=length(unique(colnames(Zsum)))); colnames(Zsum3)<-unique(colnames(Zsum))
+topicdist3<-topicdist3[order(topicdist3, decreasing=TRUE)]/sum(topicdist3)
+Zsum<- unlist(Zsummary3)
+Zsum3 <- matrix(0, nrow=20, ncol=length(unique(names(Zsum)))); colnames(Zsum3)<-unique(names(Zsum))
 for (i in 1:ncol(Zsum3)){
-	listofi<-as.matrix(Zsum[,which(colnames(Zsum)==colnames(Zsum3)[i])])
-	Zsum3[,i]<-rowSums(listofi)}
+	listofi<-tabulate(Zsum[which(names(Zsum)==colnames(Zsum3)[i])], nbins=20)
+	Zsum3[,i]<-listofi}
 wordgiventopic9<-Zsum3[9,]/sum(Zsum3[9,])
 wordgiventopic9<-wordgiventopic9[order(wordgiventopic9, decreasing=TRUE)]
-wordgiventopic5<-Zsum3[5,]/sum(Zsum3[5,])
-wordgiventopic5<-wordgiventopic5[order(wordgiventopic5, decreasing=TRUE)]
 wordgiventopic7<-Zsum3[7,]/sum(Zsum3[7,])
 wordgiventopic7<-wordgiventopic7[order(wordgiventopic7, decreasing=TRUE)]
 wordgiventopic11<-Zsum3[11,]/sum(Zsum3[11,])
-wordgiventopic11<-wordgiventopic7[order(wordgiventopic11, decreasing=TRUE)]
-wordgiventopic9[1:10];wordgiventopic5[1:10]; wordgiventopic7[1:10]; wordgiventopic11[1:10]
+wordgiventopic11<-wordgiventopic11[order(wordgiventopic3, decreasing=TRUE)]
+wordgiventopic5<-Zsum3[5,]/sum(Zsum3[5,])
+wordgiventopic5<-wordgiventopic5[order(wordgiventopic5, decreasing=TRUE)]
+wordgiventopic9[1:10];wordgiventopic7[1:10];wordgiventopic11[1:10];wordgiventopic5[1:10]
 
 
 Zsummary4<-list()
@@ -335,24 +343,23 @@ for (d in which(CofD==4)){
 	Zsummary4[[iter]]<-{Zsummary[[d]]}; iter=iter+1
 }
 #Vance_edge[which(CofD==4), 1]
-topicdist4<-rowSums(sapply(1:29, function(d){rowSums(Zsummary4[[d]])}))/sum(sapply(1:29, function(d){rowSums(Zsummary4[[d]])}))
+topicdist4<-tabulate(unlist(Zsummary4), nbins=20)
 names(topicdist4)<-c(1:20)
-topicdist4<-topicdist4[order(topicdist4, decreasing=TRUE)]
-Zsum<-Zsummary4[[1]]
-for(i in 1:28){Zsum<-cbind(Zsum, Zsummary4[[i+1]])}
-Zsum4 <- matrix(NA, nrow=20, ncol=length(unique(colnames(Zsum)))); colnames(Zsum4)<-unique(colnames(Zsum))
+topicdist4<-topicdist4[order(topicdist4, decreasing=TRUE)]/sum(topicdist4)
+Zsum<- unlist(Zsummary4)
+Zsum4 <- matrix(0, nrow=20, ncol=length(unique(names(Zsum)))); colnames(Zsum4)<-unique(names(Zsum))
 for (i in 1:ncol(Zsum4)){
-	listofi<-as.matrix(Zsum[,which(colnames(Zsum)==colnames(Zsum4)[i])])
-	Zsum4[,i]<-rowSums(listofi)}
-wordgiventopic17<-Zsum4[17,]/sum(Zsum4[17,])
-wordgiventopic17<-wordgiventopic17[order(wordgiventopic17, decreasing=TRUE)]
-wordgiventopic12<-Zsum4[12,]/sum(Zsum4[12,])
-wordgiventopic12<-wordgiventopic12[order(wordgiventopic12, decreasing=TRUE)]
+	listofi<-tabulate(Zsum[which(names(Zsum)==colnames(Zsum4)[i])], nbins=20)
+	Zsum4[,i]<-listofi}
 wordgiventopic14<-Zsum4[14,]/sum(Zsum4[14,])
 wordgiventopic14<-wordgiventopic14[order(wordgiventopic14, decreasing=TRUE)]
-wordgiventopic16<-Zsum4[16,]/sum(Zsum4[16,])
-wordgiventopic16<-wordgiventopic16[order(wordgiventopic16, decreasing=TRUE)]
-wordgiventopic17[1:10];wordgiventopic12[1:10]; wordgiventopic14[1:10]; wordgiventopic16[1:10]
+wordgiventopic12<-Zsum4[12,]/sum(Zsum4[12,])
+wordgiventopic12<-wordgiventopic12[order(wordgiventopic12, decreasing=TRUE)]
+wordgiventopic17<-Zsum4[17,]/sum(Zsum4[17,])
+wordgiventopic17<-wordgiventopic17[order(wordgiventopic17, decreasing=TRUE)]
+wordgiventopic1<-Zsum4[1,]/sum(Zsum4[1,])
+wordgiventopic1<-wordgiventopic1[order(wordgiventopic1, decreasing=TRUE)]
+wordgiventopic14[1:10];wordgiventopic12[1:10];wordgiventopic17[1:10];wordgiventopic1[1:10]
 
 
 Zsummary5<-list()
@@ -361,24 +368,23 @@ for (d in which(CofD==5)){
 	Zsummary5[[iter]]<-{Zsummary[[d]]}; iter=iter+1
 }
 #Vance_edge[which(CofD==5), 1]
-topicdist5<-rowSums(sapply(1:64, function(d){rowSums(Zsummary5[[d]])}))/sum(sapply(1:64, function(d){rowSums(Zsummary5[[d]])}))
+topicdist5<-tabulate(unlist(Zsummary5), nbins=20)
 names(topicdist5)<-c(1:20)
-topicdist5<-topicdist5[order(topicdist5, decreasing=TRUE)]
-Zsum<-Zsummary5[[1]]
-for(i in 1:63){Zsum<-cbind(Zsum, Zsummary5[[i+1]])}
-Zsum5 <- matrix(NA, nrow=20, ncol=length(unique(colnames(Zsum)))); colnames(Zsum5)<-unique(colnames(Zsum))
+topicdist5<-topicdist5[order(topicdist5, decreasing=TRUE)]/sum(topicdist5)
+Zsum<- unlist(Zsummary5)
+Zsum5 <- matrix(0, nrow=20, ncol=length(unique(names(Zsum)))); colnames(Zsum5)<-unique(names(Zsum))
 for (i in 1:ncol(Zsum5)){
-	listofi<-as.matrix(Zsum[,which(colnames(Zsum)==colnames(Zsum5)[i])])
-	Zsum5[,i]<-rowSums(listofi)}
-wordgiventopic2<-Zsum5[2,]/sum(Zsum5[2,])
-wordgiventopic2<-wordgiventopic2[order(wordgiventopic2, decreasing=TRUE)]
+	listofi<-tabulate(Zsum[which(names(Zsum)==colnames(Zsum5)[i])], nbins=20)
+	Zsum5[,i]<-listofi}
 wordgiventopic1<-Zsum5[1,]/sum(Zsum5[1,])
 wordgiventopic1<-wordgiventopic1[order(wordgiventopic1, decreasing=TRUE)]
-wordgiventopic20<-Zsum5[20,]/sum(Zsum5[20,])
-wordgiventopic20<-wordgiventopic20[order(wordgiventopic20, decreasing=TRUE)]
 wordgiventopic16<-Zsum5[16,]/sum(Zsum5[16,])
 wordgiventopic16<-wordgiventopic16[order(wordgiventopic16, decreasing=TRUE)]
-wordgiventopic2[1:10];wordgiventopic1[1:10]; wordgiventopic20[1:10]; wordgiventopic16[1:10]
+wordgiventopic2<-Zsum5[2,]/sum(Zsum5[2,])
+wordgiventopic2<-wordgiventopic2[order(wordgiventopic2, decreasing=TRUE)]
+wordgiventopic20<-Zsum5[20,]/sum(Zsum5[20,])
+wordgiventopic20<-wordgiventopic20[order(wordgiventopic20, decreasing=TRUE)]
+wordgiventopic1[1:10];wordgiventopic16[1:10];wordgiventopic2[1:10];wordgiventopic20[1:10]
 
 
 
@@ -462,10 +468,11 @@ return(c(intercept, send, receive, twosend, tworeceive, sibling, cosibling))}
 
 
 #preprocessing for x function in order to save time
-allxmat <- list()
-for(i in A){
+allxmat <- allxmat2
+for(i in 14:27){
+	print(i)
 	allxmat[[i]]<- array(0, dim=c(length(edge[,3]),7,length(A)))
-	for (j in A){
+	for (j in A){ print(j)
 		if(!i==j){
 	allxmat[[i]][,,j]<-t(sapply(edge[,3], function(t){x(i,j,t)}))}
 	else {allxmat[[i]][,,j]<-t(sapply(edge[,3], function(t){c(1, rep(0,6))}))} 	
