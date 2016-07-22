@@ -392,7 +392,7 @@ To implement the inference procedure outlined above, we provide a pseudocode for
 \section{Application: North Carolina email data}
 To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Exploratory analysis revealed that Dare county experienced significant change in the pattern of email exchanges; specifically, during the emergency period, email interactions significanty less rely on previous history of interactions, compared to the normal period. On the other hand, Vance county did not experience any distinctive change, and the possible reason for the difference is the locations of two counties. Here we apply IPTM to both data to see the differences in detail, in terms of the interaction patterns and topics of the corpus.
 \subsection{Vance county email data}
-After treating multicast emails (those involving a single sender but multiple receivers) as multiple distinct emails, Vance county data contains 269 emails (only count the email with the number of words greater than 0) between 18 actors, including 620 vocabulary in total. We used $K=20$ topics assuming symmetric Dirichlet prior with the concentration parameter $\alpha=5$, and $C=5$ interaction patterns assuming multinomial prior with parameter $\gamma$ (coming from symmetric Dirichlet prior with the concentration parameter $\eta = 5$). For topic-word distributions, we assumed that $\phi$ follows symmectic Dirichlet distribution with the concentration parameter $\delta=5$. MCMC sampling was implemented based on the order and scheme illustrated in Section 3. We set the outer iteration number as $I=100$, and inner iteration numbers as $n_1=10, n_2=10,$ and $n_3=3500$, which took about 7.16 hours in total. In addition, after some experimentation, $\delta_B$ was set as 0.5, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.526. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 500 were discarded as a burn-in, and every 3rd sample was taken for thinning. After these post-processing, MCMC diagnostic plots for IP1 and IP5 are attached in APPENDIX C as examples. There are some evidence of slightly bad mixing, which could be overcome if we sacrifice computation time and increase the size of thinning or iterations. \\\newline
+After treating multicast emails (those involving a single sender but multiple receivers) as multiple distinct emails, Vance county data contains 269 emails (only count the email with the number of words greater than 0) between 18 actors, including 620 vocabulary in total. We used $K=20$ topics assuming symmetric Dirichlet prior with the concentration parameter $\alpha=5$, and $C=5$ interaction patterns assuming multinomial prior with parameter $\gamma$ (coming from symmetric Dirichlet prior with the concentration parameter $\eta = 5$). For topic-word distributions, we assumed that $\phi$ follows symmectic Dirichlet distribution with the concentration parameter $\delta=5$. MCMC sampling was implemented based on the order and scheme illustrated in Section 3. We set the outer iteration number as $I=100$, and inner iteration numbers as $n_1=10, n_2=10,$ and $n_3=3500$, which took about 7.16 hours in total. In addition, after some experimentation, $\delta_B$ was set as 0.5, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.526. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 500 were discarded as a burn-in, and every 3rd sample was taken for thinning. After these post-processing, MCMC diagnostic plots for IP1 and IP5 are attached in APPENDIX C as examples, as well as geweke test statistics. There are some evidence of slightly bad mixing, which could be overcome if we sacrifice computation time and increase the size of thinning or iterations. \\\newline
 Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects corresponding to the interaction pattern, (b) the top 3 topics most likely to be generated conditioned on the interaction pattern, and (c) the top 10 most likely words to have generated conditioned on the topic and interaction pattern.
 \footnotesize
 \begin{table}[ht]
@@ -427,7 +427,7 @@ Below are the summary of IP-topic-word assignments. Each interaction pattern is 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.6\textwidth]{PerryWolfe.pdf} 
-	\label{fig:networkplot}
+	\label{fig:PerryWolfeplot}
 \end{figure}
 By examining the estimates in Table 2 and their corresponding interpretaiton, it seems that there exist significant differences in the effect of some dynamic network covariates, especially dyadic effects (send and receive). In order to see these differences more clearly, we compared the posterior distribution using the boxplots in Figure 2. Now, it is more apparent that the intercept and dyadic effects are different across the interaction patterns. Specifically, IP5 seems to be highly dependent on the history of dyadic interactions; that is, whether the sender had sent to or received from the receiver strongly affects the rate of their interactions.
 \begin{figure}[ht]
@@ -436,75 +436,51 @@ By examining the estimates in Table 2 and their corresponding interpretaiton, it
 	\caption{Posterior distribution of  $\boldsymbol{\beta}^{(c)}$ for Vance county emails}
 	\label{fig:Vanceboxplot}
 \end{figure}
-\newline Next, we scrutinize the topic-word distributions corresponding to each interaction patterns in Table 3. Unlike $\boldsymbol{\beta}$, there is no distinctive difference in the topic distributions $\mathcal{Z}$, given the assignment of interaction patterns to the documents $\mathcal{C}$. The top three topics given the interaction patterns are quite overlapping, possibly because the unconditional distribution of topics reveal that Topic 2, 1, 5, 6, and 7 dominate the whole topic-word assignments, with the probabilities of these top five topics sum up to 0.533. Moreover, the actual words are not significantly different, having several words like `director', `phones', `church', `street', or `henderson' (county seat of Vance county) appeared repetitively across the topics as well as interaction patterns.
+\newline Next, we scrutinize the topic distributions corresponding to each interaction patterns in Figure 3. Unlike $\boldsymbol{\beta}$, there is no distinctive difference in the topic distributions $\mathcal{Z}$, given the assignment of interaction patterns to the documents $\mathcal{C}$. The unconditional distribution of topics reveal that Topic 2, 1, 5, 6, and 7 dominate the whole topic assignments, with their probabilities of these top five topics sum up to 0.533, so it seems that those topics appeared repetitively across the interaction patterns.
 \footnotesize
-\begin{comment}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{Topicplot.pdf} 
+\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails}
+\label{fig:Vancebarplot}
+\end{figure}
+\normalsize
+\newline
+Furthermore, we look at the distribution of words given the topics, which corresponds to Algorithm 4 in the generative process. Table 3 lists top 10 topics with top 10 words that have the highest probability conditioned on the topic. It seems that the words are not significantly different, having several words like `director', `phones', `department', `description', or `henderson' (county seat of Vance county) appeared repetitively across the topics as well as interaction patterns. The word 'will' was ranked the highest for most of the topics, probably because it was not deleted during the text mining process while other similar ones like 'am', 'is', 'are', or 'can' are all removed.
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{|c|cccccccccc|} 
+\scalebox{0.9}{	\begin{tabular}{|l|l||l|l||l|l||l|l||l|l|}
 		\hline
-		\textbf{Topic} & 2 &   1  &    5   & 6  &7    &15 &18    & 16   &11 &  12\\
-		\hline
-			\textbf{\#emails} & 958 & 843 & 783 & 742 & 61& 463 & 461 & 451 & 447&356\\
-			\textbf{Prob.} & 0.128& 0.113& 0.105& 0.099&0.088&0.062&0.062& 0.060& 0.059&0.048\\
-		\hline
-	    	\textbf{Topic} &    17      &     8 &          3   & 9 &14&4  & 13 & 10 & 20 & 19\\\hline
-		\textbf{\#emails} & 339& 325& 173& 98 & 91&78& 70&58 & 44&31\\	\textbf{Prob.}	& 0.045& 0.043&0.023& 0.013&0.012& 0.010&0.009&0.008& 0.006& 0.004\\ 
-		\hline
-	\end{tabular}
-	\caption {Summary of posterior estimates of $\boldsymbol{\beta}^{(c)}$ for Vance county emails}
-	\label{table:Vancetopic}
+		\multicolumn{2}{|l||}{\textbf{Topic 2} (0.1282)}&\multicolumn{2}{l||}{\textbf{Topic 1} (0.1128)}&\multicolumn{2}{l||}{\textbf{Topic 5} (0.1048)}&\multicolumn{2}{l||}{\textbf{Topic 6} (0.0993)}&\multicolumn{2}{l|}{\textbf{Topic 7} (0.0885)}\\
+		\hline\hline
+		\scriptsize will&\scriptsize 0.0658&\scriptsize will&\scriptsize 0.0356&\scriptsize will&\scriptsize 0.0536&\scriptsize will&\scriptsize 0.0687&\scriptsize will&\scriptsize 0.0348\\
+		\scriptsize director&\scriptsize 0.0344&\scriptsize director&\scriptsize  0.0285&\scriptsize street&\scriptsize 0.0358&\scriptsize director&\scriptsize 0.0175&\scriptsize message&\scriptsize 0.0197\\
+		\scriptsize operations&\scriptsize  0.0219&\scriptsize october&\scriptsize 0.0190&\scriptsize operations&\scriptsize 0.0255&\scriptsize electronic&\scriptsize 0.0175&\scriptsize suite&\scriptsize 0.0197\\
+		\scriptsize october&\scriptsize 0.0177&\scriptsize description&\scriptsize 0.0166&\scriptsize department&\scriptsize 0.0204&\scriptsize henderson&\scriptsize 0.0175&\scriptsize week&\scriptsize 0.0166\\
+		\scriptsize phone&\scriptsize 0.0157&\scriptsize henderson&\scriptsize  0.0166&\scriptsize henderson&\scriptsize 0.0204&\scriptsize church&\scriptsize 0.0148&\scriptsize emergency&\scriptsize 0.0151\\
+		\scriptsize system&\scriptsize 0.0157&\scriptsize latest&\scriptsize 0.0166&\scriptsize church&\scriptsize0.0166&\scriptsize fax&\scriptsize 0.0148&\scriptsize fax&\scriptsize 0.0151\\
+		\scriptsize phones&\scriptsize 0.0146&\scriptsize electronic&\scriptsize  0.0142&\scriptsize center&\scriptsize 0.0153&\scriptsize heads&\scriptsize 0.0148&\scriptsize folks&\scriptsize 0.0151\\
+		\scriptsize message&\scriptsize 0.0136&\scriptsize phones&\scriptsize  0.0142&\scriptsize folks&\scriptsize 0.0140&\scriptsize morning&\scriptsize 0.0148&\scriptsize henderson&\scriptsize 0.0151\\
+		\scriptsize henderson&\scriptsize 0.0125&\scriptsize attached&\scriptsize 0.0119&\scriptsize meeting&\scriptsize 0.0140&\scriptsize description&\scriptsize 0.0135&\scriptsize jail&\scriptsize 0.0151\\
+		\scriptsize street&\scriptsize 0.0125&\scriptsize phone&\scriptsize  0.0119&\scriptsize phones&\scriptsize 0.0140&\scriptsize department&\scriptsize 0.0121&\scriptsize director&\scriptsize0.0136\\
+		\hline\hline
+	\multicolumn{2}{|l||}{\textbf{Topic 15} (0.0620)}&\multicolumn{2}{l||}{\textbf{Topic 18} (0.0617)}&\multicolumn{2}{l||}{\textbf{Topic 16} (0.0604)}&\multicolumn{2}{l||}{\textbf{Topic 11} (0.0598)}&\multicolumn{2}{l|}{\textbf{Topic 12} (0.0476)}\\
+	\hline\hline
+	\scriptsize department&\scriptsize 0.0346&\scriptsize will&\scriptsize 0.0347&\scriptsize will&\scriptsize 0.0443&\scriptsize director&\scriptsize 0.0313&\scriptsize will&\scriptsize 0.0393\\
+	\scriptsize will&\scriptsize 0.0259&\scriptsize phones&\scriptsize  0.0347&\scriptsize director&\scriptsize 0.0266&\scriptsize phone&\scriptsize 0.0268&\scriptsize church&\scriptsize 0.0281\\
+	\scriptsize director&\scriptsize  0.0194&\scriptsize phone&\scriptsize 0.0325&\scriptsize department&\scriptsize 0.0244&\scriptsize system&\scriptsize 0.0246&\scriptsize department&\scriptsize 0.0253\\
+	\scriptsize phone&\scriptsize 0.0194&\scriptsize attached&\scriptsize 0.0174&\scriptsize henderson&\scriptsize 0.0244&\scriptsize will&\scriptsize 0.0201&\scriptsize extension&\scriptsize 0.0253\\
+	\scriptsize directory&\scriptsize 0.0151&\scriptsize henderson&\scriptsize  0.0174&\scriptsize electronic&\scriptsize 0.0200&\scriptsize cutting&\scriptsize 0.0179&\scriptsize phone&\scriptsize 0.0253\\
+	\scriptsize message&\scriptsize 0.0151&\scriptsize sure&\scriptsize 0.0174&\scriptsize heads&\scriptsize 0.0177&\scriptsize department&\scriptsize 0.0179&\scriptsize street&\scriptsize 0.0197\\
+	\scriptsize office&\scriptsize 0.0151&\scriptsize system&\scriptsize 0.0174&\scriptsize phone&\scriptsize 0.0177&\scriptsize emergency&\scriptsize 0.0179&\scriptsize description&\scriptsize 0.0169\\
+	\scriptsize reciew&\scriptsize 0.0151&\scriptsize description&\scriptsize 0.0152&\scriptsize street&\scriptsize 0.0177&\scriptsize description&\scriptsize 0.0157&\scriptsize emergency&\scriptsize 0.0169\\
+	\scriptsize system&\scriptsize 0.0151&\scriptsize attached&\scriptsize 0.0130&\scriptsize emergency&\scriptsize 0.0155&\scriptsize operations&\scriptsize 0.0157&\scriptsize provided&\scriptsize 0.0169\\
+	\scriptsize attached&\scriptsize 0.0130&\scriptsize electronic&\scriptsize  0.0130&\scriptsize attached&\scriptsize 0.0133&\scriptsize young&\scriptsize 0.0157&\scriptsize time&\scriptsize0.0169\\
+	\hline
+		\end{tabular}}
+	\caption {Summary of top 10 topics with top 10 words that have the highest probability conditioned on the topic}
+	\label{table:VancewordsMCMC}
 \end{table}
-\end{comment}
-\begin{table}[ht]
-		\centering
-\begin{tabular}{|l|l||l|l||l|l||l|l||l|l|}
-	\hline
-	\multicolumn{2}{|l||}{\textbf{IP1} (61 emails)}&\multicolumn{2}{l||}{\textbf{IP2} (38 emails)}&\multicolumn{2}{l||}{\textbf{IP3} (57 emails)}&\multicolumn{2}{l||}{\textbf{IP4} (56 emails)}&\multicolumn{2}{l|}{\textbf{IP5} (57 emails)}\\
-	\hline\hline
-	Topic 1&0.141&Topic 2&0.143&Topic 1 &0.151 & Topic 6 & 0.123 & Topic 2& 0.186 \\
-	\hline
-\scriptsize will&\scriptsize 0.0313&\scriptsize will&\scriptsize 0.0718&\scriptsize will&\scriptsize 0.0410&\scriptsize will&\scriptsize 0.0676&\scriptsize will&\scriptsize 0.0842\\
-\scriptsize october&\scriptsize 0.0313&\scriptsize director&\scriptsize  0.0276&\scriptsize director&\scriptsize 0.0273&\scriptsize morning&\scriptsize 0.0338&\scriptsize director&\scriptsize 0.0330\\
-\scriptsize description&\scriptsize  0.0223&\scriptsize system&\scriptsize 0.0276&\scriptsize description&\scriptsize 0.0239&\scriptsize electronic&\scriptsize 0.0338&\scriptsize opeartions&\scriptsize 0.0293\\
-\scriptsize director&\scriptsize 0.0179&\scriptsize center&\scriptsize 0.0221&\scriptsize latest&\scriptsize 0.0239&\scriptsize church&\scriptsize 0.0270&\scriptsize phone&\scriptsize 0.0219\\
-\scriptsize planning&\scriptsize 0.0179&\scriptsize directory&\scriptsize  0.0221&\scriptsize phones&\scriptsize 0.0205&\scriptsize suite&\scriptsize 0.0270&\scriptsize church&\scriptsize 0.0183\\
-\scriptsize public&\scriptsize 0.0179&\scriptsize henderson&\scriptsize 0.0166&\scriptsize henderson&\scriptsize 0.0171&\scriptsize henderson&\scriptsize 0.0203&\scriptsize october&\scriptsize 0.0183\\
-\scriptsize week&\scriptsize 0.0179&\scriptsize operations&\scriptsize 0.0166&\scriptsize attached&\scriptsize  0.0171&\scriptsize enp&\scriptsize 0.0203&\scriptsize street&\scriptsize 0.0147\\
-\scriptsize henderson&\scriptsize 0.0134&\scriptsize suite&\scriptsize 0.0166&\scriptsize suite&\scriptsize 0.0137&\scriptsize hereto&\scriptsize  0.0203&\scriptsize development&\scriptsize  0.0147\\
-\scriptsize phone&\scriptsize 0.0134&\scriptsize meeting&\scriptsize 0.0166&\scriptsize office&\scriptsize 0.0137&\scriptsize description&\scriptsize 0.0135&\scriptsize center&\scriptsize  0.0147\\
-\scriptsize development&\scriptsize 0.0134&\scriptsize phone&\scriptsize  0.0166&\scriptsize cem&\scriptsize 0.0137&\scriptsize street&\scriptsize 0.0135&\scriptsize system&\scriptsize 0.0147\\
-	\hline\hline
-	Topic 2&0.134&Topic 17&0.115&Topic 5 &0.130& Topic 2 & 0.105 & Topic 7 & 0.137 \\
-	\hline
-	\scriptsize will&\scriptsize 0.0657&\scriptsize will&\scriptsize 0.0342&\scriptsize will&\scriptsize 0.0873&\scriptsize operations&\scriptsize 0.0476&\scriptsize will&\scriptsize 0.0448\\
-	\scriptsize director&\scriptsize0.0329&\scriptsize week&\scriptsize 0.0342&\scriptsize street&\scriptsize 0.0278&\scriptsize director&\scriptsize 0.0397&\scriptsize jail &\scriptsize  0.0299\\
-	\scriptsize phones&\scriptsize 0.0282&\scriptsize street&\scriptsize 0.0274&\scriptsize operations&\scriptsize 0.0278&\scriptsize suite&\scriptsize 0.0317&\scriptsize description&\scriptsize 0.0199\\
-	\scriptsize department&\scriptsize 0.0235&\scriptsize message&\scriptsize  0.0274&\scriptsize church&\scriptsize 0.0238&\scriptsize message&\scriptsize 0.0317&\scriptsize emergency&\scriptsize 0.0199\\
-	\scriptsize heads&\scriptsize 0.0235&\scriptsize church&\scriptsize 0.0205&\scriptsize description&\scriptsize 0.0198&\scriptsize street&\scriptsize 0.0238&\scriptsize center&\scriptsize  0.0199\\
-	\scriptsize review&\scriptsize 0.0188&\scriptsize time&\scriptsize 0.0205&\scriptsize phone&\scriptsize 0.0198&\scriptsize planning&\scriptsize 0.0238&\scriptsize director&\scriptsize 0.0149\\
-	\scriptsize october&\scriptsize 0.0188&\scriptsize lines&\scriptsize 0.0205&\scriptsize system&\scriptsize0.0198&\scriptsize  will&\scriptsize 0.0238&\scriptsize henderson&\scriptsize 0.0149\\
-	\scriptsize system&\scriptsize 0.0188&\scriptsize operations&\scriptsize 0.0137&\scriptsize phones&\scriptsize0.0198&\scriptsize emergency&\scriptsize 0.0238&\scriptsize suite&\scriptsize 0.0149\\
-	\scriptsize extension&\scriptsize 0.0188&\scriptsize meeting&\scriptsize 0.0137&\scriptsize  extension&\scriptsize0.0198&\scriptsize office&\scriptsize 0.0238&\scriptsize phone&\scriptsize 0.0149\\
-	\scriptsize description&\scriptsize 0.0141&\scriptsize system&\scriptsize 0.0137&\scriptsize center&\scriptsize0.0159&\scriptsize today&\scriptsize 0.0238&\scriptsize office&\scriptsize 0.0149\\
-	\hline\hline
-	Topic 6&0.102&Topic 5&0.107&Topic 6&0.116& Topic 16 & 0.100& Topic 5&0.107\\
-	\hline
-	\scriptsize will&\scriptsize 0.0432&\scriptsize will&\scriptsize0.0889&\scriptsize will&\scriptsize 0.0982&\scriptsize message&\scriptsize 0.0417&\scriptsize street&\scriptsize 0.0446\\
-	\scriptsize director&\scriptsize 0.0370&\scriptsize street&\scriptsize 0.0222&\scriptsize fax&\scriptsize0.0223&\scriptsize will&\scriptsize 0.0333&\scriptsize operations&\scriptsize 0.0255\\
-	\scriptsize street&\scriptsize 0.0247&\scriptsize system&\scriptsize  0.0222&\scriptsize henderson&\scriptsize 0.0179&\scriptsize church&\scriptsize 0.0250&\scriptsize meeting&\scriptsize 0.0255\\
-	\scriptsize electronic&\scriptsize 0.0247&\scriptsize questions&\scriptsize 0.0222&\scriptsize system&\scriptsize 0.0179&\scriptsize operations&\scriptsize 0.0250&\scriptsize folks&\scriptsize 0.0255\\
-	\scriptsize heads&\scriptsize 0.0247&\scriptsize department&\scriptsize 0.0222&\scriptsize copies&\scriptsize 0.0179&\scriptsize electronic&\scriptsize 0.0250&\scriptsize coming&\scriptsize 0.0255\\
-	\scriptsize fax&\scriptsize 0.0185&\scriptsize chapter&\scriptsize 0.0222&\scriptsize description&\scriptsize 0.0134&\scriptsize coming&\scriptsize 0.0250&\scriptsize henderson&\scriptsize  0.0191\\
-	\scriptsize church&\scriptsize 0.0185&\scriptsize phones&\scriptsize 0.0222&\scriptsize church&\scriptsize  0.0134&\scriptsize latest&\scriptsize 0.0250&\scriptsize planning&\scriptsize 0.0191\\
-	\scriptsize instructions&\scriptsize 0.0185&\scriptsize cutting&\scriptsize 0.0222&\scriptsize meeting&\scriptsize  0.0134&\scriptsize director&\scriptsize 0.0167&\scriptsize will&\scriptsize 0.0191\\
-	\scriptsize time&\scriptsize 0.0185&\scriptsize director&\scriptsize 0.0148&\scriptsize heads&\scriptsize  0.0134&\scriptsize henderson&\scriptsize 0.0167&\scriptsize emergency&\scriptsize 0.0191\\
-	\scriptsize message&\scriptsize 0.0185&\scriptsize henderson&\scriptsize 0.0148&\scriptsize sure&\scriptsize  0.0134&\scriptsize street&\scriptsize 0.0167&\scriptsize system&\scriptsize 0.0191\\
-	\hline
-\end{tabular}
-	 		\caption {Summary of MCMC sampling results for Vance county emails. Each interaction pattern is shown with the top 3 topics and 10 words with the highest probability conditioned on that topic.}
-	 		\label{table:Vancewords}
-	 		\end{table}
 \normalsize
 \newline
 Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and their corresponding topic assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the same method to another corpus, Dare county email data, in hope of finding more interesting results and also comparing the outcomes between the two counties.
@@ -741,12 +717,30 @@ In addition, the conditional probability that a new word generated in the docume
  		\caption{Traceplots and density plots of $\boldsymbol{\beta}^{(1)}$}
  	\label{fig:IP1}
  	 \end{figure}
- 	  \begin{figure}[ht]
+\footnotesize
+\begin{verbatim}
+> geweke.diag(mcmc)
+
+Fraction in 1st window = 0.1
+Fraction in 2nd window = 0.5 
+
+var1    var2    var3    var4    var5    var6    var7 
+-0.4455  1.6209  0.4716  1.1981  0.2734 -0.5643  1.9312 
+\end{verbatim} 	  \begin{figure}[ht]
  	  	\centering
  	 	\includegraphics[width=1\textwidth]{IP5.pdf} 
  		 		 		\label{fig:IP5}
  			\caption{Traceplots and density plots of $\boldsymbol{\beta}^{(5)}$}
  	 \end{figure}
+ 	 \begin{verbatim}
+ 	 > geweke.diag(mcmc)
+ 	 
+ 	 Fraction in 1st window = 0.1
+ 	 Fraction in 2nd window = 0.5 
+ 	 
+ 	 var1    var2    var3    var4    var5    var6    var7 
+ 	 -0.4627  0.5963  1.4179  0.6546  0.9202  2.1704  0.9077 
+ 	 \end{verbatim}
 \bibliographystyle{apalike}
 \bibliography{BominBib}
 
