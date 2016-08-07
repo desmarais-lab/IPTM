@@ -51,7 +51,7 @@
 Current CPME model does not involve any of temporal component, which plays a key role in email interactions. Intuitively, past interaction behaviors significantly influence future ones; for example, if an actor $i$ sent an email to actor $j$, then $j$ is highly likely to send an email back to $i$ as a response (i.e. reciprocity). Moreover, the recency and frequency of past interactions can also be considered to effectively predict future interactions. Thus, as an exploratory data analysis, point process model for directional interaction is applied to the North Carolina email data. Starting from the existing framework focused on the analysis of content-partitioned subnetworks, I would suggest an extended approach to analyze the data using the timestamps in the email, aiming to develop a joint dynamic or longitudinal model of text-valued ties.\\ \newline
  CPME model is a Bayesian framework using two well-known methods: Latent Dirichlet Allocation (LDA) and Latent Space Model (LSM). Basically, existence of edge depends on topic assignment $k$ (LDA) and its corresponding interaction pattern c. Each topic $k=1,…,K$ has one interaction pattern c=1,…,C, and each interaction pattern posits unique latent space (LSM), thus generating $A\times A$ matrix of probabilities $P^{(c)}$ that a message author
 a will include recipient $r$ on the message, given that it is about
-a topic in cluster $c$.  Incorporating point process approach, now assume that under each interaction pattern, we have $A\times A$ matrix of stochastic intensities at time $t$, $\boldsymbol{\lambda}^{(c)}(t)$, which depend on the history of interaction between the sender and receiver. We will refer this as  interaction-partitioned topic models (IPTM). 
+a topic in cluster $c$.  Incorporating point process approach, now assume that under each interaction pattern, we have $A\times A$ matrix of stochastic intensities at time $t$, $\boldsymbol{\lambda}^{(c)}(t)$, which depends on $\boldsymbol{x}^{(c)}_t(i, j)$, the history of interaction between the sender and receiver corresponding to the interaction pattern $c$. We will refer this as  interaction-partitioned topic models (IPTM). 
 \section{IPTM Model}
 In this section, we introduce multiplicative Cox regression model for the edge formation process in a longitudinal communication network. For concreteness, we frame our discussion of this model in terms of email data, although it is generally applicable to any similarly-structured communication data.
 \subsection{Point Process Framework}
@@ -61,24 +61,24 @@ text of that email, an integer $i^{(d)} \in \{1,...,A\}$ indicating the identity
 \mathbf{N}^{(d|c)}(t)=\int_0^t\boldsymbol{\lambda}^{(c)}(s)ds + \mathbf{M}(t)
 \end{equation}
 where essentially $\boldsymbol{\lambda}^{(c)}(t)$ and $\mathbf{M}(t)$ may be viewed as the (deterministic) signal and (martingale) noise, respectively.\\ \newline
-Following the multiplicative Cox model of the intensity process $\boldsymbol{\lambda}^{(c)}(t)$ given $\boldsymbol{H}_{t-}$, the entire past of the network up to but not including time $t$, we consider for each potential directed edge $(i, j)$ the intensity forms:
+Following the multiplicative Cox model of the intensity process $\boldsymbol{\lambda}^{(c)}(t)$ given $\boldsymbol{H}^{(c)}_{t-}$, the entire past of the network corresponding to the interaction pattern $c$ up to but not including time $t$, we consider for each potential directed edge $(i, j)$ the intensity forms:
 \begin{equation}
-\lambda^{(c)}_{ij}(t|\boldsymbol{H}_{t-})=\lambda_0\cdot \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}
+\lambda^{(c)}_{ij}(t|\boldsymbol{H}^{(c)}_{t-})=\lambda_0\cdot \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}
 \end{equation}
-where $\lambda_0$ is the common baseline hazards for the overall interaction, $\boldsymbol{\beta}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$, $\boldsymbol{x}_t(i, j)$ is a vector of $p$ statistics for directed edge $(i, j)$ constructed based on
-$\boldsymbol{H}_{t-}$, and $\mathcal{A}^{(c)}$ is the predictable receiver set of sender $i$ corresponding to the interaction pattern $c$ within the set of all possible actors $\mathcal{A}$. Equivalently, by fixing $\lambda_0=1$, we can rewrite (2): 
+where $\lambda_0$ is the common baseline hazards for the overall interaction, $\boldsymbol{\beta}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$, $\boldsymbol{x}^{(c)}_t(i, j)$ is a vector of $p$ statistics for directed edge $(i, j)$ constructed based on
+$\boldsymbol{H}^{(c)}_{t-}$, and $\mathcal{A}^{(c)}$ is the predictable receiver set of sender $i$ corresponding to the interaction pattern $c$ within the set of all possible actors $\mathcal{A}$. Equivalently, by fixing $\lambda_0=1$, we can rewrite (2): 
 \begin{equation}
-\lambda^{(c)}_{ij}(t|\boldsymbol{H}_{t-})= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}
+\lambda^{(c)}_{ij}(t|\boldsymbol{H}^{(c)}_{t-})= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}
 \end{equation}
-where the first element of $\boldsymbol{\beta}^{(c)}$ corresponds to the deviation from $\lambda_0$, by setting $\boldsymbol{x}^*_t(i, j)=(\boldsymbol{1}, \boldsymbol{x}_t(i, j))$.\\ \newline
+where the first element of $\boldsymbol{\beta}^{(c)}$ corresponds to the deviation from $\lambda_0$, by setting $\boldsymbol{x}^{*(c)}_t(i, j)=(\boldsymbol{1}, \boldsymbol{x}^{(c)}_t(i, j))$.\\ \newline
 Based on the framework illustrated so far, the likelihood we will use for inference procedure is that of  \cite{PerryWolfe2012}. For each type of interaction pattern $c=1,...,C$, estimation for $\boldsymbol{\beta}^{(c)}$ proceeds by maximizing the so-called partial likelihood of \cite{cox1992regression}: 
 \begin{equation}
-PL_t(\boldsymbol{\beta}^{(c)})=\prod_{d: c^{(d)}=c} \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}},
+PL_t(\boldsymbol{\beta}^{(c)})=\prod_{d: c^{(d)}=c} \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}},
 \end{equation}
 where $t^{(d)}$, $i^{(d)}$, and $j^{(d)}$ are the time, sender, and receiver
 	of the $d$th document. For computational efficiency, we will use the log-partial likelihood:
 \begin{equation}
-\mbox{log}PL_t(\boldsymbol{\beta}^{(c)})=\sum_{d: c^{(d)}=c} \Big\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\}.
+\mbox{log}PL_t(\boldsymbol{\beta}^{(c)})=\sum_{d: c^{(d)}=c} \Big\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\}.
 \end{equation}
 \subsection{Generative Process}
 The generative process of this model follows the topic model (LDA) of \cite{Blei2003} and the author-topic model of \cite{rosen2004author}. Same as LDA, documents are represented as random mixtures over latent topics, where each topic is characterized by a distribution over words. However, one crucial difference is that each document is connected to one type of interaction pattern, and the topic distributions vary depending on the assigned interaction pattern. \\ \newline Conditioned on the interaction pattern and their distributions over topics, the process by which a document is generated can be summarized as follows: first, an interaction pattern is chosen by multinomial for each document; next, a topic is sampled for each word from the distribution over topics associated with the interaction pattern of the document; finally, words themselves are sampled from the distribution over words associated with each topic. At the same time, the unique sender-recipient pair of the document is determined by the rate of intensities associated with the interaction pattern and history of interactions until the time the document is written. Below are the detailed generative process for each document in a corpus $D$ and its plate notation (Figure 1), and Table 1 summarizes the notations used in this paper:
@@ -88,9 +88,11 @@ The generative process of this model follows the topic model (LDA) of \cite{Blei
 \item[2.] For each of the $C$ interaction patterns \textbf{[See Algorithm 2]}:
 \begin{itemize}
 	\item[(a)] $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$\\ 
-	- The vector of coefficients depends on the interaction pattern $c$. This means that there is variation in the degree of influence from the network statistics $\boldsymbol{x}_t(i, j)$ that rely on the history of interactions.
-	\item[(b)] Using $\boldsymbol{\beta}^{(c)}$ in (a), update $\boldsymbol{\lambda}^{(c)}(t)$\\
-	- We use the equation $\lambda^{(c)}_{ij}(t)= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}$ for all $i \in \mathcal{A}, j \in \mathcal{A}, i\neq j$.
+	- The vector of coefficients depends on the interaction pattern $c$. This means that there is variation in the degree of influence from the network statistics.
+	\item[(b)] Update $\boldsymbol{x}^{*(c)}_t(i, j)$\\
+	- Corpus are partitioned according to the assignment of interaction patterns, and the dynamic network statistics are calculated based on the documents of the same interaction pattern.
+	\item[(c)] Using $\boldsymbol{\beta}^{(c)}$ in (a), update $\boldsymbol{\lambda}^{(c)}(t)$\\
+	- Use the equation $\lambda^{(c)}_{ij}(t)= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}$ for all $i \in \mathcal{A}, j \in \mathcal{A}, i\neq j$.
 	\item[(c)] $\boldsymbol{\theta}^{(c)}\sim \mbox{Dir}(\alpha, \textbf{m})$\\
 	- Each email has a discrete distribution over topics $\boldsymbol{\theta}^{(c)}$, since the topic proportions for documents in the same cluster are drawn from the same distribution. The Dirichlet parameters $\alpha$ and $\textbf{m}$ may or may not vary by interaction patterns.
 \end{itemize}
@@ -119,9 +121,10 @@ The generative process of this model follows the topic model (LDA) of \cite{Blei
  	\caption{Interaction Patterns}
  	\For{c=1 to C}{
  		draw $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$\\
+ 		set $\boldsymbol{x}^{*(c)}_t(i, j)$ according to Section 2.3\\
  	\For{i=1 to A}{
  	\For{j=1 to A}{
- 		\If{i $\neq$ j}{ set $\lambda^{(c)}_{ij}(t)= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^*_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}$}
+ 		\If{i $\neq$ j}{ set $\lambda^{(c)}_{ij}(t)= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}^{(c)}\}$}
  	\Else {set $\lambda^{(c)}_{ij}(t)=0$}
  		}}
  			draw $\boldsymbol{\theta}^{(c)}$ $\sim$ Dir($\alpha, \textbf{m}$)
@@ -149,7 +152,7 @@ The generative process of this model follows the topic model (LDA) of \cite{Blei
  \small
  \begin{figure}[ht]
  	\centering
- 	\scalebox{1}{ \begin{tikzpicture}
+ 	\scalebox{0.9}{ \begin{tikzpicture}
  	\tikzstyle{main}=[circle, minimum size = 13mm, thick, draw =black!80, node distance = 10.5mm]
  	\tikzstyle{connect}=[-latex, thick]
  	\tikzstyle{box}=[rectangle, draw=black!100]
@@ -161,8 +164,8 @@ The generative process of this model follows the topic model (LDA) of \cite{Blei
  	\node[main] (phi) [above=of w,label=center:$\boldsymbol{\phi}^{(k)}$] { };
  	\node[main] (delta) [above=of phi,label=center:$\delta$] { };
  	 			\node[main] (eta) [above=of gamma,label=center:${\eta}$] { };
-\node[main, fill = black!10] (x) [right=of N,label=center:$\boldsymbol{x}_t{(i,j)}$] { };
  	 		 	 						\node[main] (beta) [above=of N ,label=center:$\boldsymbol{\beta}^{(c)}$] { };
+ 	 		 	 						\node[main, fill = black!10] (x) [right=of beta ,label=center:$\boldsymbol{x}^{(c)}_t{(i,j)}$] { };
  	 		 	 							\node[main] (theta) [above=of z,label=center:$\boldsymbol{\theta}^{(c)}$] { };
  	 		 	 										 	\node[main] (alpha) [above=of theta,label=center:$\alpha$] { };
  	 		 	 						 	 		\node[main] (sigma) [above=of beta,label=center:$\sigma^2$] { };
@@ -178,16 +181,16 @@ The generative process of this model follows the topic model (LDA) of \cite{Blei
  	(c) edge [connect] (N)
  	(c) edge [connect] (z)
  		(eta) edge [connect] (gamma);
- 			\node[rectangle, inner sep=3mm, fit=  (x),label=below left:$A$, xshift=5mm, yshift=5mm] {};
- 			\node[rectangle, inner sep=3mm,draw=black!100, fit= (beta)(theta)] {};
- 				\node[rectangle, inner sep=4mm, fit=  (beta)(theta) ,label= below left:$C$, xshift=-17mm, yshift=5.5mm] {};
+ 			\node[rectangle, inner sep=2.5mm, fit=  (x),label=below left:$A$, xshift=5mm, yshift=5mm] {};
+ 			\node[rectangle, inner sep=3mm,draw=black!100, fit= (beta)(theta)(x)] {};
+ 				\node[rectangle, inner sep=4mm, fit=  (beta)(theta)(x) ,label= below left:$C$, xshift=-29mm, yshift=5.5mm] {};
  	\node[rectangle, inner sep=3mm, draw=black!100, fit= (phi)] {};
- 		\node[rectangle, inner sep=3mm, draw=black!100, fit= (x) ] {};
+ 		\node[rectangle, inner sep=1.5mm, draw=black!100, fit= (x) ] {};
  		\node[rectangle, inner sep=0mm, fit= (phi),label=below left:$K$, xshift=2.5mm, yshift=1.5mm] {};
  	\node[rectangle, inner sep=0mm, fit= (w),label=below left:$M^{(d)}$, xshift=6.5mm, yshift=2mm] {};
  	\node[rectangle, inner sep=3mm,draw=black!100, fit= (w)(z)] {};
- 	\node[rectangle, inner sep=4mm, fit= (c) (N) (x) ,label=below left:$D$, xshift=-69mm, yshift=1.5mm] {};
- 	\node[rectangle, inner sep=6.6mm, draw=black!100, fit =(c) (z) (w) (N) (x) ] {};
+ 	\node[rectangle, inner sep=3.5mm, fit= (c) (N) ,label=below left:$D$, xshift=-58mm, yshift=1.5mm] {};
+ 	\node[rectangle, inner sep=6.2mm, draw=black!100, fit =(c) (z) (w) (N) ] {};
  	\end{tikzpicture}}
  	\caption{Plate notation of IPTM}
  	\label{fig:plate}
@@ -255,7 +258,7 @@ The generative process of this model follows the topic model (LDA) of \cite{Blei
   						\hline		
   						Coefficient of the intensity process given interaction pattern $c$ &$\boldsymbol{\beta}^{(c)}$ & $p$-dimensional vector\\
   							\hline		
-  					Network statistics for directed edge $(i, j)$ &$\boldsymbol{x}_t{(i,j)}$ & $p$-dimensional vector\\
+  					Network statistics for directed edge $(i, j)$ given interaction pattern $c$ &$\boldsymbol{x}^{(c)}_t{(i,j)}$ & $p$-dimensional vector\\
   						\hline		
   				Counting process in the $d^{th}$ document given interaction pattern &	$\mathbf{N}^{(d|c)}(t)$ & $A\times A$ matrix\\
   						\hline
@@ -266,9 +269,9 @@ The generative process of this model follows the topic model (LDA) of \cite{Blei
  \end{table}
 \normalsize
 \subsection{Dynamic covariates to measure network effects}
-The network statistics $\boldsymbol{x}_t(i, j)$ of equations (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\\newline
-Following \cite{PerryWolfe2012} as above, we use 6 effects as components of $\boldsymbol{x}_t(i, j)$. The first two behaviors (send and receive) are dyadic, involving exactly two actors,
-while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, involving exactly three actors. In addition, we include intercept term and use $\boldsymbol{x}^*_t(i, j)$ so that we can estimate the baseline intensities at the same time. However, one different thing from the existing specification is that we define the effects not to be based on finite sub-interval, which require large number of dimention. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. 
+The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\\newline
+Following \cite{PerryWolfe2012} as above, we use 6 effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$. The first two behaviors (send and receive) are dyadic, involving exactly two actors,
+while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, involving exactly three actors. In addition, we include intercept term and use $\boldsymbol{x}^{*(c)}_t(i, j)$ so that we can estimate the baseline intensities at the same time. However, one different thing from the existing specification is that we define the effects not to be based on finite sub-interval, which require large number of dimention. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. 
 \begin{itemize}[leftmargin=*,rightmargin=-1cm ]
 \item [0.] $\mbox{intercept}_t(i, j) = 1$
 \item [1.]  $\mbox{send}_t(i, j)=\sum\limits_{d: t^{(d)}<t} I\{i\rightarrow j\}\cdot g(t-t^{(d)})$
@@ -281,7 +284,7 @@ while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, inv
 Here, $g(t-t^{(d)})$ reflects the difference between current time $t$ and the timestamp of previous email $t^{(d)}$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t^{(d)})=\lambda e^{-\lambda(t-t^{(d)})}$ where $\lambda$ is the parameter of speed at
 which sender replies to emails, with larger values indicating faster response times. Indeed, $\lambda^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, we can fix $\lambda=1$ but it may vary based on the nature of document.
 \section{Inference}
-The inference for IPTM is similar to that of CPME. In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the sender, recipient, and timestamps of the email in the form of the counting process $\mathcal{N}=\{\boldsymbol{N}^{(d)}(t^{(d)}) \}_{d=1}^{D}.$ Next,  $\mathcal{X}=\{\boldsymbol{x}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(c)} \}_{c=1}^{C}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}^{(d)} \}_{d=1}^{D},$ and $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$.\\
+The inference for IPTM is similar to that of CPME. In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the sender, recipient, and timestamps of the email in the form of the counting process $\mathcal{N}=\{\boldsymbol{N}^{(d)}(t^{(d)}) \}_{d=1}^{D}.$ Next,  $\mathcal{X}=\{\boldsymbol{x}^{(c)}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(c)} \}_{c=1}^{C}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}^{(d)} \}_{d=1}^{D},$ and $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$.\\
 \newline 
 Below is the the big joint distribution
 \begin{equation}
@@ -307,15 +310,15 @@ P( \mathcal{Z}, \mathcal{C}, \mathcal{B}|\mathcal{W}, \mathcal{N}, \mathcal{X}, 
   &\propto P(c^{(d)}=c, \boldsymbol{w}^{(d)}, \boldsymbol{z}^{(d)},  \mathbf{N}^{(d)}{(t^{(d)})}|\mathcal{W}_{\backslash d}, \mathcal{Z}_{\backslash d},\mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\& \propto P(c^{(d)}=c|\mathcal{C}_{\backslash d}, \boldsymbol{\gamma}) P( \mathbf{N}^{(d)}{(t^{(d)})}| c^{(d)}=c, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X})P(\boldsymbol{w}^{(d)}, \boldsymbol{z}^{(d)}|c^{(d)}=c, \mathcal{W}_{\backslash d}, \mathcal{Z}_{\backslash d}, \mathcal{C}_{\backslash d}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}), 
  \end{aligned}
   \end{equation}
- where $P(c^{(d)}=c|\mathcal{C}_{\backslash d}, \boldsymbol{\gamma})$ comes from the multinomial prior $\gamma$ and $P( \mathbf{N}^{(d)}{(t^{(d)})}| c^{(d)}=c, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X})$ is the probability of observing a document with the sender, receiver, and time equal to $(i=i^{(d)}, j=j^{(d)}, t=t^{(d)})$, respectively, given a set of parameter values. We will replace this by the partial likelihood in Equation (4) (without product term since resampling of $c$ is document-specific). For the last term $P(\boldsymbol{w}^{(d)}, \boldsymbol{z}^{(d)}|c^{(d)}=c, \mathcal{W}_{\backslash d}, \mathcal{Z}_{\backslash d}, \mathcal{C}_{\backslash d}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$, we will follow typical LDA approach. \\ \newline Using Bayes' theorem (See APPENDIX B for conditional probabilty of the last term), we have
+ where $P(c^{(d)}=c|\mathcal{C}_{\backslash d}, \boldsymbol{\gamma})$ comes from the multinomial prior $\gamma$ and $P( \mathbf{N}^{(d)}{(t^{(d)})}| c^{(d)}=c, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X})$ is the probability of observing a document with the sender, receiver, and time equal to $(i=i^{(d)}, j=j^{(d)}, t=t^{(d)})$, respectively, given a set of parameter values. We will replace this by the partial likelihood in Equation (4) (without the product term since resampling of $c$ is document-specific). For the last term $P(\boldsymbol{w}^{(d)}, \boldsymbol{z}^{(d)}|c^{(d)}=c, \mathcal{W}_{\backslash d}, \mathcal{Z}_{\backslash d}, \mathcal{C}_{\backslash d}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$, we will follow typical LDA approach. \\ \newline Using Bayes' theorem (See APPENDIX B for conditional probabilty of the last term), we have
    \begin{equation}
-   \begin{aligned} &=\Big[ \gamma_{c}\Big]\times\Big[ \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}}\Big]\times\Big[\prod_{m=1}^{M^{(d)}}
+   \begin{aligned} &=\Big[ \gamma_{c}\Big]\times\Big[ \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}\Big]\times\Big[\prod_{m=1}^{M^{(d)}}
     \frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}\Big],
    \end{aligned}
    \end{equation}
 where $M^{CK}_{ck}$ is the number of times topic k shows up given the interaction pattern $c$ over the entire corpus. Furthermore, we can take the log of Equation (10) to avoid numerical issue from exponentiation and increase the speed of computation, which becomes:
   	 \begin{equation}
-\mbox{log}(\gamma_{c})+\Big(\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}\big]\Big)+\sum_{m=1}^{M^{(d)}}\mbox{log}(\frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}).
+\mbox{log}(\gamma_{c})+\Big(\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]\Big)+\sum_{m=1}^{M^{(d)}}\mbox{log}(\frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}).
   	 \end{equation}
   \subsection{Resampling $\mathcal{Z}$}
 Next, the new values of $z^{(d)}_m$ are sampled for all of the token topic assignments (one token at a time), using the conditional posterior probability of being topic $k$ as we derived in APPENDIX B:
@@ -352,7 +355,7 @@ After factorization, we get
 where $P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})$ is the partial likelihood in Equation (4).\\ \newline For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. Similar to what we did in Section 3.1, we can take the log and obtain the log of acceptance ratio as following:
 \begin{equation}
 \begin{aligned} 
-&\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)-\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&+\sum_{d:c^{(d)}=c}\Big\{\boldsymbol{\beta}^{\prime(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{\prime(c)T}x_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\}\\&-\sum_{d:c^{(d)}=c} \Big\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\},
+&\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)-\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&+\sum_{d:c^{(d)}=c}\Big\{\boldsymbol{\beta}^{\prime(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{\prime(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\}\\&-\sum_{d:c^{(d)}=c} \Big\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\},
 \end{aligned}
 \end{equation}
 where $\phi_d(\cdot;\mu, \Sigma)$ is the $d$-dimensional multivariate normal density.
@@ -368,13 +371,12 @@ To implement the inference procedure outlined above, we provide a pseudocode for
  	\caption{MCMC($I, n_1, n_2, n_3, \delta_B$ )}
     set initial values $\mathcal{C}^{(0)}, \mathcal{Z}^{(0)},$ and $\mathcal{B}^{(0)}$\\
  	\For{i=1 to I}{
-		\vspace{0.3cm}
  		\For{n=1 to $n_1$}{
  			fix $\mathcal{Z}=\mathcal{Z}^{(i-1)}$ and $\mathcal{B}=\mathcal{B}^{(i-1)}$ \\
  		  \For{d=1 to D}{
+ 		  	calculate $\boldsymbol{x}^{*(c)}_t(i, j)$ according to Section 2.3, for every $c=1,...,C$\\
 	 		 calculate $p^\mathcal{C}|\boldsymbol{z}^{(d)}, \boldsymbol{\beta}^{(c^{(d)})}=(p_1,...,p_C),$ where $p_c=$ exp(Eq. (11) corresponding to $c$)\\
  		  	draw $c^{(d)}\sim \mbox{multinomial}(p^\mathcal{C})$}}
- 		\vspace{0.3cm}
  		\For{n=1 to $n_2$}{
  			fix $\mathcal{C}=\mathcal{C}^{(i)}$ and $\mathcal{B}=\mathcal{B}^{(i-1)}$ \\
  			\For{d=1 to D}{
@@ -382,9 +384,9 @@ To implement the inference procedure outlined above, we provide a pseudocode for
  		 	calculate $p^\mathcal{Z}|\boldsymbol{c}^{(d)}, \boldsymbol{\beta}^{(c^{(d)})}=(p_1,...,p_K),$ where $p_k=$ exp(Eq. (13) corresponding to $k$)\\
  		 	 draw of $z_m^{(d)}\sim\mbox{multinomial}(p^\mathcal{Z})$}}
  		}
- 		\vspace{0.3cm}
  			\For{n=1 to $n_3$}{
  				fix $\mathcal{C}=\mathcal{C}^{(i)}$, $\mathcal{Z}=\mathcal{Z}^{(i)}$, and $\mathcal{B}^{(0)}=$ last value ($n_3^{th}$) of $\mathcal{B}^{(i-1)}$\\
+ 				calculate $\mathcal{X}=\{\boldsymbol{x}^{*(c)}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ according to Section 2.3, given fixed $\mathcal{C}$\\
  				 \For{c=1 to C}{draw $\boldsymbol{\beta}^{(c)}| \mathcal{C}, \mathcal{Z}, \mathcal{B}^{(n-1)}$ using M-H algorithm in Section 3.3}
  		 }
 }	summarize the results using:\\ the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$
@@ -484,85 +486,6 @@ Furthermore, we look at the distribution of words given the topics, which corres
 \normalsize
 \newline
 Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and their corresponding topic assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the same method to another corpus, Dare county email data, in hope of finding more interesting results and also comparing the outcomes between the two counties.
-\clearpage
-\subsection{Dare county email data}
-Application to Dare county email data was conducted in the exactly same manner as previous section. However, the size of Dare county data is much larger than that of Vance county data; that is, Dare county data contains 4,845 emails between 27 actors, including 2,907 vocabulary in total, after post-processing as before (i.e. multicast and word count $>$ 0).   Considering the huge expected computation time, we specified smaller number of topics, $K=10$, and smaller number of interaction patterns, $C=3$. Except those, all other parameters such as Dirichlet priors or MCMC parameters were identically specified as Section 4.1.
-\footnotesize
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{|c|c|c|c|c|c|} 
-		\hline
-		& \textbf{IP1} & \textbf{IP2} &\textbf{IP3}&\textbf{IP4}&\textbf{IP5}\\
-		\hline
-		intercept &0.900 & -0.451& -0.795& 0.259&-0.856
-		\\
-		send&  0.409&-0.536& 2.755&  0.459& 1.972\\
-		receive& 0.077&-0.616& 1.125&-0.185&0.721\\
-		2-send&0.194&-1.201&0.062&-0.264&-0.997\\
-		2-receive&-1.823&-0.411& -1.026& -1.203&0.873\\
-		sibling&-0.678&0.981&  0.638&0.302&-0.403\\
-		cosibling&-0.344&-1.402&-1.753& -1.333& -1.141\\
-		\hline
-	\end{tabular}
-	\caption {Summary of posterior $\boldsymbol{\beta}^{(c)}$ estimates for Vance county emails}
-	\label{table:AlexanderMCMC}
-\end{table}
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.74\textwidth]{boxplot2.pdf} 
-	\caption{Posterior distribution of  $\boldsymbol{\beta}^{(c)}$ for Vance county emails}
-	\label{fig:boxplot}
-\end{figure}
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{|l|l||l|l||l|l||l|l||l|l|}
-		\hline
-		\multicolumn{2}{|l||}{\textbf{IP1} (56 emails)}&\multicolumn{2}{l||}{\textbf{IP2} (47 emails)}&\multicolumn{2}{l||}{\textbf{IP3} (69 emails)}&\multicolumn{2}{l||}{\textbf{IP4} (32 emails)}&\multicolumn{2}{l|}{\textbf{IP5} (65 emails)}\\
-		\hline\hline
-		Topic 15&0.212&Topic 18&0.181&Topic 9 &0.218 & Topic 14 & 0.302 & Topic 1 & 0.215 \\
-		\hline
-		\scriptsize operations&\scriptsize 0.0563&\scriptsize phone&\scriptsize 0.0395&\scriptsize electronic&\scriptsize 0.0789&\scriptsize will&\scriptsize 0.1250&\scriptsize will&\scriptsize 0.0523\\
-		\scriptsize center&\scriptsize 0.0387&\scriptsize development&\scriptsize  0.0395&\scriptsize heads&\scriptsize 0.0366&\scriptsize phones&\scriptsize 0.0724&\scriptsize directory&\scriptsize 0.0494\\
-		\scriptsize office&\scriptsize  0.0352&\scriptsize henderson&\scriptsize 0.0316&\scriptsize ncgs&\scriptsize 0.0338&\scriptsize week&\scriptsize 0.0395&\scriptsize jail&\scriptsize 0.0465\\
-		\scriptsize communications&\scriptsize 0.0317&\scriptsize planning&\scriptsize 0.0316&\scriptsize attachments&\scriptsize 0.0310&\scriptsize system&\scriptsize 0.0373&\scriptsize extension&\scriptsize 0.0436\\
-		\scriptsize enp&\scriptsize 0.0317&\scriptsize description&\scriptsize  0.0277&\scriptsize review&\scriptsize 0.0282&\scriptsize cutting&\scriptsize 0.0307&\scriptsize will&\scriptsize 0.0262\\
-		\scriptsize suite&\scriptsize 0.0282&\scriptsize fax&\scriptsize 0.0277&\scriptsize chapter&\scriptsize 0.0282&\scriptsize rest&\scriptsize 0.0307&\scriptsize attached&\scriptsize 0.0262\\
-		\scriptsize emergency&\scriptsize 0.0282&\scriptsize suite&\scriptsize 0.0237&\scriptsize pursuant&\scriptsize 0.0254&\scriptsize october&\scriptsize 0.0285&\scriptsize folks&\scriptsize 0.0262\\
-		\scriptsize henderson&\scriptsize 0.0563&\scriptsize e-mail&\scriptsize 0.0237&\scriptsize department&\scriptsize 0.0225&\scriptsize provided&\scriptsize 0.0285&\scriptsize technology&\scriptsize 0.0262\\
-		\scriptsize street&\scriptsize 0.0246&\scriptsize attached&\scriptsize 0.0237&\scriptsize tomorrow&\scriptsize 0.0225&\scriptsize department&\scriptsize 0.0241&\scriptsize excel&\scriptsize 0.0262\\
-		\scriptsize director&\scriptsize 0.0211&\scriptsize director&\scriptsize  0.0198&\scriptsize time&\scriptsize 0.0197&\scriptsize phone&\scriptsize 0.0219&\scriptsize director&\scriptsize0.0233\\
-		\hline\hline
-		Topic 4&0.208&Topic 19&0.171&Topic 7 &0.208& Topic 12 & 0.298 & Topic 16 & 0.214 \\
-		\hline
-		\scriptsize emergency&\scriptsize 0.0466&\scriptsize description&\scriptsize 0.0546&\scriptsize message&\scriptsize 0.0531&\scriptsize will&\scriptsize 0.1064&\scriptsize will&\scriptsize 0.1023\\
-		\scriptsize suite&\scriptsize0.0430&\scriptsize henderson&\scriptsize 0.0336&\scriptsize request&\scriptsize 0.0501&\scriptsize phones&\scriptsize 0.0643&\scriptsize extension&\scriptsize  0.0409\\
-		\scriptsize director&\scriptsize 0.0358&\scriptsize director&\scriptsize 0.0252&\scriptsize electronic&\scriptsize 0.0442&\scriptsize october&\scriptsize 0.0377&\scriptsize folks&\scriptsize 0.0322\\
-		\scriptsize fax&\scriptsize 0.0323&\scriptsize street&\scriptsize  0.0252&\scriptsize time&\scriptsize 0.0295&\scriptsize training&\scriptsize 0.0377&\scriptsize directory&\scriptsize 0.0292\\
-		\scriptsize operations&\scriptsize 0.0323&\scriptsize church&\scriptsize 0.0210&\scriptsize review&\scriptsize 0.0295&\scriptsize department&\scriptsize 0.0310&\scriptsize call&\scriptsize 0.0263\\
-		\scriptsize office&\scriptsize 0.0287&\scriptsize phone&\scriptsize 0.0210&\scriptsize department&\scriptsize 0.0295&\scriptsize provided&\scriptsize 0.0310&\scriptsize latest&\scriptsize 0.0263\\
-		\scriptsize cem&\scriptsize 0.0287&\scriptsize goldvance...&\scriptsize 0.0210&\scriptsize response&\scriptsize0.0265&\scriptsize  system&\scriptsize 0.0288&\scriptsize cutover&\scriptsize 0.0205\\
-		\scriptsize henderson&\scriptsize 0.0215&\scriptsize fax&\scriptsize 0.0168&\scriptsize manager&\scriptsize 0.0236&\scriptsize week&\scriptsize 0.0288&\scriptsize number&\scriptsize  0.0205\\
-		\scriptsize will&\scriptsize 0.0179&\scriptsize suite&\scriptsize 0.0168&\scriptsize director&\scriptsize 0.0236&\scriptsize cutting&\scriptsize 0.0266&\scriptsize henderson&\scriptsize 0.0175\\
-		\scriptsize phone&\scriptsize 0.0143&\scriptsize project&\scriptsize 0.0168&\scriptsize public&\scriptsize0.0206&\scriptsize day&\scriptsize 0.0222&\scriptsize advised&\scriptsize 0.0175\\
-		\hline\hline
-		Topic 8&0.199&Topic 3&0.161&Topic 11 &0.204& Topic 17 & 0.271& Topic 2&0.202\\
-		\hline
-		\scriptsize operations&\scriptsize 0.0489&\scriptsize description&\scriptsize0.0446&\scriptsize department&\scriptsize 0.0631&\scriptsize will&\scriptsize 0.0854&\scriptsize will&\scriptsize 0.1022\\
-		\scriptsize emergency&\scriptsize 0.0489&\scriptsize e-mail&\scriptsize 0.0357&\scriptsize message&\scriptsize0.0511&\scriptsize phone&\scriptsize 0.0390&\scriptsize latest&\scriptsize 0.0310\\
-		\scriptsize director&\scriptsize 0.0338&\scriptsize developement&\scriptsize  0.0313&\scriptsize records&\scriptsize 0.0420&\scriptsize october&\scriptsize 0.0390&\scriptsize extension&\scriptsize 0.0279\\
-		\scriptsize henderson&\scriptsize 0.0338&\scriptsize director&\scriptsize 0.0268&\scriptsize heads&\scriptsize 0.0360&\scriptsize week&\scriptsize 0.0341&\scriptsize jail&\scriptsize 0.0279\\
-		\scriptsize fax&\scriptsize 0.0338&\scriptsize goldvance...&\scriptsize 0.0268&\scriptsize will&\scriptsize 0.0330&\scriptsize phones&\scriptsize 0.0268&\scriptsize updated&\scriptsize 0.0248\\
-		\scriptsize street&\scriptsize 0.0301&\scriptsize church&\scriptsize 0.0223&\scriptsize electronic&\scriptsize 0.0330&\scriptsize folks&\scriptsize 0.0268&\scriptsize director&\scriptsize  0.0217\\
-		\scriptsize center&\scriptsize 0.0301&\scriptsize henderson&\scriptsize 0.0179&\scriptsize pursuant&\scriptsize 0.0330&\scriptsize rest&\scriptsize 0.0244&\scriptsize attached&\scriptsize 0.0217\\
-		\scriptsize office&\scriptsize 0.0263&\scriptsize street&\scriptsize 0.0179&\scriptsize chapter&\scriptsize 0.0300&\scriptsize senior&\scriptsize 0.0244&\scriptsize coming&\scriptsize 0.0171\\
-		\scriptsize church&\scriptsize 0.0188&\scriptsize phone&\scriptsize 0.0179&\scriptsize manager&\scriptsize 0.0270&\scriptsize system&\scriptsize 0.0220&\scriptsize henderson&\scriptsize 0.0163\\
-		\scriptsize enp&\scriptsize 0.0188&\scriptsize semprius&\scriptsize 0.0179&\scriptsize response&\scriptsize 0.0240&\scriptsize directory&\scriptsize 0.0220&\scriptsize cutover&\scriptsize  0.0154\\
-		\hline
-	\end{tabular}
-	\caption {Summary of MCMC sampling results for Vance county emails. Each interaction pattern is shown with the top 3 topics and words that have the highest probability conditioned on that topic.}
-	\label{table:VanceMCMC}
-\end{table}
-\normalsize
 \begin{comment}
 \section{Preliminary Analysis}
 Hurricane Sandy was the most destructive hurricane in 2012, which hit North Carolina on late October (October 28, Governor Bev Perdue declared a state of emergency in 24 western counties due to snow and strong winds). In our dataset, there are three counties which cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012), so we focus on the three counties, since the timestamp of email in this case is much more important than usual case without any disastrous event.
@@ -661,15 +584,15 @@ Before Sandy ranges from 2012-09-04 to 2012-10-21 (7 weeks), During Sandy ranges
 & P(\Phi, \Theta, \mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}| \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) \\& 
 =  P(\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}| \Phi, \Theta, \mathcal{X}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) P(\Phi, \Theta |\delta, \boldsymbol{n}, \alpha, \boldsymbol{m})
 \\&= P( \mathcal{W}| \mathcal{Z}, \Phi)P(\mathcal{Z}|\Theta)P(\mathcal{N}|\mathcal{C}, \mathcal{B}, \mathcal{X})P(\mathcal{B}|\mathcal{C}, \sigma^2)P(\Phi|\delta, \boldsymbol{n})P(\Theta|\mathcal{C}, \alpha, \boldsymbol{m})P(\mathcal{C}|\boldsymbol{\gamma})P(\boldsymbol{\gamma}|\boldsymbol{\eta})
-\\&= \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P( w_m^{(d)}| \phi_{z_m^{(d)}})\Big]\times \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P( z_m^{(d)}| \boldsymbol{\theta}^{(c)})\Big]\times \Big[\prod_{d=1}^{D} P( \mathbf{N}^{(d)}(t^{(d)})| c^{(d)}, \boldsymbol{x}(t^{(d)}), \boldsymbol{\beta}^{(c)})\Big]  \\&\quad \quad \times\Big[\prod_{c=1}^{C} P( \boldsymbol{\beta}^{(c)}| \sigma^2)\Big]\times\Big[\prod_{k=1}^{K} P( \boldsymbol{\phi}^{(k)}| \delta, \boldsymbol{n})\Big]\times \Big[\prod_{c=1}^{C} P( \boldsymbol{\theta}^{(c)}|\alpha, \boldsymbol{m})\Big]\times \Big[\prod_{d=1}^{D} P(c^{(d)}|\boldsymbol{\gamma})\Big]  \times P(\boldsymbol{\gamma}|\boldsymbol{\eta})
+\\&= \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P(w_m^{(d)}| \phi_{z_m^{(d)}})\Big]\times \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P( z_m^{(d)}| \boldsymbol{\theta}^{(c)})\Big]\times \Big[\prod_{d=1}^{D} P( \mathbf{N}^{(d)}(t^{(d)})|c^{(d)}, \boldsymbol{x}^{(c^{(d)})}(t^{(d)}), \boldsymbol{\beta}^{(c)})\Big]  \\&\quad \quad \times\Big[\prod_{c=1}^{C} P( \boldsymbol{\beta}^{(c)}| \sigma^2)\Big]\times\Big[\prod_{k=1}^{K} P( \boldsymbol{\phi}^{(k)}| \delta, \boldsymbol{n})\Big]\times \Big[\prod_{c=1}^{C} P( \boldsymbol{\theta}^{(c)}|\alpha, \boldsymbol{m})\Big]\times \Big[\prod_{d=1}^{D} P(c^{(d)}|\boldsymbol{\gamma})\Big]  \times P(\boldsymbol{\gamma}|\boldsymbol{\eta})
 \end{aligned}
 \end{equation}
-Since $P( \boldsymbol{\beta}^{(c)}| \sigma^2)$ is $\mbox{Normal}(\boldsymbol{0}, \sigma^2)$ and $P(\boldsymbol{\gamma}|\boldsymbol{\eta})$ is $\mbox{Dirichlet}(\boldsymbol{\eta})$, we can drop the two terms out and further rewrite the equation (20) as below:
+Since $P(\boldsymbol{\beta}^{(c)}| \sigma^2)$ is $\mbox{Normal}(\boldsymbol{0}, \sigma^2)$ and $P(\boldsymbol{\gamma}|\boldsymbol{\eta})$ is $\mbox{Dirichlet}(\boldsymbol{\eta})$, we can drop the two terms out and further rewrite the equation (20) as below:
 \begin{equation}
 \begin{aligned}
-& \propto \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P( w_m^{(d)}| \phi_{z_m^{(d)}})\Big]\times \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P( z_m^{(d)}| \boldsymbol{\theta}^{(c)})\Big]\times \Big[\prod_{d=1}^{D} P( \mathbf{N}^{(d)}(t^{(d)})| c^{(d)}, \boldsymbol{x}(t^{(d)}), \boldsymbol{\beta}^{(c)})\Big]\\& \quad \quad  \times\Big[\prod_{k=1}^{K} P( \boldsymbol{\phi}^{(k)}| \delta, \boldsymbol{n})\Big] \times\Big[\prod_{c=1}^{C} P( \boldsymbol{\theta}^{(c)}|\alpha, \boldsymbol{m})\Big] \times\Big[\prod_{d=1}^{D} P(c^{(d)}|\boldsymbol{\gamma})\Big] \\&
-= \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} \phi_{w_m^{(d)}z_m^{(d)}}\Big]\times \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} \boldsymbol{\theta}^{(c)}_{z_m^{(d)}}\Big]\times\Big[\prod_{d=1}^{D} \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}}\Big]\\& \quad \quad \times \Big[\prod_{k=1}^{K} \Big(\frac{\Gamma(\sum_{w=1}^{W}\delta n_w)}{\prod_{w=1}^{W}\Gamma(\delta n_w)}\prod_{w=1}^{W}\phi_{wk}^{\delta n_w-1} \Big)\Big]\times \Big[\prod_{c=1}^{C} \Big(\frac{\Gamma(\sum_{k=1}^{K}\alpha m_k)}{\prod_{k=1}^{K}\Gamma(\alpha m_k)}\prod_{k=1}^{K}(\boldsymbol{\theta}^{(c)}_{k})^{\alpha m_k-1} \Big)\Big] \times\Big[\prod_{d=1}^{D} \gamma_{c}^{I(c^{(d)}=c)}\Big] \\&
-=\Big[\frac{\Gamma(\sum_{w=1}^{W}\delta n_w)}{\prod_{w=1}^{W}\Gamma(\delta n_w)}\Big]^K \times \Big[\frac{\Gamma(\sum_{w=1}^{W}\delta n_w)}{\prod_{w=1}^{W}\Gamma(\delta n_w)}\Big]^C \times\Big[\prod_{d=1}^{D} \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x_{t^{(d)}}(i^{(d)}, j)\}}\Big]\\&\quad\quad\times\Big[\prod_{d=1}^{D}\gamma_{c^{(d)}}\Big]\times
+& \propto \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P(w_m^{(d)}| \phi_{z_m^{(d)}})\Big]\times \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} P(z_m^{(d)}| \boldsymbol{\theta}^{(c)})\Big]\times \Big[\prod_{d=1}^{D} P( \mathbf{N}^{(d)}(t^{(d)})|c^{(d)}, \boldsymbol{x}^{(c^{(d)})}(t^{(d)}), \boldsymbol{\beta}^{(c)})\Big]\\& \quad \quad  \times\Big[\prod_{k=1}^{K} P( \boldsymbol{\phi}^{(k)}| \delta, \boldsymbol{n})\Big] \times\Big[\prod_{c=1}^{C} P( \boldsymbol{\theta}^{(c)}|\alpha, \boldsymbol{m})\Big] \times\Big[\prod_{d=1}^{D} P(c^{(d)}|\boldsymbol{\gamma})\Big] \\&
+= \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} \phi_{w_m^{(d)}z_m^{(d)}}\Big]\times \Big[\prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} \boldsymbol{\theta}^{(c)}_{z_m^{(d)}}\Big]\times\Big[\prod_{d=1}^{D} \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c^{(d)})}_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c^{(d)})}_{t^{(d)}}(i^{(d)}, j)\}}\Big]\\& \quad \quad \times \Big[\prod_{k=1}^{K} \Big(\frac{\Gamma(\sum_{w=1}^{W}\delta n_w)}{\prod_{w=1}^{W}\Gamma(\delta n_w)}\prod_{w=1}^{W}\phi_{wk}^{\delta n_w-1} \Big)\Big]\times \Big[\prod_{c=1}^{C} \Big(\frac{\Gamma(\sum_{k=1}^{K}\alpha m_k)}{\prod_{k=1}^{K}\Gamma(\alpha m_k)}\prod_{k=1}^{K}(\boldsymbol{\theta}^{(c)}_{k})^{\alpha m_k-1} \Big)\Big] \times\Big[\prod_{d=1}^{D} \gamma_{c}^{I(c^{(d)}=c)}\Big] \\&
+=\Big[\frac{\Gamma(\sum_{w=1}^{W}\delta n_w)}{\prod_{w=1}^{W}\Gamma(\delta n_w)}\Big]^K \times \Big[\frac{\Gamma(\sum_{w=1}^{W}\delta n_w)}{\prod_{w=1}^{W}\Gamma(\delta n_w)}\Big]^C \times\Big[\prod_{d=1}^{D} \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c^{(d)})}_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c^{(d)})}_{t^{(d)}}(i^{(d)}, j)\}}\Big]\\&\quad\quad\times\Big[\prod_{d=1}^{D}\gamma_{c^{(d)}}\Big]\times
 \Big[\prod_{k=1}^{K}\prod_{w=1}^{W}\phi_{wk}^{M^{WK}_{wk}+\delta n_w-1}\Big]\times\Big[\prod_{c=1}^{C}\prod_{k=1}^{K}(\boldsymbol{\theta}^{(c)}_{k})^{M^{CK}_{ck}+\alpha m_k-1}\Big]
 \end{aligned}
 \end{equation}
