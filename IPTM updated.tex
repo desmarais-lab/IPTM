@@ -269,8 +269,13 @@ The generative process of this model follows the topic model (LDA) of \cite{Blei
  \end{table}
 \normalsize
 \subsection{Dynamic covariates to measure network effects}
-The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\\newline
-Following \cite{PerryWolfe2012} as above, we use 6 effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$. The first two behaviors (send and receive) are dyadic, involving exactly two actors,
+The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e. g. homophily or group-level effects), here we only consider specification of dynamic covariates.
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.56\textwidth]{PerryWolfe.pdf} 
+	\label{fig:PerryWolfeplot}
+\end{figure}
+\newline Following \cite{PerryWolfe2012} (refer to Fig.3 of \cite{PerryWolfe2012} attached above), we use 6 effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$. The first two behaviors (send and receive) are dyadic, involving exactly two actors,
 while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, involving exactly three actors. In addition, we include intercept term and use $\boldsymbol{x}^{*(c)}_t(i, j)$ so that we can estimate the baseline intensities at the same time. However, one different thing from the existing specification is that we define the effects not to be based on finite sub-interval, which require large number of dimention. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. 
 \begin{itemize}[leftmargin=*,rightmargin=-1cm ]
 \item [0.] $\mbox{intercept}_t(i, j) = 1$
@@ -282,7 +287,7 @@ while the last four (2-send, 2-receive, sibling, and cosibling) are triadic, inv
 \item [6.] $\mbox{cosibling}_t(i, j)=\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)}<t} I\{i\rightarrow h\}\cdot g(t-t^{(d)})\Big)\Big(\sum\limits_{d: t^{(d)}<t} I\{j\rightarrow h\}\cdot g(t-t^{(d)})\Big)$
 \end{itemize}
 Here, $g(t-t^{(d)})$ reflects the difference between current time $t$ and the timestamp of previous email $t^{(d)}$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t^{(d)})=\lambda e^{-\lambda(t-t^{(d)})}$ where $\lambda$ is the parameter of speed at
-which sender replies to emails, with larger values indicating faster response times. Indeed, $\lambda^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, we can fix $\lambda=1$ but it may vary based on the nature of document.
+which sender replies to emails, with larger values indicating faster response times. Indeed, $\lambda^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, in our simulation we fixed $\lambda=0.05$ and multiply 20 in front of exponential function to ensure $g=1$ when $t=t^{(d)}$ (i.e. $g(t-t^{(d)})=20\times 0.05e^{-0.05(t-t^{(d)})}$), but this setup may vary based on the nature of document.
 \section{Inference}
 The inference for IPTM is similar to that of CPME. In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the sender, recipient, and timestamps of the email in the form of the counting process $\mathcal{N}=\{\boldsymbol{N}^{(d)}(t^{(d)}) \}_{d=1}^{D}.$ Next,  $\mathcal{X}=\{\boldsymbol{x}^{(c)}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(c)} \}_{c=1}^{C}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}^{(d)} \}_{d=1}^{D},$ and $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$.\\
 \newline 
@@ -363,7 +368,7 @@ Then the log of acceptance ratio we have is:
 \begin{equation}
 \mbox{log(Acceptance Probability) = min((16), 0) }
 \end{equation}
-To determine whether we accept the proposed update or not, we take the usual approach, by comparing the log of acceptance ratio we have to the log of a sample from uniform(0,1).
+To determine whether we accept the proposed update or not, we take the usual approach, by comparing the log of acceptance ratio we have to the log of a sample from uniform(0,1).\\
 \subsection{Pseudocode}
 To implement the inference procedure outlined above, we provide a pseudocode for Markov Chain Monte Carlo (MCMC) sampling. Note that we use two loops, outer iteration and inner iteration, in order to avoid the label switching problem \citep{jasra2005markov}, which is an issue caused by the nonidentifiability of the components under symmetric priors in Bayesian mixture modeling. When summarizing model results, we will only use the values from the last $I^{th}$ outer loop because there is no label switching problem within the inner iteration.
  \begin{algorithm}[H]
@@ -374,7 +379,7 @@ To implement the inference procedure outlined above, we provide a pseudocode for
  		\For{n=1 to $n_1$}{
  			fix $\mathcal{Z}=\mathcal{Z}^{(i-1)}$ and $\mathcal{B}=\mathcal{B}^{(i-1)}$ \\
  		  \For{d=1 to D}{
- 		  	calculate $\boldsymbol{x}^{*(c)}_t(i, j)$ according to Section 2.3, for every $c=1,...,C$\\
+ 		  	calculate $\boldsymbol{x}^{*(c)}_{t^{(d)}}(i^{(d)}, j)$ according to Section 2.3, for every $c=1,...,C$\\
 	 		 calculate $p^\mathcal{C}|\boldsymbol{z}^{(d)}, \boldsymbol{\beta}^{(c^{(d)})}=(p_1,...,p_C),$ where $p_c=$ exp(Eq. (11) corresponding to $c$)\\
  		  	draw $c^{(d)}\sim \mbox{multinomial}(p^\mathcal{C})$}}
  		\For{n=1 to $n_2$}{
@@ -392,92 +397,81 @@ To implement the inference procedure outlined above, we provide a pseudocode for
 }	summarize the results using:\\ the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$
  	\end{algorithm}
 \section{Application: North Carolina email data}
-To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Exploratory analysis revealed that Dare county experienced significant change in the pattern of email exchanges; specifically, during the emergency period, email interactions significanty less rely on previous history of interactions, compared to the normal period. On the other hand, Vance county did not experience any distinctive change, and the possible reason for the difference is the locations of two counties. Here we apply IPTM to both data to see the differences in detail, in terms of the interaction patterns and topics of the corpus.
+To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Exploratory analysis revealed that Dare county experienced significant change in the pattern of email exchanges; specifically, during the emergency period, email interactions significanty less rely on previous history of interactions, compared to the normal period. On the other hand, Vance county did not experience any distinctive change, and the possible reason for the difference is the locations of two counties. Here we apply IPTM to both data to see the differences in detail, in terms of the interaction patterns and topics of the corpus. One thing to note here is that instead of using 4 different triadic covariates (2-send, 2-receive, sibling, cosibling), we added the four statistics and defined the new statistic `triangles', in order to simply measure triangle effects in general.
 \subsection{Vance county email data}
-After treating multicast emails (those involving a single sender but multiple receivers) as multiple distinct emails, Vance county data contains 269 emails (only count the email with the number of words greater than 0) between 18 actors, including 620 vocabulary in total. We used $K=20$ topics assuming symmetric Dirichlet prior with the concentration parameter $\alpha=5$, and $C=5$ interaction patterns assuming multinomial prior with parameter $\gamma$ (coming from symmetric Dirichlet prior with the concentration parameter $\eta = 5$). For topic-word distributions, we assumed that $\phi$ follows symmectic Dirichlet distribution with the concentration parameter $\delta=5$. MCMC sampling was implemented based on the order and scheme illustrated in Section 3. We set the outer iteration number as $I=100$, and inner iteration numbers as $n_1=10, n_2=10,$ and $n_3=3500$, which took about 7.16 hours in total. In addition, after some experimentation, $\delta_B$ was set as 0.5, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.526. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 500 were discarded as a burn-in, and every 3rd sample was taken for thinning. After these post-processing, MCMC diagnostic plots for IP1 and IP5 are attached in APPENDIX C as examples, as well as geweke test statistics. There are some evidence of slightly bad mixing, which could be overcome if we sacrifice computation time and increase the size of thinning or iterations. \\\newline
+After treating multicast emails (those involving a single sender but multiple receivers) as multiple distinct emails, Vance county data contains 269 emails (only count the email with the number of words greater than 0) between 18 actors, including 620 vocabulary in total. We used $K=20$ topics assuming symmetric Dirichlet prior with the concentration parameter $\alpha=5$, and $C=3$ interaction patterns assuming multinomial prior with parameter $\gamma$ (coming from symmetric Dirichlet prior with the concentration parameter $\eta = 5$). For topic-word distributions, we assumed that $\phi$ follows symmectic Dirichlet distribution with the concentration parameter $\delta=5$. MCMC sampling was implemented based on the order and scheme illustrated in Section 3. We set the outer iteration number as $I=100$, and inner iteration numbers as $n_1=10, n_2=10,$ and $n_3=3500$, which took about 11.17 hours in total. In addition, after some experimentation, $\delta_B$ was set as 0.85, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.260. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 500 were discarded as a burn-in, and every 3rd sample was taken for thinning. After these post-processing, MCMC diagnostic plots are attached in APPENDIX C, as well as geweke test statistics. There are some evidence of slightly bad mixing, which could be overcome if we sacrifice computation time and increase the size of thinning or iterations. \\\newline
 Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects corresponding to the interaction pattern, (b) the top 3 topics most likely to be generated conditioned on the interaction pattern, and (c) the top 10 most likely words to have generated conditioned on the topic and interaction pattern.
 \footnotesize
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{|c|c|c|c|c|c|} 
+	\begin{tabular}{|c|c|c|c|} 
 		\hline
-		& \textbf{IP1} & \textbf{IP2} &\textbf{IP3}&\textbf{IP4}&\textbf{IP5}\\
+		& \textbf{IP1} (98 emails) & \textbf{IP2} (71 emails) &\textbf{IP3} (100 emails) \\
 		\hline
-		intercept &-0.027 (0.031)& -0.278 (0.031)&-0.080 (0.032)& -0.024 (0.030)&0.165 (0.033)\\
-		send&  0.626 (0.028)&  0.255 (0.031)&  0.394 (0.034)&-0.081 (0.031) &1.185 (0.027)\\
-		receive& -0.097 (0.029)& 0.265 (0.027)&-0.021 (0.035)& 0.070 (0.029)& 0.777 (0.029)\\
-		2-send&0.070 (0.029)&0.110 (0.031)&-0.008 (0.032)&-0.037 (0.032)& 0.021 (0.029)\\
-		2-receive& 0.022 (0.030)& 0.025 (0.032)&-0.043 (0.032)&-0.072 (0.034)&-0.017 (0.030)\\
-		sibling&-0.172 (0.033)&  0.056 (0.033)&-0.204 (0.029)&-0.119 (0.030)&-0.076 (0.031)\\
-		cosibling& 0.041 (0.028)&  0.057 (0.030)& -0.071 (0.031)&-0.009 (0.031)&  0.195 (0.033)\\
-		\hline
+		\textbf{intercept} &-0.081 (0.033)& 0.143 (0.033)&-0.029 (0.031)\\
+		\textbf{send}&  3.488 (0.014)&  3.337 (0.017)&  3.673 (0.013)\\
+		\textbf{receive}& 2.139 (0.017)& 2.349 (0.017)& 2.208 (0.014)\\
+		\textbf{triangles} & -0.023 (0.029)& 0.015 (0.033)& -0.129 (0.030)\\
+			\hline
 	\end{tabular}
 	\caption {Summary of posterior estimates of $\boldsymbol{\beta}^{(c)}$ for Vance county emails}
 	\label{table:Vancebeta}
 \end{table}
 \newline
-\normalsize First, Table 2 summarizes the posterior means and standard errors for $\boldsymbol{\beta}^{(c)}$ corresponding to each interaction patterns. Below are the several examples of the interpretation of estimates, in the context of point process framework. Refer to Fig.3 of \cite{PerryWolfe2012} attached below for better understanding of the interpretation.
-\begin{itemize}
-	\item (\textbf{Intercept}) Assuming no history at all between the sender and receiver, the document is  $\frac{e^{(-0.027)}}{e^{(-0.278)}}\approx 1.285$ times more likely to be IP1 relative to IP2.
-	\item (\textbf{Send}) If $i$ sends an email to $j$ at time $t$, the likelihoods of $i$ sends email of IP3 to $j$ at time $t+1$ and $t+2$ are multiplied by $e^{(0.394\times e^{(-1)})}\approx 1.156$ and $e^{(0.394\times e^{(-2)})}\approx 1.055$, respectively. \\ 
-	(\textbf{Receive}) If $j$ sends an email to $i$ at time $t$, the likelihoods of $i$ sends email of IP4 to $j$ at time $t+1$ and $t+2$ are multiplied by $e^{(0.070\times e^{(-1)})}\approx 1.026$ and $e^{(0.070\times e^{(-2)})}\approx 1.010$, respectively.
-	\item (\textbf{2-send}) If $i$ sends an email to $k$ at time $t$, and $k$ sends an email to $j$ at time $t+1$, then $i$ sends email to $j$ at time $t+2$ at a lower rate if IP4 (likelihood multiplied by $e^{(-0.037\times e^{(-1)}\times e^{(-1)})}\approx 0.995$), and at a higher rate if IP5 (likelihood multiplied by $e^{(0.021\times e^{(-1)}\times e^{(-1)})}\approx 1.003$).\\
-	(\textbf{2-receive}) If $j$ sends an email to $k$ at time $t$, and $k$ sends an email to $i$ at time $t+1$, then $i$ sends email to $j$ at time $t+2$ at a lower rate if IP3 (likelihood multiplied by $e^{(-0.043\times e^{(-1)}\times e^{(-1)})}\approx 0.994$), and at a higher rate if IP2 (likelihood multiplied by $e^{(0.025\times e^{(-1)}\times e^{(-1)})}\approx 1.003$).\\
-	(\textbf{sibling}) If $k$ sends $i$ and $j$ an email at time $t$ and $t+1$, respectively, then $i$ sends an email to $j$ at time $t+2$ at a lower rate if IP4 (likelihood multiplied by $e^{(-0.119\times e^{(-1)}\times e^{(-1)})}\approx 0.984$), and at a higher rate if IP2 (likelihood multiplied by $e^{(0.025\times e^{(-1)}\times e^{(-1)})}\approx 1.008$).\\
-	(\textbf{cosibling}) If $k$ receives an email from $i$ and $j$ at time $t$ and $t+1$, respectively, then $i$ sends an email to $j$ at time $t+2$ at a lower rate if IP3 (likelihood multiplied by $e^{(-0.071\times e^{(-1)}\times e^{(-1)})}\approx 0.990$), and at a higher rate if IP5 (likelihood multiplied by $e^{(0.195\times e^{(-1)}\times e^{(-1)})}\approx 1.027$).
+\normalsize First, Table 2 summarizes the posterior means and standard errors for $\boldsymbol{\beta}^{(c)}$ corresponding to each interaction patterns. Below are the several examples of the interpretation of estimates, in the context of point process framework in Section 2.1. The interpretation can be extended to any other interaction patterns and time intervals between the two emails.
+\begin{itemize} 
+	\item (\textbf{Intercept}) Assuming no history at all between the sender and receiver, the document is $\frac{e^{(0.143)}}{e^{(-0.081)}}\approx 1.251$ times more likely to be IP2 relative to IP1, $\frac{e^{(0.143)}}{e^{(-0.029)}}\approx 1.188$ times more likely to be IP2 relative to IP3, and $\frac{e^{(-0.029)}}{e^{(-0.081)}}\approx 1.053$ times more likely to be IP2 relative to IP3
+	\item (\textbf{Send}) If $i$ sends an email to $j$ at time $t$, the likelihoods of $i$ sends email of IP3 to $j$ after 1 hour and 2 hours are multiplied by $e^{(3.673\times e^{(-0.05)})}\approx 32.913$ and $e^{(3.673\times e^{(-2\times 0.05)})}\approx 27.756$, respectively.
+\item (\textbf{Receive}) If $j$ sends an email to $i$ at time $t$, the likelihoods of $i$ sends email of IP2 to $j$ after 30 minutes and 30 hours are multiplied by $e^{(2.349\times e^{(-0.5\times 0.05)})}\approx 9.885$ and $e^{(2.349\times e^{(-30\times 0.05)})}\approx 1.689$, respectively.
+	\item (\textbf{triangles}) If $i$ sends/receives an email to/from $k$ at time $t$, and $k$ sends/receives an email to/from $j$ at time $t+1$ (i.e. after 1 hour from $t$), then $i$ sends/receives email to/from $j$ at time $t+2$ (i.e. after 2 hour from $t$) at a slightly lower rate if IP3 (likelihood multiplied by $e^{(-0.129\times e^{(-1)}\times e^{(-1)})}\approx 0.983$), and at a slightly higher rate if IP2 (likelihood multiplied by $e^{(0.015\times e^{(-1)}\times e^{(-1)})}\approx 1.002$).
 \end{itemize}
+By examining the estimates in Table 2 and their corresponding interpretaiton, it seems that there exist strong effects of some dynamic network covariates, especially dyadic effects (send and receive). That is, whether the sender had sent to or received from the receiver strongly increase the rate of their interactions. On the other hand, the effects of triangles are very minimal. Moreover, to see the differences across the interaction patterns more clearly, we compared the posterior distribution using the boxplots in Figure 2 and it seems that there exists slight differences across the interaction patterns. Later, multiple hypothesis testing could be applied in order to test the significance of the differences in  $\boldsymbol{\beta}^{(c)}$ across the $C$ number of interaction patterns.\\
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.6\textwidth]{PerryWolfe.pdf} 
-	\label{fig:PerryWolfeplot}
-\end{figure}
-By examining the estimates in Table 2 and their corresponding interpretaiton, it seems that there exist significant differences in the effect of some dynamic network covariates, especially dyadic effects (send and receive). In order to see these differences more clearly, we compared the posterior distribution using the boxplots in Figure 2. Now, it is more apparent that the intercept and dyadic effects are different across the interaction patterns. Specifically, IP5 seems to be highly dependent on the history of dyadic interactions; that is, whether the sender had sent to or received from the receiver strongly affects the rate of their interactions.
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.88\textwidth]{boxplot2.pdf} 
+	\includegraphics[width=1\textwidth]{boxplot3.pdf} 
 	\caption{Posterior distribution of  $\boldsymbol{\beta}^{(c)}$ for Vance county emails}
 	\label{fig:Vanceboxplot}
 \end{figure}
-\newline Next, we scrutinize the topic distributions corresponding to each interaction patterns in Figure 3. Unlike $\boldsymbol{\beta}$, there is no distinctive difference in the topic distributions $\mathcal{Z}$, given the assignment of interaction patterns to the documents $\mathcal{C}$. The unconditional distribution of topics reveal that Topic 2, 1, 5, 6, and 7 dominate the whole topic assignments, with their probabilities of these top five topics sum up to 0.533, so it seems that those topics appeared repetitively across the interaction patterns.
+\newline Next, we scrutinize the topic distributions corresponding to each interaction patterns in Figure 3. There is some distinctive differences in the topic distributions $\mathcal{Z}$, given the assignment of interaction patterns to the documents $\mathcal{C}$. For example, IP3 includes all 20 topics quite uniformly, while IP2 contains Topic 6 and Topic 9 with high proportion. The topic distribution given IP1 is similar to that of IP2, although there is some disparity such as Topic 9.
 \footnotesize
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1\textwidth]{Topicplot.pdf} 
+	\includegraphics[width=1\textwidth]{barplot.pdf} 
 \caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails}
 \label{fig:Vancebarplot}
 \end{figure}
 \normalsize
 \newline
-Furthermore, we look at the distribution of words given the topics, which corresponds to Algorithm 4 in the generative process. Table 3 lists top 10 topics with top 10 words that have the highest probability conditioned on the topic. It seems that the words are not significantly different, having several words like `director', `phones', `department', `description', or `henderson' (county seat of Vance county) appeared repetitively across the topics as well as interaction patterns. The word 'will' was ranked the highest for most of the topics, probably because it was not deleted during the text mining process while other similar ones like 'am', 'is', 'are', or 'can' are all removed.
+Furthermore, we look at the distribution of words given the topics, which corresponds to Algorithm 4 in the generative process. Table 3 lists top 10 topics with top 10 words that have the highest probability conditioned on the topic. It seems that the words are not significantly different, having several words like `director', `phones', `department', `description', or `henderson' (county seat of Vance county) appeared repetitively across the most of the topics. The word 'will' was ranked the highest for 8 out of 10 topics, most probably because it was not deleted during the text mining process while other similar ones like 'am', 'is', 'are', or 'can' are all removed.\\
 \begin{table}[ht]
 	\centering
 \scalebox{0.9}{	\begin{tabular}{|l|l||l|l||l|l||l|l||l|l|}
 		\hline
-		\multicolumn{2}{|l||}{\textbf{Topic 2} (0.1282)}&\multicolumn{2}{l||}{\textbf{Topic 1} (0.1128)}&\multicolumn{2}{l||}{\textbf{Topic 5} (0.1048)}&\multicolumn{2}{l||}{\textbf{Topic 6} (0.0993)}&\multicolumn{2}{l|}{\textbf{Topic 7} (0.0885)}\\
+		\multicolumn{2}{|l||}{\textbf{Topic 6} (0.1366)}&\multicolumn{2}{l||}{\textbf{Topic 9} (0.1215)}&\multicolumn{2}{l||}{\textbf{Topic 12} (0.0733)}&\multicolumn{2}{l||}{\textbf{Topic 13} (0.0672)}&\multicolumn{2}{l|}{\textbf{Topic 1} (0.0519)}\\
 		\hline\hline
-		\scriptsize will&\scriptsize 0.0658&\scriptsize will&\scriptsize 0.0356&\scriptsize will&\scriptsize 0.0536&\scriptsize will&\scriptsize 0.0687&\scriptsize will&\scriptsize 0.0348\\
-		\scriptsize director&\scriptsize 0.0344&\scriptsize director&\scriptsize  0.0285&\scriptsize street&\scriptsize 0.0358&\scriptsize director&\scriptsize 0.0175&\scriptsize message&\scriptsize 0.0197\\
-		\scriptsize operations&\scriptsize  0.0219&\scriptsize october&\scriptsize 0.0190&\scriptsize operations&\scriptsize 0.0255&\scriptsize electronic&\scriptsize 0.0175&\scriptsize suite&\scriptsize 0.0197\\
-		\scriptsize october&\scriptsize 0.0177&\scriptsize description&\scriptsize 0.0166&\scriptsize department&\scriptsize 0.0204&\scriptsize henderson&\scriptsize 0.0175&\scriptsize week&\scriptsize 0.0166\\
-		\scriptsize phone&\scriptsize 0.0157&\scriptsize henderson&\scriptsize  0.0166&\scriptsize henderson&\scriptsize 0.0204&\scriptsize church&\scriptsize 0.0148&\scriptsize emergency&\scriptsize 0.0151\\
-		\scriptsize system&\scriptsize 0.0157&\scriptsize latest&\scriptsize 0.0166&\scriptsize church&\scriptsize0.0166&\scriptsize fax&\scriptsize 0.0148&\scriptsize fax&\scriptsize 0.0151\\
-		\scriptsize phones&\scriptsize 0.0146&\scriptsize electronic&\scriptsize  0.0142&\scriptsize center&\scriptsize 0.0153&\scriptsize heads&\scriptsize 0.0148&\scriptsize folks&\scriptsize 0.0151\\
-		\scriptsize message&\scriptsize 0.0136&\scriptsize phones&\scriptsize  0.0142&\scriptsize folks&\scriptsize 0.0140&\scriptsize morning&\scriptsize 0.0148&\scriptsize henderson&\scriptsize 0.0151\\
-		\scriptsize henderson&\scriptsize 0.0125&\scriptsize attached&\scriptsize 0.0119&\scriptsize meeting&\scriptsize 0.0140&\scriptsize description&\scriptsize 0.0135&\scriptsize jail&\scriptsize 0.0151\\
-		\scriptsize street&\scriptsize 0.0125&\scriptsize phone&\scriptsize  0.0119&\scriptsize phones&\scriptsize 0.0140&\scriptsize department&\scriptsize 0.0121&\scriptsize director&\scriptsize0.0136\\
+		\scriptsize will&\scriptsize 0.0519&\scriptsize will&\scriptsize 0.0892&\scriptsize will&\scriptsize 0.0547&\scriptsize will&\scriptsize 0.0498&\scriptsize will&\scriptsize 0.0541\\
+		\scriptsize system&\scriptsize 0.0264&\scriptsize phones&\scriptsize  0.0220&\scriptsize church&\scriptsize 0.0182&\scriptsize phones&\scriptsize 0.0299&\scriptsize meeting&\scriptsize 0.0232\\
+		\scriptsize phone&\scriptsize  0.0215&\scriptsize street&\scriptsize 0.0209&\scriptsize department&\scriptsize 0.0164&\scriptsize director&\scriptsize 0.0259&\scriptsize director&\scriptsize 0.0206\\
+		\scriptsize phones&\scriptsize 0.0215&\scriptsize week&\scriptsize 0.0198&\scriptsize director&\scriptsize 0.0164&\scriptsize heads&\scriptsize 0.0239&\scriptsize phone&\scriptsize 0.0206\\
+		\scriptsize street&\scriptsize 0.0196&\scriptsize training&\scriptsize  0.0187&\scriptsize emergency&\scriptsize 0.0164&\scriptsize henderson&\scriptsize 0.0199&\scriptsize street&\scriptsize 0.0206\\
+		\scriptsize department&\scriptsize 0.0186&\scriptsize director&\scriptsize 0.0165&\scriptsize request&\scriptsize0.0164&\scriptsize center&\scriptsize 0.0179&\scriptsize  folks&\scriptsize 0.0180\\
+		\scriptsize henderson&\scriptsize 0.0186&\scriptsize description&\scriptsize  0.0132&\scriptsize description&\scriptsize 0.0146&\scriptsize street&\scriptsize 0.0179&\scriptsize latest&\scriptsize 0.0180\\
+		\scriptsize electronic&\scriptsize 0.0176&\scriptsize folks&\scriptsize  0.0132&\scriptsize message&\scriptsize 0.0146&\scriptsize extension&\scriptsize 0.0159&\scriptsize ncgs&\scriptsize 0.0180\\
+		\scriptsize director&\scriptsize 0.0167&\scriptsize fax&\scriptsize 0.0121&\scriptsize center&\scriptsize 0.0128&\scriptsize october&\scriptsize 0.0139&\scriptsize  october&\scriptsize 0.0180\\
+		\scriptsize week&\scriptsize 0.0157&\scriptsize system&\scriptsize  0.0121&\scriptsize electronic&\scriptsize 0.0128&\scriptsize phone&\scriptsize 0.0139&\scriptsize phones&\scriptsize0.0180\\
 		\hline\hline
-	\multicolumn{2}{|l||}{\textbf{Topic 15} (0.0620)}&\multicolumn{2}{l||}{\textbf{Topic 18} (0.0617)}&\multicolumn{2}{l||}{\textbf{Topic 16} (0.0604)}&\multicolumn{2}{l||}{\textbf{Topic 11} (0.0598)}&\multicolumn{2}{l|}{\textbf{Topic 12} (0.0476)}\\
+	\multicolumn{2}{|l||}{\textbf{Topic 14} (0.0471)}&\multicolumn{2}{l||}{\textbf{Topic 10} ( 0.0456)}&\multicolumn{2}{l||}{\textbf{Topic 5} (0.0422)}&\multicolumn{2}{l||}{\textbf{Topic 19} (0.0422)}&\multicolumn{2}{l|}{\textbf{Topic 20} (0.0411)}\\
 	\hline\hline
-	\scriptsize department&\scriptsize 0.0346&\scriptsize will&\scriptsize 0.0347&\scriptsize will&\scriptsize 0.0443&\scriptsize director&\scriptsize 0.0313&\scriptsize will&\scriptsize 0.0393\\
-	\scriptsize will&\scriptsize 0.0259&\scriptsize phones&\scriptsize  0.0347&\scriptsize director&\scriptsize 0.0266&\scriptsize phone&\scriptsize 0.0268&\scriptsize church&\scriptsize 0.0281\\
-	\scriptsize director&\scriptsize  0.0194&\scriptsize phone&\scriptsize 0.0325&\scriptsize department&\scriptsize 0.0244&\scriptsize system&\scriptsize 0.0246&\scriptsize department&\scriptsize 0.0253\\
-	\scriptsize phone&\scriptsize 0.0194&\scriptsize attached&\scriptsize 0.0174&\scriptsize henderson&\scriptsize 0.0244&\scriptsize will&\scriptsize 0.0201&\scriptsize extension&\scriptsize 0.0253\\
-	\scriptsize directory&\scriptsize 0.0151&\scriptsize henderson&\scriptsize  0.0174&\scriptsize electronic&\scriptsize 0.0200&\scriptsize cutting&\scriptsize 0.0179&\scriptsize phone&\scriptsize 0.0253\\
-	\scriptsize message&\scriptsize 0.0151&\scriptsize sure&\scriptsize 0.0174&\scriptsize heads&\scriptsize 0.0177&\scriptsize department&\scriptsize 0.0179&\scriptsize street&\scriptsize 0.0197\\
-	\scriptsize office&\scriptsize 0.0151&\scriptsize system&\scriptsize 0.0174&\scriptsize phone&\scriptsize 0.0177&\scriptsize emergency&\scriptsize 0.0179&\scriptsize description&\scriptsize 0.0169\\
-	\scriptsize reciew&\scriptsize 0.0151&\scriptsize description&\scriptsize 0.0152&\scriptsize street&\scriptsize 0.0177&\scriptsize description&\scriptsize 0.0157&\scriptsize emergency&\scriptsize 0.0169\\
-	\scriptsize system&\scriptsize 0.0151&\scriptsize attached&\scriptsize 0.0130&\scriptsize emergency&\scriptsize 0.0155&\scriptsize operations&\scriptsize 0.0157&\scriptsize provided&\scriptsize 0.0169\\
-	\scriptsize attached&\scriptsize 0.0130&\scriptsize electronic&\scriptsize  0.0130&\scriptsize attached&\scriptsize 0.0133&\scriptsize young&\scriptsize 0.0157&\scriptsize time&\scriptsize0.0169\\
+	\scriptsize director&\scriptsize 0.0341&\scriptsize will&\scriptsize 0.0352&\scriptsize office&\scriptsize 0.0254&\scriptsize will&\scriptsize 0.0508&\scriptsize church&\scriptsize 0.0228\\
+	\scriptsize october&\scriptsize 0.0284&\scriptsize department&\scriptsize  0.0293&\scriptsize phones&\scriptsize 0.0254&\scriptsize henderson&\scriptsize 0.0286&\scriptsize coming&\scriptsize 0.0195\\
+	\scriptsize henderson&\scriptsize 0.0256&\scriptsize message&\scriptsize 0.0235&\scriptsize meeting&\scriptsize 0.0222&\scriptsize review&\scriptsize 0.0222&\scriptsize latest&\scriptsize 0.0195\\
+	\scriptsize will&\scriptsize 0.0256&\scriptsize street&\scriptsize 0.0205&\scriptsize will&\scriptsize 0.0222&\scriptsize department&\scriptsize 0.0190&\scriptsize meeting&\scriptsize 0.0195\\
+	\scriptsize cutting&\scriptsize 0.0227&\scriptsize director&\scriptsize  0.0176&\scriptsize attached&\scriptsize 0.0190&\scriptsize planning&\scriptsize 0.0190&\scriptsize attached&\scriptsize 0.0163\\
+	\scriptsize latest&\scriptsize 0.0170&\scriptsize fax&\scriptsize 0.0176&\scriptsize henderson&\scriptsize 0.0190&\scriptsize operations&\scriptsize 0.0159&\scriptsize attend&\scriptsize 0.0163\\
+	\scriptsize thursday&\scriptsize 0.0170&\scriptsize henderson&\scriptsize 0.0176&\scriptsize operations&\scriptsize 0.0190&\scriptsize phone&\scriptsize 0.0159&\scriptsize deprtment&\scriptsize 0.0163\\
+	\scriptsize time&\scriptsize 0.0170&\scriptsize latest&\scriptsize 0.0176&\scriptsize phone&\scriptsize 0.0190&\scriptsize street&\scriptsize 0.0159&\scriptsize development&\scriptsize 0.0163\\
+	\scriptsize center&\scriptsize 0.0142&\scriptsize  october&\scriptsize 0.0176&\scriptsize director&\scriptsize 0.0159&\scriptsize director&\scriptsize 0.0127&\scriptsize october&\scriptsize 0.0163\\
+	\scriptsize department&\scriptsize 0.0142&\scriptsize phone&\scriptsize  0.0176&\scriptsize directory&\scriptsize 0.0159&\scriptsize emergency&\scriptsize 0.0127&\scriptsize office&\scriptsize0.0163\\
 	\hline
 		\end{tabular}}
 	\caption {Summary of top 10 topics with top 10 words that have the highest probability conditioned on the topic}
@@ -485,7 +479,7 @@ Furthermore, we look at the distribution of words given the topics, which corres
 \end{table}
 \normalsize
 \newline
-Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and their corresponding topic assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the same method to another corpus, Dare county email data, in hope of finding more interesting results and also comparing the outcomes between the two counties.
+Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and the topic-token assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the same method to another corpus, Dare county email data, in hope of finding more interesting results and also comparing the outcomes between the two counties.
 \begin{comment}
 \section{Preliminary Analysis}
 Hurricane Sandy was the most destructive hurricane in 2012, which hit North Carolina on late October (October 28, Governor Bev Perdue declared a state of emergency in 24 western counties due to snow and strong winds). In our dataset, there are three counties which cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012), so we focus on the three counties, since the timestamp of email in this case is much more important than usual case without any disastrous event.
@@ -636,7 +630,7 @@ In addition, the conditional probability that a new word generated in the docume
  \subsection*{APPENDIX C: MCMC Diagnostics for Vance county emails}
  \begin{figure}[ht]
  	\centering
- 	\includegraphics[width=1\textwidth]{IP1.pdf} 
+ 	\includegraphics[width=0.8\textwidth]{IP1diag.pdf} 
  		\caption{Traceplots and density plots of $\boldsymbol{\beta}^{(1)}$}
  	\label{fig:IP1}
  	 \end{figure}
@@ -647,23 +641,42 @@ In addition, the conditional probability that a new word generated in the docume
 Fraction in 1st window = 0.1
 Fraction in 2nd window = 0.5 
 
-var1    var2    var3    var4    var5    var6    var7 
--0.4455  1.6209  0.4716  1.1981  0.2734 -0.5643  1.9312 
-\end{verbatim} 	  \begin{figure}[ht]
- 	  	\centering
- 	 	\includegraphics[width=1\textwidth]{IP5.pdf} 
- 		 		 		\label{fig:IP5}
- 			\caption{Traceplots and density plots of $\boldsymbol{\beta}^{(5)}$}
- 	 \end{figure}
- 	 \begin{verbatim}
- 	 > geweke.diag(mcmc)
- 	 
- 	 Fraction in 1st window = 0.1
- 	 Fraction in 2nd window = 0.5 
- 	 
- 	 var1    var2    var3    var4    var5    var6    var7 
- 	 -0.4627  0.5963  1.4179  0.6546  0.9202  2.1704  0.9077 
- 	 \end{verbatim}
+var1    var2    var3    var4 
+-1.2557  0.4129 -1.1132 -0.5118 
+\end{verbatim} 	
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.8\textwidth]{IP2diag.pdf} 
+	\caption{Traceplots and density plots of $\boldsymbol{\beta}^{(2)}$}
+	\label{fig:IP2}
+\end{figure}
+\footnotesize
+\begin{verbatim}
+> geweke.diag(mcmc)
+
+Fraction in 1st window = 0.1
+Fraction in 2nd window = 0.5 
+
+var1     var2     var3     var4 
+0.16750 -0.67040 -0.04716 -0.15113 
+\end{verbatim} 	 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.8\textwidth]{IP3diag.pdf} 
+	\caption{Traceplots and density plots of $\boldsymbol{\beta}^{(3)}$}
+	\label{fig:IP3}
+\end{figure}
+\footnotesize
+\begin{verbatim}
+> geweke.diag(mcmc)
+
+Fraction in 1st window = 0.1
+Fraction in 2nd window = 0.5 
+
+var1    var2    var3    var4 
+-0.1794 -0.4693 -1.3827 -0.3231 
+\end{verbatim} 	 
+
 \bibliographystyle{apalike}
 \bibliography{BominBib}
 
