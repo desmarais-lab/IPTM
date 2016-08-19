@@ -502,6 +502,55 @@ Furthermore, we look at the distribution of words given the topics, which corres
 	\normalsize
 \newline
 Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and the topic-token assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the same method to another corpus, Dare county email data, in hope of finding more interesting results and also comparing the outcomes between the two counties.
+\clearpage 
+\normalsize
+\begin{verbatim}
+> top.topic.words(topicword, num.words=10, by.score=TRUE)
+[,1]             [,2]        [,3]         [,4]              [,5]          
+[1,] "updated"        "will"      "heads"      "extensions"      "manager"     
+[2,] "forward"        "senior"    "nws"        "alphabetically"  "elections"   
+[3,] "ncgs"           "questions" "e-mail"     "commissioners"   "appreciation"
+[4,] "phase"          "director"  "multiple"   "henderson-vance" "calls"       
+[5,] "email"          "fyi"       "days"       "copy"            "e-mail"      
+[6,] "compliance"     "written"   "simply"     "helped"          "family"      
+[7,] "commissioner"   "day"       "posted"     "department"      "road"        
+[8,] "sheet"          "finalized" "afternoon"  "rural"           "folks"       
+[9,] "alphabetically" "provided"  "greatly"    "planning"        "bill"        
+[10,] "spread"         "trained"   "additional" "work"            "today"       
+[,6]           [,7]         [,8]                          [,9]        [,10]     
+[1,] "department"   "training"   "system"                      "suite"     "numbers" 
+[2,] "pursuant"     "phone"      "received"                    "required"  "zoning"  
+[3,] "state"        "helped"     "phones"                      "rest"      "cutover" 
+[4,] "fee"          "coming"     "goldvancesealimprovedjordan" "training"  "rest"    
+[5,] "majority"     "henderson"  "held"                        "will"      "semprius"
+[6,] "electronic"   "ncgs"       "cutover"                     "heads"     "sandy"   
+[7,] "extensions"   "scheduled"  "keep"                        "meeting"   "will"    
+[8,] "excel"        "contacting" "local"                       "finance"   "training"
+[9,] "phone"        "suite"      "work"                        "september" "board"   
+[10,] "installation" "september"  "suite"                       "office"    "weeks"   
+[,11]       [,12]      [,13]                         [,14]      [,15]     
+[1,] "voicemail" "helped"   "instructions"                "meter"    "rest"    
+[2,] "review"    "animal"   "questions"                   "hereto"   "thursday"
+[3,] "meeting"   "cem"      "address"                     "best"     "suite"   
+[4,] "cem"       "executed" "suite"                       "suite"    "phones"  
+[5,] "heads"     "class"    "manager"                     "shelter"  "address" 
+[6,] "#aba"      "january"  "advised"                     "previous" "cutting" 
+[7,] "weeks"     "year"     "monday"                      "taps"     "semprius"
+[8,] "cecd"      "bill"     "staff"                       "switch"   "stayed"  
+[9,] "turning"   "form"     "goldvancesealimprovedjordan" "day"      "train"   
+[10,] "fax"       "program"  "training"                    "asap"     "years"   
+[,16]        [,17]           [,18]       [,19]         [,20]     
+[1,] "system"     "sandy"         "face"      "director"    "meeting" 
+[2,] "approval"   "released"      "cards"     "description" "point"   
+[3,] "wishes"     "required"      "office"    "meeting"     "taps"    
+[4,] "phone"      "documentation" "care"      "tax"         "tomorrow"
+[5,] "compliance" "version"       "required"  "message"     "jordan"  
+[6,] "changes"    "department"    "provided"  "days"        "purchase"
+[7,] "property"   "point"         "scheduled" "monday"      "website" 
+[8,] "report"     "lines"         "digital"   "staff"       "site"    
+[9,] "updated"    "economic"      "port"      "grant"       "send"    
+[10,] "helped"     "follow"        "from/to"   "records"     "senior"  
+\end{verbatim}
 \begin{comment}
 \section{Preliminary Analysis}
 Hurricane Sandy was the most destructive hurricane in 2012, which hit North Carolina on late October (October 28, Governor Bev Perdue declared a state of emergency in 24 western counties due to snow and strong winds). In our dataset, there are three counties which cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012), so we focus on the three counties, since the timestamp of email in this case is much more important than usual case without any disastrous event.
