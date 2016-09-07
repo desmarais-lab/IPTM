@@ -442,7 +442,7 @@ By examining the estimates in Table 2 and their corresponding interpretaiton, it
 \end{figure}
 \normalsize
 \newline
-Furthermore, we look at the distribution of words given the topics, which corresponds to Algorithm 4 in the generative process. Since the topic-word distribution $\phi$ does not depend on the interaction patterns as previous cases, Table 3 lists top 10 topics with top 10 words that have the highest probability conditioned on the topic. In addition, this time we try to check the interaction pattern-word distribution by listing top 10 words that have the highest probability conditioned on the interaction pattern. It seems that the words are not significantly different, having several words like `director', `phones', `department', `description', or `henderson' (county seat of Vance county) appeared repetitively across the most of the topics or interaction patterns. The word 'will' was ranked the top in most of the lists, probably because it was not deleted during the text mining process while other similar type of words like 'am', 'is', 'are', or 'can' are all removed. \\
+Furthermore, we look at the distribution of words given the topics, which corresponds to Algorithm 4 in the generative process. Since the topic-word distribution $\phi$ does not depend on the interaction patterns as previous cases, Table 3 lists top 10 topics with top 10 words that have the highest probability conditioned on the topic. In addition, this time we try to check the interaction pattern-word distribution by listing top 10 words that have the highest probability conditioned on the interaction pattern. It seems that the words are not significantly different, having several words like `director', `phones', `department', `description', or `henderson' (county seat of Vance county) appeared repetitively across the most of the topics or interaction patterns. The word 'will' was ranked the top in most of the lists, probably because it was not deleted during the text mining process while other similar type of words like `am', `is', `are', or `can' are all removed. \\
 \begin{table}[ht]
 	\centering
 \scalebox{0.9}{	\begin{tabular}{|l|l||l|l||l|l||l|l||l|l|}
@@ -501,146 +501,36 @@ Furthermore, we look at the distribution of words given the topics, which corres
 	\end{table}
 	\normalsize
 \newline
-Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and the topic-token assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the same method to another corpus, Dare county email data, in hope of finding more interesting results and also comparing the outcomes between the two counties.
-\clearpage 
-\normalsize
-\begin{verbatim}
-> top.topic.words(topicword, num.words=10, by.score=TRUE)
-[,1]             [,2]        [,3]         [,4]              [,5]          
-[1,] "updated"        "will"      "heads"      "extensions"      "manager"     
-[2,] "forward"        "senior"    "nws"        "alphabetically"  "elections"   
-[3,] "ncgs"           "questions" "e-mail"     "commissioners"   "appreciation"
-[4,] "phase"          "director"  "multiple"   "henderson-vance" "calls"       
-[5,] "email"          "fyi"       "days"       "copy"            "e-mail"      
-[6,] "compliance"     "written"   "simply"     "helped"          "family"      
-[7,] "commissioner"   "day"       "posted"     "department"      "road"        
-[8,] "sheet"          "finalized" "afternoon"  "rural"           "folks"       
-[9,] "alphabetically" "provided"  "greatly"    "planning"        "bill"        
-[10,] "spread"         "trained"   "additional" "work"            "today"       
-[,6]           [,7]         [,8]                          [,9]        [,10]     
-[1,] "department"   "training"   "system"                      "suite"     "numbers" 
-[2,] "pursuant"     "phone"      "received"                    "required"  "zoning"  
-[3,] "state"        "helped"     "phones"                      "rest"      "cutover" 
-[4,] "fee"          "coming"     "goldvancesealimprovedjordan" "training"  "rest"    
-[5,] "majority"     "henderson"  "held"                        "will"      "semprius"
-[6,] "electronic"   "ncgs"       "cutover"                     "heads"     "sandy"   
-[7,] "extensions"   "scheduled"  "keep"                        "meeting"   "will"    
-[8,] "excel"        "contacting" "local"                       "finance"   "training"
-[9,] "phone"        "suite"      "work"                        "september" "board"   
-[10,] "installation" "september"  "suite"                       "office"    "weeks"   
-[,11]       [,12]      [,13]                         [,14]      [,15]     
-[1,] "voicemail" "helped"   "instructions"                "meter"    "rest"    
-[2,] "review"    "animal"   "questions"                   "hereto"   "thursday"
-[3,] "meeting"   "cem"      "address"                     "best"     "suite"   
-[4,] "cem"       "executed" "suite"                       "suite"    "phones"  
-[5,] "heads"     "class"    "manager"                     "shelter"  "address" 
-[6,] "#aba"      "january"  "advised"                     "previous" "cutting" 
-[7,] "weeks"     "year"     "monday"                      "taps"     "semprius"
-[8,] "cecd"      "bill"     "staff"                       "switch"   "stayed"  
-[9,] "turning"   "form"     "goldvancesealimprovedjordan" "day"      "train"   
-[10,] "fax"       "program"  "training"                    "asap"     "years"   
-[,16]        [,17]           [,18]       [,19]         [,20]     
-[1,] "system"     "sandy"         "face"      "director"    "meeting" 
-[2,] "approval"   "released"      "cards"     "description" "point"   
-[3,] "wishes"     "required"      "office"    "meeting"     "taps"    
-[4,] "phone"      "documentation" "care"      "tax"         "tomorrow"
-[5,] "compliance" "version"       "required"  "message"     "jordan"  
-[6,] "changes"    "department"    "provided"  "days"        "purchase"
-[7,] "property"   "point"         "scheduled" "monday"      "website" 
-[8,] "report"     "lines"         "digital"   "staff"       "site"    
-[9,] "updated"    "economic"      "port"      "grant"       "send"    
-[10,] "helped"     "follow"        "from/to"   "records"     "senior"  
-\end{verbatim}
-\begin{comment}
-\section{Preliminary Analysis}
-Hurricane Sandy was the most destructive hurricane in 2012, which hit North Carolina on late October (October 28, Governor Bev Perdue declared a state of emergency in 24 western counties due to snow and strong winds). In our dataset, there are three counties which cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012), so we focus on the three counties, since the timestamp of email in this case is much more important than usual case without any disastrous event.
-\subsection{Dare County}
-\footnotesize
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{ |c|ccc|c| } 
-		\hline 
-		\textbf{Period} &\textbf{Before Sandy} & \textbf{During Sandy} & \textbf{After Sandy} & \textbf{Overall} \\ 	\hline
-			\textbf{\# emails}& 1933 & 1563 & 1467 & 4963 \\ 
-		\hline
-	\end{tabular}
-	\caption{ Summary of Dare county email data based on time period}
-	\label{table:nullDare2}
-\end{table}
-\normalsize
-Before Sandy ranges from 2012-09-01 to 2012-10-21 (7 weeks), During Sandy ranges from 2012-10-22 to 2012-11-02 (2 weeks), and After Sandy ranges from 2012-11-03 to 2012-11-30 (4 weeks).
-\footnotesize
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1.1\textwidth]{DareEmails.pdf} 
-	\caption{Frequency of Dare county emails from 2012-09-01 to 2012-11-30  }
-	\label{fig:Emailplots}
-\end{figure}
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{ |c|cc| } 
-		\hline 
-		\textbf{Time Interval} &\textbf{send} & \textbf{receive} \\ 	
-		\hline  $[-\infty, t)$&  2.128, 2.659, 2.355, 2.919& 0.292, 0.257, 0.047, 0.110\\  $[t-30 m, t)$ &  0.262, -0.064, 0.782, 0.317 &2.087, 1.287 , 2.346, 1.870\\  $[t-2h, t-30m)$& 0.383, 0.157 , 0.024, -0.045 &0.553, 0.082, 0.794, 0.269\\ $[t-8h, t-2h)$ & 0.816, 0.054 , 0.077, 0.381 &-0.221, 0.048, 0.298, -0.012 \\ $[t-32h, t-8h)$& 0.085, 0.014,  0.228, 0.070 &0.101, 0.017, -0.033, 0.019\\ $[t-5.33d, t-32h)$&  0.103, 0.025, 0.092, 0.008 &-0.027, -0.016, -0.033, -0.009 \\ $[t-21.33d, t-5.33d)$  & 0.052, 0.000, 0.059, 0.010& 0.013, 0.030 , -0.016, 0.013\\ 
-		$[-\infty, t-21.33d)$  & 0.052, 0.103, 0.027, 0.021  & 0.008, 0.000, 0.020, -0.005\\
-		\hline
-	\end{tabular}
-	\caption {Estimated coefficients and approximate standard errors for dyadic effects of Dare county data (before Sandy, during Sandy, after Sandy, overall)}
-	\label{table:nullDare}
-\end{table}
-\footnotesize
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1.1\textwidth]{Dareplot.pdf} 
-	\caption{Comparison of Send (left) and Receive (right) effect based on periods in Table 1. (Red=Before, Green=During, Blue=After, and dot=Overall)}	\label{fig:Emailplo22t}
-\end{figure}
-\subsection{Lenoir County}
-\footnotesize
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{ |c|ccc|c| } 
-		\hline 
-		\textbf{Period} &\textbf{Before Sandy} & \textbf{During Sandy} & \textbf{After Sandy} & \textbf{Overall} \\ 	\hline
-		\textbf{\# emails}& 216 & 83 & 302 & 601 \\ 
-		\hline
-	\end{tabular}
-	\caption{ Summary of Lenoir county email data based on time period}
-	\label{table:nullDare22}
-\end{table}
-\normalsize
-Before Sandy ranges from 2012-10-01 to 2012-10-21 (3 weeks), During Sandy ranges from 2012-10-22 to 2012-11-02 (2 weeks), and After Sandy ranges from 2012-11-03 to 2012-12-31 (8 weeks).
-\footnotesize
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1.1\textwidth]{LenoirEmails.pdf} 
-	\caption{Frequency of Lenoir county emails from 2012-10-01 to 2012-12-31  }
-	\label{fig:Emailplots32}
-\end{figure}
+Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and the topic-token assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the methods for estimating the hyperparameters of a Dirichlet-multinomial distribution from \cite{wallach2008structured}, in hope of improving the model fitting and finding more interesting results in terms of interaction patterns-topics-words relationship.
 \newpage
-\subsection{Vance County}
-\footnotesize
-\footnotesize
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{ |c|ccc|c| } 
-		\hline 
-		\textbf{Period} &\textbf{Before Sandy} & \textbf{During Sandy} & \textbf{After Sandy} & \textbf{Overall} \\ 	\hline
-		\textbf{\# emails}& 198& 18 & 55 & 271 \\ 
-		\hline
-	\end{tabular}
-	\caption{ Summary of Vance county email data based on time period}
-	\label{table:nullVance}
-\end{table}
-\normalsize
-Before Sandy ranges from 2012-09-04 to 2012-10-21 (7 weeks), During Sandy ranges from 2012-10-22 to 2012-11-02 (2 weeks), and After Sandy ranges from 2012-11-03 to 2012-11-30  (4 weeks).
-\footnotesize
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1.1\textwidth]{VanceEmails.pdf} 
-	\caption{Frequency of Vance county emails from 2012-09-04 to 2012-11-30  }
-	\label{fig:Emailplots22}
-\end{figure}
-\end{comment}
+\section{Optimization of Dirichlet-multinomial hyperparameters}
+\cite{wallach2009rethinking} demonstrated that the typical implementations of topic models using symmetric Dirichlet priors with fixed concentration parameters often result in less practical results. Instead, the model fitting could be improved a lot by applying an asymmetric Dirichlet prior over the document–topic distributions (i.e. $\Theta$), while an asymmetric prior over the topic–word distributions (i.e. $\Phi$) provides no real benefit.\\
+\newline
+Therefore, we try to optimize an asymmetric Dirichlet prior over the interaction pattern-topic distributions, $\Theta=\{\boldsymbol{\theta}^{(c)} \}_{c=1}^{C}$, where $\boldsymbol{\theta}^{(c)}$ is drawn from Dir($\alpha, \mathbf{m}$). Now, following \cite{wallach2009rethinking} and \cite{wallach2008structured}, we now assume $\mathbf{m}$ to be nonuniform base measures (while $\alpha$ is still a fixed concentration parameter), and want to find the optimal hyperparameter $[\alpha\mathbf{m}]^*$ given the data $\mathcal{D}$ such that the probability of the
+data given the hyperparameters $P(\mathcal{D}|\alpha\mathbf{m})$ is maximized at $[\alpha\mathbf{m}]^*$. The evidence is given by 
+\begin{equation}
+P(\mathcal{D}|\alpha\mathbf{m})=\prod_{d=1}^{D}\frac{\Gamma(\alpha)}{\Gamma(N_{\cdot|d}+\alpha)}\prod_{k=1}^{K}\frac{\Gamma(N_{k|d}+\alpha m_k)}{\Gamma(\alpha m_k)}
+\end{equation} and is concave in $\alpha \textbf{m}$, we will use the estimation technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured}, based on Minka’s fixed-point iteration \citep{minka2000estimating}.
+\subsection{New fixed-point iterations using the Digamma recurrence relation}
+In this section, we summarize Chapter 2 of \cite{wallach2008structured} to illustrate the basic steps and equations used for our optimization. \\
+\newline First, the starting point is derived by Minka’s fixed-point iteration which takes the derivative of the lower bound $B([\alpha\mathbf{m}]^*)$ of $\mbox{log}P(\mathcal{D}|[\alpha\mathbf{m}]^*)$ with respect to $[\alpha {m_k}]^*$:
+\begin{equation}
+[\alpha m_k]^*=\alpha m_k\frac{\sum_{d=1}^{D}\Psi(N_{k|d}+\alpha m_k)-\Psi(\alpha m_k)}{\sum_{d=1}^{D}\Psi(N_{\cdot|d}+\alpha)-\Psi(\alpha)},
+\end{equation}
+where $\Psi(\cdot)$ is the first derivative of the log gamma function, known as the digamma function, and the quantity $N_{k|d}$ is the number of times that outcome $k$ was observed in context $d$. Moreover, the quantity $N_{\cdot|d}=\sum_{k=1}^{K} N_{k|d}$ is the total number of observations in document $d$. The
+value $\alpha m_k$ acts as an initial “pseudocount” for outcome $k$ in all documents.\\ \newline
+Next, Wallach's new method rewrites the equation above using the notation $C_k(n)=\sum_{d=1}^{D}\delta(N_{k|d}-n)$ (the number of documents in which $k$ has been seen exactly $n$ times) and $C_\cdot(n)=\sum_{d=1}^{D}\delta(N_{\cdot|d}-n)$ (the number of documents that contain a total of $n$ observations):
+\begin{equation}
+[\alpha m_k]^*=\alpha m_k\frac{\sum_{n=1}^{\mbox{max}_dN_{k|d}}C_k(n)[\Psi(n+\alpha m_k)-\Psi(\alpha m_k)]}{\sum_{n=1}^{\mbox{max}_dN_{\cdot|d}}C_\cdot(n)[\Psi(n+\alpha)-\Psi(\alpha)]}.
+\end{equation}
+Finally, applying the digamma recurrence relation (for any positive integer $n$) $$\Psi(n+z)-\Psi(z)=\sum_{f=1}^{n}\frac{1}{f-1+z},$$ we subtitute Equation (20) for below:
+\begin{equation}
+[\alpha m_k]^*=\alpha m_k\frac{\sum_{n=1}^{\mbox{max}_dN_{k|d}}C_k(n)\sum_{f=1}^n \frac{1}{f-1+\alpha m_k}}{\sum_{n=1}^{\mbox{max}_dN_{\cdot|d}}C_\cdot(n)\sum_{f=1}^n \frac{1}{f-1+\alpha}}.
+\end{equation}
+This method is as accurate as Mika's fixed-point iteration method, but it acheives computational efficiency since the digamma recurrence relation reduces the number of new calculations required for each successive $n$ to one. Pseudocode
+for the complete fixed-point iteration is given in algorithm 2.2 of \cite{wallach2008structured}.
+\subsection{Application to Vance county email data}
+The optimization procedure in Section 5.1 was applied to Vance county email data, using the same settings as before: $K=20$ topics, $\alpha=5$ and $C=3$. However, now we assume asymmetric base prior $\mathbf{m}$.
 \clearpage
 \section*{APPENDIX}
 \subsection*{APPENDIX A: Deriving the sampling equations for IPTM}
