@@ -123,35 +123,24 @@ stats1<- function(edge, pre, i, j, t, lambda=0.05){
 }
 
 
-stats1<- function(edge, pre, i, j, t, lambda){
- 	send <- sum(exp(-lambda[1]*pre[[i]][[j]]))
-	receive <-sum(exp(-lambda[2]*pre[[j]][[i]]))
-	triangle <- sum(sapply(A[!A==i & !A==j], function(h){sum(exp(-lambda[3]*pre[[i]][[h]]))*sum(exp(-lambda[3]*pre[[h]][[j]]))}))
-	twosend <-sum(sapply(A[!A==i & !A==j], function(h){sum(exp(-lambda[3]*pre[[i]][[h]]))*sum(exp(-lambda[3]*pre[[h]][[j]]))}))
-	tworeceive <- sum(sapply(A[!A==i & !A==j], function(h){sum(exp(-lambda[3]*pre[[h]][[i]]))*sum(exp(-lambda[3]*pre[[j]][[h]]))}))
-	sibling <- sum(sapply(A[!A==i & !A==j], function(h){sum(exp(-lambda[3]*pre[[h]][[i]]))*sum(exp(-lambda[3]*pre[[h]][[j]]))}))
-	cosibling <- sum(sapply(A[!A==i & !A==j], function(h){sum(exp(-lambda[3]*pre[[i]][[h]]))*sum(exp(-lambda[3]*pre[[j]][[h]]))}))
-	return(c(1, send, receive, sum(twosend, tworeceive, sibling, cosibling)))
-}
-
 
 #initialize C, B, and Z 
 set.seed(100)
 K=20; 						#assume 20 number of topics
 C=3							#assume 5 number of interaction patterns
 		
-alpha<-5						#Dirichlet concentration prior for theta
+alpha<- 50/20					#Dirichlet concentration prior for theta
 mvec <- rep(1, K)			#Dirichlet base prior for theta - assign equal probability to every topic
 	
 P=4						#dimension of x(i,j,t) - we use 7 dynamic network statistics
 	
 sigma=1						#variance of Normal prior for beta
 
-delta=5						#Dirichlet concentration prior for phi
+delta=0.01				#Dirichlet concentration prior for phi
 W = length(vocabulary)		#total number of words 
 nvec <- rep(1, W)			#Dirichlet base prior for phi - assign equal probability to every word
 
-eta = 5						#Dirichlet concentration prior for gamma
+eta = 50/C						#Dirichlet concentration prior for gamma
 lvec <- rep(1, C)			#Dirichlet base prior for gamma - assign equal probability to every interaction pattern
 gamma <- rdirichlet(1,  eta*lvec)	#multinomial prior for gamma
 
@@ -181,97 +170,6 @@ for (d in 1:nrow(text)){
 linit<- lapply(1:C, function(c){rgamma(3, 1, 5)})
 
 set <- A
-
-
-#Inference for C, B, lambda and Z
-MCMC =function(outer, n1, n2, n3, delta_B, delta_l){
- 
- 	  #define the output matrix and assign initial values
-	  currentC <- cinit	
-	  currentZ <- zinit
-	  bmat <- list()
-	  lmat <- list()																			
-	  for (c in 1:C){bmat[[c]] <- matrix(NA, nrow=P, ncol=n3); bmat[[c]][,]<-betainit[[c]]
-	  	 			 lmat[[c]]<- matrix(NA, nrow=P-1, ncol=n3); lmat[[c]][,]<-linit[[c]]}
-	  entropy <- matrix(NA, nrow=outer, ncol=n1)
-	  
-	  for(o in 1:outer){	#outer iteration
-	  	 print(o)							
-	  	
-	  	 for(i in 1:n1){ 
-	  	  if(i%%10==0) print(i)	#inter iteration 1
-	      #C update given Z and B - within each document d 	
-	      zc<-list()
-		  allxmat<-list()
-	       for (d in 1:nrow(edge)){
-	       	currentC2<-currentC[-d]
-	       	edgeC<- lapply(1:C, function(c){edge[which(currentC2==c),]})	
-	       	corpusC<- lapply(1:C, function(c){sapply(which(currentC2==c), function(d){currentZ[[d]][c,]})})	
-	       	for (c in 1:C){
-	       	if(length(corpusC[[c]])>0){zc[[c]]<-tabulate(unlist(corpusC[[c]]), nbins=K)} else {zc[[c]] <- rep(0, K)}
-	      	edgeC[[c]]<- rbind(edgeC[[c]], edge[d,]); edgeC[[c]]<- edgeC[[c]][order(edgeC[[c]][,3]),]
-	      	pre<-x1(edgeC[[c]], edge[d,3])
-	      	allxmat[[c]]<-t(sapply(set, function(j){stats1(edgeC[[c]], pre, edge[d,1],j, edge[d,3], lmat[[c]][,n3])}))
-	      	for (z in currentZ[[d]][c,]){zc[[c]][z]<-zc[[c]][z]+1} 
-	      	}
-	       	lambdai<- lapply(1:C, function(c){rowSums(sweep(allxmat[[c]], 2, bmat[[c]][, n3], '*'))})	      
-	       	const<-sapply(1:C, function(c){log(gamma[c])+lambdai[[c]][edge[d,2]]-log(sum(exp(lambdai[[c]])))-length(currentZ[[d]][c,])*log(sum(zc[[c]])-1+alpha)+sum(sapply(currentZ[[d]][c,], function(k){log(zc[[c]][k]-1+alpha*mvec[k])}))})											 
-	       currentC[d]<-which(rmultinom(1, 1, exp(const))==TRUE)
-	       }
-	       entropy[o,i]<- entropy.empirical(tabulate(currentC)) }
-	      	       
-	      for (i in 1:n2){	#inner iteration 2
-	      if(i%%10==0) print(i)
-	      #Z update given C and B- within each word m in the document d		
-	      corpusCnew<-list()
-	      zcnew<-list()
-	      for (c in 1:C){ corpusCnew[[c]] <- sapply(which(currentC==c), function(d){currentZ[[d]][c,]})			
-	      if(length(corpusCnew[[c]])>0){zcnew[[c]]<-tabulate(unlist(corpusCnew[[c]]), nbins=K)} else {zcnew[[c]] <- rep(0, K) }	
-	       }													     											
-	      corpusW <- list()
-	      for (k in 1:K){corpusW[[k]] <- unlist(sapply(1:nrow(edge), function(d){textlist[[d]][which(currentZ[[d]][c,]==k)]}))}	
-	      for (d in 1:nrow(edge)){
-	      for (w in 1:length(currentZ[[d]][currentC[d],])){	     																									
-	      	const2<-sapply(1:K, function(k){(zcnew[[currentC[d]]][k]-1+alpha*mvec[k])*(tabulate(corpusW[[k]], nbins=W)[textlist[[d]][w]]-1+delta*nvec[w])/sum(length(corpusW[[k]])-1+delta)}) 																											
-	     	currentZ[[d]][currentC[d],w] <- which(rmultinom(1, 1, const2)==TRUE)															
-	     }
-         }
-	     }
-	     
-	      #B update given C and Z - within each interaction pattern C
-	        bold<-lapply(1:C, function(c){bmat[[c]][, n3]})					#old beta from previous iteration
-	        lold<-lapply(1:C, function(c){lmat[[c]][, n3]})	 
-	      	edgeC<- lapply(1:C, function(c){edge[which(currentC==c),]})	
-			allxmatold<-list()
-			allxmatnew<-list()
-	      	for(c in 1:C){
-	      	allxmatold[[c]]<- list();
-			for (d in 1:nrow(edgeC[[c]])){
-			 pre<-x1(edgeC[[c]], edgeC[[c]][d,3])
-	      	 allxmatold[[c]][[d]]<-t(sapply(set, function(j){stats1(edgeC[[c]],pre, edge[d,1],j, edge[d,3], lold[[c]])}))
-	      	}	      	
-	      	}			
-			for (i in 1:n3){
-	      	if(i%%1000==0) print(i)	
-	      	bnew<-lapply(1:C, function(c){rmvnorm(1, bold[[c]], (delta_B)^2*diag(P))})	  
-	        lnew<-lapply(1:C, function(c){rtmvnorm(1, c(lold[[c]]), (delta_l)^2*diag(P-1), lower=rep(0, P-1))}) ;		      	      		      						for(c in 1:C){ 
-	        allxmatnew[[c]]<- list()
-	        for (d in 1:nrow(edgeC[[c]])){ allxmatnew[[c]][[d]]<-t(sapply(set, function(j){stats1(edgeC[[c]], pre, edge[d,1],j, edge[d,3], lnew[[c]])}))
-	        	}
-	        	}
-	      	lambdaiold <- lapply(1:C, function(c){t(sapply(1:nrow(edgeC[[c]]), function(d){rowSums(sweep(allxmatold[[c]][[d]], 2, bold[[c]], '*'))}))}) 	
-         	lambdainew<- lapply(1:C, function(c){t(sapply(1:nrow(edgeC[[c]]), function(d){rowSums(sweep(allxmatnew[[c]][[d]], 2, bnew[[c]], '*'))}))}) 	
-		  	loglikediff<- sapply(1:C, function(c){log(dmvnorm(bnew[[c]],rep(0,P), sigma^2*diag(P))+sum(sapply(1:length(lnew[[c]]), function(l){dgamma(lnew[[c]][l], 1, 5)})))-log(dmvnorm(bold[[c]],rep(0,P), sigma^2*diag(P))+sum(sapply(1:length(lold[[c]]), function(l){dgamma(lold[[c]][l], 1, 5)})))	
-		  				 +sum(sapply(1:nrow(edgeC[[c]]), function(d){lambdainew[[c]][d, edgeC[[c]][d,2]]-log(sum(exp(lambdainew[[c]][d,])))-lambdaiold[[c]][d, edgeC[[c]][d,2]]+log(sum(exp(lambdaiold[[c]][d,])))}))})          				
-		  	u=log(runif(5)) 																												
-		   for (c in 1:C){if (u[c] < loglikediff[c]){bmat[[c]][,i]<-bnew[[c]];lmat[[c]][,i]<-lnew[[c]]; bold[[c]] <-bnew[[c]]; lold[[c]] <-lnew[[c]] } else {bmat[[c]][,i]<-bold[[c]]; lmat[[c]][,i]<-lold[[c]]} }											
-	      }																													
-		  }	
-	   return(list(C=currentC, E=entropy, Z=sapply(1:nrow(edge), function(d){currentZ[[d]][currentC[d],]}), B=bmat, L=lmat))
-       }
-
-unix.time(VanceMCMC<- MCMC(1, 10, 10, 3500, 0.85, 0.1)) #about 250 seconds for 1 outer iteration
-
 
 
 #Inference for C, B, and Z
@@ -304,7 +202,7 @@ MCMC =function(outer, n1, n2, n3, delta_B){
 	      	for (z in currentZ[[d]][c,]){zc[[c]][z]<-zc[[c]][z]+1} 
 	      	}
 	       	lambdai<- lapply(1:C, function(c){rowSums(sweep(allxmat[[c]], 2, bmat[[c]][, n3], '*'))})	      
-	       	const<-sapply(1:C, function(c){log(gamma[c])+lambdai[[c]][edge[d,2]]-log(sum(exp(lambdai[[c]])))-length(currentZ[[d]][c,])*log(sum(zc[[c]])-1+alpha)+sum(sapply(currentZ[[d]][c,], function(k){log(zc[[c]][k]-1+alpha*mvec[k])}))})											 
+	       	const<-sapply(1:C, function(c){log(gamma[c])+lambdai[[c]][edge[d,2]]-log(sum(exp(lambdai[[c]])))-length(currentZ[[d]][c,])*log(sum(zc[[c]])-length(zc[[c]])+alpha)+sum(sapply(currentZ[[d]][c,], function(k){log(zc[[c]][k]-ifelse(zc[[c]][k]>0, 1, 0)+alpha*mvec[k])}))})											 
 	       currentC[d]<-which(rmultinom(1, 1, exp(const))==TRUE)
 	       }
 	       entropy[o,i]<- entropy.empirical(tabulate(currentC)) }
@@ -314,15 +212,17 @@ MCMC =function(outer, n1, n2, n3, delta_B){
 	      #Z update given C and B- within each word m in the document d		
 	      corpusCnew<-list()
 	      zcnew<-list()
-	      for (c in 1:C){ corpusCnew[[c]] <- sapply(which(currentC==c), function(d){currentZ[[d]][c,]})			
+	      for (c in 1:C){corpusCnew[[c]] <- sapply(which(currentC==c), function(d){currentZ[[d]][c,]})			
 	      if(length(corpusCnew[[c]])>0){zcnew[[c]]<-tabulate(unlist(corpusCnew[[c]]), nbins=K)} else {zcnew[[c]] <- rep(0, K) }	
 	       }													     											
 	      corpusW <- list()
-	      for (k in 1:K){corpusW[[k]] <- unlist(sapply(1:nrow(edge), function(d){textlist[[d]][which(currentZ[[d]][c,]==k)]}))}	
+	      tableW <- list()
+	      for (k in 1:K){corpusW[[k]] <- unlist(sapply(1:nrow(edge), function(d){textlist[[d]][which(currentZ[[d]][c,]==k)]}))
+	      	tableW[[k]] <-tabulate(corpusW[[k]], nbins=W)}	
 	      for (d in 1:nrow(edge)){
 	      for (w in 1:length(currentZ[[d]][currentC[d],])){	     																									
-	      	const2<-sapply(1:K, function(k){(zcnew[[currentC[d]]][k]-1+alpha*mvec[k])*(tabulate(corpusW[[k]], nbins=W)[textlist[[d]][w]]-1+delta*nvec[w])/sum(length(corpusW[[k]])-1+delta)}) 																											
-	     	currentZ[[d]][currentC[d],w] <- which(rmultinom(1, 1, const2)==TRUE)															
+	      const2<-sapply(1:K, function(k){(zcnew[[currentC[d]]][k]-ifelse(zcnew[[currentC[d]]][k]>0, 1, 0)+alpha*mvec[k])*(tableW[[k]][textlist[[d]][w]]-ifelse(tableW[[k]][textlist[[d]][w]]>0, 1, 0)+delta*nvec[w])/(length(corpusW[[k]])-length(unique(corpusW[[k]]))+delta)}) 																											
+	      currentZ[[d]][currentC[d],w] <- which(rmultinom(1, 1, const2)==TRUE)															
 	     }
          }
 	     }
@@ -355,7 +255,7 @@ MCMC =function(outer, n1, n2, n3, delta_B){
 
 unix.time(VanceMCMC2<- MCMC(200, 10, 10, 3500, 0.5)) #about 250 seconds for 1 outer iteration
 VanceMCMC<-VanceMCMC2
-save(VanceMCMC2, file="VanceMCMC2.RData")
+save(VanceMCMC, file="VanceMCMC3.RData")
 load("VanceMCMC2.RData")
 sapply(1:3, function(c){nrow(unique(t(VanceMCMC$B[[c]])))})/(3500)		#acceptance rate for beta
 CofD<- VanceMCMC$C			#table of IP for each document
@@ -474,12 +374,23 @@ W16<-Wtable[[16]]/sum(Wtable[[16]])
 W16[order(W16, decreasing=TRUE)][1:10]
 
 
-
-
+topicword <- matrix(0, nrow=K, ncol=W)
+colnames(topicword)<- vocabulary
+for (i in 1:length(allwords)){
+	topicword[allwords[i], which(colnames(topicword)==names(allwords[i]))]<-topicword[allwords[i], which(colnames(topicword)==names(allwords[i]))]+1
+}
+top.topic.words(topicword, num.words=10, by.score=TRUE)
 
 allwords<-unlist(Zsummary1)
 IP1<-table(names(allwords))/sum(table(names(allwords)))
 IP1[order(IP1, decreasing=TRUE)][1:10]
+
+topicword <- matrix(0, nrow=K, ncol=W)
+colnames(topicword)<- vocabulary
+for (i in 1:length(allwords)){
+	topicword[allwords[i], which(colnames(topicword)==names(allwords[i]))]<-topicword[allwords[i], which(colnames(topicword)==names(allwords[i]))]+1
+}
+top.topic.words(topicword, num.words=10, by.score=TRUE)
 
 
 allwords<-unlist(Zsummary2)
