@@ -501,18 +501,18 @@ Furthermore, we look at the distribution of words given the topics, which corres
 	\end{table}
 	\normalsize
 \newline
-Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and the topic-token assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the methods for estimating the hyperparameters of a Dirichlet-multinomial distribution from \cite{wallach2008structured}, in hope of improving the model fitting and finding more interesting results in terms of interaction patterns-topics-words relationship.
-\newpage
-\section{Optimization of Dirichlet-multinomial hyperparameters}
-\cite{wallach2009rethinking} demonstrated that the typical implementations of topic models using symmetric Dirichlet priors with fixed concentration parameters often result in less practical results. Instead, the model fitting could be improved a lot by applying an asymmetric Dirichlet prior over the document–topic distributions (i.e. $\Theta$), while an asymmetric prior over the topic–word distributions (i.e. $\Phi$) provides no real benefit.\\
+Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and the topic-token assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the methods for implementing an asymmetric Dirichlet prior in \cite{wallach2008structured} and \cite{wallach2009rethinking}, in hope of improving the model fitting and finding more interesting results in terms of interaction patterns-topics-words relationship.
+\section{Asymmetric Dirichlet prior over $\Theta$}
+\cite{wallach2009rethinking} demonstrated that the typical implementations of topic models using symmetric Dirichlet priors with fixed concentration parameters often result in less practical results. Instead, the model fitting could be improved by applying an asymmetric Dirichlet prior over the document–topic distributions (i.e. $\Theta$), while an asymmetric prior over the topic–word distributions (i.e. $\Phi$) provides no real benefit.\\
 \newline
-Therefore, we try to optimize an asymmetric Dirichlet prior over the interaction pattern-topic distributions, $\Theta=\{\boldsymbol{\theta}^{(c)} \}_{c=1}^{C}$, where $\boldsymbol{\theta}^{(c)}$ is drawn from Dir($\alpha, \mathbf{m}$). Now, following \cite{wallach2009rethinking} and \cite{wallach2008structured}, we now assume $\mathbf{m}$ to be nonuniform base measures (while $\alpha$ is still a fixed concentration parameter), and want to find the optimal hyperparameter $[\alpha\mathbf{m}]^*$ given the data $\mathcal{D}$ such that the probability of the
+Therefore, we assign an asymmetric Dirichlet prior over the interaction pattern-topic distributions, $\Theta=\{\boldsymbol{\theta}^{(c)} \}_{c=1}^{C}$, where $\boldsymbol{\theta}^{(c)}$ is drawn from Dir($\alpha, \mathbf{m}$). Now, following \cite{wallach2009rethinking} and \cite{wallach2008structured}, we now assume $\mathbf{m}$ to be nonuniform base measures (while $\alpha$ is still a fixed concentration parameter), and try two different approaches in treating $\mathbf{m}$: 1) the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured} based on Minka’s fixed-point iteration \citep{minka2000estimating}, and 2) a fully Bayesian approach as in \cite{wallach2009rethinking}, which assigns additional layer of hierarchy to $\boldsymbol{\theta}$ by giving $\mathbf{m}$ a
+Dirichlet prior (with a uniform base measure and concentration parameter $\alpha'$) and integrating it out.
+\subsection{New fixed-point iterations using the Digamma recurrence relation}
+In this section, we summarize Chapter 2 of \cite{wallach2008structured} to illustrate the basic steps and equations used for our optimization. Basically, we want to find the optimal hyperparameter $[\alpha\mathbf{m}]^*$ given the data $\mathcal{D}$ such that the probability of the
 data given the hyperparameters $P(\mathcal{D}|\alpha\mathbf{m})$ is maximized at $[\alpha\mathbf{m}]^*$. The evidence is given by 
 \begin{equation}
 P(\mathcal{D}|\alpha\mathbf{m})=\prod_{d=1}^{D}\frac{\Gamma(\alpha)}{\Gamma(N_{\cdot|d}+\alpha)}\prod_{k=1}^{K}\frac{\Gamma(N_{k|d}+\alpha m_k)}{\Gamma(\alpha m_k)}
-\end{equation} and is concave in $\alpha \textbf{m}$, we will use the estimation technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured}, based on Minka’s fixed-point iteration \citep{minka2000estimating}.
-\subsection{New fixed-point iterations using the Digamma recurrence relation}
-In this section, we summarize Chapter 2 of \cite{wallach2008structured} to illustrate the basic steps and equations used for our optimization. \\
+\end{equation} and is concave in $\alpha \textbf{m}$, thus we will estimate $[\alpha\mathbf{m}]^*$ based on some pilot runs of MCMC.\\
 \newline First, the starting point is derived by Minka’s fixed-point iteration which takes the derivative of the lower bound $B([\alpha\mathbf{m}]^*)$ of $\mbox{log}P(\mathcal{D}|[\alpha\mathbf{m}]^*)$ with respect to $[\alpha {m_k}]^*$:
 \begin{equation}
 [\alpha m_k]^*=\alpha m_k\frac{\sum_{d=1}^{D}\Psi(N_{k|d}+\alpha m_k)-\Psi(\alpha m_k)}{\sum_{d=1}^{D}\Psi(N_{\cdot|d}+\alpha)-\Psi(\alpha)},
@@ -529,8 +529,91 @@ Finally, applying the digamma recurrence relation (for any positive integer $n$)
 \end{equation}
 This method is as accurate as Mika's fixed-point iteration method, but it acheives computational efficiency since the digamma recurrence relation reduces the number of new calculations required for each successive $n$ to one. Pseudocode
 for the complete fixed-point iteration is given in algorithm 2.2 of \cite{wallach2008structured}.
+\subsection{Additional layer of hierarchy to $\Theta$}
+One alternative to the hyperparameter optimization in Section 5.1. is implementing the additional layer of hierarchy. That is, we assign $\mathbf{m}$ a
+Dirichlet prior with a uniform base measure and concentration parameter $\alpha'$, as a symmetric prior for $\boldsymbol{\theta}$ previously used before Section 5. Therefore, the updated plate notation includes the new components $\alpha'$ and $\mathbf{u}$ as below.
+\begin{figure}[ht]
+	\centering
+	\scalebox{0.7}{ \begin{tikzpicture}
+		\tikzstyle{main}=[circle, minimum size = 13mm, thick, draw =black!80, node distance = 10.5mm]
+		\tikzstyle{connect}=[-latex, thick]
+		\tikzstyle{box}=[rectangle, draw=black!100]
+		\node[main, fill = white!100] (gamma) [label=center:$\boldsymbol{\gamma}$] { };
+		\node[main] (c) [below=of gamma,label=center:$c^{(d)}$] { };
+		\node[main, fill = black!10] (N) [right=of c ,label=center:$\mathbf{N}^{(d|c)}(t)$] { };	
+		\node[main] (z) [left=of c,label=center:$z_m^{(d)}$] {};
+		\node[main, fill = black!10] (w) [left=of z,label=center:$w_m^{(d)}$] { };
+		\node[main] (phi) [above=of w,label=center:$\boldsymbol{\phi}^{(k)}$] { };
+		\node[main] (delta) [left=of phi,label=center:$\delta$] { };
+		\node[main] (eta) [above=of gamma,label=center:${\eta}$] { };
+		\node[main] (beta) [above=of N ,label=center:$\boldsymbol{\beta}^{(c)}$] { };
+		\node[main, fill = black!10] (x) [right=of beta ,label=center:$\boldsymbol{x}^{(c)}_t{(i,j)}$] { };
+		\node[main] (theta) [above=of z,label=center:$\boldsymbol{\theta}^{(c)}$] { };
+		\node[main] (m) [above=of theta,label=center:$\mathbf{m} $] { };
+		\node[main] (u) [above=of m,label=center:$\mathbf{u} $] { };
+		\node[main] (sigma) [above=of beta,label=center:$\sigma^2$] { };
+		\node[main] (alphaprime) [left=of u,label=center:$\alpha'$] { };
+		\node[main] (alpha) [left=of m,label=center:$\alpha$] { };
+		\path (gamma) edge [connect] (c)
+		(z) edge [connect] (w)
+		(theta) edge [connect] (z)
+		(m) edge [connect] (theta)
+		(phi) edge [connect] (w)
+		(delta) edge [connect] (phi)
+		(sigma) edge [connect] (beta)
+		(x) edge [connect] (N)
+		(beta) edge [connect] (N)
+		(c) edge [connect] (N)
+		(c) edge [connect] (z)
+		(eta) edge [connect] (gamma)
+		(alphaprime) edge [connect] (m)
+		(alpha) edge [connect] (theta)
+		(u) edge [connect] (m);
+		\node[rectangle, inner sep=2.5mm, fit=  (x),label=below left:$A$, xshift=5mm, yshift=5mm] {};
+		\node[rectangle, inner sep=3mm,draw=black!100, fit= (beta)(theta)(x)] {};
+		\node[rectangle, inner sep=4mm, fit=  (beta)(theta)(x) ,label= below left:$C$, xshift=-29mm, yshift=5.5mm] {};
+		\node[rectangle, inner sep=3mm, draw=black!100, fit= (phi)] {};
+		\node[rectangle, inner sep=1.5mm, draw=black!100, fit= (x) ] {};
+		\node[rectangle, inner sep=0mm, fit= (phi),label=below left:$K$, xshift=2.5mm, yshift=1.5mm] {};
+		\node[rectangle, inner sep=0mm, fit= (w),label=below left:$M^{(d)}$, xshift=6.5mm, yshift=2mm] {};
+		\node[rectangle, inner sep=3mm,draw=black!100, fit= (w)(z)] {};
+		\node[rectangle, inner sep=3.5mm, fit= (c) (N) ,label=below left:$D$, xshift=-58mm, yshift=1.5mm] {};
+		\node[rectangle, inner sep=6.2mm, draw=black!100, fit =(c) (z) (w) (N) ] {};
+		\end{tikzpicture}}
+	\caption{Plate notation of updated IPTM}
+	\label{fig:plate2}
+\end{figure}
+\newline\cite{wallach2009rethinking} illustrates that Dirichlet–multinomial conjugacy allows $\mathbf{m}$ to be integrated out so that we do not have to estimate the unknown quantity $\mathbf{m}$. \textcolor{red}{In this case, when a topic assignment is drawn from the predictive distribution
+	for document $d$, it is assigned the value of an existing (document-specific) internal draw 
+	$\gamma_i$ with probability proportional to the number of topic assignments previously matched to that draw, and to
+	the value of a new draw 
+	$i'$ with probability proportional to $\gamma_{i'}$. However, since $\mathbf{m}$ has been integrated
+	out, the new draw must be obtained from the ``global" distribution. At this level, 
+	$\gamma_{i'}$ treated as if
+	it were a topic assignment, and assigned the value of an existing global draw 
+	$\gamma_{j}$ with probability
+	proportional to the number of document-level draws previously matched to 
+	$\gamma_{j}$, and to a new global
+	draw, from $\mathbf{u}$, with probability proportional to $\alpha'$. Since the internal draws at the document level are treated as topic assignments the global level, there is a path from every topic assignment to u, via
+	the internal draws.} Thus, we modify the resampling equation of $\mathcal{C}$ to reflect the prior for $\mathbf{m}$:
+\begin{equation}
+\begin{aligned} &P(c^{(d)}=c|\mathcal{W}, \mathcal{Z}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \alpha' \mathbf{u}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\
+&\propto\Big[ \gamma_{c}\Big]\times\Big[ \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}\Big]\times\Big[\prod_{m=1}^{M^{(d)}}
+\frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha \frac{\hat{M}^{CK}_{cz_m^{(d)}}+\frac{\alpha'}{T}}{\sum_{k=1}^K\hat{M}^{CK}_{ck}+\alpha'}}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}\Big].
+\end{aligned}
+\end{equation}
+Also, we update the resampling equation of $\mathcal{Z}$ in the same manner:
+\begin{equation}
+\begin{aligned} & 
+P(z^{(d)}_m=k|\mathcal{W}, \mathcal{Z}_{\backslash d, m},  \mathcal{C}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \alpha' \mathbf{u}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\
+& \propto(M^{CK}_{c^{(d)}k, \backslash d, m}+\alpha \frac{\hat{M}^{CK}_{ck}+\frac{\alpha'}{T}}{\sum_{k=1}^K\hat{M}^{CK}_{ck}+\alpha'})\cdot\frac{M_{w_m^{(d)}k, \backslash d, m}^{WK}+\delta n_w}{\sum_{w=1}^WM_{wk,  \backslash d, m}^{WK}+\delta},
+\end{aligned}
+\end{equation}
+where $\hat{M}^{CK}_{ck}$ is the
+total number of document-level internal draws matched to global internal draw 
+$\gamma_j$.
 \subsection{Application to Vance county email data}
-The optimization procedure in Section 5.1 was applied to Vance county email data, using the same settings as before: $K=20$ topics, $\alpha=5$ and $C=3$. However, now we assume asymmetric base prior $\mathbf{m}$.
+The optimization procedure in Section 5.1 and 5.2 were both applied to Vance county email data, using the same settings as before: $K=20$ topics, $\alpha=5$ and $C=3$. However, now we assume asymmetric base prior $\mathbf{m}$.
 \clearpage
 \section*{APPENDIX}
 \subsection*{APPENDIX A: Deriving the sampling equations for IPTM}
