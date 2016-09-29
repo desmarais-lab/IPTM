@@ -321,7 +321,7 @@ P( \mathcal{Z}, \mathcal{C}, \mathcal{B}|\mathcal{W}, \mathcal{N}, \mathcal{X}, 
     \frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}\Big],
    \end{aligned}
    \end{equation}
-where $M^{CK}_{ck}$ is the number of times topic k shows up given the interaction pattern $c$ over the entire corpus. Furthermore, we can take the log of Equation (10) to avoid numerical issue from exponentiation and increase the speed of computation, which becomes:
+where $M^{CK}_{ck}$ is the number of times topic k shows up across the documents of  the interaction pattern $c$. Furthermore, we can take the log of Equation (10) to avoid numerical issue from exponentiation and increase the speed of computation, which becomes:
   	 \begin{equation}
 \mbox{log}(\gamma_{c})+\Big(\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]\Big)+\sum_{m=1}^{M^{(d)}}\mbox{log}(\frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha m_k}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}).
   	 \end{equation}
@@ -502,18 +502,17 @@ Furthermore, we look at the distribution of words given the topics, which corres
 	\normalsize
 \newline
 Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and the topic-token assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the methods for implementing an asymmetric Dirichlet prior in \cite{wallach2008structured} and \cite{wallach2009rethinking}, in hope of improving the model fitting and finding more interesting results in terms of interaction patterns-topics-words relationship.
+\newpage
 \section{Asymmetric Dirichlet prior over $\Theta$}
-\cite{wallach2009rethinking} demonstrated that the typical implementations of topic models using symmetric Dirichlet priors with fixed concentration parameters often result in less practical results. Instead, the model fitting could be improved by applying an asymmetric Dirichlet prior over the document–topic distributions (i.e. $\Theta$), while an asymmetric prior over the topic–word distributions (i.e. $\Phi$) provides no real benefit.\\
-\newline
-Therefore, we assign an asymmetric Dirichlet prior over the interaction pattern-topic distributions, $\Theta=\{\boldsymbol{\theta}^{(c)} \}_{c=1}^{C}$, where $\boldsymbol{\theta}^{(c)}$ is drawn from Dir($\alpha, \mathbf{m}$). Now, following \cite{wallach2009rethinking} and \cite{wallach2008structured}, we now assume $\mathbf{m}$ to be nonuniform base measures (while $\alpha$ is still a fixed concentration parameter), and try two different approaches in treating $\mathbf{m}$: 1) the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured} based on Minka’s fixed-point iteration \citep{minka2000estimating}, and 2) a fully Bayesian approach as in \cite{wallach2009rethinking}, which assigns additional layer of hierarchy to $\boldsymbol{\theta}$ by giving $\mathbf{m}$ a
-Dirichlet prior (with a uniform base measure and concentration parameter $\alpha'$) and integrating it out.
+\cite{wallach2009rethinking} demonstrated that the typical implementations of topic models using symmetric Dirichlet priors with fixed concentration parameters often result in less practical results, which could be our case shown in Section 4.1. Commonly, the model fitting is improved by applying an asymmetric Dirichlet prior over the document–topic distributions (i.e. $\Theta$), while an asymmetric prior over the topic–word distributions (i.e. $\Phi$) provides no real benefit. Therefore, we assign an asymmetric Dirichlet prior over the interaction pattern-topic distributions, $\Theta=\{\boldsymbol{\theta}^{(c)} \}_{c=1}^{C}$, where $\boldsymbol{\theta}^{(c)}$ is drawn from Dir($\alpha, \boldsymbol{m}$). While \cite{wallach2009rethinking} illustrates two different methods, adding a hierarchy to $\Theta$ and optimizing the hyperparameters ($\alpha$ and $\boldsymbol{m}$), we choose to use hyperparameter
+optimization steps since it is computationally efficient and also sufficient to achieve the desired performance gains. Now, we assume $\boldsymbol{m}$ to be nonuniform base measures (while $\alpha$ is still a fixed concentration parameter), and implement the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured} based on Minka’s fixed-point iteration \citep{minka2000estimating}.
 \subsection{New fixed-point iterations using the Digamma recurrence relation}
-In this section, we summarize Chapter 2 of \cite{wallach2008structured} to illustrate the basic steps and equations used for our optimization. Basically, we want to find the optimal hyperparameter $[\alpha\mathbf{m}]^*$ given the data $\mathcal{D}$ such that the probability of the
-data given the hyperparameters $P(\mathcal{D}|\alpha\mathbf{m})$ is maximized at $[\alpha\mathbf{m}]^*$. The evidence is given by 
+In this section, we summarize Chapter 2 of \cite{wallach2008structured} to illustrate the basic steps and equations used for our optimization. Basically, we want to find the optimal hyperparameter $[\alpha\boldsymbol{m}]^*$ given the data $\mathcal{D}$ such that the probability of the
+data given the hyperparameters $P(\mathcal{D}|\alpha\boldsymbol{m})$ is maximized at $[\alpha\boldsymbol{m}]^*$. The evidence is given by 
 \begin{equation}
-P(\mathcal{D}|\alpha\mathbf{m})=\prod_{d=1}^{D}\frac{\Gamma(\alpha)}{\Gamma(N_{\cdot|d}+\alpha)}\prod_{k=1}^{K}\frac{\Gamma(N_{k|d}+\alpha m_k)}{\Gamma(\alpha m_k)}
-\end{equation} and is concave in $\alpha \textbf{m}$, thus we will estimate $[\alpha\mathbf{m}]^*$ based on some pilot runs of MCMC.\\
-\newline First, the starting point is derived by Minka’s fixed-point iteration which takes the derivative of the lower bound $B([\alpha\mathbf{m}]^*)$ of $\mbox{log}P(\mathcal{D}|[\alpha\mathbf{m}]^*)$ with respect to $[\alpha {m_k}]^*$:
+P(\mathcal{D}|\alpha\boldsymbol{m})=\prod_{d=1}^{D}\frac{\Gamma(\alpha)}{\Gamma(N_{\cdot|d}+\alpha)}\prod_{k=1}^{K}\frac{\Gamma(N_{k|d}+\alpha m_k)}{\Gamma(\alpha m_k)}
+\end{equation} and is concave in $\alpha \boldsymbol{m}$, thus we will estimate $[\alpha\boldsymbol{m}]^*$ based on some pilot runs of MCMC.\\
+\newline First, the starting point is derived by Minka’s fixed-point iteration which takes the derivative of the lower bound $B([\alpha\boldsymbol{m}]^*)$ of $\mbox{log}P(\mathcal{D}|[\alpha\boldsymbol{m}]^*)$ with respect to $[\alpha {m_k}]^*$:
 \begin{equation}
 [\alpha m_k]^*=\alpha m_k\frac{\sum_{d=1}^{D}\Psi(N_{k|d}+\alpha m_k)-\Psi(\alpha m_k)}{\sum_{d=1}^{D}\Psi(N_{\cdot|d}+\alpha)-\Psi(\alpha)},
 \end{equation}
@@ -529,6 +528,7 @@ Finally, applying the digamma recurrence relation (for any positive integer $n$)
 \end{equation}
 This method is as accurate as Mika's fixed-point iteration method, but it acheives computational efficiency since the digamma recurrence relation reduces the number of new calculations required for each successive $n$ to one. Pseudocode
 for the complete fixed-point iteration is given in algorithm 2.2 of \cite{wallach2008structured}.
+\begin{comment}
 \subsection{Additional layer of hierarchy to $\Theta$}
 One alternative to the hyperparameter optimization in Section 5.1. is implementing the additional layer of hierarchy. That is, we assign $\mathbf{m}$ a
 Dirichlet prior with a uniform base measure and concentration parameter $\alpha'$, as a symmetric prior for $\boldsymbol{\theta}$ previously used before Section 5. Therefore, the updated plate notation includes the new components $\alpha'$ and $\mathbf{u}$ as below.
@@ -583,38 +583,108 @@ Dirichlet prior with a uniform base measure and concentration parameter $\alpha'
 	\caption{Plate notation of updated IPTM}
 	\label{fig:plate2}
 \end{figure}
-\newline\cite{wallach2009rethinking} illustrates that Dirichlet–multinomial conjugacy allows $\mathbf{m}$ to be integrated out so that we do not have to estimate the unknown quantity $\mathbf{m}$. \textcolor{red}{In this case, when a topic assignment is drawn from the predictive distribution
-	for document $d$, it is assigned the value of an existing (document-specific) internal draw 
-	$\gamma_i$ with probability proportional to the number of topic assignments previously matched to that draw, and to
-	the value of a new draw 
-	$i'$ with probability proportional to $\gamma_{i'}$. However, since $\mathbf{m}$ has been integrated
-	out, the new draw must be obtained from the ``global" distribution. At this level, 
-	$\gamma_{i'}$ treated as if
-	it were a topic assignment, and assigned the value of an existing global draw 
-	$\gamma_{j}$ with probability
-	proportional to the number of document-level draws previously matched to 
-	$\gamma_{j}$, and to a new global
-	draw, from $\mathbf{u}$, with probability proportional to $\alpha'$. Since the internal draws at the document level are treated as topic assignments the global level, there is a path from every topic assignment to u, via
-	the internal draws.} Thus, we modify the resampling equation of $\mathcal{C}$ to reflect the prior for $\mathbf{m}$:
+\newline\cite{wallach2009rethinking} illustrates that Dirichlet–multinomial conjugacy allows $\mathbf{m}$ to be integrated out so that we do not have to estimate the unknown quantity $\mathbf{m}$. Thus, we modify the resampling equation of $\mathcal{C}$ to reflect the prior for $\mathbf{m}$:
 \begin{equation}
 \begin{aligned} &P(c^{(d)}=c|\mathcal{W}, \mathcal{Z}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \alpha' \mathbf{u}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\
 &\propto\Big[ \gamma_{c}\Big]\times\Big[ \frac{\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j^{(d)})\}}{\sum_{j\in \mathcal{A}^{(c)}} \mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}\Big]\times\Big[\prod_{m=1}^{M^{(d)}}
-\frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha \frac{\hat{M}^{CK}_{cz_m^{(d)}}+\frac{\alpha'}{T}}{\sum_{k=1}^K\hat{M}^{CK}_{ck}+\alpha'}}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}\Big].
+\frac{M^{CK}_{cz_m^{(d)}, \backslash d, m}+\alpha \frac{\hat{M}^{K}_{z_m^{(d)}}+\frac{\alpha'}{T}}{\sum_{k=1}^K\hat{M}^{K}_{k}+\alpha'}}{\sum_{k=1}^KM^{CK}_{ck, \backslash d, m}+\alpha}\Big].
 \end{aligned}
 \end{equation}
 Also, we update the resampling equation of $\mathcal{Z}$ in the same manner:
 \begin{equation}
 \begin{aligned} & 
 P(z^{(d)}_m=k|\mathcal{W}, \mathcal{Z}_{\backslash d, m},  \mathcal{C}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \delta, \boldsymbol{n}, \alpha, \alpha' \mathbf{u}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\
-& \propto(M^{CK}_{c^{(d)}k, \backslash d, m}+\alpha \frac{\hat{M}^{CK}_{ck}+\frac{\alpha'}{T}}{\sum_{k=1}^K\hat{M}^{CK}_{ck}+\alpha'})\cdot\frac{M_{w_m^{(d)}k, \backslash d, m}^{WK}+\delta n_w}{\sum_{w=1}^WM_{wk,  \backslash d, m}^{WK}+\delta},
+& \propto(M^{CK}_{c^{(d)}k, \backslash d, m}+\alpha \frac{\hat{M}^{K}_{k}+\frac{\alpha'}{T}}{\sum_{k=1}^K\hat{M}^{K}_{k}+\alpha'})\cdot\frac{M_{w_m^{(d)}k, \backslash d, m}^{WK}+\delta n_w}{\sum_{w=1}^WM_{wk,  \backslash d, m}^{WK}+\delta},
 \end{aligned}
 \end{equation}
-where $\hat{M}^{CK}_{ck}$ is the
-total number of document-level internal draws matched to global internal draw 
-$\gamma_j$.
+where $\hat{M}^{K}_{k}$ is the
+total number of words matched to the topic assignment $k$, until the current update.
+\end{comment}
 \subsection{Application to Vance county email data}
-The optimization procedure in Section 5.1 and 5.2 were both applied to Vance county email data, using the same settings as before: $K=20$ topics, $\alpha=5$ and $C=3$. However, now we assume asymmetric base prior $\mathbf{m}$.
-\clearpage
+The optimization procedure in Section 5.1 was applied to Vance county email data, using the same settings as before ($K=20$ topics, $\alpha=5$ and $C=3$) but assuming asymmetric base prior $\boldsymbol{m}$. To see the advantage of optimizing $\alpha$ and $\boldsymbol{m}$ in terms of model fitting, we computed the proportionality constant of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ in Equation (13) of Section 3.2,  averaged over 5 runs of MCMC, and compared with that of the symmetric model. This time, we fix the parameters as $\alpha=50/K=50/20=2.5$ with $\boldsymbol{m}=(1,...,1)^T$, $\delta=0.01$, and $\eta=50/C=50/3=16.67$, following the common practice. The asymmetric model uses same $\delta$ and $\eta$, but $\alpha$ and $\boldsymbol{m}$ are optimized for every outer iteration. Figure 4 below compares the MCMC results of symmetric and asymmetric models. 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.57\textwidth]{logprob.pdf} 
+		\includegraphics[width=0.42\textwidth]{alpha.pdf} 
+	\caption{The proportionality constant of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ for symmetric and asymmetric models, averaged over 5 Gibbs sampling runs}
+	\label{fig:logPL}
+\end{figure}
+\newline Moreover, to measure the within-model consistency of interaction pattern and topic assignments (i.e. similarity between 1) two sets of interaction pattern assignments $\mathcal{C}$ and $\mathcal{C'}$, and 2) two sets of topic
+assignments $\mathcal{Z}$ and $\mathcal{Z'}$), we computed the distance between different partitions
+of the tokens into $K=20$ topics, using variation
+of information (VI) \citep{meilua2003comparing}. Following \cite{wallach2009rethinking}, we calculated
+the average VI distance between all 10 unique pairs of interaction pattern and topic assignments from the 5 Gibbs runs for the symmetric and asymmetric model, respectively. We also calculated the between-model
+VI distance, averaged over all 25 unique pairs of topic assignments for the symmetric and asymmetric model. Since VI measures variablity, the higher the value of VI, the greater the dissimilarity between the two assignments.\\
+\footnotesize
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{|c|c|c|} 
+		\hline
+		 \textbf{VI($\mathcal{Z}, \mathcal{Z'})$}& Symmetric \textbf{$\boldsymbol{m}$} &Asymmetric \textbf{ $\boldsymbol{m}$} \\
+		\hline
+		Symmetric \textbf{$\boldsymbol{m}$} &  $5.350\pm 0.053$&  $5.344 \pm 0.084$\\
+		\hline
+		Asymmetric \textbf{$\boldsymbol{m}$} & - & $5.308 \pm 0.079$\\
+		\hline
+	\end{tabular}
+	\caption {Average VI distances between 5 runs of symmetric and asymmetric model with $K=20$}
+	\label{table:VIforZ}
+\end{table}
+\normalsize
+\footnotesize
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.75\textwidth]{topics.pdf} 
+		\includegraphics[width=0.75\textwidth]{topic.pdf} 
+	\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails}
+	\label{fig:Vancebarplot}
+\end{figure}
+\footnotesize
+\begin{table}[ht]
+	\centering
+	\scalebox{0.8}{	\begin{tabular}{|l||l||l||l||l|}
+			\hline
+			{\textbf{Topic 5} (0.1213)}&{\textbf{Topic 6} (0.1136)}&{\textbf{Topic 13} (0.0598)}&{\textbf{Topic 2} (0.0571)}&{\textbf{Topic 8} (0.0531)}\\
+			\hline\hline
+		operations &  office & directory & electronic &  message\\
+			emergency &  heads &  required &  review &fax \\
+			time & manager & phones & street & communications \\
+			response & pursuant & copies &atcom &  chapter\\
+			ncgs &attachments & dial &  department &  center \\
+				request &tomorrow &  expect &  additional & directory \\
+			morning & received &tuesday & years & folks\\
+			finance & sheet &  dss &  forward & audit \\
+				latest & internal &  october & compliance & cecd \\ 
+				financial &henderson&   held&  signups &  performance\\
+			\hline
+		\end{tabular}}
+		\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Symmetric)}
+		\label{table:VancewordsMCMC}
+	\end{table}
+	\normalsize
+\footnotesize
+\begin{table}[ht]
+	\centering
+	\scalebox{0.8}{	\begin{tabular}{|l||l||l||l||l|}
+			\hline
+		{\textbf{Topic 5} (0.1134)}&{\textbf{Topic 15} (0.0844)}&{\textbf{Topic 2} (0.0811)}&{\textbf{Topic 6} (0.0771)}&{\textbf{Topic 18} (0.0666)}\\
+			\hline\hline
+			operations & request & message & cutover &henderson \\
+			meeting & good & emergency & services & office \\
+			records & pursuant & electronic & advised & church\\
+			ncgs & director & review & directory & public\\
+			subject & center & time & phase &best\\
+			morning & additional & manager & finishing &department\\
+			heads & email & tomorrow & october &level\\
+			finance & advised & young & training &created\\
+			latest & wireless & commissioners & rest &technology\\
+			financial & heads & compliance & finalized &sheet\\
+				\hline
+		\end{tabular}}
+		\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Asymmetric)}
+		\label{table:VancewordsMCMC}
+	\end{table}
+	\normalsize\clearpage
 \section*{APPENDIX}
 \subsection*{APPENDIX A: Deriving the sampling equations for IPTM}
 \begin{equation}
