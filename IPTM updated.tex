@@ -684,7 +684,32 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 		\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Asymmetric)}
 		\label{table:VancewordsMCMC}
 	\end{table}
-	\normalsize\clearpage
+	\normalsize
+	\clearpage
+\footnotesize
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{|c|c|c|c|} 
+		\hline
+		& \textbf{IP1} (80 emails) & \textbf{IP2} (57 emails) &\textbf{IP3} (132 emails) \\
+		\hline
+		\textbf{intercept} &0.098 [-1.93, 2.06]& -0.029 [-1.94, 2.20]& 0.109 [-1.54, 1.80]\\
+		\textbf{send}&  2.640 [1.46, 3.85]& 2.984 [1.97, 4.13]& 0.975 [0.13, 1.83]\\
+		\textbf{receive}& -0.031 [-2.03, 1.31]& -0.328 [-2.33, 1.18]& 2.236 [1.52, 3.00]\\
+		\textbf{triangles} & 0.384 [-0.11, 0.81]&  1.394 [0.68, 2.17]& 0.732 [0.54, 0.96]\\
+		\hline
+	\end{tabular}
+	\caption {Summary of posterior estimates of $\boldsymbol{\beta}^{(c)}$ for Vance county emails (Asymmetric)}
+	\label{table:Vancebeta}
+\end{table}
+\normalsize 	
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{boxplotAsymmetric.pdf} 
+	\caption{Posterior distribution of  $\boldsymbol{\beta}^{(c)}$ for Vance county emails (Asymmetric)}
+	\label{fig:Vanceboxplot}
+\end{figure}
+\clearpage
 \section*{APPENDIX}
 \subsection*{APPENDIX A: Deriving the sampling equations for IPTM}
 \begin{equation}
