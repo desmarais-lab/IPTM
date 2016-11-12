@@ -78,7 +78,7 @@ edge<-cbind(edge,1:nrow(edge))
 ########################################################
 #Initial assignment of the parameters as in Section 2.2. 
 #initialize C, B, and Z 
-set.seed(100)               #change seed for different runs
+set.seed(1)         	    #change seed for different runs
 
 K=10; 						#assume 20 number of topics
 C=3							#assume 5 number of interaction patterns
@@ -185,6 +185,7 @@ return(cauch)
 #run MCMC and save the results
 
 MCMC =function(outer, n1, n2, n3, delta_B){
+ 	  currentCmat <- matrix(NA, nrow=outer, ncol=nrow(edge))
  	  currentC <- cinit	
 	  currentZ <- zinit
 	  alphamat <- alpha
@@ -192,7 +193,7 @@ MCMC =function(outer, n1, n2, n3, delta_B){
 	  bmat <- list()
 	  logPLmat <- c()								
 	  for (c in 1:C){bmat[[c]] <- matrix(NA, nrow=P, ncol=n3); bmat[[c]][,]<-betainit[[c]]}
-	  entropy <- matrix(NA, nrow=outer, ncol=n1)
+	  #entropy <- matrix(NA, nrow=outer, ncol=n1)    #Let's skip entropy at this point since it seems to be not helpful
 	  
 	  for(o in 1:outer){	
 	  	 cat("outer iteration = ", o, "\n") 
@@ -230,8 +231,9 @@ MCMC =function(outer, n1, n2, n3, delta_B){
 	       	const<-vapply(1:C, function(c){log(gamma[c])+lambdai[[c]][edge[d,2]]-log(sum(exp(lambdai[[c]])))-length(textlist[[d]])*log(sum(zc[[c]])-K+alpha)+sum(vapply(currentZ[[d]][c,], function(k){log(zc[[c]][k]-ifelse(zc[[c]][k]>0, 1, 0)+alpha*mvec[k])}, c(1)))}, c(1))
 	        currentC[d]<-which(rmultinom(1, 1, exp(const))==TRUE)
 	       }
-	      entropy[o,i]<- entropy.empirical(tabulate(currentC)) 
+	      #entropy[o,i]<- entropy.empirical(tabulate(currentC)) 
 	      }
+	      currentCmat[o,]<-currentC
 	      
 	      corpusCnew<-list()
 	      corpusW<-list()
@@ -283,7 +285,7 @@ MCMC =function(outer, n1, n2, n3, delta_B){
 		  		}
 		  		}
 		  		}
-	return(list(C=currentC, E=entropy, Z=sapply(1:nrow(edge), function(d){currentZ[[d]][currentC[d],]}), B=bmat, A=alphamat, M=mvecmat, L=logPLmat))
+	return(list(C=currentCmat, Z=sapply(1:nrow(edge), function(d){currentZ[[d]][currentC[d],]}), B=bmat, A=alphamat, M=mvecmat, L=logPLmat))
 		  		}
 unix.time(VanceMCMC<- MCMC(200, 10, 10, 3500, 0.5))
 
