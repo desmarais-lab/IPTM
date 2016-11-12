@@ -1,2 +1,2 @@
-# SU16
-This repository is used for my research during summer 2016.
+# IPTM
+This repository is used for my research since summer 2016.
