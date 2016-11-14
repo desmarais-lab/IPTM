@@ -601,17 +601,17 @@ where $\hat{M}^{K}_{k}$ is the
 total number of words matched to the topic assignment $k$, until the current update.
 \end{comment}
 \subsection{Application to Vance county email data}
-The optimization procedure in Section 5.1 was applied to Vance county email data, using the same settings as before ($K=20$ topics and $C=3$) but assuming asymmetric base prior $\boldsymbol{m}$ (and not fixing $\alpha$ as well). To see the advantage of optimizing $\alpha$ and $\boldsymbol{m}$ in terms of model fitting, we computed the proportionality constant of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ in Equation (13) of Section 3.2,  averaged over 5 runs of MCMC, and compared with that of the symmetric model. This time, we fix the parameters as $\alpha=50/K=50/20=2.5$ with $\boldsymbol{m}=(1,...,1)^T$, $\delta=0.01$, and $\eta=50/C=50/3=16.67$, following the common practice. The asymmetric model uses same $\delta$ and $\eta$, but $\alpha$ and $\boldsymbol{m}$ are optimized for every outer iteration. Figure 4 below compares the MCMC results of symmetric and asymmetric models. 
+The optimization procedure in Section 5.1 was applied to Vance county email data, using the settings $K=10$ and $C=3$ but assuming asymmetric base prior $\boldsymbol{m}$ (and not fixing $\alpha$ as well). To see the advantage of optimizing $\alpha$ and $\boldsymbol{m}$ in terms of model fitting, we computed the proportionality constants of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ in Equation (13) of Section 3.2,  and compared with those of the symmetric model. This time, we fix the parameters as $\alpha=50/K=50/10=5$ with $\boldsymbol{m}=(1,...,1)^T$, $\delta=0.01$, and $\eta=50/C=50/3=16.67$, following the common practice. The asymmetric model uses same $\delta$ and $\eta$, but $\alpha$ and $\boldsymbol{m}$ are optimized for every outer iteration. Figure 4 below compares the MCMC results of symmetric and asymmetric models. 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.59\textwidth]{logprob.pdf} 
-		\includegraphics[width=0.4\textwidth]{alpha.pdf} 
-	\caption{The proportionality constant of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ for symmetric and asymmetric models, averaged over 5 Gibbs sampling runs}
-	\label{fig:logPL}
+	\includegraphics[width=0.4\textwidth]{logprob.pdf} 
+		\includegraphics[width=0.43\textwidth]{logprob2.pdf} 
+	\caption{The proportionality constant of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ for symmetric and asymmetric models, averaged over 5 Gibbs sampling runs (left) and individual runs (right)}
+	\label{fig:logPL1}
 \end{figure}
 \newline Moreover, to measure the within-model consistency of interaction pattern and topic assignments (i.e. similarity between 1) two sets of interaction pattern assignments $\mathcal{C}$ and $\mathcal{C'}$, and 2) two sets of topic
 assignments $\mathcal{Z}$ and $\mathcal{Z'}$), we computed the distance between different partitions
-of the tokens into $K=20$ topics, using variation
+of the tokens into $K=10$ topics, using variation
 of information (VI) \citep{meilua2003comparing}. Following \cite{wallach2009rethinking}, we calculated
 the average VI distance between all 10 unique pairs of topic assignments from the 5 Gibbs runs for the symmetric and asymmetric model, respectively. We also calculated the between-model
 VI distance, averaged over all 25 unique pairs of topic assignments for the symmetric and asymmetric model. Since VI measures variablity, the higher the value of VI, the greater the dissimilarity between the two assignments.\\
@@ -620,42 +620,69 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 	\centering
 	\begin{tabular}{|c|c|c|} 
 		\hline
-		 \textbf{VI($\mathcal{Z}, \mathcal{Z'})$}& Symmetric \textbf{$\boldsymbol{m}$} &Asymmetric \textbf{ $\boldsymbol{m}$} \\
+		\textbf{VI($\mathcal{C}, \mathcal{C'})$}& Symmetric \textbf{$\boldsymbol{m}$} &Asymmetric \textbf{ $\boldsymbol{m}$} \\
 		\hline
-		Symmetric \textbf{$\boldsymbol{m}$} &  $5.350\pm 0.053$&  $5.297 \pm 0.156$\\
+		Symmetric \textbf{$\boldsymbol{m}$} &  $1.523\pm 0.108$&  $1.590\pm 0.198$\\
 		\hline
-		Asymmetric \textbf{$\boldsymbol{m}$} & - & $5.308 \pm 0.079$\\
+		Asymmetric \textbf{$\boldsymbol{m}$} & - & $1.717 \pm 0.185$\\
 		\hline
 	\end{tabular}
-	\caption {Average VI distances between 5 runs of symmetric and asymmetric model with $K=20$}
+	\caption {Average VI distances of $\mathcal{C}$ between 5 runs of symmetric and asymmetric model }
+	\label{table:VIforC}
+\end{table}
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{|c|c|c|} 
+		\hline
+		 \textbf{VI($\mathcal{Z}, \mathcal{Z'})$}& Symmetric \textbf{$\boldsymbol{m}$} &Asymmetric \textbf{ $\boldsymbol{m}$} \\
+		\hline
+		Symmetric \textbf{$\boldsymbol{m}$} &  $3.125\pm 0.212$&  $3.341\pm 0.234$\\
+		\hline
+		Asymmetric \textbf{$\boldsymbol{m}$} & - & $3.135 \pm 0.160$\\
+		\hline
+	\end{tabular}
+	\caption {Average VI distances of $\mathcal{Z}$ between 5 runs of symmetric and asymmetric model}
 	\label{table:VIforZ}
 \end{table}
 \normalsize
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.5\textwidth]{alpha2.pdf} 
+	\includegraphics[width=1.05\textwidth]{histalpha.pdf} 
+	\caption{Plots and histograms of concentration parameter values $\alpha$ for 5 Gibbs sampling runs}
+	\label{fig:alpha}
+\end{figure}
 \footnotesize
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.55\textwidth]{topics.pdf} 
-		\includegraphics[width=0.65\textwidth]{topic.pdf} 
-	\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails}
-	\label{fig:Vancebarplot}
+	\includegraphics[width=0.6\textwidth]{topicsym.pdf} 
+		\includegraphics[width=0.6\textwidth]{topicasym.pdf} 
+	\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails, using the Run5}
+	\label{fig:topicsymasym}
 \end{figure}
+\begin{figure}[ht]
+	\centering
+		\includegraphics[width=0.6\textwidth]{topics.pdf} 
+			\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails}
+			\label{fig:topics}
+		\end{figure}
 \footnotesize
 \begin{table}[ht]
 	\centering
-	\scalebox{0.8}{	\begin{tabular}{|l||l||l||l||l|}
+	\scalebox{1}{	\begin{tabular}{|l||l||l||l||l|}
 			\hline
-			{\textbf{Topic 5} (0.1213)}&{\textbf{Topic 6} (0.1136)}&{\textbf{Topic 13} (0.0598)}&{\textbf{Topic 2} (0.0571)}&{\textbf{Topic 8} (0.0531)}\\
+			{\textbf{Topic 1} (0.2167)}&{\textbf{Topic 8} (0.1285)}&{\textbf{Topic 9} (0.1265)}&{\textbf{Topic 5} (0.1180)}&{\textbf{Topic 2} (0.1096)}\\
 			\hline\hline
-		operations &  office & directory & electronic &  message\\
-			emergency &  heads &  required &  review &fax \\
-			time & manager & phones & street & communications \\
-			response & pursuant & copies &atcom &  chapter\\
-			ncgs &attachments & dial &  department &  center \\
-				request &tomorrow &  expect &  additional & directory \\
-			morning & received &tuesday & years & folks\\
-			finance & sheet &  dss &  forward & audit \\
-				latest & internal &  october & compliance & cecd \\ 
-				financial &henderson&   held&  signups &  performance\\
+		church &  directory & suite & will&  henderson\\
+		center &  october &  message & phones & street \\
+			meeting & jail & request & week& description\\
+			heads & provided & cem & phone &  director\\
+			office & technology & records &  system &  planning \\
+				department & training & attachments & advised & attached\\
+			development & cutting & hereto& today & latest\\
+			enp & rest &  morning&  latest & email \\
+				good & attached & phase & tuesday & wanted \\ 
+				pursuant & day &  financial&  monday & excel\\
 			\hline
 		\end{tabular}}
 		\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Symmetric)}
@@ -665,20 +692,20 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 \footnotesize
 \begin{table}[ht]
 	\centering
-	\scalebox{0.8}{	\begin{tabular}{|l||l||l||l||l|}
+	\scalebox{1}{	\begin{tabular}{|l||l||l||l||l|}
 			\hline
-		{\textbf{Topic 5} (0.1134)}&{\textbf{Topic 15} (0.0844)}&{\textbf{Topic 2} (0.0811)}&{\textbf{Topic 6} (0.0771)}&{\textbf{Topic 18} (0.0666)}\\
+		{\textbf{Topic 2} (0.1787)}&{\textbf{Topic 1} (0.1763)}&{\textbf{Topic 8} (0.1219)}&{\textbf{Topic 9} (0.0996)}&{\textbf{Topic 3} (0.0961)}\\
 			\hline\hline
-			operations & request & message & cutover &henderson \\
-			meeting & good & emergency & services & office \\
-			records & pursuant & electronic & advised & church\\
-			ncgs & director & review & directory & public\\
-			subject & center & time & phase &best\\
-			morning & additional & manager & finishing &department\\
-			heads & email & tomorrow & october &level\\
-			finance & advised & young & training &created\\
-			latest & wireless & commissioners & rest &technology\\
-			financial & heads & compliance & finalized &sheet\\
+			meesage & fax& will & street &operations \\
+			electronic & church & department& emergency&description\\
+			time & suite & provided & phone & latest\\
+			request & center & cutover & communications & planning\\
+			review & office & training & cem & enp\\
+			sure & development & cutting & board& e-mail\\
+			meeting & good & day & tomorrow & goldvancesealimprovedjordan\\
+			heads & email & monday & spread &phase\\
+			jail &contacting & questions & sorted &wanted\\
+			response & technology &folks & taps &rural\\
 				\hline
 		\end{tabular}}
 		\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Asymmetric)}
@@ -689,27 +716,39 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 \footnotesize
 \begin{table}[ht]
 	\centering
+		\begin{tabular}{|c|c|c|c|} 
+			\hline
+			\textbf{Symmetric}& \textbf{IP1} (54 emails) & \textbf{IP2} (52 emails) &\textbf{IP3} (163 emails) \\
+			\hline
+			\textbf{intercept} & 0.341 [-0.66, 1.54]& 1.160 [-0.11, 2.65]& 1.168* [0.32, 2.38]\\
+			\textbf{send}&  1.407 [-0.24, 2.98]& 0.297 [-1.66, 2.27]& 1.082* [0.53, 1.75]\\
+			\textbf{receive}& -0.621 [-2.56, 1.03]& -0.539 [-2.30, 1.02]& 0.402 [-0.58, 1.22]\\
+			\textbf{triangles} & 0.825 [-0.20, 2.05]&  0.472 [-0.60, 1.42]& -0.407 [-1.74, 0.53]\\
+			\hline
+		\end{tabular}
 	\begin{tabular}{|c|c|c|c|} 
 		\hline
-		& \textbf{IP1} (80 emails) & \textbf{IP2} (57 emails) &\textbf{IP3} (132 emails) \\
+		\textbf{Asymmetric}& \textbf{IP1} (81 emails) & \textbf{IP2} (26 emails) &\textbf{IP3} (162 emails) \\
 		\hline
-		\textbf{intercept} &0.098 [-1.93, 2.06]& -0.029 [-1.94, 2.20]& 0.109 [-1.54, 1.80]\\
-		\textbf{send}&  2.640 [1.46, 3.85]& 2.984 [1.97, 4.13]& 0.975 [0.13, 1.83]\\
-		\textbf{receive}& -0.031 [-2.03, 1.31]& -0.328 [-2.33, 1.18]& 2.236 [1.52, 3.00]\\
-		\textbf{triangles} & 0.384 [-0.11, 0.81]&  1.394 [0.68, 2.17]& 0.732 [0.54, 0.96]\\
+		\textbf{intercept} &1.316* [0.08, 2.58]& 0.750 [-0.67, 2.34]& 0.646 [-0.267, 1.57]\\
+		\textbf{send}&  0.895 [-0.89, 2.64]& 0.170 [-1.41, 1.98]& 1.214* [0.73, 1.64]\\
+		\textbf{receive}& -0.242 [-2.18, 1.47]& -0.448 [-2.30, 1.21]& -0.349 [-1.27, 0.41]\\
+		\textbf{triangles} & 1.028* [0.29, 1.97]&  1.123 [-0.06, 2.34]& 0731 [0.20, 1.26]\\
 		\hline
 	\end{tabular}
-	\caption {Summary of posterior estimates of $\boldsymbol{\beta}^{(c)}$ for Vance county emails (Asymmetric)}
+	\caption {Posterior estimates of $\boldsymbol{\beta}^{(c)}$: Symmetric (upper) and Asymmetric (lower)}
 	\label{table:Vancebeta}
 \end{table}
 \normalsize 	
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1\textwidth]{boxplotAsymmetric.pdf} 
+	\includegraphics[width=1.1\textwidth]{betaplots.pdf} 
 	\caption{Posterior distribution of  $\boldsymbol{\beta}^{(c)}$ for Vance county emails (Asymmetric)}
 	\label{fig:Vanceboxplot}
 \end{figure}
 \newpage
+\normalsize
+\subsection{Application to Dare county email data}
 \section{Asymmetric Dirichlet prior over $\Gamma$ (IP distribution)}
 Since the introduction of interaction patterns is the novel aspect of our work, we extend previous Section 5 to our interaction pattern distribution $\Gamma$, in hope of significant improvement in model fitting. 
 Therefore, we assign an asymmetric Dirichlet prior over the corpus-interaction pattern distributions, $\Gamma=\{\boldsymbol{\gamma} \}$, where $\boldsymbol{\gamma} $ is drawn from Dir($\eta, \boldsymbol{l}$). Again, we choose to use hyperparameter
