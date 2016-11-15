@@ -749,6 +749,175 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 \newpage
 \normalsize
 \subsection{Application to Dare county email data}
+After treating multicast emails (those involving a single sender but multiple receivers) as multiple distinct emails, Dare county data contains 4845 emails (only count the email with the number of words greater than 0) between 27 actors, including 2907 vocabulary in total. We used $K=10$ topics assuming both symmetric and asymmetric Dirichlet prior with the concentration parameters $\alpha=50/K=50/10=5$ (symmetric case), and $C=3$ interaction patterns assuming multinomial prior with parameter $\gamma$ (coming from symmetric Dirichlet prior with the concentration parameter $\eta = 50/C=50/3=16.67$). For topic-word distributions, we assumed that $\phi$ follows symmectic Dirichlet distribution with the concentration parameter $\delta=0.01$. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=100$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=1500$. In addition, after some experimentation, $\delta_B$ was set as 0.05, to ensure sufficient acceptance rate (IP1: 0.21, IP2: 0.53, IP3: 0.091). In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 500 were discarded as a burn-in. After these post-processing, MCMC diagnostic plots are attached in APPENDIX E, as well as geweke test statistics.
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.4\textwidth]{loglikeDare.pdf} 
+	\includegraphics[width=0.43\textwidth]{loglikeDare2.pdf} 
+	\caption{The proportionality constant of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ for symmetric and asymmetric models, averaged over 5 Gibbs sampling runs (left) and individual runs (right)}
+	\label{fig:logPL1}
+\end{figure}
+\newline Moreover, to measure the within-model consistency of interaction pattern and topic assignments (i.e. similarity between 1) two sets of interaction pattern assignments $\mathcal{C}$ and $\mathcal{C'}$, and 2) two sets of topic
+assignments $\mathcal{Z}$ and $\mathcal{Z'}$), we computed the distance between different partitions
+of the tokens into $K=10$ topics, using variation
+of information (VI) \citep{meilua2003comparing}. Following \cite{wallach2009rethinking}, we calculated
+the average VI distance between all 10 unique pairs of topic assignments from the 5 Gibbs runs for the symmetric and asymmetric model, respectively. We also calculated the between-model
+VI distance, averaged over all 25 unique pairs of topic assignments for the symmetric and asymmetric model. 
+\footnotesize
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{|c|c|c|} 
+		\hline
+		\textbf{VI($\mathcal{C}, \mathcal{C'})$}& Symmetric \textbf{$\boldsymbol{m}$} &Asymmetric \textbf{ $\boldsymbol{m}$} \\
+		\hline
+		Symmetric \textbf{$\boldsymbol{m}$} &  $1.665\pm 0.119$&  $1.709\pm 0.213$\\
+		\hline
+		Asymmetric \textbf{$\boldsymbol{m}$} & - & $1.594 \pm 0.130$\\
+		\hline
+	\end{tabular}
+	\caption {Average VI distances of $\mathcal{C}$ between 5 runs of symmetric and asymmetric model }
+	\label{table:VIforC}
+\end{table}
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{|c|c|c|} 
+		\hline
+		\textbf{VI($\mathcal{Z}, \mathcal{Z'})$}& Symmetric \textbf{$\boldsymbol{m}$} &Asymmetric \textbf{ $\boldsymbol{m}$} \\
+		\hline
+		Symmetric \textbf{$\boldsymbol{m}$} &  $2.896\pm 0.316$&  $3.309\pm 0.367$\\
+		\hline
+		Asymmetric \textbf{$\boldsymbol{m}$} & - & $2.904\pm 0.309$\\
+		\hline
+	\end{tabular}
+	\caption {Average VI distances of $\mathcal{Z}$ between 5 runs of symmetric and asymmetric model}
+	\label{table:VIforZ}
+\end{table}
+\normalsize
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.5\textwidth]{alphaplotDare.pdf} 
+	\includegraphics[width=1.05\textwidth]{histalphaDare.pdf} 
+	\caption{Plots and histograms of concentration parameter values $\alpha$ for 5 Gibbs sampling runs}
+	\label{fig:alpha}
+\end{figure}
+\footnotesize
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.65\textwidth]{Daretopic.pdf} 
+	\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails, using the Run5}
+	\label{fig:topicsymasym}
+\end{figure}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.6\textwidth]{Daretopicoverall.pdf} 
+	\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails}
+	\label{fig:topics}
+\end{figure}
+\footnotesize
+\begin{table}[ht]
+	\centering
+	\scalebox{1}{	\begin{tabular}{|l||l||l||l||l|}
+			\hline
+			{\textbf{Topic 4} (0.2106)}&{\textbf{Topic 10} (0.1781)}&{\textbf{Topic 7} (0.1429)}&{\textbf{Topic 3} (0.1223)}&{\textbf{Topic 8} (0.1197)}\\
+			\hline\hline
+			track &  high &  time & leave&  water\\
+			winds &  tides &  monday& hours & hatteras \\
+			strom & report& social & media & island\\
+			system & position& employees & administrative&  fire\\
+			forecast & today & employee &  hour&  winds\\
+			munis& white & policy & email& strong\\
+			marshall & center & october & resources &schedule\\
+			colins & planning& questions &  fax & fyi \\
+			manteo & weekend & changes& facebook& power\\ 
+			atlantic & issues &  post &  drive & time\\
+			\hline
+		\end{tabular}}
+		\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Symmetric)}
+		\label{table:VancewordsMCMC}
+	\end{table}
+	\normalsize
+	\footnotesize
+	\begin{table}[ht]
+		\centering
+		\scalebox{1}{	\begin{tabular}{|l||l||l||l||l|}
+				\hline
+				{\textbf{Topic 10} (0.1903)}&{\textbf{Topic 4} (0.1743)}&{\textbf{Topic 8} (0.1454)}&{\textbf{Topic 7} (0.1299)}&{\textbf{Topic 3} (0.1241)}\\
+				\hline\hline
+				box& munis& storm& hours&administrative\\
+				moving & update & law& social&departmnet\\
+				report& storm& will & employees& media\\
+				outer & status & address & box &employee\\
+				shore & track & planning & director &phone\\
+				forecast & sandy & email & resources& drive\\
+				call & director& day & marshall& leave\\
+				long & system & island & collins&hour\\
+				moves &coastal & fire & october &policy\\
+				board &forecast &week& phr &human\\
+				\hline
+			\end{tabular}}
+			\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Asymmetric)}
+			\label{table:VancewordsMCMC}
+		\end{table}
+		\normalsize
+			\footnotesize
+			\begin{table}[ht]
+				\centering
+				\scalebox{1}{	\begin{tabular}{|l||l||l|}
+						\hline
+						{\textbf{IP1}}&{\textbf{IP2}}&{\textbf{IP3}}\\
+						\hline\hline
+						K=7 (0.38), K=3 (0.36) & K=10 (0.32), K=8 (0.22), K=6 (0.18) & K=4 (0.71)\\
+						\hline
+						time, leave & position, water, update & manteo\\
+						monday, hours & issues, island, public & elections\\
+						social, media & sheriff,  hatteras, services & storm\\
+						employees, administrative & white, strong, board &phone\\
+						employee, hour & today, schedule, connection &marshall\\
+						policy, email & -lsb-, winds, levels &forecast\\
+						october, resources & wanted,  and/or, sandy &drive\\
+						questions, facebook & touching, time, current & updates \\ 
+						post, fax & report, fire, service & sandy\\
+						offices, public & regulations, stats, web &cera\\
+						\hline
+					\end{tabular}}
+					\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Asymmetric)}
+					\label{table:VancewordsMCMC}
+				\end{table}
+				\normalsize
+		\footnotesize
+		\begin{table}[ht]
+			\centering
+			\begin{tabular}{|c|c|c|c|} 
+				\hline
+				\textbf{Symmetric}& \textbf{IP1} (795 emails) & \textbf{IP2} (2326 emails) &\textbf{IP3} (1724 emails) \\
+				\hline
+				\textbf{intercept} & 1.763* [1.17, 2.36]& 0.825* [0.61,1.08]& 1.761* [1.60, 2.06]\\
+				\textbf{send}&  0.348* [0.06, 0.60]& 0.044 [-0.00, 0.11]& 0.056 [-0.02, 0.15]\\
+				\textbf{receive}& 0.129 [-0.20, 0.42]& 0.071 [-0.01, 0.14]& -0.216* [-0.34, -0.10]\\
+				\textbf{triangles} & 0.134* [0.06, 0.21]&  0.036 [0.02, 0.04]& 0.009* [0.00, 0.01]\\
+				\hline
+			\end{tabular}
+			\begin{tabular}{|c|c|c|c|} 
+				\hline
+				\textbf{Asymmetric}& \textbf{IP1} (909 emails) & \textbf{IP2} (1903 emails) &\textbf{IP3} (2033 emails) \\
+				\hline
+				\textbf{intercept} &0.712* [0.25, 1.09]& 1.285* [1.11, 1.51]& 1.429* [1.29, 1.60]\\
+				\textbf{send}&  0.305* [0.04, 0.57]& 0.411* [0.31, 0.53]& 0.040 [-0.03, 0.12]\\
+				\textbf{receive}& 0.214 [-0.16, 0.57]& 0.001 [-0.12, 0.091]& -0.242* [-0.40, -0.15]\\
+				\textbf{triangles} & -0.056 [-0.16, 0.03]&  0.034 [0.02, 0.04]& 0.014 [0.01, 0.02]\\
+				\hline
+			\end{tabular}
+			\caption {Posterior estimates of $\boldsymbol{\beta}^{(c)}$: Symmetric (upper) and Asymmetric (lower)}
+			\label{table:Vancebeta}
+		\end{table}
+		\normalsize 	
+		\begin{figure}[ht]
+			\centering
+			\includegraphics[width=1.1\textwidth]{betaDareplot.pdf} 
+			\caption{Posterior distribution of  $\boldsymbol{\beta}^{(c)}$ for Vance county emails (Asymmetric)}
+			\label{fig:Vanceboxplot}
+		\end{figure}
+\begin{comment}
 \section{Asymmetric Dirichlet prior over $\Gamma$ (IP distribution)}
 Since the introduction of interaction patterns is the novel aspect of our work, we extend previous Section 5 to our interaction pattern distribution $\Gamma$, in hope of significant improvement in model fitting. 
 Therefore, we assign an asymmetric Dirichlet prior over the corpus-interaction pattern distributions, $\Gamma=\{\boldsymbol{\gamma} \}$, where $\boldsymbol{\gamma} $ is drawn from Dir($\eta, \boldsymbol{l}$). Again, we choose to use hyperparameter
@@ -769,7 +938,6 @@ Applying the digamma recurrence relation (for any positive integer $n$) $$\Psi(n
 \begin{equation}
 	[\eta{l}_c]^*=\eta{l}_c\frac{\sum_{f=1}^{N_c} \frac{1}{f-1+\eta{l}_c}}{\sum_{f=1}^{N_\cdot}  \frac{1}{f-1+\eta}}.
 \end{equation}
-\begin{comment}
 \subsection{Additional layer of hierarchy to $\Theta$}
 One alternative to the hyperparameter optimization in Section 5.1. is implementing the additional layer of hierarchy. That is, we assign $\mathbf{m}$ a
 Dirichlet prior with a uniform base measure and concentration parameter $\alpha'$, as a symmetric prior for $\boldsymbol{\theta}$ previously used before Section 5. Therefore, the updated plate notation includes the new components $\alpha'$ and $\mathbf{u}$ as below.
@@ -954,7 +1122,18 @@ Fraction in 2nd window = 0.5
 var1    var2    var3    var4 
 0.5025  0.5471 -0.7871 -0.2434 
 \end{verbatim} 	 
-
+ \subsection*{APPENDIX D: MCMC Diagnostics for Vance county emails - updated}
+ \begin{figure}[ht]
+ 	\centering
+ 	\includegraphics[width=0.54\textwidth]{IP1symdiag.pdf} 
+ 	 	\includegraphics[width=0.45\textwidth]{IP1asymdiag.pdf} 
+ 	 		\includegraphics[width=0.45\textwidth]{IP2symdiag.pdf} 
+ 	 		\includegraphics[width=0.54\textwidth]{IP2asymdiag.pdf} 
+ 	 			\includegraphics[width=0.45\textwidth]{IP3symdiag.pdf} 
+ 	 			\includegraphics[width=0.54\textwidth]{IP3asymdiag.pdf} 
+ 	\caption{Traceplots and density plots of $\boldsymbol{\beta}$: Symmetric (left) and Asymmetric (right)}
+ 	\label{fig:IP1sym}
+ \end{figure}
 \bibliographystyle{apalike}
 \bibliography{BominBib}
 
