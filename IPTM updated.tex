@@ -601,12 +601,15 @@ where $\hat{M}^{K}_{k}$ is the
 total number of words matched to the topic assignment $k$, until the current update.
 \end{comment}
 \subsection{Application to Vance county email data}
-The optimization procedure in Section 5.1 was applied to Vance county email data, using the settings $K=10$ and $C=3$ but assuming asymmetric base prior $\boldsymbol{m}$ (and not fixing $\alpha$ as well). To see the advantage of optimizing $\alpha$ and $\boldsymbol{m}$ in terms of model fitting, we computed the proportionality constants of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ in Equation (13) of Section 3.2,  and compared with those of the symmetric model. This time, we fix the parameters as $\alpha=50/K=50/10=5$ with $\boldsymbol{m}=(1,...,1)^T$, $\delta=0.01$, and $\eta=50/C=50/3=16.67$, following the common practice. The asymmetric model uses same $\delta$ and $\eta$, but $\alpha$ and $\boldsymbol{m}$ are optimized for every outer iteration. Figure 4 below compares the MCMC results of symmetric and asymmetric models. 
+The optimization procedure in Section 5.1 was applied to Vance county email data, using the settings $K=10$ and $C=3$ but assuming asymmetric base prior $\boldsymbol{m}$ (and not fixing $\alpha$ as well). To see the advantage of optimizing $\alpha$ and $\boldsymbol{m}$ in terms of model fitting, we computed the proportionality constants of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ in Equation (13) of Section 3.2,  and compared with those of the symmetric model. This time, we fix the parameters as $\alpha=50/K=50/10=5$ with $\boldsymbol{m}=(1,...,1)^T$, $\delta=0.01$, and $\eta=50/C=50/3=16.67$, following the common practice. The asymmetric model uses same $\delta$ and $\eta$, but $\alpha$ and $\boldsymbol{m}$ are optimized for every outer iteration. We set the outer iteration number as $I=550$, and inner iteration numbers as $n_1=10, n_2=10,$ and $n_3=3300$, which took about 30 hours in total. First 50 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $3^{rd}$ sample was taken as a thinning process of third inner iteration. Figure 4 below compares the MCMC results of symmetric and asymmetric models. 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.4\textwidth]{logprob.pdf} 
-		\includegraphics[width=0.43\textwidth]{logprob2.pdf} 
-	\caption{The proportionality constant of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ for symmetric and asymmetric models, averaged over 5 Gibbs sampling runs (left) and individual runs (right)}
+	\includegraphics[width=0.5\textwidth]{fivesymmetric.pdf} 
+		\includegraphics[width=0.45\textwidth]{fivesymmetricafter.pdf} 
+			\includegraphics[width=0.5\textwidth]{fiveindividual.pdf} 
+			\includegraphics[width=0.46\textwidth]{fiveindividualafter.pdf} 
+			
+	\caption{The proportionality constant of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ for symmetric and asymmetric models, averaged over 5 Gibbs sampling runs (upper) and individual runs (lower). The difference between the left and right plot is before and after removing the burn-ins.}
 	\label{fig:logPL1}
 \end{figure}
 \newline Moreover, to measure the within-model consistency of interaction pattern and topic assignments (i.e. similarity between 1) two sets of interaction pattern assignments $\mathcal{C}$ and $\mathcal{C'}$, and 2) two sets of topic
@@ -622,9 +625,9 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 		\hline
 		\textbf{VI($\mathcal{C}, \mathcal{C'})$}& Symmetric \textbf{$\boldsymbol{m}$} &Asymmetric \textbf{ $\boldsymbol{m}$} \\
 		\hline
-		Symmetric \textbf{$\boldsymbol{m}$} &  $1.523\pm 0.108$&  $1.590\pm 0.198$\\
+		Symmetric \textbf{$\boldsymbol{m}$} &  $1.620\pm 0.142$&  $1.656\pm 0.226$\\
 		\hline
-		Asymmetric \textbf{$\boldsymbol{m}$} & - & $1.717 \pm 0.185$\\
+		Asymmetric \textbf{$\boldsymbol{m}$} & - & $1.780\pm 0.122$\\
 		\hline
 	\end{tabular}
 	\caption {Average VI distances of $\mathcal{C}$ between 5 runs of symmetric and asymmetric model }
@@ -636,9 +639,9 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 		\hline
 		 \textbf{VI($\mathcal{Z}, \mathcal{Z'})$}& Symmetric \textbf{$\boldsymbol{m}$} &Asymmetric \textbf{ $\boldsymbol{m}$} \\
 		\hline
-		Symmetric \textbf{$\boldsymbol{m}$} &  $3.125\pm 0.212$&  $3.341\pm 0.234$\\
+		Symmetric \textbf{$\boldsymbol{m}$} &  $3.118\pm 0.168$&  $3.298\pm 0.273$\\
 		\hline
-		Asymmetric \textbf{$\boldsymbol{m}$} & - & $3.135 \pm 0.160$\\
+		Asymmetric \textbf{$\boldsymbol{m}$} & - & $2.964 \pm 0.183$\\
 		\hline
 	\end{tabular}
 	\caption {Average VI distances of $\mathcal{Z}$ between 5 runs of symmetric and asymmetric model}
@@ -647,22 +650,21 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 \normalsize
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.5\textwidth]{alpha2.pdf} 
-	\includegraphics[width=1.05\textwidth]{histalpha.pdf} 
+	\includegraphics[width=1\textwidth]{alphabefore.pdf} 
+	\includegraphics[width=1\textwidth]{alphahist.pdf} 
 	\caption{Plots and histograms of concentration parameter values $\alpha$ for 5 Gibbs sampling runs}
 	\label{fig:alpha}
 \end{figure}
 \footnotesize
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.6\textwidth]{topicsym.pdf} 
-		\includegraphics[width=0.6\textwidth]{topicasym.pdf} 
+	\includegraphics[width=1\textwidth]{topicdists.pdf} 
 	\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails, using the Run5}
 	\label{fig:topicsymasym}
 \end{figure}
 \begin{figure}[ht]
 	\centering
-		\includegraphics[width=0.6\textwidth]{topics.pdf} 
+		\includegraphics[width=0.7\textwidth]{topics.pdf} 
 			\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails}
 			\label{fig:topics}
 		\end{figure}
@@ -671,18 +673,18 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 	\centering
 	\scalebox{1}{	\begin{tabular}{|l||l||l||l||l|}
 			\hline
-			{\textbf{Topic 1} (0.2167)}&{\textbf{Topic 8} (0.1285)}&{\textbf{Topic 9} (0.1265)}&{\textbf{Topic 5} (0.1180)}&{\textbf{Topic 2} (0.1096)}\\
+			{\textbf{Topic 1} (0.2056)}&{\textbf{Topic 2} (0.1309)}&{\textbf{Topic 8} (0.1214)}&{\textbf{Topic 7} (0.0902)}&{\textbf{Topic 5} (0.0897)}\\
 			\hline\hline
-		church &  directory & suite & will&  henderson\\
-		center &  october &  message & phones & street \\
-			meeting & jail & request & week& description\\
-			heads & provided & cem & phone &  director\\
-			office & technology & records &  system &  planning \\
-				department & training & attachments & advised & attached\\
-			development & cutting & hereto& today & latest\\
-			enp & rest &  morning&  latest & email \\
-				good & attached & phase & tuesday & wanted \\ 
-				pursuant & day &  financial&  monday & excel\\
+		henderson&  message & phones & will&  phone\\
+	attached&  department &  week&  directory & department \\
+			latest &  time& system& commissioner& jail\\
+		extension &request& october & heads&  advised\\
+		planning & meeting& folks &  attend &  rest \\
+				development& heads & cutover & services &today\\
+			young& cem &training& atcom& call\\
+			e-mail& manager &  cutting&  trained & tuesday\\
+			good & pursuant & director & extensions& monday \\ 
+			coming & chapter &  day& audit & center\\
 			\hline
 		\end{tabular}}
 		\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Symmetric)}
@@ -694,46 +696,90 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 	\centering
 	\scalebox{1}{	\begin{tabular}{|l||l||l||l||l|}
 			\hline
-		{\textbf{Topic 2} (0.1787)}&{\textbf{Topic 1} (0.1763)}&{\textbf{Topic 8} (0.1219)}&{\textbf{Topic 9} (0.0996)}&{\textbf{Topic 3} (0.0961)}\\
+		{\textbf{Topic 2} (0.1781)}&{\textbf{Topic 1} (0.1748)}&{\textbf{Topic 8} (0.1138)}&{\textbf{Topic 3} (0.0980)}&{\textbf{Topic 9} (0.0957)}\\
 			\hline\hline
-			meesage & fax& will & street &operations \\
-			electronic & church & department& emergency&description\\
-			time & suite & provided & phone & latest\\
-			request & center & cutover & communications & planning\\
-			review & office & training & cem & enp\\
-			sure & development & cutting & board& e-mail\\
-			meeting & good & day & tomorrow & goldvancesealimprovedjordan\\
-			heads & email & monday & spread &phase\\
-			jail &contacting & questions & sorted &wanted\\
-			response & technology &folks & taps &rural\\
+			meesage & henderson& phones &description& suite \\
+			electronic & street & week& fax& latest\\
+			request& phone& provided & director & meeting\\
+			review& office& training& planning & communications\\
+			jail& center & cutting& e-mail & board\\
+			response& enp & day & good& tomorrow\\
+			days& morning & monday & extension & cutover\\
+			records & golvancesealimprovedjordan& questions & phase &work\\
+		manager&best & folks & lines & helped\\
+		pursuant & email &attend &commissioners &sorted\\
 				\hline
 		\end{tabular}}
 		\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Asymmetric)}
 		\label{table:VancewordsMCMC}
 	\end{table}
-	\normalsize
-	\clearpage
-\footnotesize
+				\footnotesize
+								\begin{table}[ht]
+									\centering
+									\scalebox{1}{	\begin{tabular}{|l||l||l|}
+											\hline
+											{\textbf{IP1} (70 emails)}&{\textbf{IP2} (57 emails)}&{\textbf{IP3} (142 emails)}\\
+											\hline\hline
+											K=2 (0.40), K=4 (0.17), K=9 (0.15) & K=8 (0.38), K=5 (0.24)& K=1 (0.31), K=3 (0.17), K=6 (0.15)\\
+											\hline
+											message, electronic, records&phones, phone& henderson, street, description\\
+											time, response, ncgs & week, department& latest, fax, church\\
+											department, hereto, attachments& system, rest& planning, suite, emergency\\
+											heads, finance, director& october, advised& attached, director, center\\
+											request, financial, operations& training, jail& extension, goldvancesealimprovedjordan, phone\\
+											manager, system, work& cutting, send& development, phase, morning\\
+											pursuant, additional, office & cutover, center& e-mail, board, email\\
+											chapter, class, helped& folks, tuesday& good, rural, excel\\ 
+										public, local, internal& instructions, monday& young, funds, lease\\
+										subject, communications, reporting& dss, thursday& list, turn, form\\
+											\hline
+										\end{tabular}}
+										\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Symmetric)}
+										\label{table:VancewordsMCMC}
+									\end{table}
+			\begin{table}[ht]
+				\centering
+				\scalebox{1}{	\begin{tabular}{|l||l||l|}
+						\hline
+						{\textbf{IP1} (88 emails)}&{\textbf{IP2} (28 emails)}&{\textbf{IP3} (153 emails)}\\
+						\hline\hline
+						K=2 (0.50), K=10 (0.18) & K=8 (0.48), K=5 (0.31)& K=1 (0.30), K=3 (0.19), K=6 (0.15), K=9 (0.14)\\
+						\hline
+						message, will&phones, october& henderson, description, operations, suite\\
+						electronic, heads & week, department& street, fax, emergency, latest\\
+						review, sure& provided, rest& office, director, church, communications\\
+						jail, coming&training, system& center, planning, development, meeting\\
+						days, system& cutting, phone& phone, e-mail, attached, board\\
+						request, financial& folks, sessions & enp, good, cem, sorted \\
+						response, advised& meeting, director& goldvancesealimprovedjordan, extension, excel, hurricane  \\
+						records, full& young, tuesday& morning, phase, directory, taps\\ 
+						manager, dial& monday, services& email, lines, commission, tomorrow \\
+						pursuant, additional& questions, three& young, commissioners, asap, dropbox \\
+						\hline
+					\end{tabular}}
+					\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Asymmetric)}
+					\label{table:VancewordsMCMC}
+				\end{table}
 \begin{table}[ht]
 	\centering
 		\begin{tabular}{|c|c|c|c|} 
 			\hline
-			\textbf{Symmetric}& \textbf{IP1} (54 emails) & \textbf{IP2} (52 emails) &\textbf{IP3} (163 emails) \\
+			\textbf{Symmetric}& \textbf{IP1} (70 emails) & \textbf{IP2} (57 emails) &\textbf{IP3} (142 emails) \\
 			\hline
-			\textbf{intercept} & 0.341 [-0.66, 1.54]& 1.160 [-0.11, 2.65]& 1.168* [0.32, 2.38]\\
-			\textbf{send}&  1.407 [-0.24, 2.98]& 0.297 [-1.66, 2.27]& 1.082* [0.53, 1.75]\\
-			\textbf{receive}& -0.621 [-2.56, 1.03]& -0.539 [-2.30, 1.02]& 0.402 [-0.58, 1.22]\\
-			\textbf{triangles} & 0.825 [-0.20, 2.05]&  0.472 [-0.60, 1.42]& -0.407 [-1.74, 0.53]\\
+			\textbf{intercept} & 1.277* [0.06, 2.74]& 0.732 [-0.49, 2.04]& 0.750 [-0.20, 1.87] \\
+			\textbf{send}&   0.371 [-1.39, 2.24]& 0.577 [-1.19, 2.20]&1.512* [0.92, 2.04]\\
+			\textbf{receive}& 0.670[-1.04, 2.23]& 0.182 [-1.33, 1.42]& -0.048 [-1.05, 0.96]\\
+			\textbf{triangles} & -0.027 [-1.77, 1.77]&  0.293 [-0.62, 1.25]& 1.406* [0.63, 2.12]\\
 			\hline
 		\end{tabular}
 	\begin{tabular}{|c|c|c|c|} 
 		\hline
-		\textbf{Asymmetric}& \textbf{IP1} (81 emails) & \textbf{IP2} (26 emails) &\textbf{IP3} (162 emails) \\
+		\textbf{Asymmetric}& \textbf{IP1} (88 emails) & \textbf{IP2} (28 emails) &\textbf{IP3} (153 emails) \\
 		\hline
-		\textbf{intercept} &1.316* [0.08, 2.58]& 0.750 [-0.67, 2.34]& 0.646 [-0.267, 1.57]\\
-		\textbf{send}&  0.895 [-0.89, 2.64]& 0.170 [-1.41, 1.98]& 1.214* [0.73, 1.64]\\
-		\textbf{receive}& -0.242 [-2.18, 1.47]& -0.448 [-2.30, 1.21]& -0.349 [-1.27, 0.41]\\
-		\textbf{triangles} & 1.028* [0.29, 1.97]&  1.123 [-0.06, 2.34]& 0731 [0.20, 1.26]\\
+		\textbf{intercept} & 1.418* [0.26, 2.73]& 0.692 [-0.62, 2.36]& 0.518 [-0.30, 1.57]\\
+		\textbf{send}&  1.132 [-0.22, 2.52]& 1.546* [0.15, 2.93]& 1.197* [0.75, 1.63]\\
+		\textbf{receive}& 0.672 [-0.97, 2.19]& -0.320 [-2.00, 1.21]& 0.318 [-0.40, 1.05]\\
+		\textbf{triangles} & 0.685 [-0.08, 1.61]&  1.280 [-0.06, 2.74]& 0.918* [0.28, 1.47]\\
 		\hline
 	\end{tabular}
 	\caption {Posterior estimates of $\boldsymbol{\beta}^{(c)}$: Symmetric (upper) and Asymmetric (lower)}
@@ -742,19 +788,27 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 \normalsize 	
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.1\textwidth]{betaplots.pdf} 
-	\caption{Posterior distribution of  $\boldsymbol{\beta}^{(c)}$ for Vance county emails (Asymmetric)}
+	\includegraphics[width=1\textwidth]{betaplots.pdf} 
+	\caption{Posterior distribution of $\boldsymbol{\beta}^{(c)}$ for Vance county emails (Asymmetric)}
 	\label{fig:Vanceboxplot}
 \end{figure}
-\newpage
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{networkplot.pdf} 
+	\caption{Network plots given the posterior estimates of interaction patterns (Asymmetric). Note that in IP2, most emails sent out from node 6, who is the only person from the Information Technology department.}
+	\label{fig:Vanceboxplot}
+\end{figure}
+\clearpage
 \normalsize
 \subsection{Application to Dare county email data}
 After treating multicast emails (those involving a single sender but multiple receivers) as multiple distinct emails, Dare county data contains 4845 emails (only count the email with the number of words greater than 0) between 27 actors, including 2907 vocabulary in total. We used $K=10$ topics assuming both symmetric and asymmetric Dirichlet prior with the concentration parameters $\alpha=50/K=50/10=5$ (symmetric case), and $C=3$ interaction patterns assuming multinomial prior with parameter $\gamma$ (coming from symmetric Dirichlet prior with the concentration parameter $\eta = 50/C=50/3=16.67$). For topic-word distributions, we assumed that $\phi$ follows symmectic Dirichlet distribution with the concentration parameter $\delta=0.01$. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=100$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=1500$. In addition, after some experimentation, $\delta_B$ was set as 0.05, to ensure sufficient acceptance rate (IP1: 0.21, IP2: 0.53, IP3: 0.091). In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 500 were discarded as a burn-in. After these post-processing, MCMC diagnostic plots are attached in APPENDIX E, as well as geweke test statistics.
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.4\textwidth]{loglikeDare.pdf} 
-	\includegraphics[width=0.43\textwidth]{loglikeDare2.pdf} 
-	\caption{The proportionality constant of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ for symmetric and asymmetric models, averaged over 5 Gibbs sampling runs (left) and individual runs (right)}
+	\includegraphics[width=0.48\textwidth]{loglikeDare.pdf} 
+	\includegraphics[width=0.47\textwidth]{loglikeDare2.pdf} 
+		\includegraphics[width=0.48\textwidth]{logprobDare3.pdf} 
+				\includegraphics[width=0.51\textwidth]{logprobDare4.pdf} 
+	\caption{The proportionality constant of $\mbox{log}P(\mathcal{W},\mathcal{Z}|\mathcal{C}, \delta, \boldsymbol{n}, \alpha, \boldsymbol{m})$ for symmetric and asymmetric models, averaged over 5 Gibbs sampling runs (upper) and individual runs (lower). The difference between the left and right plot is before and after removing the burn-ins.}
 	\label{fig:logPL1}
 \end{figure}
 \newline Moreover, to measure the within-model consistency of interaction pattern and topic assignments (i.e. similarity between 1) two sets of interaction pattern assignments $\mathcal{C}$ and $\mathcal{C'}$, and 2) two sets of topic
@@ -770,9 +824,9 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 		\hline
 		\textbf{VI($\mathcal{C}, \mathcal{C'})$}& Symmetric \textbf{$\boldsymbol{m}$} &Asymmetric \textbf{ $\boldsymbol{m}$} \\
 		\hline
-		Symmetric \textbf{$\boldsymbol{m}$} &  $1.665\pm 0.119$&  $1.709\pm 0.213$\\
+		Symmetric \textbf{$\boldsymbol{m}$} &  $1.944\pm 0.058$&  $1.739\pm 0.214$\\
 		\hline
-		Asymmetric \textbf{$\boldsymbol{m}$} & - & $1.594 \pm 0.130$\\
+		Asymmetric \textbf{$\boldsymbol{m}$} & - & $1.624 \pm 0.101$\\
 		\hline
 	\end{tabular}
 	\caption {Average VI distances of $\mathcal{C}$ between 5 runs of symmetric and asymmetric model }
@@ -784,9 +838,9 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 		\hline
 		\textbf{VI($\mathcal{Z}, \mathcal{Z'})$}& Symmetric \textbf{$\boldsymbol{m}$} &Asymmetric \textbf{ $\boldsymbol{m}$} \\
 		\hline
-		Symmetric \textbf{$\boldsymbol{m}$} &  $2.896\pm 0.316$&  $3.309\pm 0.367$\\
+		Symmetric \textbf{$\boldsymbol{m}$} &  $3.491\pm 0.219$&  $3.477\pm 0.302$\\
 		\hline
-		Asymmetric \textbf{$\boldsymbol{m}$} & - & $2.904\pm 0.309$\\
+		Asymmetric \textbf{$\boldsymbol{m}$} & - & $3.429\pm 0.124$\\
 		\hline
 	\end{tabular}
 	\caption {Average VI distances of $\mathcal{Z}$ between 5 runs of symmetric and asymmetric model}
@@ -795,21 +849,21 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 \normalsize
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.5\textwidth]{alphaplotDare.pdf} 
-	\includegraphics[width=1.05\textwidth]{histalphaDare.pdf} 
+	\includegraphics[width=0.85\textwidth]{alphaDare.pdf} 
+	\includegraphics[width=1\textwidth]{alphahistDare.pdf} 
 	\caption{Plots and histograms of concentration parameter values $\alpha$ for 5 Gibbs sampling runs}
 	\label{fig:alpha}
 \end{figure}
 \footnotesize
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.65\textwidth]{Daretopic.pdf} 
+	\includegraphics[width=0.7\textwidth]{topicDare.pdf} 
 	\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails, using the Run5}
 	\label{fig:topicsymasym}
 \end{figure}
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.6\textwidth]{Daretopicoverall.pdf} 
+	\includegraphics[width=0.6\textwidth]{topicDare2.pdf} 
 	\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails}
 	\label{fig:topics}
 \end{figure}
@@ -818,18 +872,18 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 	\centering
 	\scalebox{1}{	\begin{tabular}{|l||l||l||l||l|}
 			\hline
-			{\textbf{Topic 4} (0.2106)}&{\textbf{Topic 10} (0.1781)}&{\textbf{Topic 7} (0.1429)}&{\textbf{Topic 3} (0.1223)}&{\textbf{Topic 8} (0.1197)}\\
+			{\textbf{Topic 10} (0.4881)}&{\textbf{Topic 9} (0.2599)}&{\textbf{Topic 1} (0.0439)}&{\textbf{Topic 2} (0.0382)}&{\textbf{Topic 6} (0.0362)}\\
 			\hline\hline
-			track &  high &  time & leave&  water\\
-			winds &  tides &  monday& hours & hatteras \\
-			strom & report& social & media & island\\
-			system & position& employees & administrative&  fire\\
-			forecast & today & employee &  hour&  winds\\
-			munis& white & policy & email& strong\\
-			marshall & center & october & resources &schedule\\
-			colins & planning& questions &  fax & fyi \\
-			manteo & weekend & changes& facebook& power\\ 
-			atlantic & issues &  post &  drive & time\\
+			will &  monday& status& department& box\\
+			manteo &  storm&  storm& media&  fax \\
+			time & leave& coastal& change& call\\
+			winds & drive& latest& law& hour\\
+			system & director &threat & work& move\\
+			hours& forecast& white& october& prepared\\
+		track & phone& briefing & policy & library\\
+			meeting &administrative& post&  fax & departments\\
+		resources& sandy & tim& parties&future\\ 
+		north & attached &  director &  personal & changed\\
 			\hline
 		\end{tabular}}
 		\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Symmetric)}
@@ -841,43 +895,68 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 		\centering
 		\scalebox{1}{	\begin{tabular}{|l||l||l||l||l|}
 				\hline
-				{\textbf{Topic 10} (0.1903)}&{\textbf{Topic 4} (0.1743)}&{\textbf{Topic 8} (0.1454)}&{\textbf{Topic 7} (0.1299)}&{\textbf{Topic 3} (0.1241)}\\
+				{\textbf{Topic 10} (0.4311)}&{\textbf{Topic 9} (0.2684)}&{\textbf{Topic 3} (0.0586)}&{\textbf{Topic 1} (0.0425)}&{\textbf{Topic 4} (0.0407)}\\
 				\hline\hline
-				box& munis& storm& hours&administrative\\
-				moving & update & law& social&departmnet\\
-				report& storm& will & employees& media\\
-				outer & status & address & box &employee\\
-				shore & track & planning & director &phone\\
-				forecast & sandy & email & resources& drive\\
-				call & director& day & marshall& leave\\
-				long & system & island & collins&hour\\
-				moves &coastal & fire & october &policy\\
-				board &forecast &week& phr &human\\
+				monday& box& media& update& leave\\
+				system & time & social& status& hours\\
+				meeting& storm& post & latest& water\\
+				marshall & track & fax & changes & email\\
+				fax& north & resources& briefing& law\\
+				collins& high & personal& director& banks\\
+				administrative& office& day & white& shore\\
+				forecast& hurricane& policies& power-point& surf\\
+				department & week &comments& public &working\\
+			call&east &time& services &statute\\
 				\hline
 			\end{tabular}}
 			\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Asymmetric)}
 			\label{table:VancewordsMCMC}
 		\end{table}
 		\normalsize
+					\footnotesize
+					\begin{table}[ht]
+						\centering
+						\scalebox{1}{	\begin{tabular}{|l||l||l|}
+								\hline
+								{\textbf{IP1} (2381 emails)}&{\textbf{IP2} (1376 emails)}&{\textbf{IP3} (1088 emails)}\\
+								\hline\hline
+								K=10 (0.55), K=9 (0.29) & K=1 (0.61), K=7 (0.34) & K=10 (0.41), K=9 (0.23), K=3 (0.18)\\
+								\hline
+							will, monday & \textbf{status}, \textbf{update}& time, monday, munis \\
+								\textbf{manteo}, \textbf{storm} & \textbf{storm}, november & will, drive, director\\
+								time, \textbf{leave} & \textbf{coastal}, \textbf{changes}& manteo, storm, fax\\
+								\textbf{winds}, phone & \textbf{latest}, public& resources, leave, marshall\\
+								system, \textbf{drive} & \textbf{threat}, services & today, notice, -lsb-\\
+								hours, \textbf{forecast} & \textbf{briefing}, \textbf{sandy} & winds, sandy, cheryl\\
+							\textbf{track}, administrative & \textbf{white}, system &morning, version, call\\
+								\textbf{north}, attached & tim, fyi & offices, forecast, report\\ 
+							email, \textbf{sandy} & power-point, \textbf{east} & issues, phone, cellular\\
+								resources, director& \textbf{update}, \textbf{weather}&north, administrative, services\\
+								\hline
+							\end{tabular}}
+							\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Symmetric)}
+							\label{table:VancewordsMCMC}
+						\end{table}
+						\normalsize
 			\footnotesize
 			\begin{table}[ht]
 				\centering
 				\scalebox{1}{	\begin{tabular}{|l||l||l|}
 						\hline
-						{\textbf{IP1}}&{\textbf{IP2}}&{\textbf{IP3}}\\
+						{\textbf{IP1} (2886 emails)}&{\textbf{IP2} (1429 emails)}&{\textbf{IP3} (530 emails)}\\
 						\hline\hline
-						K=7 (0.38), K=3 (0.36) & K=10 (0.32), K=8 (0.22), K=6 (0.18) & K=4 (0.71)\\
+						K=10 (0.51), K=9 (0.31) & K=1 (0.58), K=7 (0.39) & K=3 (0.47), K=5 (0.29)\\
 						\hline
-						time, leave & position, water, update & manteo\\
-						monday, hours & issues, island, public & elections\\
-						social, media & sheriff,  hatteras, services & storm\\
-						employees, administrative & white, strong, board &phone\\
-						employee, hour & today, schedule, connection &marshall\\
-						policy, email & -lsb-, winds, levels &forecast\\
-						october, resources & wanted,  and/or, sandy &drive\\
-						questions, facebook & touching, time, current & updates \\ 
-						post, fax & report, fire, service & sandy\\
-						offices, public & regulations, stats, web &cera\\
+						monday, box& 	\textbf{update},	\textbf{coastal}& 	\textbf{media}, will\\
+						system, time& 	\textbf{status}, 	\textbf{storm} & 	\textbf{social}, 	\textbf{facebook}\\
+						meeting, \textbf{storm} & 	\textbf{changes}, 	\textbf{threat}& 	\textbf{post}, manteo\\
+						fax,  	\textbf{track}& 	\textbf{latest}, november& 	\textbf{fax}, employees\\
+						\textbf{marshall}, 	\textbf{north}& 	\textbf{briefing}, 	\textbf{sandy}& resources, box\\
+						administrative, 	\textbf{high}& director, east& 	\textbf{personal}, 	\textbf{phone}\\
+							\textbf{collins}, 	\textbf{drive}& services, 	\textbf{obx}& office, director\\
+					\textbf{forecast}, week& 	\textbf{white}, system& policies, department\\ 
+					department, 	\textbf{hurricane}& 	\textbf{public}, 	\textbf{updated}& policy, 	\textbf{account}\\
+						\textbf{call}, 	\textbf{east} & fyi, 	\textbf{atlantic} & time, 	\textbf{public}\\
 						\hline
 					\end{tabular}}
 					\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Asymmetric)}
@@ -889,32 +968,38 @@ VI distance, averaged over all 25 unique pairs of topic assignments for the symm
 			\centering
 			\begin{tabular}{|c|c|c|c|} 
 				\hline
-				\textbf{Symmetric}& \textbf{IP1} (795 emails) & \textbf{IP2} (2326 emails) &\textbf{IP3} (1724 emails) \\
+				\textbf{Symmetric}&	{\textbf{IP1} (2381 emails)}&{\textbf{IP2} (1376 emails)}&{\textbf{IP3} (1088 emails)}\\
 				\hline
-				\textbf{intercept} & 1.763* [1.17, 2.36]& 0.825* [0.61,1.08]& 1.761* [1.60, 2.06]\\
-				\textbf{send}&  0.348* [0.06, 0.60]& 0.044 [-0.00, 0.11]& 0.056 [-0.02, 0.15]\\
-				\textbf{receive}& 0.129 [-0.20, 0.42]& 0.071 [-0.01, 0.14]& -0.216* [-0.34, -0.10]\\
-				\textbf{triangles} & 0.134* [0.06, 0.21]&  0.036 [0.02, 0.04]& 0.009* [0.00, 0.01]\\
+				\textbf{intercept} & 1.983* [1.67, 2.28]& 1.887* [1.61, 2.31]& 0.281 [-0.12, 0.64]\\
+				\textbf{send}&  0.238* [0.16, 0.31]& 0.072 [-0.06, 0.19]& 0.298* [0.18, 0.40]\\
+				\textbf{receive}& 0.045 [-0.02, 0.12]& -0.679* [-0.90, -0.47]& 0.057 [-0.25, 0.30]\\
+				\textbf{triangles} & 0.016* [0.01, 0.02]&  0.045* [0.03, 0.06]& 0.034 [-0.00, 0.07]\\
 				\hline
 			\end{tabular}
 			\begin{tabular}{|c|c|c|c|} 
 				\hline
-				\textbf{Asymmetric}& \textbf{IP1} (909 emails) & \textbf{IP2} (1903 emails) &\textbf{IP3} (2033 emails) \\
+				\textbf{Asymmetric}& 	{\textbf{IP1} (2886 emails)}&{\textbf{IP2} (1429 emails)}&{\textbf{IP3} (530 emails)}\\
 				\hline
-				\textbf{intercept} &0.712* [0.25, 1.09]& 1.285* [1.11, 1.51]& 1.429* [1.29, 1.60]\\
-				\textbf{send}&  0.305* [0.04, 0.57]& 0.411* [0.31, 0.53]& 0.040 [-0.03, 0.12]\\
-				\textbf{receive}& 0.214 [-0.16, 0.57]& 0.001 [-0.12, 0.091]& -0.242* [-0.40, -0.15]\\
-				\textbf{triangles} & -0.056 [-0.16, 0.03]&  0.034 [0.02, 0.04]& 0.014 [0.01, 0.02]\\
+				\textbf{intercept} &1.227* [0.96, 1.48]& 1.456* [1.03, 1.87]& 0.725* [0.37, 1.08]\\
+				\textbf{send}&  0.191* [0.13, 0.26]& 0.105 [-0.01, 0.20]& 0.572* [0.19, 1.06]\\
+				\textbf{receive}& 0.074* [0.01, 0.15]& -0.881* [-1.10, -0.68]& -0.177 [-0.62, 0.23]\\
+				\textbf{triangles} & 0.014* [0.01, 0.02]&  0.036* [0.02, 0.05]& 0.121 [-0.01, 0.23]\\
 				\hline
 			\end{tabular}
-			\caption {Posterior estimates of $\boldsymbol{\beta}^{(c)}$: Symmetric (upper) and Asymmetric (lower)}
+			\caption {Posterior estimates of $\boldsymbol{\beta}^{(c)}$ and corresponding 95\% credible intervals: Symmetric case (upper) and Asymmetric case (lower)}
 			\label{table:Vancebeta}
 		\end{table}
 		\normalsize 	
 		\begin{figure}[ht]
 			\centering
-			\includegraphics[width=1.1\textwidth]{betaDareplot.pdf} 
+			\includegraphics[width=1\textwidth]{Darebetas.pdf} 
 			\caption{Posterior distribution of  $\boldsymbol{\beta}^{(c)}$ for Vance county emails (Asymmetric)}
+			\label{fig:Vanceboxplot}
+		\end{figure}
+		\begin{figure}[ht]
+			\centering
+			\includegraphics[width=1.1\textwidth]{Darenetwork.pdf} 
+			\caption{Network plots given the posterior estimates of interaction patterns (Asymmetric)}
 			\label{fig:Vanceboxplot}
 		\end{figure}
 \begin{comment}
