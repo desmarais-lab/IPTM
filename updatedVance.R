@@ -162,39 +162,39 @@ double Supdate(double alpha, IntegerVector ctable){
 cppFunction('
 NumericVector Skupdate(NumericVector vec, List cktable){
   NumericVector s(vec.size());
-  for (int k=0; k<vec.size(); k++){
-    double d=0;
-    IntegerVector nowtable=cktable[k];
-    for (int n = 1; n < (nowtable.size()+1); n++){
-      d+=1/(n-1+vec[k]);
-      s[k]+=nowtable[n-1]*d;
-    }
-  }
-  
+  		for (int k=0; k<vec.size(); k++){
+ 			double d=0;
+			IntegerVector nowtable=cktable[k];
+  			for (int n = 1; n < (nowtable.size()+1); n++){
+      			d+=1/(n-1+vec[k]);
+      			s[k]+=nowtable[n-1]*d;
+    	}
+      } 
   return s;
 }
 ')
 
-#7. parupdate: parameter optimization of alpha and mvec at the same time
+#7. parupdate: parameter optimization of alpha and mvec at the same time -> need to be faster
 parupdate<- function(nIP, K, currentC, currentZ, alpha, mvec){
 	vec <- alpha*mvec
-	zcnew <- list()
-	clist <- c()
 	corpusCnew <- sortedZ(nIP,currentC, currentZ)
-	for (IP in 1:nIP){
-	zcnew[[IP]] <- tabulate(unlist(corpusCnew[[IP]]), nbins=K)
-	clist[IP]<-	sum(zcnew[[IP]])
-	}
+	zcnew <- lapply(1:nIP, function(IP){tabulate(unlist(corpusCnew[[IP]]), nbins=K)})
+	clist <- vapply(1:nIP, function(IP){sum(zcnew[[IP]])}, c(1))
+	
 	iter=1
 	ctable <- rep(0, max(clist))
 	ctable[clist]<-tabulate(currentC)
-	cklist<-list();
-	cktable<-list();
-	for (k in 1:K){
-	cklist[[k]] <- vapply(1:nIP, function(IP){zcnew[[IP]][k]}, c(1))
-	cktable[[k]] <-rep(0, max(cklist[[k]]))
-   	cktable[[k]][cklist[[k]]] <- tabulate(currentC)}
-
+	
+	cklist <- list()
+	for (IP in 1:nIP){
+		cklist[[IP]] <- matrix(NA, nrow=length(corpusCnew[[IP]]), ncol=K)
+		for (d in 1:length(corpusCnew[[IP]])){
+			cklist[[IP]][d,]<-tabulate(corpusCnew[[IP]][[d]], nbins=K)
+			}
+	}
+	cktable <- lapply(1:K, function(k){tabulate(unlist(sapply(1:nIP, function(IP){cklist[[IP]][,k]})))})
+		
+			
 	while ((abs(alpha-sum(vec))>0.001) | (iter==1)){
 	alpha <- sum(vec)
 	S <- Supdate(alpha, ctable)		
