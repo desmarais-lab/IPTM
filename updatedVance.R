@@ -355,6 +355,8 @@ MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=
 	      	}
 	       	const<-log(gammas)+betapartC(nIP, lambdai, edge[d,])+topicpartC(nIP, currentZ, zc, alpha, mvec, d)
 	        currentC[d]<- selected(1, exp(const))
+		zc[[currentC[d]]] <- zc[[currentC[d]]]+tabulate(currentZ[[d]][currentC[d],], nbins=K)
+
 	        }
 	    }
 	    
