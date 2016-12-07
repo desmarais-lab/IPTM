@@ -280,7 +280,6 @@ NumericVector multiplyXB(NumericMatrix allxmatlist, NumericVector beta){
 }
 ')
 ###########################################################
-
 MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=3, n2=3, n3=3300, burn=300, thin=3, opt=TRUE, seed=1){
 
 	set.seed(seed)         	   
@@ -339,19 +338,16 @@ MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=
 	  	 }						
 
 	 cat("inner iteration 1", "\n") 
-	 edgeC <-list()
-	 zc<-list()
 	 lambdai<-list()
 	 for (i1 in 1:n1){
 	 	#C update given Z and B - within each document d 	
 	    for (d in 1:nrow(edge)){
-	    	currentC2<-currentC[-d]
-	       	corpusC<-sortedZ(nIP, currentC2, currentZ)
-	       	
+	    	currentC2 <- currentC[-d]
+			edgeC <- lapply(1:nIP, function(IP){edge[which(currentC2==IP),]})
+			corpusC <-sortedZ(nIP, currentC2, currentZ)
+			zc <-  lapply(1:nIP, function(IP){tabulate(unlist(corpusC[[IP]]), nbins=K)})
 		    	for (IP in 1:nIP){
-	    		edgeC[[IP]]<- edge[which(currentC2==IP),]	
-	       		zc[[IP]]<- tabulate(unlist(corpusC[[IP]]), nbins=K)
-	      		histlist <- history(edgeC[[IP]], node, edge[d,3])
+	    		histlist <- history(edgeC[[IP]], node, edge[d,3])
 	      		allxmatlist<-allxmat(edgeC[[IP]], node, histlist, edge[d,1], 0.05)
 	      		lambdai[[IP]]<- multiplyXB(allxmatlist, bmat[[IP]][, (n3-burn)/thin])
 	      	}
@@ -359,7 +355,7 @@ MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=
 	        currentC[d]<- selected(1, exp(const))
 	        }
 	    }
-	 
+    
 	 cat("inner iteration 2", "\n")
 	 textlist2 <- unlist(textlist)
 	 corpusCnew <- sortedZ(nIP, currentC, currentZ)
@@ -369,17 +365,19 @@ MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=
 	 tableW <- lapply(1:K, function(k){tabulate(textlist2[which(finalZlist2==k)], nbins=W)})
 
 	 for (i2 in 1:n2){	 	
-	 	for (d in 1:nrow(edge)){
+	 	for (d in 1:nrow(edge)){ 
 	 		currentCd <- currentC[d]
+	 		textlistd <-textlist[[d]]
+	 		topicpartd <- topicpartZ(currentCd, zcnew, alpha, mvec)
 	    	for (w in 1:length(textlist[[d]])){
-	    		const2 <- topicpartZ(currentCd, zcnew, alpha, mvec)+wordpartZ(K, textlist[[d]], w, tableW, delta, nvec)
+	    		const2 <- topicpartd+wordpartZ(K, textlistd, w, tableW, delta, nvec)
 	    		zwold <- currentZ[[d]][currentCd,w]
-	    			zwnew <- selected(1, exp(const2))
+	    		zwnew <- selected(1, exp(const2))
 	    		if (zwnew!=zwold){
 	    			zcnew[[currentCd]][zwold] <- zcnew[[currentCd]][zwold]-1
-	    				zcnew[[currentCd]][zwnew] <- zcnew[[currentCd]][zwnew]+1
-	    				tableW[[zwold]][textlist[[d]][w]]<-tableW[[zwold]][textlist[[d]][w]]-1
-	    				tableW[[zwnew]][textlist[[d]][w]]<-tableW[[zwnew]][textlist[[d]][w]]+1
+	    			zcnew[[currentCd]][zwnew] <- zcnew[[currentCd]][zwnew]+1
+	    			tableW[[zwold]][textlistd[w]]<-tableW[[zwold]][textlistd[w]]-1
+	    			tableW[[zwnew]][textlistd[w]]<-tableW[[zwnew]][textlistd[w]]+1
 	    			currentZ[[d]][currentCd,w] <- zwnew	    			
 	    			}
 	    		}
