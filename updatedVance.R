@@ -242,12 +242,12 @@ topicpartZ <- function(currentIP, zcnew, alpha, mvec){
 }
 
 #12. wordpartZ: calculate the log of word-topic part used to obtain the constants for multinomial sampling of K
-wordpartZ <- function(K, textlistd, w, tableW, delta, nvec){
-	const <- rep(NA, K)
+wordpartZ <- function(K, textlistd, tableW, delta, nvec){
+	const <- matrix(NA, nrow=length(textlistd), ncol=K)
 	for (k in 1:K){
-		num <-log(tableW[[k]][textlistd[w]]-ifelse(tableW[[k]][textlistd[w]]>0, 1, 0)+delta*nvec[w])
+		num <-log(tableW[[k]][textlistd]-ifelse(tableW[[k]][textlistd]>0, 1, 0)+delta*nvec[textlistd])
 		denom <-log(sum(tableW[[k]])-sum(ifelse(tableW[[k]]>0, 1, 0))+delta) 	
-		const[k]<- num-denom
+		const[,k]<- num-denom
 	}
 	return(const)
 }
@@ -280,6 +280,7 @@ NumericVector multiplyXB(NumericMatrix allxmatlist, NumericVector beta){
 }
 ')
 ###########################################################
+
 MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=3, n2=3, n3=3300, burn=300, thin=3, opt=TRUE, seed=1){
 
 	set.seed(seed)         	   
@@ -338,15 +339,16 @@ MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=
 	  	 }						
 
 	 cat("inner iteration 1", "\n") 
-	 lambdai<-list()
-	 for (i1 in 1:n1){
+	 lambdai<-list() 
+	 corpusC <-sortedZ(nIP, currentC, currentZ)
+	 zc <-  lapply(1:nIP, function(IP){tabulate(unlist(corpusC[[IP]]), nbins=K)})
+    	 for (i1 in 1:n1){
 	 	#C update given Z and B - within each document d 	
 	    for (d in 1:nrow(edge)){
 	    	currentC2 <- currentC[-d]
 			edgeC <- lapply(1:nIP, function(IP){edge[which(currentC2==IP),]})
-			corpusC <-sortedZ(nIP, currentC2, currentZ)
-			zc <-  lapply(1:nIP, function(IP){tabulate(unlist(corpusC[[IP]]), nbins=K)})
-		    	for (IP in 1:nIP){
+			zc[[currentC[d]]] <- zc[[currentC[d]]]-tabulate(currentZ[[d]][currentC[d],], nbins=K)
+			for (IP in 1:nIP){
 	    		histlist <- history(edgeC[[IP]], node, edge[d,3])
 	      		allxmatlist<-allxmat(edgeC[[IP]], node, histlist, edge[d,1], 0.05)
 	      		lambdai[[IP]]<- multiplyXB(allxmatlist, bmat[[IP]][, (n3-burn)/thin])
@@ -355,7 +357,7 @@ MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=
 	        currentC[d]<- selected(1, exp(const))
 	        }
 	    }
-    
+	    
 	 cat("inner iteration 2", "\n")
 	 textlist2 <- unlist(textlist)
 	 corpusCnew <- sortedZ(nIP, currentC, currentZ)
@@ -369,8 +371,9 @@ MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=
 	 		currentCd <- currentC[d]
 	 		textlistd <-textlist[[d]]
 	 		topicpartd <- topicpartZ(currentCd, zcnew, alpha, mvec)
-	    	for (w in 1:length(textlist[[d]])){
-	    		const2 <- topicpartd+wordpartZ(K, textlistd, w, tableW, delta, nvec)
+	 		wordpartd <- wordpartZ(K, textlistd, tableW, delta, nvec)
+	 		for (w in 1:nrow(wordpartd)){
+	 			const2 <- topicpartd + wordpartd[w,]
 	    		zwold <- currentZ[[d]][currentCd,w]
 	    		zwnew <- selected(1, exp(const2))
 	    		if (zwnew!=zwold){
@@ -378,11 +381,14 @@ MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=
 	    			zcnew[[currentCd]][zwnew] <- zcnew[[currentCd]][zwnew]+1
 	    			tableW[[zwold]][textlistd[w]]<-tableW[[zwold]][textlistd[w]]-1
 	    			tableW[[zwnew]][textlistd[w]]<-tableW[[zwnew]][textlistd[w]]+1
+	    			topicpartd <- topicpartZ(currentCd, zcnew, alpha, mvec)
+	 				wordpartd <- wordpartZ(K, textlistd, tableW, delta, nvec)
 	    			currentZ[[d]][currentCd,w] <- zwnew	    			
 	    			}
 	    		}
 	    	}
 	    }
+
 	logWZmat <-c(logWZmat, logWZ(nIP, K, textlist2, W, currentC, currentZ, alpha, mvec, delta, nvec))
 	
 	cat("inner iteration 3", "\n")
