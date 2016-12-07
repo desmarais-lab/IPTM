@@ -396,27 +396,27 @@ MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=
 	cat("inner iteration 3", "\n")
 	bold <- list()
     allxmatlist2<-list()
+    lambdaiold <-list()
 	for (IP in 1:nIP){
-		bold[[IP]] <- bmat[[IP]][, (n3-burn)/thin]
+		bold[[IP]] <- rowMeans(bmat[[IP]])
 	    edgeC[[IP]]<- edge[which(currentC==IP),]
 	    allxmatlist2[[IP]]<- list()
 			
 		for (d in 1:nrow(edgeC[[IP]])){
 			histlist2 <- history(edgeC[[IP]], node, edgeC[[IP]][d,3])
 	      	allxmatlist2[[IP]][[d]]<-allxmat(edgeC[[IP]], node, histlist2, edgeC[[IP]][d,1], 0.05)
-	    }	      	
+	    }
+	    lambdaiold[[IP]]<-t(vapply(1:nrow(edgeC[[IP]]), function(d){
+	      					  multiplyXB(allxmatlist2[[IP]][[d]], bold[[IP]])
+	      					  }, rep(1, length(node)-1)))
 	}
 	
-	lambdaiold <-list()
 	lambdainew <-list()	
 	bnew <- list()		
-	
+
 	for (i3 in 1:n3){ 
 		for (IP in 1:nIP){
 	    	bnew[[IP]]<-rmvnorm(1, bold[[IP]], (delta_B)^2*diag(P))
-	      	lambdaiold[[IP]]<-t(vapply(1:nrow(edgeC[[IP]]), function(d){
-	      					  multiplyXB(allxmatlist2[[IP]][[d]], bold[[IP]])
-	      					  }, rep(1, length(node)-1)))
 	      	lambdainew[[IP]]<-t(vapply(1:nrow(edgeC[[IP]]), function(d){
 	      					  multiplyXB(allxmatlist2[[IP]][[d]], bnew[[IP]])
 	      					  }, rep(1, length(node)-1)))
@@ -425,12 +425,15 @@ MCMC =function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer=200, n1=
 		prior <- vapply(1:nIP, function(IP){
 				 dmvnorm(bnew[[IP]],rep(0,P), sigma^2*diag(P), log=TRUE)-dmvnorm(bold[[IP]],rep(0,P), sigma^2*diag(P), log=TRUE)
 				 }, c(1))
-		post <- betapartB(nIP, lambdainew, edgeC)-betapartB(nIP, lambdaiold, edgeC)
+		post <- betapartB(nIP, lambdainew, edgeC)-betapartB(nIP, lambdaiold, edgeC)	  
 		loglikediff <- prior+post
 		
 		u <- log(runif(nIP, 0, 1))
 		for (IP in which((u<loglikediff)==TRUE)){
-				bold[[IP]] <-bnew[[IP]] 
+				bold[[IP]] <- bnew[[IP]] 
+				lambdaiold[[IP]]<-t(vapply(1:nrow(edgeC[[IP]]), function(d){
+	      					  multiplyXB(allxmatlist2[[IP]][[d]], bold[[IP]])
+	      					  }, rep(1, length(node)-1)))
 		}
 		 
 		if (i3 > burn && i3%%(thin)==0){
