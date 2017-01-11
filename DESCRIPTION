@@ -13,7 +13,6 @@ Imports:
     mvtnorm,
     MCMCpack,
     inline,
-    Rcpp,
-    MCMCglmm
+    Rcpp
 LinkingTo: Rcpp
 RoxygenNote: 5.0.1
