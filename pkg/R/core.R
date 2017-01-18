@@ -1,20 +1,18 @@
 #' @useDynLib IPTM
-#' @importFrom Rcpp sourceCpp
-#' @importFrom mvtnorm dmvnorm rmvnorm
-#' @importFrom MCMCpack rdirichlet
+#' @importFrom Rcpp sourceCpp 
 NULL
 
-#' @title history
-#' @description calculate the time difference from previous interactions to certain time 'beforetime'
+#' @title historymat
+#' @description calculate the time difference from previous interactions to specific timepoint
 #'
-#' @param edge
-#' @param node
-#' @param when
+#' @param edge edgelist in the form of matrix with 3 columns (col1:sender, col2:receiver, col3=time in unix.time format)
+#' @param node nodelist containing the ID of nodes (ID's starting from 1)
+#' @param when specific timepoint that we are calculating the time difference from
 #'
-#' @return
+#' @return list of time differences from previous interactions to specific timepoint
 #'
 #' @export
-history = function(edge, node, when) {
+historymat = function(edge, node, when) {
   histlist = lapply(node, function(v) {
     lapply(node, function(u) {
       numeric(0)
@@ -30,56 +28,78 @@ history = function(edge, node, when) {
   return(histlist)
 }
 
+#' @title allxmat2
+#' @description to include two extra network statistiscs, outdegree and indegree
+#'
+#' @param edge edgelist in the form of matrix with 3 columns (col1:sender, col2:receiver, col3=time in unix.time format)
+#' @param node nodelist containing the ID of nodes (ID's starting from 1)
+#' @param histlist 
+#' @param sender sender of the specific document
+#' @param lambda parameter of speed at which sender replies, with larger values indicating faster response time
+#'
+#' @return X matrix containing six history-based network statistics 
+#'
+#' @export
+allxmat2 = function(edge, node, histlist, sender, lambda) {
+	allsenders = lapply(node, function(s) {
+		allxmat(edge, node, histlist, s, lambda)
+		})
+	outdegree = sum(allsenders[[sender]][,2])
+	indegree = vapply(node[node != sender], function(s) {
+		sum(allsenders[[s]][,2])
+		}, c(1))
+	return(cbind(allsenders[[sender]], outdegree, indegree))
+}
+
 #' @title parupdate
-#' @description parameter optimization of alpha and mvec at the same time -> need to be faster
+#' @description parameter optimization of alpha and mvec at the same time 
 #'
-#' @param nIP
-#' @param K
-#' @param currentC
-#' @param currentZ
-#' @param alpha
-#' @param mvec
+#' @param nIP number of interaction pattern specified by the user
+#' @param K number of topics specified by the user
+#' @param currentC current state of the assignment of interaction patterns
+#' @param currentZ current state of the assignment of topics 
+#' @param alpha Dirichlet concentration prior for topic distribution
+#' @param mvec Dirichlet base prior for topic distribution
 #'
-#' @return
+#' @return optimized value of alpha * mvec
 #'
 #' @export
 parupdate =  function(nIP, K, currentC, currentZ, alpha, mvec) {
-  vec = alpha*mvec
-  zcnew = list()
-  clist = c()
-  corpusCnew = sortedZ(nIP, currentC, currentZ)
-  for (IP in 1:nIP) {
-    zcnew[[IP]] = tabulate(unlist(corpusCnew[[IP]]), nbins = K)
-    clist[IP] = sum(zcnew[[IP]])
-  }
-  iter = 1
-  ctable = rep(0, max(clist))
-  ctable[clist] = tabulate(currentC)
-  cklist = list()
-  cktable = list()
-  for (k in 1:K) {
-    cklist[[k]] = vapply(1:nIP, function(IP) {zcnew[[IP]][k]}, c(1))
-    cktable[[k]] = rep(0, max(cklist[[k]]))
-    cktable[[k]][cklist[[k]]] = tabulate(currentC)
-  }
+	finalvec = list()
+	corpusCnew = sortedZ(nIP, currentC, currentZ)
 
-  while ((abs(alpha - sum(vec)) > 0.001) | (iter == 1)) {
-    alpha = sum(vec)
-    S = Supdate(alpha, ctable)
-    s = Skupdate(vec, cktable)
-    vec = vec * s/S
-    iter=iter + 1
-  }
-  return(vec)
-}
+	for (IP in 1:nIP) {
+		iter=1
+		vec = alpha[[IP]] * mvec[[IP]]
+		nwords = mapply(length, corpusCnew[[IP]])
+		ctable = tabulate(nwords)
+		cklist = matrix(NA, nrow = length(corpusCnew[[IP]]), ncol = K)
+		for (d in 1:length(corpusCnew[[IP]])) {
+			cklist[d,] = tabulate(corpusCnew[[IP]][[d]], nbins = K)
+			}
+	cktable = lapply(1:K, function(k){
+			  tabulate(cklist[,k])
+			  })
+
+	while ((abs(alpha[[IP]] - sum(vec)) > 0.001) | (iter == 1)) {
+	alpha[[IP]] = sum(vec)
+	S = Supdate(alpha[[IP]], ctable)		
+	s = Skupdate(vec, cktable)	
+	vec = vec * s/S
+	iter = iter + 1
+	}
+	finalvec[[IP]] = vec
+	}	
+	return(finalvec)	
+}	
 
 #' @title selected
 #' @description find out the chosen category from the multinomial distribution
 #'
-#' @param samples
-#' @param proportions
+#' @param samples number of samples to draw
+#' @param proportions numeric non-negative vector of length K, specifying the probability for the K classes
 #'
-#' @return
+#' @return the chosen category from the rmultinom
 #'
 #' @export
 selected = function(samples, proportions) {
@@ -91,11 +111,11 @@ selected = function(samples, proportions) {
 #' @title betapartC
 #' @description calculate the log of beta part used to obtain the constants for multinomial sampling of IP
 #'
-#' @param nIP
-#' @param lambdai
-#' @param specificedge
+#' @param nIP number of interaction patterns specified by the user
+#' @param lambdai stochastic intensity of specific sender 'i'
+#' @param specificedge a row of specific edge of interest (i.e. vector of sender, reciever, and time)
 #'
-#' @return
+#' @return the log of beta part (first term of Eq. 11)
 #'
 #' @export
 betapartC = function(nIP, lambdai, specificedge) {
@@ -111,56 +131,57 @@ betapartC = function(nIP, lambdai, specificedge) {
 #' @title topicpartC
 #' @description calculate the log of topic-IP part used to obtain the constants for multinomial sampling of IP
 #'
-#' @param nIP
-#' @param currentZ
-#' @param zc
-#' @param alpha
-#' @param mvec
-#' @param document
+#' @param nIP number of interaction patterns specified by the user
+#' @param K number of topics specified by the user
+#' @param currentZ current state of the assignment of topics 
+#' @param alpha Dirichlet concentration prior for topic distribution
+#' @param mvec Dirichlet base prior for topic distribution
+#' @param document specific document of interest 
 #'
-#' @return
+#' @return the log of topic-IP part (last term of Eq. 11)
 #'
 #' @export
-topicpartC = function(nIP, currentZ, zc, alpha, mvec, document) {
+topicpartC = function(nIP, K, currentZ, alpha, mvec, document) {
   const = rep(NA, nIP)
-  for (IP in 1:nIP) {
-    topics = currentZ[[document]][IP, ]
-    num = sum(log(zc[[IP]][topics] -
-                    ifelse(zc[[IP]][topics] > 0, 1, 0) +
-                    alpha * mvec[topics]))
-    denom = length(topics) * log(sum(zc[[IP]]) - sum(ifelse(zc[[IP]] > 0, 1, 0)) + alpha)
-    const[IP] = num - denom
-  }
+	for (IP in 1:nIP) {
+		topics = currentZ[[document]]
+		tabletopics = tabulate(topics, nbins = K)
+		num = sum(log(tabletopics[topics] - 1 + alpha[[IP]] * mvec[[IP]][topics]))
+		denom = length(topics) * log(length(topics) - 1 + alpha[[IP]])
+		const[IP] = num - denom
+		}
   return(const)
 }
 
 #' @title topicpartZ
 #' @description calculate the log of topic-IP part used to obtain the constants for multinomial sampling of K
 #'
-#' @param currentIP
-#' @param zcnew
-#' @param alpha
-#' @param mvec
+#' @param currentC current state of the assignment of interaction patterns 
+#' @param K number of topics specified by the user
+#' @param currentZ current state of the assignment of topics 
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param document specific document of interest 
 #'
-#' @return
+#' @return the log of topic-IP part (first term of Eq. 13)
 #'
 #' @export
-topicpartZ = function(currentIP, zcnew, alpha, mvec) {
-  const = log(zcnew[[currentIP]] -
-                ifelse(zcnew[[currentIP]] > 0, 1, 0) + alpha * mvec)
-  return(const)
+topicpartZ = function(currentC, K, currentZ, alpha, mvec, document) {
+	tabletopics = tabulate(currentZ[[document]], nbins = K)
+	const = log(tabletopics - ifelse(tabletopics > 0, 1, 0) + alpha[[currentC[document]]] * mvec[[currentC[document]]])
+	return(const)
 }
 
 #' @title wordpartZ
 #' @description: calculate the log of word-topic part used to obtain the constants for multinomial sampling of K
 #'
-#' @param K
-#' @param textlistd
-#' @param tableW
-#' @param delta
-#' @param nvec
+#' @param K number of topics specified by the user
+#' @param textlistd list of text containing the words in specific document d
+#' @param tableW summary table of topic-word assignments
+#' @param delta Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
 #'
-#' @return
+#' @return the log of word-topic part (last term of Eq. 13)
 #'
 #' @export
 wordpartZ = function(K, textlistd, tableW, delta, nvec) {
@@ -177,11 +198,11 @@ wordpartZ = function(K, textlistd, tableW, delta, nvec) {
 #' @title betapartB
 #' @description calculate the log of beta part used to obtain the constants for multinomial sampling of Beta
 #'
-#' @param nIP
-#' @param lambdai
-#' @param edgeC
+#' @param nIP number of interaction patterns specified by the user
+#' @param lambdai stochastic intensity of specific sender 'i'
+#' @param edgeC separated edgelist according to the interaction patterns 
 #'
-#' @return
+#' @return the log of beta part (used in Eq. 16)
 #'
 #' @export
 betapartB = function(nIP, lambdai, edgeC) {
@@ -199,33 +220,32 @@ betapartB = function(nIP, lambdai, edgeC) {
 #' @title MCMC
 #' @description
 #'
-#' @param edge
-#' @param node
-#' @param textlist
-#' @param vocabulary
-#' @param nIP
-#' @param K
-#' @param delta_B
-#' @param outer
-#' @param n1
-#' @param n2
-#' @param n3
-#' @param burn
-#' @param thin
-#' @param opt
-#' @param seed
+#' @param edge edgelist in the form of matrix with 3 columns (col1:sender, col2:receiver, col3=time in unix.time format)
+#' @param node nodelist containing the ID of nodes (ID's starting from 1)
+#' @param textlist list of text (length=number of documents in total) containing the words in each document
+#' @param vocabulary all vocabularies used over the corpus
+#' @param nIP number of interaction patterns specified by the user
+#' @param K number of topics pattern specified by the user
+#' @param delta_B proposal distribution variance parameter for beta 
+#' @param outer size of outer iteration 
+#' @param n1 size of first inner iteration for updates of interaction patterns C
+#' @param n2 size of second inner iteration for updates of topics K
+#' @param n3 size of third inner iteration for updates of betas B
+#' @param burn iterations to be discarded at the beginning of the chain
+#' @param thin the thinning interval 
+#' @param seed an integer value which controls random number generation
 #'
-#' @return
+#' @return MCMC output containing IP assignment, topic assignment, beta, the log of unnormalized constant, and optimized hyperparameter alpha
 #'
 #' @export
 MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
-  n1 = 3, n2 = 3, n3 = 3300, burn = 300, thin = 3, opt = TRUE, seed = 1) {
+  n1 = 3, n2 = 3, n3 = 3300, burn = 300, thin = 3, seed = 1) {
 
   set.seed(seed)
 
   # initialize alpha, mvec, delta, nvec, eta, lvec, and gammas
-  alpha =  50 / K
-  mvec = rep(1, K) / K
+  alpha =  lapply(1:nIP, function(x){50 / K})
+  mvec = lapply(1:nIP, function(x){rep(1, K) / K}) 
   delta = 0.01
   W = length(vocabulary)
   nvec = rep(1, W) / W
@@ -233,21 +253,17 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   lvec = rep(1, nIP) / nIP
   gammas = rdirichlet(1, eta * lvec)
 
-  # initialize theta
-  theta = list()
-  for (IP in 1:nIP) {
-    theta[[IP]] = rdirichlet(1, alpha * mvec)
-  }
-
-  # initialize C and Z
+  # initialize C, theta and Z
   currentC = selected(nrow(edge), gammas)
+  theta = lapply(1:nrow(edge), function(d) {
+  	      rdirichlet(1, alpha[[currentC[d]]] * mvec[[currentC[d]]])
+  	      })					
   currentZ = lapply(1:nrow(edge), function(d) {
-    matrix(vapply(1:nIP, function(IP) {
-      selected(length(textlist[[d]]), theta[[IP]])
-    }, rep(0, length(textlist[[d]]))), byrow = TRUE,nrow = nIP)
-  })
+			 selected(length(textlist[[d]]), theta[[d]])
+			 })	  
+
   # initialize beta
-  P = 4
+  P = 6
   sigma = 1
   bmat = list()
   for (IP in 1:nIP) {
@@ -255,33 +271,25 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
     bmat[[IP]][,] = rmvnorm(1, rep(0, P), sigma^2 * diag(P))
   }
 
-  logWZmat = c()
+  #to check the convergence  
+  logWZmat <- c()							  
+  alphamat <- alpha
 
-  if (opt == TRUE) {
-    alphamat = alpha
-    mvecmat = mvec
-  }
 
   #start outer iteration
   for(o in 1:outer) {
     cat("outer iteration = ", o, "\n")
-
-    if (opt == TRUE) {
-      op = options(warn = (-1))
-      vec = parupdate(nIP, K, currentC, currentZ, alpha, mvec)
-      alpha = sum(vec)
-      alphamat = c(alphamat, alpha)
-      mvec = vec / alpha
-      mvecmat = rbind(mvecmat, mvec)
-      options(op)
-    }
+  
+  #update the hyperparameter alpha and mvec
+   vec = parupdate(nIP, K, currentC, currentZ, alpha, mvec)
+   alpha = lapply(1:nIP, function(IP) {sum(vec[[IP]])})
+   alphamat = lapply(1:nIP, function(IP) {c(alphamat[[IP]], alpha[[IP]])})
+   mvec = lapply(1:nIP, function(IP) {vec[[IP]] / alpha[[IP]]})	
 
     cat("inner iteration 1", "\n")
     lambdai = list()
     corpusC  = sortedZ(nIP, currentC, currentZ)
-    zc =  lapply(1:nIP, function(IP) {
-      tabulate(unlist(corpusC[[IP]]), nbins = K)
-    })
+   
     for (i1 in 1:n1) {
       # C update given Z and B - within each document d
       for (d in 1:nrow(edge)) {
@@ -289,57 +297,46 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
         edgeC = lapply(1:nIP, function(IP) {
           edge[which(currentC2 == IP), ]
         })
-        zc[[currentC[d]]] = zc[[currentC[d]]] -
-          tabulate(currentZ[[d]][currentC[d], ], nbins = K)
         for (IP in 1:nIP) {
-          histlist = history(edgeC[[IP]], node, edge[d, 3])
-          allxmatlist = allxmat(edgeC[[IP]], node, histlist, edge[d, 1], 0.05)
+          histlist = historymat(edgeC[[IP]], node, edge[d, 3])
+          allxmatlist = allxmat2(edgeC[[IP]], node, histlist, edge[d, 1], 0.05)
           lambdai[[IP]] = multiplyXB(allxmatlist, bmat[[IP]][, (n3 - burn) / thin])
         }
         const = log(gammas)+betapartC(nIP, lambdai, edge[d, ]) +
-          topicpartC(nIP, currentZ, zc, alpha, mvec, d)
+          topicpartC(nIP, K, currentZ, alpha, mvec, d)
         currentC[d] = selected(1, exp(const))
-        zc[[currentC[d]]] = zc[[currentC[d]]] +
-          tabulate(currentZ[[d]][currentC[d], ], nbins = K)
       }
     }
 
     cat("inner iteration 2", "\n")
     textlist2 = unlist(textlist)
-    corpusCnew = sortedZ(nIP, currentC, currentZ)
-    zcnew = lapply(1:nIP, function(IP) {
-      tabulate(unlist(corpusCnew[[IP]]), nbins = K)
-    })
-    finalZlist = finalZ(currentC, currentZ)
-    finalZlist2 = unlist(finalZlist)
+    finalZlist2 = unlist(currentZ)
     tableW = lapply(1:K, function(k) {
       tabulate(textlist2[which(finalZlist2 == k)], nbins = W)
     })
 
     for (i2 in 1:n2) {
       for (d in 1:nrow(edge)) {
-        currentCd = currentC[d]
         textlistd = textlist[[d]]
-        topicpartd = topicpartZ(currentCd, zcnew, alpha, mvec)
+        topicpartd = topicpartZ(currentC, K, currentZ, alpha, mvec, d)
         wordpartd = wordpartZ(K, textlistd, tableW, delta, nvec)
         for (w in 1:nrow(wordpartd)) {
           const2 = topicpartd + wordpartd[w, ]
-          zwold = currentZ[[d]][currentCd, w]
+          zwold = currentZ[[d]][w]
           zwnew = selected(1, exp(const2))
           if (zwnew != zwold) {
-            zcnew[[currentCd]][zwold] = zcnew[[currentCd]][zwold] - 1
-            zcnew[[currentCd]][zwnew] = zcnew[[currentCd]][zwnew] + 1
+          	currentZ[[d]][w] = zwnew
+          	topicpartd = topicpartZ(currentC, K, currentZ, alpha, mvec, d)	
             tableW[[zwold]][textlistd[w]] = tableW[[zwold]][textlistd[w]] - 1
             tableW[[zwnew]][textlistd[w]] = tableW[[zwnew]][textlistd[w]] + 1
-            topicpartd = topicpartZ(currentCd, zcnew, alpha, mvec)
+            topicpartd = topicpartZ(currentC, K, currentZ, alpha, mvec, d)
             wordpartd = wordpartZ(K, textlistd, tableW, delta, nvec)
-            currentZ[[d]][currentCd, w] = zwnew
           }
         }
       }
     }
 
-    logWZmat = c(logWZmat, logWZ(nIP, K, textlist2, W, zcnew, tableW,
+    logWZmat = c(logWZmat, logWZ(nIP, K, currentC, currentZ, textlist, tableW,
       alpha, mvec, delta, nvec))
 
     cat("inner iteration 3", "\n")
@@ -351,8 +348,8 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
       allxmatlist2[[IP]] = list()
 
       for (d in 1:nrow(edgeC[[IP]])) {
-        histlist2 = history(edgeC[[IP]], node, edgeC[[IP]][d, 3])
-        allxmatlist2[[IP]][[d]] = allxmat(edgeC[[IP]], node, histlist2,
+        histlist2 = historymat(edgeC[[IP]], node, edgeC[[IP]][d, 3])
+        allxmatlist2[[IP]][[d]] = allxmat2(edgeC[[IP]], node, histlist2,
           edgeC[[IP]][d, 1], 0.05)
       }
     }
@@ -392,45 +389,42 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
     }
   }
 
-  if (opt == TRUE) {
-    out = list(C = currentC, Z = finalZ(currentC, currentZ), B = bmat, L = logWZmat,
-      A = alphamat, M = mvecmat)
-  }
-  else {
-    out = list(C = currentC, Z = finalZ(currentC, currentZ), B = bmat, L = logWZmat)
-  }
+    out = list(C = currentC, Z = currentZ, B = bmat, L = logWZmat, A = alphamat)
+
   return(out)
 }
 
 #' @title logWZ
 #' @description calculate the log of unnormalized constant (corresponding to product of Eq.13 in Section 3.2) to check the convergence
 #'
-#' @param nIP
-#' @param K
-#' @param textlist2
-#' @param W
-#' @param zcnew
-#' @param tableW
-#' @param alpha
-#' @param mvec
-#' @param delta
-#' @param nvec
+#' @param nIP number of interaction patterns specified by the user
+#' @param K number of topics specified by the user
+#' @param currentC current state of the assignment of interaction patterns 
+#' @param currentZ current state of the assignment of topics 
+#' @param textlist list of text (length=number of documents in total) containing the words in each document
+#' @param tableW summary table of topic-word assignments
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param delta Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
 #'
-#' @return
+#' @return the log of unnormalized constant corresponding to product of Eq.13 in Section 3.2
 #'
 #' @export
-logWZ = function(nIP, K, textlist2, W, zcnew, tableW, alpha, mvec, delta, nvec) {
-  out1 = 0
-  for (IP in 1:nIP) {
-    num1 = zcnew[[IP]] + alpha * mvec
-    denom1 = sum(zcnew[[IP]]) + alpha
-    out1 = out1 + sum(lgamma(num1)) - lgamma(denom1)
-  }
-  out2 = 0
-  for (k in 1:K) {
-    num2 = tableW[[k]] + delta * nvec
-    denom2 = sum(tableW[[k]]) + delta
-    out2 = out2 + sum(lgamma(num2)) - lgamma(denom2)
-  }
-  return(out1 + out2)
+logWZ = function(nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, delta, nvec) {
+	finalsum = 0
+	for (d in 1:nrow(edge)) {
+		ktable = tabulate(currentZ[[d]], nbins = K)
+		textlistd = textlist[[d]]
+		it = 1
+		for (k in currentZ[[d]]) {
+			part1 = log(tableW[[k]][textlistd[it]] -1 + delta * nvec[textlistd[it]])
+			part2 = log(sum(tableW[[k]]) - sum(tableW[[k]]>0) + delta)
+			part3 = log(ktable[k] -1 + alpha[[currentC[d]]] * mvec[[currentC[d]]][k])
+			part4 = log(sum(ktable) -1 + alpha[[currentC[d]]])
+			finalsum = finalsum + part1 - part2 + part3 - part4	
+			it = it + 1
+	}
+	}
+	return(finalsum)
 }
