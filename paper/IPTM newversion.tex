@@ -491,6 +491,19 @@ In addition, the conditional probability that a new word generated in the docume
 \frac{M_{wk, \backslash d, m}^{WK}+\delta n_w}{\sum_{w=1}^WM_{wk, \backslash d, m}^{WK}+\delta}
 \end{aligned} 
  \end{equation}
+ NOTE: Using Equation (26), the unnormalized constant we use to check the model convergence and the corresponding log-constant are,
+ \begin{equation}
+ 	\begin{aligned}
+ 		& \prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}}  P(z^{(d)}_m=k, w^{(d)}_m=w|\mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}, \delta, \boldsymbol{n}, \alpha^{(c)}, \boldsymbol{m}^{(c)}) \\ & \propto \prod_{d=1}^{D}\prod_{m=1}^{M^{(d)}} 
+ 		\frac{M_{w^{(d)}_mz^{(d)}_m, \backslash d, m}^{WK}+\delta n_ {w^{(d)}_m}}{\sum_{w=1}^WM_{wz^{(d)}_m,  \backslash d, m}^{WK}+\delta}\times\frac{M_{k|d, \backslash d, m}+\alpha^{(c^{(d)})} m^{(c^{(d)})}_{z^{(d)}_m}}{M_{\cdot|d}-1+\alpha^{(c^{(d)})}},
+ 	\end{aligned}
+ \end{equation}
+  \begin{equation}
+  \begin{aligned}
+  & \sum_{d=1}^{D}\sum_{m=1}^{M^{(d)}} \mbox{log}\Big( P(z^{(d)}_m=k, w^{(d)}_m=w|\mathcal{W}_{\backslash d, m}, \mathcal{Z}_{\backslash d,m}, \mathcal{C}, \delta, \boldsymbol{n}, \alpha^{(c)}, \boldsymbol{m}^{(c)})\Big) \\ & \propto \sum_{d=1}^{D}\sum_{m=1}^{M^{(d)}} 
+  \mbox{log}\Big(M_{w^{(d)}_mz^{(d)}_m, \backslash d, m}^{WK}+\delta n_ {w^{(d)}_m}\Big)-\mbox{log}\Big(\sum_{w=1}^WM_{wz^{(d)}_m,  \backslash d, m}^{WK}+\delta\Big)\\&+\mbox{log}\Big(M_{k|d, \backslash d, m}+\alpha^{(c^{(d)})} m^{(c^{(d)})}_{z^{(d)}_m}\Big)-\mbox{log}\Big(M_{\cdot|d}-1+\alpha^{(c^{(d)})}\Big)
+  \end{aligned}
+  \end{equation}
 \bibliographystyle{apalike}
 \bibliography{BominBib}
 
