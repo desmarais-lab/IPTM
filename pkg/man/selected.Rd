@@ -13,6 +13,6 @@ selected(samples, proportions)
 
 }
 \description{
-
+find out the chosen category from the multinomial distribution
 }
 

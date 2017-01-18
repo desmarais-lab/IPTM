@@ -12,7 +12,6 @@ LazyData: true
 Imports:
     mvtnorm,
     MCMCpack,
-    inline,
     Rcpp
 LinkingTo: Rcpp
 RoxygenNote: 5.0.1

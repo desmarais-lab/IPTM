@@ -1,5 +1,7 @@
 #' @useDynLib IPTM
 #' @importFrom Rcpp sourceCpp
+#' @importFrom mvtnorm dmvnorm rmvnorm
+#' @importFrom MCMCpack rdirichlet
 NULL
 
 #' @title history
