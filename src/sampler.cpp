@@ -17,7 +17,7 @@ double logPLC(List finalZ, List zcnew, IntegerVector currentC, List tableW, List
       IntegerVector tableWdn = tableW[finalZd[n] - 1];
       IntegerVector corpusWdn = corpusW[finalZd[n] - 1];
       IntegerVector ucorpusWdn = unique(corpusWdn);
-      if (zcnewd[finalZd[n]-1] > 0) {
+      if (zcnewd[finalZd[n] - 1] > 0) {
 	ifelse1 = 1;
       } else {
 	ifelse1 = 0;
@@ -38,7 +38,7 @@ double logPLC(List finalZ, List zcnew, IntegerVector currentC, List tableW, List
 }
 
 // [[Rcpp::export]]
-double Supdate(double alpha, IntegerVector ctable){
+double Supdate(double alpha, IntegerVector ctable) {
   // denominator part used for parameter optimization
   double D = 0;
   double S = 0;
@@ -53,7 +53,7 @@ double Supdate(double alpha, IntegerVector ctable){
 NumericVector Skupdate(NumericVector vec, List cktable) {
   // numerator part used for parameter optimization
   NumericVector s(vec.size());
-  for (int k = 0; k < vec.size(); k++){
+  for (int k = 0; k < vec.size(); k++) {
     double d = 0;
     IntegerVector nowtable = cktable[k];
     for (int n = 1; n < (nowtable.size() + 1); n++) {
@@ -182,13 +182,13 @@ NumericMatrix allxmat(NumericMatrix edge, IntegerVector node, List histlist,
     double send = 0;
     double receive = 0;
     NumericVector triangle(A2.size());
-    for (int ii=0; ii < ijlist.size(); ii++) {
+    for (int ii = 0; ii < ijlist.size(); ii++) {
       send += exp(-lambda*ijlist[ii]);
     }
-    for (int jj=0; jj<jilist.size(); jj++) {
+    for (int jj = 0; jj<jilist.size(); jj++) {
       receive = receive + exp(-lambda * jilist[jj]);
     }
-    for (int h=0; h < A2.size(); h++) {
+    for (int h = 0; h < A2.size(); h++) {
       double triangle1 = 0;
       double triangle2 = 0;
       double triangle3 = 0;
@@ -201,13 +201,13 @@ NumericMatrix allxmat(NumericMatrix edge, IntegerVector node, List histlist,
       for (int i = 0; i < ialist.size(); i++) {
 	triangle1 += exp(-lambda * ialist[i]);
       }
-      for (int j=0; j<ajlist.size(); j++) {
+      for (int j = 0; j<ajlist.size(); j++) {
 	triangle2 += exp(-lambda * ajlist[j]);
       }
       for (int i = 0; i < ailist.size(); i++) {
 	triangle3 += exp(-lambda * ailist[i]);
       }
-      for (int j=0; j < jalist.size(); j++) {
+      for (int j = 0; j < jalist.size(); j++) {
 	triangle4 += exp(-lambda * jalist[j]);
       }
       triangle[h] = triangle1 * triangle2 + triangle3 * triangle4 + triangle3 *
@@ -222,15 +222,15 @@ NumericMatrix allxmat(NumericMatrix edge, IntegerVector node, List histlist,
 List sortedZ(int nIP, IntegerVector currentC, List currentZ) {
   // sort the documents and corresponding topics according to the IPs
   List out(nIP);
-  for (int IP = 1; IP < (nIP + 1); IP++){
+  for (int IP = 1; IP < (nIP + 1); IP++) {
     IntegerVector currentClist(currentC.size());
     int it = 0;
-    for (int d = 0; d < currentC.size(); d++){
+    for (int d = 0; d < currentC.size(); d++) {
       if (currentC[d] == IP) {
 	currentClist[it] = d;
       }
-      if (currentC[d]==IP) {
-	it = it + 1;
+      if (currentC[d] == IP) {
+	it += 1;
       }
     }
     List out2(it);
@@ -248,7 +248,7 @@ List finalZ(IntegerVector currentC, List currentZ) {
   // extract the finalized topic assignments for every word in every document
   // using the IP assignments
   List out(currentC.size());
-  for (int d = 0; d < currentC.size(); d++){
+  for (int d = 0; d < currentC.size(); d++) {
     IntegerMatrix currentZd = currentZ[d];
     out[d] = currentZd(currentC[d] - 1, _);
   }
