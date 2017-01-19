@@ -9,7 +9,7 @@ NULL
 #' @param node nodelist containing the ID of nodes (ID's starting from 1)
 #' @param when specific timepoint that we are calculating the time difference from
 #'
-#' @return list of time differences from previous interactions to specific timepoint
+#' @return list of time differences from previous interactions to specific timepoint (i.e. 'when') for every combination of nodes
 #'
 #' @export
 historymat = function(edge, node, when) {
@@ -28,27 +28,49 @@ historymat = function(edge, node, when) {
   return(histlist)
 }
 
-#' @title allxmat2
-#' @description to include two extra network statistiscs, outdegree and indegree
+#' @title netstats
+#' @description calculate six network statistiscs, intercept, send, receive, triangle, outdegree and indegree
 #'
-#' @param edge edgelist in the form of matrix with 3 columns (col1:sender, col2:receiver, col3=time in unix.time format)
+#' @param histlist list of time differences from previous interactions to specific timepoint (i.e. 'when') for every combination of nodes
 #' @param node nodelist containing the ID of nodes (ID's starting from 1)
-#' @param histlist 
 #' @param sender sender of the specific document
 #' @param lambda parameter of speed at which sender replies, with larger values indicating faster response time
 #'
 #' @return X matrix containing six history-based network statistics 
 #'
 #' @export
-allxmat2 = function(edge, node, histlist, sender, lambda) {
-	allsenders = lapply(node, function(s) {
-		allxmat(edge, node, histlist, s, lambda)
-		})
-	outdegree = sum(allsenders[[sender]][,2])
-	indegree = vapply(node[node != sender], function(s) {
-		sum(allsenders[[s]][,2])
-		}, c(1))
-	return(cbind(allsenders[[sender]], outdegree, indegree))
+netstats = function(histlist, node, sender, lambda) {
+	allxmat  = list()
+	for (s in node){
+		allxmat[[s]] = list()
+		for (r in node){
+			allxmat[[s]][[r]] = sum(exp(-lambda * histlist[[s]][[r]]))
+		}
+	}
+	netstatmat = matrix(NA, nrow = length(node) - 1, ncol = 6)
+	it = 1
+	for (receiver in node[!node == sender]) {
+	send = allxmat[[sender]][[receiver]]
+	receive = allxmat[[receiver]][[sender]]
+	twosend = sum(vapply(node[!node == c(sender, receiver)], function(h) {
+				allxmat[[sender]][[h]] * allxmat[[h]][[receiver]]
+				}, c(1)))
+	tworeceive = sum(vapply(node[!node == c(sender, receiver)], function(h) {
+				allxmat[[h]][[sender]] * allxmat[[receiver]][[h]]
+				}, c(1)))
+	sibling = sum(vapply(node[!node == c(sender, receiver)], function(h) {
+				allxmat[[h]][[sender]] * allxmat[[h]][[receiver]]
+				}, c(1)))
+	cosibling = sum(vapply(node[!node == c(sender, receiver)], function(h) {
+				allxmat[[sender]][[h]] * allxmat[[receiver]][[h]]
+				}, c(1)))  
+	triangle = sum(twosend, tworeceive, sibling, cosibling)
+	outdegree = sum(unlist(allxmat[[sender]]))
+	indegree = sum(vapply(node, function(i){allxmat[[i]][[receiver]]}, c(1)))	
+	netstatmat[it, ] = c(1, send, receive, triangle, outdegree, indegree)
+	it = it + 1	
+	}
+	return(netstatmat)
 }
 
 #' @title parupdate
@@ -217,6 +239,41 @@ betapartB = function(nIP, lambdai, edgeC) {
   return(const)
 }
 
+#' @title logWZ
+#' @description calculate the log of unnormalized constant (corresponding to product of Eq.13 in Section 3.2) to check the convergence
+#'
+#' @param nIP number of interaction patterns specified by the user
+#' @param K number of topics specified by the user
+#' @param currentC current state of the assignment of interaction patterns 
+#' @param currentZ current state of the assignment of topics 
+#' @param textlist list of text (length=number of documents in total) containing the words in each document
+#' @param tableW summary table of topic-word assignments
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param delta Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
+#'
+#' @return the log of unnormalized constant corresponding to product of Eq.13 in Section 3.2
+#'
+#' @export
+logWZ = function(nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, delta, nvec) {
+	finalsum = 0
+	for (d in 1:length(currentC)) {
+		ktable = tabulate(currentZ[[d]], nbins = K)
+		textlistd = textlist[[d]]
+		it = 1
+		for (k in currentZ[[d]]) {
+			part1 = log(tableW[[k]][textlistd[it]] -1 + delta * nvec[textlistd[it]])
+			part2 = log(sum(tableW[[k]]) - sum(tableW[[k]]>0) + delta)
+			part3 = log(ktable[k] -1 + alpha[[currentC[d]]] * mvec[[currentC[d]]][k])
+			part4 = log(sum(ktable) -1 + alpha[[currentC[d]]])
+			finalsum = finalsum + part1 - part2 + part3 - part4	
+			it = it + 1
+	}
+	}
+	return(finalsum)
+}
+
 #' @title MCMC
 #' @description
 #'
@@ -299,7 +356,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
         })
         for (IP in 1:nIP) {
           histlist = historymat(edgeC[[IP]], node, edge[d, 3])
-          allxmatlist = allxmat2(edgeC[[IP]], node, histlist, edge[d, 1], 0.05)
+          allxmatlist = netstats(histlist, node, edge[d, 1], 0.05)
           lambdai[[IP]] = multiplyXB(allxmatlist, bmat[[IP]][, (n3 - burn) / thin])
         }
         const = log(gammas)+betapartC(nIP, lambdai, edge[d, ]) +
@@ -349,8 +406,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
 
       for (d in 1:nrow(edgeC[[IP]])) {
         histlist2 = historymat(edgeC[[IP]], node, edgeC[[IP]][d, 3])
-        allxmatlist2[[IP]][[d]] = allxmat2(edgeC[[IP]], node, histlist2,
-          edgeC[[IP]][d, 1], 0.05)
+        allxmatlist2[[IP]][[d]] = netstats(histlist2, node, edgeC[[IP]][d, 1], 0.05)
       }
     }
 
@@ -394,37 +450,3 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   return(out)
 }
 
-#' @title logWZ
-#' @description calculate the log of unnormalized constant (corresponding to product of Eq.13 in Section 3.2) to check the convergence
-#'
-#' @param nIP number of interaction patterns specified by the user
-#' @param K number of topics specified by the user
-#' @param currentC current state of the assignment of interaction patterns 
-#' @param currentZ current state of the assignment of topics 
-#' @param textlist list of text (length=number of documents in total) containing the words in each document
-#' @param tableW summary table of topic-word assignments
-#' @param alpha Dirichlet concentration prior for document-topic distribution
-#' @param mvec Dirichlet base prior for document-topic distribution
-#' @param delta Dirichlet concentration prior for topic-word distribution
-#' @param nvec Dirichlet base prior for topic-word distribution
-#'
-#' @return the log of unnormalized constant corresponding to product of Eq.13 in Section 3.2
-#'
-#' @export
-logWZ = function(nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, delta, nvec) {
-	finalsum = 0
-	for (d in 1:nrow(edge)) {
-		ktable = tabulate(currentZ[[d]], nbins = K)
-		textlistd = textlist[[d]]
-		it = 1
-		for (k in currentZ[[d]]) {
-			part1 = log(tableW[[k]][textlistd[it]] -1 + delta * nvec[textlistd[it]])
-			part2 = log(sum(tableW[[k]]) - sum(tableW[[k]]>0) + delta)
-			part3 = log(ktable[k] -1 + alpha[[currentC[d]]] * mvec[[currentC[d]]][k])
-			part4 = log(sum(ktable) -1 + alpha[[currentC[d]]])
-			finalsum = finalsum + part1 - part2 + part3 - part4	
-			it = it + 1
-	}
-	}
-	return(finalsum)
-}
