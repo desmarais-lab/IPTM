@@ -1,5 +1,5 @@
-Functions useful for exploratory data analysis using random forests.
-
+Functions useful for analyzing the 
+Functions jointly analyze the history of interaction (between the sender and receiver) and the contents or topic of text (e.g. email, online messages) using Markov chain Monte Carlo (MCMC).
 This package extends the functionality of topic models fit 
 
 The subdirectory `pkg` contains the actual package. The package can be installed with [devtools](https://cran.r-project.org/package=devtools).
