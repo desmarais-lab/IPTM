@@ -12,7 +12,7 @@ Functionality includes:
 
  - `table_betaIP` and `plot_betaIP` which summarizes the MCMC chain of network statistics for each interaction-pattern (IP), by drawing table and boxplot, respectively.
 
- - `plot_topic` which plots the topic distributions for each interaction-pattern (IP).
+ - `plot_topic` and `plot_topicIP` which plots the topic distributions without (former) and with (latter) considering the interaction-pattern (IP) assignments.
 
 - `table_IP` which generates the table that summarizes interaction-pattern (IP) and token-topic assignments. For each interaction-pattern (IP), the topics of highest proportion and their corresponding most likely words are included.
  
