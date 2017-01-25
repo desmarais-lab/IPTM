@@ -10,7 +10,7 @@ Functionality includes:
 
  - `MCMC` which runs Markov chain Monte Carlo (MCMC) algorithm to compute the time-weighted network statistics from the point process model of Perry and Wolfe (2013) and token-topic assignments of the documents over the corpus, given the interaction-pattern (IP) assignment of each document.
 
- - `plot_beta` which plots the boxplot of network statistics for each interaction-pattern (IP).
+ - `table_betaIP` and `plot_betaIP` which summarizes the MCMC chain of network statistics for each interaction-pattern (IP), by drawing table and boxplot, respectively.
 
  - `plot_topic` which plots the topic distributions for each interaction-pattern (IP).
 
