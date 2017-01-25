@@ -450,3 +450,141 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   return(out)
 }
 
+
+#' @title table_betaIP
+#' @description summarize the MCMC chain of network statistics (beta) for each interaction pattern, by using a table
+#'
+#' @param MCMCchain a chain obtained using MCMC function
+#'
+#' @return list of table containing the posterior summaries of beta for each interaction pattern
+#'
+#' @export
+table_betaIP = function(MCMCchain) {
+	require(MCMCpack)
+	tables = lapply(MCMCchain$B, function(x) {
+		summary(mcmc(t(x)))$quantiles[,c(3,1,5)]
+ 	})
+ 	for (IP in 1:length(tables)) {
+ 		rownames(tables[[IP]]) = c('intercept','send','receive','triangles', 'outdegree', 'indegree')
+ 		colnames(tables[[IP]]) = c('median', 'lower2.5%', 'upper97.5%')
+ 	}
+ 	return(tables)
+}
+
+#' @title plot_betaIP
+#' @description summarize the MCMC chain of network statistics (beta) for each interaction pattern, by drawing a joint boxplot
+#'
+#' @param MCMCchain MCMCchain a chain obtained using MCMC function
+#'
+#' @return plot of the posterior summaries of beta for each interaction pattern (should click for the locator)
+#'
+#' @export
+plot_betaIP = function(MCMCchain) {
+	require(reshape)
+	data = list()
+	P = nrow(MCMCchain$B[[1]])
+	nIP = length(MCMCchain$B)
+	for(b in 1:P){
+	data[[b]] = sapply(1:nIP, function(c){
+		cbind(MCMCchain$B[[c]][b,])
+		})
+		}
+	forbox = melt(data)
+	boxplot = boxplot(forbox$value ~ forbox$X2 + forbox$L1,
+	at = c(sapply(1:P, function(x){((nIP+1) * x - nIP):((nIP+1) * x - 1)})),
+	col = gray.colors(nIP), axes = FALSE, main ='Comparison of beta coefficients for different IPs')
+	abline(h = 0, lty = 1, col = 'red')
+	axis(2, labels = TRUE)
+	box()
+	axis(side = 1, at = c(sapply(1:P, function(x){median(((nIP + 1) * x - nIP):((nIP + 1) * x - 1))})), line = 0.5, 
+	lwd = 0, labels = c('intercept','send','receive','triangles', 'outdegree', 'indegree'))
+	legend(locator(1), c(paste('IP', 1:nIP)), col = gray.colors(nIP), pch = 15)
+}
+
+#' @title plot_topicIP
+#' @description plot the topic distributions for each interaction pattern
+#'
+#' @param MCMCchain MCMCchain a chain obtained using MCMC function
+#' @param K number of topics pattern specified by the user
+#'
+#' @return joint barplot of the topic distribution (should click for the locator)
+#'
+#' @export
+plot_topicIP = function(MCMCchain, K) {
+	Zsummary = list()
+	nIP = length(MCMCchain$B)
+	for (IP in 1:nIP) {
+		Zsummary[[IP]] = list()
+		iter = 1
+		for (d in which(MCMCchain$C == IP)) {
+			Zsummary[[IP]][[iter]] = MCMCchain$Z[[d]]; 
+			iter = iter + 1
+			}
+		}
+	topicdist = t(sapply(Zsummary, function(x) {
+				tabulate(unlist(x), nbins = K) / length(unlist(x))
+				}))
+	colnames(topicdist) = c(1:K)
+	barplot(topicdist, beside = TRUE, xlab = "topic", ylab = "proportion", main ='Topic Distritubitions given IPs')
+	
+	legend(locator(1), c(paste('IP', 1:nIP)), col = gray.colors(nIP), pch = 15)
+	}
+
+#' @title plot_topic
+#' @description  plot the topic distributions without considering interaction patterns
+#'
+#' @param MCMCchain MCMCchain a chain obtained using MCMC function
+#' @param K number of topics pattern specified by the user
+#'
+#' @return barplot of the topic distribution
+#'
+#' @export	
+plot_topic = function(MCMCchain, K) {
+	Zsummary = list()
+		for (d in 1:length(MCMCchain$C)) {
+			Zsummary[[d]] = MCMCchain$Z[[d]]
+			}
+	topicdist = t(tabulate(unlist(Zsummary), nbins = K) / length(unlist(Zsummary)))
+	colnames(topicdist) = c(1:K)
+	barplot(topicdist, beside = TRUE, xlab = "topic", ylab = "proportion", main = 'Topic Distritubitions without IPs')
+	}
+
+#' @title table_wordIP
+#' @description generate the table that summarizes token-topic assignments of highest probabilities for each interaaction pattern
+#'
+#' @param MCMCchain MCMCchain a chain obtained using MCMC function
+#' @param K number of topics pattern specified by the user
+#' @param textlist list of text (length=number of documents in total) containing the words in each document
+#' @param vocabulary all vocabularies used over the corpus
+#'
+#' @return list of tables that summarize token-topic assignments of highest probabilities (topic proportion > 0.1) for each IP
+#'
+#' @export
+table_wordIP = function(MCMCchain, K, textlist, vocabulary) {
+	require(lda)
+	W = length(vocabulary)
+	nIP = length(MCMCchain$B)
+	table_word = list()
+	for (IP in 1:nIP) {
+		Zsummary = list()
+		topicword = matrix(0, nrow = K, ncol = W)
+		colnames(topicword) = vocabulary
+		iter = 1
+		for (d in which(MCMCchain$C==IP)) {
+			Zsummary[[iter]] = MCMCchain$Z[[d]]
+			names(Zsummary[[iter]])<- vocabulary[text[[d]]]
+			iter = iter+1
+			}
+		topicdist = t(tabulate(unlist(Zsummary), nbins=K)/length(unlist(Zsummary)))
+		colnames(topicdist)<-c(1:K)
+		toptopic = which(topicdist[,order(topicdist, decreasing=TRUE)]>0.1)
+		allwords = unlist(Zsummary)
+		for (i in 1:length(allwords)){
+		matchWZ = which(colnames(topicword)==names(allwords[i]))
+		topicword[allwords[i], matchWZ] = topicword[allwords[i], matchWZ]+1
+		}
+		table_word[[IP]] = top.topic.words(topicword, num.words=10)[, toptopic]
+		colnames(table_word[[IP]]) = names(toptopic)
+		}
+	return(table_word)
+}
