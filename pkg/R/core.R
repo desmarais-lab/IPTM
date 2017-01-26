@@ -3,29 +3,42 @@
 NULL
 
 #' @title historymat
-#' @description calculate the time difference from previous interactions to specific timepoint
+#' @description cauching the timestamps of interactions for every possible pair of nodes
 #'
 #' @param edge edgelist in the form of matrix with 3 columns (col1:sender, col2:receiver, col3=time in unix.time format)
 #' @param node nodelist containing the ID of nodes (ID's starting from 1)
-#' @param when specific timepoint that we are calculating the time difference from
 #'
-#' @return list of time differences from previous interactions to specific timepoint (i.e. 'when') for every combination of nodes
+#' @return list of timestamps
 #'
 #' @export
-historymat = function(edge, node, when) {
+historymat = function(edge, node) {
   histlist = lapply(node, function(v) {
     lapply(node, function(u) {
       numeric(0)
     })
   })
-  edge2 = matrix(edge[edge[, 3] < when, ], byrow = FALSE, ncol = 3)
-  if (nrow(edge2) > 0) {
-    for (d in 1:nrow(edge2)) {
-      histlist[[edge2[d,1]]][[edge2[d,2]]] = c(histlist[[edge2[d, 1]]][[edge2[d, 2]]],
-        when - (edge2[d, 3]))
+  for (d in 1:nrow(edge)) {
+      histlist[[edge[d,1]]][[edge[d,2]]] = c(histlist[[edge[d, 1]]][[edge[d, 2]]], edge[d, 3])
     }
-  }
   return(histlist)
+}
+
+#' @title timediff
+#' @description calculate weighted sum of the time differences from previous intereactions to specific timepoint
+#'
+#' @param histlist list of timestamps from previous interactions 
+#' @param when specific timepoint that we are calculating the time difference from
+#' @param lambda parameter of speed at which sender replies, with larger values indicating faster response time
+#'
+#' @return list of weighted sum of the time differences from previous interactions to specific timepoint for every combination of nodes
+#'
+#' @export
+timediff = function(histlist, when, lambda) {
+	allxmat = lapply(histlist, function(x) { 
+		lapply(x, function(y){
+			sum(exp(-lambda * (when-y)[(when-y)>0] ))
+			})})
+	return(allxmat)	
 }
 
 #' @title netstats
@@ -34,19 +47,11 @@ historymat = function(edge, node, when) {
 #' @param histlist list of time differences from previous interactions to specific timepoint (i.e. 'when') for every combination of nodes
 #' @param node nodelist containing the ID of nodes (ID's starting from 1)
 #' @param sender sender of the specific document
-#' @param lambda parameter of speed at which sender replies, with larger values indicating faster response time
 #'
 #' @return X matrix containing six history-based network statistics 
 #'
 #' @export
-netstats = function(histlist, node, sender, lambda) {
-	allxmat  = list()
-	for (s in node){
-		allxmat[[s]] = list()
-		for (r in node){
-			allxmat[[s]][[r]] = sum(exp(-lambda * histlist[[s]][[r]]))
-		}
-	}
+netstats = function(allxmat, node, sender) {
 	netstatmat = matrix(NA, nrow = length(node) - 1, ncol = 6)
 	it = 1
 	for (receiver in node[!node == sender]) {
@@ -92,20 +97,20 @@ parupdate =  function(nIP, K, currentC, currentZ, alpha, mvec) {
 
 	for (IP in 1:nIP) {
 		iter=1
-		vec = alpha[[IP]] * mvec[[IP]]
+		vec = alpha[IP] * mvec[,IP]
 		nwords = mapply(length, corpusCnew[[IP]])
 		ctable = tabulate(nwords)
 		cklist = matrix(NA, nrow = length(corpusCnew[[IP]]), ncol = K)
 		for (d in 1:length(corpusCnew[[IP]])) {
 			cklist[d,] = tabulate(corpusCnew[[IP]][[d]], nbins = K)
 			}
-	cktable = lapply(1:K, function(k){
+		cktable = lapply(1:K, function(k){
 			  tabulate(cklist[,k])
 			  })
 
-	while ((abs(alpha[[IP]] - sum(vec)) > 0.001) | (iter == 1)) {
-	alpha[[IP]] = sum(vec)
-	S = Supdate(alpha[[IP]], ctable)		
+	while ((abs(alpha[IP] - sum(vec)) > 0.001) | (iter == 1)) {
+	alpha[IP] = sum(vec)
+	S = Supdate(alpha[IP], ctable)		
 	s = Skupdate(vec, cktable)	
 	vec = vec * s/S
 	iter = iter + 1
@@ -168,8 +173,8 @@ topicpartC = function(nIP, K, currentZ, alpha, mvec, document) {
 	for (IP in 1:nIP) {
 		topics = currentZ[[document]]
 		tabletopics = tabulate(topics, nbins = K)
-		num = sum(log(tabletopics[topics] - 1 + alpha[[IP]] * mvec[[IP]][topics]))
-		denom = length(topics) * log(length(topics) - 1 + alpha[[IP]])
+		num = sum(log(tabletopics[topics] - 1 + alpha[IP] * mvec[topics,IP]))
+		denom = length(topics) * log(length(topics) - 1 + alpha[IP])
 		const[IP] = num - denom
 		}
   return(const)
@@ -190,7 +195,7 @@ topicpartC = function(nIP, K, currentZ, alpha, mvec, document) {
 #' @export
 topicpartZ = function(currentC, K, currentZ, alpha, mvec, document) {
 	tabletopics = tabulate(currentZ[[document]], nbins = K)
-	const = log(tabletopics - ifelse(tabletopics > 0, 1, 0) + alpha[[currentC[document]]] * mvec[[currentC[document]]])
+	const = log(tabletopics - ifelse(tabletopics > 0, 1, 0) + alpha[currentC[document]] * mvec[,currentC[document]])
 	return(const)
 }
 
@@ -265,8 +270,8 @@ logWZ = function(nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, delt
 		for (k in currentZ[[d]]) {
 			part1 = log(tableW[[k]][textlistd[it]] -1 + delta * nvec[textlistd[it]])
 			part2 = log(sum(tableW[[k]]) - sum(tableW[[k]]>0) + delta)
-			part3 = log(ktable[k] -1 + alpha[[currentC[d]]] * mvec[[currentC[d]]][k])
-			part4 = log(sum(ktable) -1 + alpha[[currentC[d]]])
+			part3 = log(ktable[k] -1 + alpha[currentC[d]] * mvec[,currentC[d]][k])
+			part4 = log(sum(ktable) -1 + alpha[currentC[d]])
 			finalsum = finalsum + part1 - part2 + part3 - part4	
 			it = it + 1
 	}
@@ -291,18 +296,22 @@ logWZ = function(nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, delt
 #' @param burn iterations to be discarded at the beginning of the chain
 #' @param thin the thinning interval 
 #' @param seed an integer value which controls random number generation
+#' @param plot to plot the convergence diagnostics or not (TRUE/FALSE)
 #'
-#' @return MCMC output containing IP assignment, topic assignment, beta, the log of unnormalized constant, and optimized hyperparameter alpha
+#' @return MCMC output containing IP assignment, topic assignment, beta, the plots to check the convergence
 #'
 #' @export
 MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
-  n1 = 3, n2 = 3, n3 = 3300, burn = 300, thin = 3, seed = 1) {
-
+  n1 = 3, n2 = 3, n3 = 3300, burn = 300, thin = 3, seed = 1, plot = TRUE) {
+  	
+  require(MCMCpack)
+  require(mvtnorm)
+  require(entropy)
   set.seed(seed)
 
   # initialize alpha, mvec, delta, nvec, eta, lvec, and gammas
-  alpha =  lapply(1:nIP, function(x){50 / K})
-  mvec = lapply(1:nIP, function(x){rep(1, K) / K}) 
+  alpha = vapply(1:nIP, function(x){50 / K}, c(1))
+  mvec = vapply(1:nIP, function(x){rep(1, K) / K}, rep(1, K)) 
   delta = 0.01
   W = length(vocabulary)
   nvec = rep(1, W) / W
@@ -313,7 +322,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   # initialize C, theta and Z
   currentC = selected(nrow(edge), gammas)
   theta = lapply(1:nrow(edge), function(d) {
-  	      rdirichlet(1, alpha[[currentC[d]]] * mvec[[currentC[d]]])
+  	      rdirichlet(1, alpha[currentC[d]] * mvec[,currentC[d]])
   	      })					
   currentZ = lapply(1:nrow(edge), function(d) {
 			 selected(length(textlist[[d]]), theta[[d]])
@@ -329,19 +338,20 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   }
 
   #to check the convergence  
-  logWZmat <- c()							  
-  alphamat <- alpha
-
-
+  if (plot) {
+  	logWZmat = c()							  
+ 	alphamat = alpha
+  	entropymat = c()
+	}
+	
   #start outer iteration
   for(o in 1:outer) {
     cat("outer iteration = ", o, "\n")
   
   #update the hyperparameter alpha and mvec
    vec = parupdate(nIP, K, currentC, currentZ, alpha, mvec)
-   alpha = lapply(1:nIP, function(IP) {sum(vec[[IP]])})
-   alphamat = lapply(1:nIP, function(IP) {c(alphamat[[IP]], alpha[[IP]])})
-   mvec = lapply(1:nIP, function(IP) {vec[[IP]] / alpha[[IP]]})	
+   alpha = vapply(1:nIP, function(IP) {sum(vec[[IP]])}, c(1))
+   mvec = vapply(1:nIP, function(IP) {vec[[IP]] / alpha[IP]}, rep(1, K))	
 
     cat("inner iteration 1", "\n")
     lambdai = list()
@@ -355,8 +365,9 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
           edge[which(currentC2 == IP), ]
         })
         for (IP in 1:nIP) {
-          histlist = historymat(edgeC[[IP]], node, edge[d, 3])
-          allxmatlist = netstats(histlist, node, edge[d, 1], 0.05)
+          histlist = historymat(edgeC[[IP]], node)
+          allxmat = timediff(histlist, edge[d, 3], 0.05)
+          allxmatlist = netstats(allxmat, node, edge[d, 1])
           lambdai[[IP]] = multiplyXB(allxmatlist, bmat[[IP]][, (n3 - burn) / thin])
         }
         const = log(gammas)+betapartC(nIP, lambdai, edge[d, ]) +
@@ -392,9 +403,13 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
         }
       }
     }
-
+    
+    if (plot) {
+    entropymat = c(entropymat, entropy.empirical(currentC))
+	alphamat = rbind(alphamat, alpha)
     logWZmat = c(logWZmat, logWZ(nIP, K, currentC, currentZ, textlist, tableW,
-      alpha, mvec, delta, nvec))
+      alpha, mvec, delta, nvec))    	
+    }
 
     cat("inner iteration 3", "\n")
     bold = list()
@@ -405,8 +420,9 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
       allxmatlist2[[IP]] = list()
 
       for (d in 1:nrow(edgeC[[IP]])) {
-        histlist2 = historymat(edgeC[[IP]], node, edgeC[[IP]][d, 3])
-        allxmatlist2[[IP]][[d]] = netstats(histlist2, node, edgeC[[IP]][d, 1], 0.05)
+      	  histlist2 = historymat(edgeC[[IP]], node)
+          allxmat2 = timediff(histlist2, edgeC[[IP]][d, 3], 0.05)
+          allxmatlist2[[IP]][[d]] = netstats(allxmat2, node, edgeC[[IP]][d, 1])
       }
     }
 
@@ -445,11 +461,25 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
     }
   }
 
-    out = list(C = currentC, Z = currentZ, B = bmat, L = logWZmat, A = alphamat)
+  if (plot) {
+  	par(mfrow = c(2, 2))
+  	plot(entropymat, type='l', xlab = "(Outer) Iterations", ylab = 'Entropy of IP')
+	abline(h = median(entropymat), lty = 1)
+	title('Convergence of logWZ')
+  	matplot(alphamat[-1,], lty = 1, type = 'l', col = 1:outer, xlab = "(Outer) Iterations", ylab = 'alpha')
+  	abline(h = apply(alphamat[-1,], 2, median), lty = 1, col = 1:outer)
+	title('Convergence of Optimized alpha')
+	plot(logWZmat, type='l', xlab = "(Outer) Iterations", ylab = 'logWZ')
+	abline(h = median(logWZmat), lty = 1)
+	title('Convergence of logWZ')
+	matplot(t(bmat[[1]]), lty = 1, col = 1:P, type="l", main="Traceplot of beta", xlab="(Inner) Iterations", ylab="")
+	abline(h = apply(t(bmat[[1]]), 2, median), lty = 1, col = 1:P)
+	}
+	
+  out = list(C = currentC, Z = currentZ, B = bmat)
 
   return(out)
 }
-
 
 #' @title table_betaIP
 #' @description summarize the MCMC chain of network statistics (beta) for each interaction pattern, by using a table
