@@ -14,6 +14,6 @@ Functionality includes:
 
  - `plot_topic` and `plot_topicIP` which plot the topic distributions without (former) and with (latter) considering the interaction-pattern (IP) assignments.
 
-- `table_IP` which generates the table that summarizes interaction-pattern (IP) and token-topic assignments. For each interaction-pattern (IP), the topics of highest proportion and their corresponding most likely words are included.
+- `table_wordIP` which generates the table that summarizes interaction-pattern (IP) and token-topic assignments. For each interaction-pattern (IP), the topics of highest proportion and their corresponding most likely words are included.
  
 The last three functions above are used to make comparison between different interaction-patterns (IP).
