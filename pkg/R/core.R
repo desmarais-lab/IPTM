@@ -481,7 +481,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   return(out)
 }
 
-#' @title table_betaIP
+#' Table table_betaIP
 #' @description summarize the MCMC chain of network statistics (beta) for each interaction pattern, by using a table
 #'
 #' @param MCMCchain a chain obtained using MCMC function
@@ -501,7 +501,7 @@ table_betaIP = function(MCMCchain) {
  	return(tables)
 }
 
-#' @title plot_betaIP
+#' Plot plot_betaIP
 #' @description summarize the MCMC chain of network statistics (beta) for each interaction pattern, by drawing a joint boxplot
 #'
 #' @param MCMCchain MCMCchain a chain obtained using MCMC function
@@ -531,7 +531,7 @@ plot_betaIP = function(MCMCchain) {
 	legend(locator(1), c(paste('IP', 1:nIP)), col = gray.colors(nIP), pch = 15)
 }
 
-#' @title plot_topicIP
+#' Plot plot_topicIP
 #' @description plot the topic distributions for each interaction pattern
 #'
 #' @param MCMCchain MCMCchain a chain obtained using MCMC function
@@ -560,7 +560,7 @@ plot_topicIP = function(MCMCchain, K) {
 	legend(locator(1), c(paste('IP', 1:nIP)), col = gray.colors(nIP), pch = 15)
 	}
 
-#' @title plot_topic
+#' Plot plot_topic
 #' @description  plot the topic distributions without considering interaction patterns
 #'
 #' @param MCMCchain MCMCchain a chain obtained using MCMC function
@@ -579,7 +579,7 @@ plot_topic = function(MCMCchain, K) {
 	barplot(topicdist, beside = TRUE, xlab = "topic", ylab = "proportion", main = 'Topic Distritubitions without IPs')
 	}
 
-#' @title table_wordIP
+#' Table table_wordIP
 #' @description generate the table that summarizes token-topic assignments of highest probabilities for each interaaction pattern
 #'
 #' @param MCMCchain MCMCchain a chain obtained using MCMC function
