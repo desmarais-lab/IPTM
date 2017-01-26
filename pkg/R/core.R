@@ -11,13 +11,10 @@ NULL
 #' @return list of timestamps
 #'
 #' @export
-historymat = function(edge, node) {
-  histlist = lapply(node, function(v) {
-    lapply(node, function(u) {
-      numeric(0)
-    })
-  })
-  for (d in 1:nrow(edge)) {
+historymat = function(edge, node) { 
+   histnull = nullmat(node)
+   histlist = histnull
+   for (d in 1:nrow(edge)) {
       histlist[[edge[d,1]]][[edge[d,2]]] = c(histlist[[edge[d, 1]]][[edge[d, 2]]], edge[d, 3])
     }
   return(histlist)
@@ -36,46 +33,9 @@ historymat = function(edge, node) {
 timediff = function(histlist, when, lambda) {
 	allxmat = lapply(histlist, function(x) { 
 		lapply(x, function(y){
-			sum(exp(-lambda * (when-y)[(when-y)>0] ))
+			sum(exp(-lambda * (when-y)[(when-y) > 0] ))
 			})})
 	return(allxmat)	
-}
-
-#' @title netstats
-#' @description calculate six network statistiscs, intercept, send, receive, triangle, outdegree and indegree
-#'
-#' @param histlist list of time differences from previous interactions to specific timepoint (i.e. 'when') for every combination of nodes
-#' @param node nodelist containing the ID of nodes (ID's starting from 1)
-#' @param sender sender of the specific document
-#'
-#' @return X matrix containing six history-based network statistics 
-#'
-#' @export
-netstats = function(allxmat, node, sender) {
-	netstatmat = matrix(NA, nrow = length(node) - 1, ncol = 6)
-	it = 1
-	for (receiver in node[!node == sender]) {
-	send = allxmat[[sender]][[receiver]]
-	receive = allxmat[[receiver]][[sender]]
-	twosend = sum(vapply(node[!node == c(sender, receiver)], function(h) {
-				allxmat[[sender]][[h]] * allxmat[[h]][[receiver]]
-				}, c(1)))
-	tworeceive = sum(vapply(node[!node == c(sender, receiver)], function(h) {
-				allxmat[[h]][[sender]] * allxmat[[receiver]][[h]]
-				}, c(1)))
-	sibling = sum(vapply(node[!node == c(sender, receiver)], function(h) {
-				allxmat[[h]][[sender]] * allxmat[[h]][[receiver]]
-				}, c(1)))
-	cosibling = sum(vapply(node[!node == c(sender, receiver)], function(h) {
-				allxmat[[sender]][[h]] * allxmat[[receiver]][[h]]
-				}, c(1)))  
-	triangle = sum(twosend, tworeceive, sibling, cosibling)
-	outdegree = sum(unlist(allxmat[[sender]]))
-	indegree = sum(vapply(node, function(i){allxmat[[i]][[receiver]]}, c(1)))	
-	netstatmat[it, ] = c(1, send, receive, triangle, outdegree, indegree)
-	it = it + 1	
-	}
-	return(netstatmat)
 }
 
 #' @title parupdate
@@ -149,7 +109,8 @@ betapartC = function(nIP, lambdai, specificedge) {
   const = rep(NA, nIP)
   for (IP in 1:nIP) {
     edge = matrix(specificedge, ncol = 3)
-    receiver = ifelse(edge[, 1] > edge[, 2], edge[, 2],  edge[, 2] - 1)
+    receiver = edge[, 2]
+    receiver[edge[, 1] <= edge[, 2]] = edge[edge[, 1] <= edge[, 2], 2] - 1 
     const[IP] = lambdai[[IP]][receiver] - log(sum(exp(lambdai[[IP]])))
   }
   return(const)
@@ -195,53 +156,8 @@ topicpartC = function(nIP, K, currentZ, alpha, mvec, document) {
 #' @export
 topicpartZ = function(currentC, K, currentZ, alpha, mvec, document) {
 	tabletopics = tabulate(currentZ[[document]], nbins = K)
-	const = log(tabletopics - ifelse(tabletopics > 0, 1, 0) + alpha[currentC[document]] * mvec[,currentC[document]])
+	const = log(tabletopics - as.numeric(tabletopics > 0) + alpha[currentC[document]] * mvec[,currentC[document]])
 	return(const)
-}
-
-#' @title wordpartZ
-#' @description: calculate the log of word-topic part used to obtain the constants for multinomial sampling of K
-#'
-#' @param K number of topics specified by the user
-#' @param textlistd list of text containing the words in specific document d
-#' @param tableW summary table of topic-word assignments
-#' @param delta Dirichlet concentration prior for topic-word distribution
-#' @param nvec Dirichlet base prior for topic-word distribution
-#'
-#' @return the log of word-topic part (last term of Eq. 13)
-#'
-#' @export
-wordpartZ = function(K, textlistd, tableW, delta, nvec) {
-  const = matrix(NA, nrow=length(textlistd), ncol = K)
-  for (k in 1:K) {
-    num  = log(tableW[[k]][textlistd] -
-                 ifelse(tableW[[k]][textlistd] > 0, 1, 0) + delta * nvec[textlistd])
-    denom  = log(sum(tableW[[k]]) - sum(ifelse(tableW[[k]] > 0, 1, 0)) + delta)
-    const[, k] = num - denom
-  }
-  return(const)
-}
-
-#' @title betapartB
-#' @description calculate the log of beta part used to obtain the constants for multinomial sampling of Beta
-#'
-#' @param nIP number of interaction patterns specified by the user
-#' @param lambdai stochastic intensity of specific sender 'i'
-#' @param edgeC separated edgelist according to the interaction patterns 
-#'
-#' @return the log of beta part (used in Eq. 16)
-#'
-#' @export
-betapartB = function(nIP, lambdai, edgeC) {
-  const = rep(NA, nIP)
-  for (IP in 1:nIP) {
-    edge = matrix(edgeC[[IP]], ncol = 3)
-    receiver = ifelse(edge[, 1] > edge[, 2], edge[, 2],  edge[, 2] - 1)
-    const[IP] = sum(vapply(1:length(receiver), function(r) {
-      lambdai[[IP]][r, receiver[r]] - log(sum(exp(lambdai[[IP]][r, ])))
-    }, c(1)))
-  }
-  return(const)
 }
 
 #' @title logWZ
@@ -310,8 +226,8 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   set.seed(seed)
 
   # initialize alpha, mvec, delta, nvec, eta, lvec, and gammas
-  alpha = vapply(1:nIP, function(x){50 / K}, c(1))
-  mvec = vapply(1:nIP, function(x){rep(1, K) / K}, rep(1, K)) 
+  alpha = rep(50/K, nIP)
+  mvec = matrix(1/K, nrow=K, ncol=nIP)
   delta = 0.01
   W = length(vocabulary)
   nvec = rep(1, W) / W
@@ -333,8 +249,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   sigma = 1
   bmat = list()
   for (IP in 1:nIP) {
-    bmat[[IP]] = matrix(NA, nrow = P, ncol = (n3 - burn) / thin)
-    bmat[[IP]][,] = rmvnorm(1, rep(0, P), sigma^2 * diag(P))
+    bmat[[IP]] = matrix(0, nrow = P, ncol = (n3 - burn) / thin)
   }
 
   #to check the convergence  
@@ -350,20 +265,18 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   
   #update the hyperparameter alpha and mvec
    vec = parupdate(nIP, K, currentC, currentZ, alpha, mvec)
-   alpha = vapply(1:nIP, function(IP) {sum(vec[[IP]])}, c(1))
+   alpha = unlist(lapply(vec, sum))
    mvec = vapply(1:nIP, function(IP) {vec[[IP]] / alpha[IP]}, rep(1, K))	
 
     cat("inner iteration 1", "\n")
     lambdai = list()
     corpusC  = sortedZ(nIP, currentC, currentZ)
-   
+    
     for (i1 in 1:n1) {
       # C update given Z and B - within each document d
       for (d in 1:nrow(edge)) {
         currentC2 = currentC[-d]
-        edgeC = lapply(1:nIP, function(IP) {
-          edge[which(currentC2 == IP), ]
-        })
+        edgeC = sortedC(nIP, currentC2, edge)
         for (IP in 1:nIP) {
           histlist = historymat(edgeC[[IP]], node)
           allxmat = timediff(histlist, edge[d, 3], 0.05)
@@ -414,9 +327,9 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
     cat("inner iteration 3", "\n")
     bold = list()
     allxmatlist2 = list()
+    edgeC = sortedC(nIP, currentC, edge)
     for (IP in 1:nIP) {
       bold[[IP]] = bmat[[IP]][, (n3 - burn) / thin]
-      edgeC[[IP]] = edge[which(currentC == IP), ]
       allxmatlist2[[IP]] = list()
 
       for (d in 1:nrow(edgeC[[IP]])) {
@@ -465,7 +378,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   	par(mfrow = c(2, 2))
   	plot(entropymat, type='l', xlab = "(Outer) Iterations", ylab = 'Entropy of IP')
 	abline(h = median(entropymat), lty = 1)
-	title('Convergence of logWZ')
+	title('Convergence of Entropy')
   	matplot(alphamat[-1,], lty = 1, type = 'l', col = 1:outer, xlab = "(Outer) Iterations", ylab = 'alpha')
   	abline(h = apply(alphamat[-1,], 2, median), lty = 1, col = 1:outer)
 	title('Convergence of Optimized alpha')
@@ -481,7 +394,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   return(out)
 }
 
-#' Table table_betaIP
+#' @title table_betaIP
 #' @description summarize the MCMC chain of network statistics (beta) for each interaction pattern, by using a table
 #'
 #' @param MCMCchain a chain obtained using MCMC function
@@ -501,7 +414,7 @@ table_betaIP = function(MCMCchain) {
  	return(tables)
 }
 
-#' Plot plot_betaIP
+#' @title plot_betaIP
 #' @description summarize the MCMC chain of network statistics (beta) for each interaction pattern, by drawing a joint boxplot
 #'
 #' @param MCMCchain MCMCchain a chain obtained using MCMC function
@@ -531,7 +444,7 @@ plot_betaIP = function(MCMCchain) {
 	legend(locator(1), c(paste('IP', 1:nIP)), col = gray.colors(nIP), pch = 15)
 }
 
-#' Plot plot_topicIP
+#' @title plot_topicIP
 #' @description plot the topic distributions for each interaction pattern
 #'
 #' @param MCMCchain MCMCchain a chain obtained using MCMC function
@@ -560,7 +473,7 @@ plot_topicIP = function(MCMCchain, K) {
 	legend(locator(1), c(paste('IP', 1:nIP)), col = gray.colors(nIP), pch = 15)
 	}
 
-#' Plot plot_topic
+#' @title plot_topic
 #' @description  plot the topic distributions without considering interaction patterns
 #'
 #' @param MCMCchain MCMCchain a chain obtained using MCMC function
@@ -579,7 +492,7 @@ plot_topic = function(MCMCchain, K) {
 	barplot(topicdist, beside = TRUE, xlab = "topic", ylab = "proportion", main = 'Topic Distritubitions without IPs')
 	}
 
-#' Table table_wordIP
+#' @title table_wordIP
 #' @description generate the table that summarizes token-topic assignments of highest probabilities for each interaaction pattern
 #'
 #' @param MCMCchain MCMCchain a chain obtained using MCMC function
@@ -618,3 +531,4 @@ table_wordIP = function(MCMCchain, K, textlist, vocabulary) {
 		}
 	return(table_word)
 }
+
