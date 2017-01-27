@@ -1,5 +1,18 @@
 #include <Rcpp.h>
-using namespace Rcpp;
+// [[Rcpp::depends(RcppEigen)]]
+#include <RcppEigen.h>
+using namespace Rcpp; 
+using Eigen::Map;
+using Eigen::VectorXd;
+typedef Map<VectorXd> MapVecd;
+
+// [[Rcpp::export]]
+double RcppEigensum(NumericVector xx) {
+	const MapVecd x(as<MapVecd>(xx));
+	double out;
+	out = x.sum();
+	return out;
+}
 
 // [[Rcpp::export]]
 double Supdate(double alpha, IntegerVector ctable){
@@ -68,7 +81,6 @@ List sortedC(int nIP, IntegerVector currentC, NumericMatrix edge){
 
 // [[Rcpp::export]]
 NumericVector multiplyXB(NumericMatrix allxmatlist, NumericVector beta){
-  // construct beta %*% x
   NumericVector out(allxmatlist.nrow());
   for (int i = 0; i < allxmatlist.nrow(); i++) {
     double sum = 0;
@@ -80,6 +92,24 @@ NumericVector multiplyXB(NumericMatrix allxmatlist, NumericVector beta){
   return out;
 }
 
+// [[Rcpp::export]]
+NumericMatrix multiplyXB2(List allxmatlist, NumericVector beta, NumericMatrix edge){
+	NumericMatrix example = allxmatlist[1];	
+	NumericMatrix out(edge.nrow(), example.nrow());
+	for (int d=0; d<edge.nrow(); d++) {
+		NumericVector out2(example.nrow());
+		NumericMatrix allxmatlist2 = allxmatlist[d];
+		 for (int i = 0; i < example.nrow(); i++) {
+  		  double sum = 0;
+    	for (int j = 0; j < beta.size(); j++) {
+     	 sum = sum + allxmatlist2(i, j) * beta[j];
+    	  }
+    	out2[i] = sum;
+  		}
+		out(d, _) = out2;
+	}
+  return out;
+}
 
 
 // [[Rcpp::export]]
@@ -91,17 +121,14 @@ NumericVector betapartB(int nIP, List lambdai, List edgeC){
   	NumericMatrix lambda = lambdai[i];
   	IntegerVector receiver(edge.nrow());
   	for (int d=0; d<edge.nrow(); d++){
-  		if (edge(d,0)>edge(d,1)) {
+  		if (edge(d,0) > edge(d,1)) {
   			receiver[d]=edge(d,1);
   			} else {
   			receiver[d]=edge(d,1)-1;
   			}
   	NumericVector allreceiver = exp(lambda(d,_));
-  	double sumreceiver=0;
-  	for (int l = 0; l<allreceiver.size(); l++) {
-  		sumreceiver = sumreceiver + allreceiver[l];
-  	} 
-  	sum = sum + lambda(d,receiver[d]-1) - log(sumreceiver);
+  	double sumreceiver = RcppEigensum(allreceiver);
+    sum = sum + lambda(d,receiver[d]-1) - log(sumreceiver);
   	}
   	out[i] = sum;
     }
@@ -109,7 +136,22 @@ NumericVector betapartB(int nIP, List lambdai, List edgeC){
 }
 
 // [[Rcpp::export]]
-NumericMatrix netstats(List allxmat, IntegerVector node, int sender) {
+NumericMatrix timediff(NumericMatrix edge, IntegerVector node, double when, double lambda) {
+	NumericMatrix histmat(node.size(), node.size());
+	int iter = 0;
+	for (int d=0; d < edge.nrow(); d++) {
+		if (edge(d,2) < when) {iter = iter+1;}
+	}
+	if (iter > 0){
+	for (int i=0; i < iter; i++) {
+		histmat(edge(i,0)-1, edge(i,1)-1)= histmat(edge(i,0)-1, edge(i,1)-1)+ exp(-lambda*(when-edge(i,2)));
+	}
+	}
+	return histmat;
+}
+
+// [[Rcpp::export]]
+NumericMatrix netstats(NumericMatrix allxmat, IntegerVector node, int sender) {
 	NumericMatrix netstatmat(node.size()-1, 6);
 	IntegerVector node2(node.size()-1);
 	int iter=0;
@@ -120,10 +162,8 @@ NumericMatrix netstats(List allxmat, IntegerVector node, int sender) {
 	 	double outdegree = 0;
 	for (int b = 0; b < node2.size(); b++) {
 		int receiver = node2[b];
-		List allxmats = allxmat[sender-1];
-		List allxmatr = allxmat[receiver-1];
-		double send = allxmats[receiver-1];
-		double receive = allxmatr[sender-1];
+		double send = allxmat(sender-1, receiver-1);
+		double receive = allxmat(receiver-1, sender-1);
 		IntegerVector node3(node2.size()-1);		
 		int iter2=0;
 		for (int d = 0; d < node2.size(); d++) {
@@ -134,30 +174,19 @@ NumericMatrix netstats(List allxmat, IntegerVector node, int sender) {
 		NumericVector indegree(node3.size());
 		for (int h = 0; h < node3.size(); h++) {
 			int third = node3[h];
-			List allxmath = allxmat[third-1];
-			double stoh = allxmats[third-1];
-			double htos = allxmath[sender-1];
-			double rtoh = allxmatr[third-1];
-			double htor = allxmath[receiver-1];
-			triangle[h] = stoh*htor+	htos*rtoh+htos*htor+	stoh*rtoh;
+			double stoh = allxmat(sender-1, third-1);
+			double htos = allxmat(third-1, sender-1);
+			double rtoh = allxmat(receiver-1, third-1);
+			double htor = allxmat(third-1, receiver-1);
+			triangle[h] = stoh*htor+	htos*rtoh+htos*htor+stoh*rtoh;
 			indegree[h] = htor;}			
 		outdegree = outdegree + send;
-		netstatmat(b,_) = NumericVector::create(1, send, receive, sum(triangle), 0, send+sum(indegree));
+		netstatmat(b,_) = NumericVector::create(1, send, receive, RcppEigensum(triangle), 0, send+RcppEigensum(indegree));
 	}
 	netstatmat(_,4) = rep(outdegree, node2.size());
 	return netstatmat;
 }
 
-// [[Rcpp::export]]
-List nullmat(IntegerVector node) {
-	List out2(node.size());
-	List out(node.size());
-	for (int i=0; i < node.size(); i++){
-	 out2[i] = out;		
-	}
-	return out2;
-}
-	
 
 // [[Rcpp::export]]
 NumericMatrix wordpartZ(int K, IntegerVector textlistd, List tableW, double delta, NumericVector nvec){
@@ -166,13 +195,14 @@ NumericMatrix wordpartZ(int K, IntegerVector textlistd, List tableW, double delt
 		NumericVector tablek = tableW[k];
 		NumericVector num(textlistd.size());
 		for (int l=0; l<textlistd.size(); l++){
-			num[l] = log(tablek[textlistd[l]-1]- (tablek[textlistd[l]-1]>0)+delta*nvec[textlistd[l]-1]);  
+			num[l] = log(tablek[textlistd[l]-1]-(tablek[textlistd[l]-1]>0)+delta*nvec[textlistd[l]-1]);  
 		}
-		double denom = log(sum(tablek) - sum(tablek>0)+delta);
+		double denom = log(RcppEigensum(tablek)-sum(tablek>0)+delta);
 		out(_,k) = num-rep(denom, textlistd.size());
 	}
 	return out;
 }
+
 
 
 
