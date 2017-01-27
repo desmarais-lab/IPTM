@@ -1,18 +1,5 @@
 #include <Rcpp.h>
-// [[Rcpp::depends(RcppEigen)]]
-#include <RcppEigen.h>
 using namespace Rcpp; 
-using Eigen::Map;
-using Eigen::VectorXd;
-typedef Map<VectorXd> MapVecd;
-
-// [[Rcpp::export]]
-double RcppEigensum(NumericVector xx) {
-	const MapVecd x(as<MapVecd>(xx));
-	double out;
-	out = x.sum();
-	return out;
-}
 
 // [[Rcpp::export]]
 double Supdate(double alpha, IntegerVector ctable){
@@ -127,7 +114,10 @@ NumericVector betapartB(int nIP, List lambdai, List edgeC){
   			receiver[d]=edge(d,1)-1;
   			}
   	NumericVector allreceiver = exp(lambda(d,_));
-  	double sumreceiver = RcppEigensum(allreceiver);
+  	double sumreceiver = 0;
+  	for (int l=0; l < allreceiver.size(); l++) {
+  		sumreceiver += allreceiver[l];
+  	}
     sum = sum + lambda(d,receiver[d]-1) - log(sumreceiver);
   	}
   	out[i] = sum;
@@ -144,7 +134,7 @@ NumericMatrix timediff(NumericMatrix edge, IntegerVector node, double when, doub
 	}
 	if (iter > 0){
 	for (int i=0; i < iter; i++) {
-		histmat(edge(i,0)-1, edge(i,1)-1)= histmat(edge(i,0)-1, edge(i,1)-1)+exp(-lambda*(when-edge(i,2)));
+		histmat(edge(i,0)-1, edge(i,1)-1)= histmat(edge(i,0)-1, edge(i,1)-1)+ exp(-lambda*(when-edge(i,2)));
 	}
 	}
 	return histmat;
@@ -181,7 +171,7 @@ NumericMatrix netstats(NumericMatrix allxmat, IntegerVector node, int sender) {
 			triangle[h] = stoh*htor+	htos*rtoh+htos*htor+stoh*rtoh;
 			indegree[h] = htor;}			
 		outdegree = outdegree + send;
-		netstatmat(b,_) = NumericVector::create(1, send, receive, RcppEigensum(triangle), 0, send+RcppEigensum(indegree));
+		netstatmat(b,_) = NumericVector::create(1, send, receive, sum(triangle), 0, send+sum(indegree));
 	}
 	netstatmat(_,4) = rep(outdegree, node2.size());
 	return netstatmat;
@@ -197,11 +187,15 @@ NumericMatrix wordpartZ(int K, IntegerVector textlistd, List tableW, double delt
 		for (int l=0; l<textlistd.size(); l++){
 			num[l] = log(tablek[textlistd[l]-1]-(tablek[textlistd[l]-1]>0)+delta*nvec[textlistd[l]-1]);  
 		}
-		double denom = log(RcppEigensum(tablek)-sum(tablek>0)+delta);
+		double denom = log(sum(tablek)-sum(tablek>0)+delta);
 		out(_,k) = num-rep(denom, textlistd.size());
 	}
 	return out;
 }
+
+
+
+
 
 
 
