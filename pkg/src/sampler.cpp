@@ -144,7 +144,7 @@ NumericMatrix timediff(NumericMatrix edge, IntegerVector node, double when, doub
 	}
 	if (iter > 0){
 	for (int i=0; i < iter; i++) {
-		histmat(edge(i,0)-1, edge(i,1)-1)= histmat(edge(i,0)-1, edge(i,1)-1)+ exp(-lambda*(when-edge(i,2)));
+		histmat(edge(i,0)-1, edge(i,1)-1)= histmat(edge(i,0)-1, edge(i,1)-1)+exp(-lambda*(when-edge(i,2)));
 	}
 	}
 	return histmat;
