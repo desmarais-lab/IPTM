@@ -14,7 +14,6 @@ Imports:
     mvtnorm,
     MCMCpack,
     entropy,
-    Rcpp,
-    RcppEigen    
-LinkingTo: Rcpp, RcppEigen
+    Rcpp  
+LinkingTo: Rcpp
 RoxygenNote: 5.0.1
