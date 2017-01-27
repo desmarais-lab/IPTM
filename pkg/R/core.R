@@ -1,42 +1,7 @@
 #' @useDynLib IPTM
-#' @importFrom Rcpp sourceCpp 
+#' @importFrom Rcpp sourceCpp RcppEigen
 NULL
 
-#' @title historymat
-#' @description cauching the timestamps of interactions for every possible pair of nodes
-#'
-#' @param edge edgelist in the form of matrix with 3 columns (col1:sender, col2:receiver, col3=time in unix.time format)
-#' @param node nodelist containing the ID of nodes (ID's starting from 1)
-#'
-#' @return list of timestamps
-#'
-#' @export
-historymat = function(edge, node) { 
-   histnull = nullmat(node)
-   histlist = histnull
-   for (d in 1:nrow(edge)) {
-      histlist[[edge[d,1]]][[edge[d,2]]] = c(histlist[[edge[d, 1]]][[edge[d, 2]]], edge[d, 3])
-    }
-  return(histlist)
-}
-
-#' @title timediff
-#' @description calculate weighted sum of the time differences from previous intereactions to specific timepoint
-#'
-#' @param histlist list of timestamps from previous interactions 
-#' @param when specific timepoint that we are calculating the time difference from
-#' @param lambda parameter of speed at which sender replies, with larger values indicating faster response time
-#'
-#' @return list of weighted sum of the time differences from previous interactions to specific timepoint for every combination of nodes
-#'
-#' @export
-timediff = function(histlist, when, lambda) {
-	allxmat = lapply(histlist, function(x) { 
-		lapply(x, function(y){
-			sum(exp(-lambda * (when-y)[(when-y) > 0] ))
-			})})
-	return(allxmat)	
-}
 
 #' @title parupdate
 #' @description parameter optimization of alpha and mvec at the same time 
@@ -255,7 +220,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   #to check the convergence  
   if (plot) {
   	logWZmat = c()							  
- 	alphamat = alpha
+ 	alphamat = c()
   	entropymat = c()
 	}
 	
@@ -278,8 +243,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
         currentC2 = currentC[-d]
         edgeC = sortedC(nIP, currentC2, edge)
         for (IP in 1:nIP) {
-          histlist = historymat(edgeC[[IP]], node)
-          allxmat = timediff(histlist, edge[d, 3], 0.05)
+          allxmat = timediff(edgeC[[IP]], node, edge[d, 3], 0.05)
           allxmatlist = netstats(allxmat, node, edge[d, 1])
           lambdai[[IP]] = multiplyXB(allxmatlist, bmat[[IP]][, (n3 - burn) / thin])
         }
@@ -326,32 +290,26 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
 
     cat("inner iteration 3", "\n")
     bold = list()
+    bnew = list()
+    lambdaiold = list()
+    lambdainew = list()
+   
     allxmatlist2 = list()
     edgeC = sortedC(nIP, currentC, edge)
     for (IP in 1:nIP) {
       bold[[IP]] = bmat[[IP]][, (n3 - burn) / thin]
       allxmatlist2[[IP]] = list()
-
       for (d in 1:nrow(edgeC[[IP]])) {
-      	  histlist2 = historymat(edgeC[[IP]], node)
-          allxmat2 = timediff(histlist2, edgeC[[IP]][d, 3], 0.05)
+          allxmat2 = timediff(edge, node, edgeC[[IP]][d, 3], 0.05)
           allxmatlist2[[IP]][[d]] = netstats(allxmat2, node, edgeC[[IP]][d, 1])
       }
+      lambdaiold[[IP]] = multiplyXB2(allxmatlist2[[IP]], bold[[IP]], edgeC[[IP]])
     }
-
-    lambdaiold = list()
-    lambdainew = list()
-    bnew = list()
 
     for (i3 in 1:n3) {
       for (IP in 1:nIP) {
         bnew[[IP]] = rmvnorm(1, bold[[IP]], (delta_B)^2 * diag(P))
-        lambdaiold[[IP]] = t(vapply(1:nrow(edgeC[[IP]]), function(d) {
-          multiplyXB(allxmatlist2[[IP]][[d]], bold[[IP]])
-        }, rep(1, length(node) - 1)))
-        lambdainew[[IP]] = t(vapply(1:nrow(edgeC[[IP]]), function(d) {
-          multiplyXB(allxmatlist2[[IP]][[d]], bnew[[IP]])
-        }, rep(1, length(node) - 1)))
+        lambdainew[[IP]] = multiplyXB2(allxmatlist2[[IP]], bnew[[IP]], edgeC[[IP]])
       }
 
       prior = vapply(1:nIP, function(IP) {
@@ -364,6 +322,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
       u = log(runif(nIP, 0, 1))
       for (IP in which((u < loglikediff) == TRUE)) {
         bold[[IP]]  = bnew[[IP]]
+        lambdaiold[[IP]] = lambdainew[[IP]]
       }
 
       if (i3 > burn && i3 %% (thin) == 0) {
@@ -375,15 +334,16 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
   }
 
   if (plot) {
+  	burnin = round(outer / 10)
   	par(mfrow = c(2, 2))
-  	plot(entropymat, type='l', xlab = "(Outer) Iterations", ylab = 'Entropy of IP')
-	abline(h = median(entropymat), lty = 1)
+  	plot(entropymat[-1:-burnin], type='l', xlab = "(Outer) Iterations", ylab = 'Entropy of IP')
+	abline(h = median(entropymat[-1:-burnin]), lty = 1)
 	title('Convergence of Entropy')
-  	matplot(alphamat[-1,], lty = 1, type = 'l', col = 1:outer, xlab = "(Outer) Iterations", ylab = 'alpha')
-  	abline(h = apply(alphamat[-1,], 2, median), lty = 1, col = 1:outer)
+  	matplot(alphamat[-1:-burnin,], lty = 1, type = 'l', col = 1:nIP, xlab = "(Outer) Iterations", ylab = 'alpha')
+  	abline(h = apply(alphamat[-1:-burnin,], 2, median), lty = 1, col = 1:nIP)
 	title('Convergence of Optimized alpha')
-	plot(logWZmat, type='l', xlab = "(Outer) Iterations", ylab = 'logWZ')
-	abline(h = median(logWZmat), lty = 1)
+	plot(logWZmat[-1:-burnin], type='l', xlab = "(Outer) Iterations", ylab = 'logWZ')
+	abline(h = median(logWZmat[-1:-burnin]), lty = 1)
 	title('Convergence of logWZ')
 	matplot(t(bmat[[1]]), lty = 1, col = 1:P, type="l", main="Traceplot of beta", xlab="(Inner) Iterations", ylab="")
 	abline(h = apply(t(bmat[[1]]), 2, median), lty = 1, col = 1:P)
@@ -531,4 +491,5 @@ table_wordIP = function(MCMCchain, K, textlist, vocabulary) {
 		}
 	return(table_word)
 }
+
 
