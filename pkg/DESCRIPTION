@@ -13,6 +13,7 @@ LazyData: true
 Imports:
     mvtnorm,
     MCMCpack,
+    entropy,
     Rcpp,
     RcppEigen    
 LinkingTo: Rcpp, RcppEigen
