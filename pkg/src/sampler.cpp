@@ -193,6 +193,40 @@ NumericMatrix wordpartZ(int K, IntegerVector textlistd, List tableW, double delt
 	return out;
 }
 
+// [[Rcpp::export]]
+IntegerVector tabulateC(const IntegerVector& x, const unsigned max) {
+	IntegerVector counts(max);
+	std::size_t n = x.size();
+	for (std::size_t i=0; i < n; i++) {
+		if (x[i] >0 && x[i] <= max)
+			counts[x[i]-1]++;
+	}
+	return counts;
+}
+
+
+
+// [[Rcpp::export]]
+double logWZ(int nIP, int K, IntegerVector currentC, List currentZ, List textlist, List tableW, NumericVector alpha, NumericMatrix mvec, double delta, NumericVector nvec){
+	double finalsum = 0;
+	for (int d=0; d < currentC.size(); d++) {
+		IntegerVector currentZd = currentZ[d];
+		IntegerVector ktable = tabulateC(currentZd, K);
+		IntegerVector textlistd = textlist[d];
+		double part4 = log(sum(ktable)-1 + alpha[currentC[d]-1]);
+		int it=0;
+		for (int k=0; k < currentZd.size(); k++) {
+			IntegerVector tableWk = tableW[currentZd[it]-1];
+			double part1 = log(tableWk[textlistd[it]-1] -1 + delta*nvec[textlistd[it]-1]);
+			double part2 = log(sum(tableWk) - sum(tableWk>0) + delta);
+			double part3 = log(ktable[currentZd[it]-1] - 1 + alpha[currentC[d]-1]*mvec(currentZd[it]-1,currentC[d]-1));
+			finalsum += part1-part2+part3 -part4;
+			it = it+1;
+			}
+		}
+	return finalsum;
+}
+
 
 
 
