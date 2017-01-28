@@ -1,5 +1,5 @@
 #' @useDynLib IPTM
-#' @importFrom Rcpp sourceCpp RcppEigen
+#' @importFrom Rcpp sourceCpp
 NULL
 
 
@@ -27,7 +27,7 @@ parupdate =  function(nIP, K, currentC, currentZ, alpha, mvec) {
 		ctable = tabulate(nwords)
 		cklist = matrix(NA, nrow = length(corpusCnew[[IP]]), ncol = K)
 		for (d in 1:length(corpusCnew[[IP]])) {
-			cklist[d,] = tabulate(corpusCnew[[IP]][[d]], nbins = K)
+			cklist[d,] = tabulateC(corpusCnew[[IP]][[d]], K)
 			}
 		cktable = lapply(1:K, function(k){
 			  tabulate(cklist[,k])
@@ -98,7 +98,7 @@ topicpartC = function(nIP, K, currentZ, alpha, mvec, document) {
   const = rep(NA, nIP)
 	for (IP in 1:nIP) {
 		topics = currentZ[[document]]
-		tabletopics = tabulate(topics, nbins = K)
+		tabletopics = tabulateC(topics, K)
 		num = sum(log(tabletopics[topics] - 1 + alpha[IP] * mvec[topics,IP]))
 		denom = length(topics) * log(length(topics) - 1 + alpha[IP])
 		const[IP] = num - denom
@@ -120,44 +120,9 @@ topicpartC = function(nIP, K, currentZ, alpha, mvec, document) {
 #'
 #' @export
 topicpartZ = function(currentC, K, currentZ, alpha, mvec, document) {
-	tabletopics = tabulate(currentZ[[document]], nbins = K)
+	tabletopics = tabulateC(currentZ[[document]], K)
 	const = log(tabletopics - as.numeric(tabletopics > 0) + alpha[currentC[document]] * mvec[,currentC[document]])
 	return(const)
-}
-
-#' @title logWZ
-#' @description calculate the log of unnormalized constant (corresponding to product of Eq.13 in Section 3.2) to check the convergence
-#'
-#' @param nIP number of interaction patterns specified by the user
-#' @param K number of topics specified by the user
-#' @param currentC current state of the assignment of interaction patterns 
-#' @param currentZ current state of the assignment of topics 
-#' @param textlist list of text (length=number of documents in total) containing the words in each document
-#' @param tableW summary table of topic-word assignments
-#' @param alpha Dirichlet concentration prior for document-topic distribution
-#' @param mvec Dirichlet base prior for document-topic distribution
-#' @param delta Dirichlet concentration prior for topic-word distribution
-#' @param nvec Dirichlet base prior for topic-word distribution
-#'
-#' @return the log of unnormalized constant corresponding to product of Eq.13 in Section 3.2
-#'
-#' @export
-logWZ = function(nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, delta, nvec) {
-	finalsum = 0
-	for (d in 1:length(currentC)) {
-		ktable = tabulate(currentZ[[d]], nbins = K)
-		textlistd = textlist[[d]]
-		it = 1
-		for (k in currentZ[[d]]) {
-			part1 = log(tableW[[k]][textlistd[it]] -1 + delta * nvec[textlistd[it]])
-			part2 = log(sum(tableW[[k]]) - sum(tableW[[k]]>0) + delta)
-			part3 = log(ktable[k] -1 + alpha[currentC[d]] * mvec[,currentC[d]][k])
-			part4 = log(sum(ktable) -1 + alpha[currentC[d]])
-			finalsum = finalsum + part1 - part2 + part3 - part4	
-			it = it + 1
-	}
-	}
-	return(finalsum)
 }
 
 #' @title MCMC
@@ -257,7 +222,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
     textlist2 = unlist(textlist)
     finalZlist2 = unlist(currentZ)
     tableW = lapply(1:K, function(k) {
-      tabulate(textlist2[which(finalZlist2 == k)], nbins = W)
+      tabulateC(textlist2[which(finalZlist2 == k)], W)
     })
 
     for (i2 in 1:n2) {
@@ -425,7 +390,7 @@ plot_topicIP = function(MCMCchain, K) {
 			}
 		}
 	topicdist = t(sapply(Zsummary, function(x) {
-				tabulate(unlist(x), nbins = K) / length(unlist(x))
+				tabulateC(unlist(x), K) / length(unlist(x))
 				}))
 	colnames(topicdist) = c(1:K)
 	barplot(topicdist, beside = TRUE, xlab = "topic", ylab = "proportion", main ='Topic Distritubitions given IPs')
@@ -447,7 +412,7 @@ plot_topic = function(MCMCchain, K) {
 		for (d in 1:length(MCMCchain$C)) {
 			Zsummary[[d]] = MCMCchain$Z[[d]]
 			}
-	topicdist = t(tabulate(unlist(Zsummary), nbins = K) / length(unlist(Zsummary)))
+	topicdist = t(tabulateC(unlist(Zsummary), K) / length(unlist(Zsummary)))
 	colnames(topicdist) = c(1:K)
 	barplot(topicdist, beside = TRUE, xlab = "topic", ylab = "proportion", main = 'Topic Distritubitions without IPs')
 	}
@@ -478,7 +443,7 @@ table_wordIP = function(MCMCchain, K, textlist, vocabulary) {
 			names(Zsummary[[iter]])<- vocabulary[text[[d]]]
 			iter = iter+1
 			}
-		topicdist = t(tabulate(unlist(Zsummary), nbins=K)/length(unlist(Zsummary)))
+		topicdist = t(tabulateC(unlist(Zsummary), K)/length(unlist(Zsummary)))
 		colnames(topicdist)<-c(1:K)
 		toptopic = which(topicdist[,order(topicdist, decreasing=TRUE)]>0.1)
 		allwords = unlist(Zsummary)
@@ -491,5 +456,7 @@ table_wordIP = function(MCMCchain, K, textlist, vocabulary) {
 		}
 	return(table_word)
 }
+
+
 
 
