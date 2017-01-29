@@ -1,9 +1,9 @@
 Functions jointly analyze the history of interaction (between the sender and receiver) and the contents or topic of text (e.g. email, online messages) using Markov chain Monte Carlo (MCMC).
 
-The subdirectory `pkg` contains the actual package. The package can be installed with [devtools](https://cran.r-project.org/package=devtools).
+The subdirectory `pkg` contains the actual package. The package can be installed with [devtools]().https://cran.r-project.org/package=devtools
 
 ```{r}
-devtools::install_github("bomin8319/IPTM", subdir = "pkg")
+devtools::install_github("desmarais-lab/IPTM", subdir = "pkg")
 ```
 
 Functionality includes:
