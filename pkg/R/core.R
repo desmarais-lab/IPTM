@@ -135,6 +135,7 @@ topicpartZ = function(currentC, K, currentZ, alpha, mvec, document) {
 #' @param nIP number of interaction patterns specified by the user
 #' @param K number of topics pattern specified by the user
 #' @param delta_B proposal distribution variance parameter for beta 
+#' @param lambda parameter of speed at which sender replies, with larger values indicating faster response time
 #' @param outer size of outer iteration 
 #' @param n1 size of first inner iteration for updates of interaction patterns C
 #' @param n2 size of second inner iteration for updates of topics K
@@ -147,8 +148,8 @@ topicpartZ = function(currentC, K, currentZ, alpha, mvec, document) {
 #' @return MCMC output containing IP assignment, topic assignment, beta, the plots to check the convergence
 #'
 #' @export
-MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
-  n1 = 3, n2 = 3, n3 = 3300, burn = 300, thin = 3, seed = 1, plot = TRUE) {
+MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05, outer = 1000,
+  n1 = 3, n2 = 3, n3 = 5500, burn = 500, thin = 5, seed = 1, plot = TRUE) {
   	
   require(MCMCpack)
   require(mvtnorm)
@@ -208,7 +209,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
         currentC2 = currentC[-d]
         edgeC = sortedC(nIP, currentC2, edge)
         for (IP in 1:nIP) {
-          allxmat = timediff(edgeC[[IP]], node, edge[d, 3], 0.05)
+          allxmat = timediff(edgeC[[IP]], node, edge[d, 3], lambda)
           allxmatlist = netstats(allxmat, node, edge[d, 1])
           lambdai[[IP]] = multiplyXB(allxmatlist, bmat[[IP]][, (n3 - burn) / thin])
         }
@@ -265,7 +266,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, outer = 200,
       bold[[IP]] = bmat[[IP]][, (n3 - burn) / thin]
       allxmatlist2[[IP]] = list()
       for (d in 1:nrow(edgeC[[IP]])) {
-          allxmat2 = timediff(edge, node, edgeC[[IP]][d, 3], 0.05)
+          allxmat2 = timediff(edge, node, edgeC[[IP]][d, 3], lambda)
           allxmatlist2[[IP]][[d]] = netstats(allxmat2, node, edgeC[[IP]][d, 1])
       }
       lambdaiold[[IP]] = multiplyXB2(allxmatlist2[[IP]], bold[[IP]], edgeC[[IP]])
@@ -456,6 +457,7 @@ table_wordIP = function(MCMCchain, K, textlist, vocabulary) {
 		}
 	return(table_word)
 }
+
 
 
 
