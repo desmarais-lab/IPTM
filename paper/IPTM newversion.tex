@@ -47,6 +47,10 @@
 
 \begin{document}
 \maketitle
+\begin{abstract}
+Many textual sources, including emails, have been used to discover the ``topics" that occur in a collection of documents; however, little or no attention has been given to timestamp of documents. By integrating a Cox multiplicative intensity model \citep{PerryWolfe2012} and latent dirichlet allocation \citep{Blei2003},  we jointly analyze the repeated interpersonal interactions over time and the topics and words used in a text corpora. We cluster the documents based on similar temporal and textual patterns, which we call here ``interaction pattern", and look into the consistency within the interaction pattern and incoherence across the interaction patterns. This article presents the applicability and interpretability of the approach using the email data for county government managers from two counties in North Carolina. By considering the patterns in the history of interactions, the model reveal interesting separation of documents which are masked earlier. 
+\end{abstract}
+\textbf{Key Words:} topic model, latent dirichlet allocation, social network analysis, Cox multiplicative intensity model
 \section{Ideas}
 Current CPME model does not involve any of temporal component, which plays a key role in email interactions. Intuitively, past interaction behaviors significantly influence future ones; for example, if an actor $i$ sent an email to actor $j$, then $j$ is highly likely to send an email back to $i$ as a response (i.e. reciprocity). Moreover, the recency and frequency of past interactions can also be considered to effectively predict future interactions. Thus, as an exploratory data analysis, point process model for directional interaction is applied to the North Carolina email data. Starting from the existing framework focused on the analysis of content-partitioned subnetworks, I would suggest an extended approach to analyze the data using the timestamps in the email, aiming to develop a joint dynamic or longitudinal model of text-valued ties.\\ \newline
  CPME model is a Bayesian framework using two well-known methods: Latent Dirichlet Allocation (LDA) and Latent Space Model (LSM). Basically, existence of edge depends on topic assignment $k$ (LDA) and its corresponding interaction pattern c. Each topic $k=1,…,K$ has one interaction pattern c=1,…,C, and each interaction pattern posits unique latent space (LSM), thus generating $A\times A$ matrix of probabilities $P^{(c)}$ that a message author
@@ -80,7 +84,6 @@ where $t^{(d)}$, $i^{(d)}$, and $j^{(d)}$ are the time, sender, and receiver
 \begin{equation}
 \mbox{log}PL_t(\boldsymbol{\beta}^{(c)})=\sum_{d: c^{(d)}=c} \Big\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j^{(d)})-\mbox{log}\big[\sum_{j\in \mathcal{A}^{(c)}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\}.
 \end{equation}
-\newpage
 \subsection{Generative Process}
 The generative process of this model follows the topic model (LDA) of \cite{Blei2003} and the author-topic model of \cite{rosen2004author}. Same as LDA, documents are represented as random mixtures over latent topics, where each topic is characterized by a distribution over words. However, one crucial difference is that each document is connected to one type of interaction pattern, and the topic distributions vary depending on the assigned interaction pattern. \\ \newline Conditioned on the interaction pattern and their distributions over topics, the process by which a document is generated can be summarized as follows: first, an interaction pattern is chosen by multinomial for each document; next, a topic is sampled for each word from the distribution over topics associated with the interaction pattern of the document; finally, words themselves are sampled from the distribution over words associated with each topic. At the same time, the unique sender-recipient pair of the document is determined by the rate of intensities associated with the interaction pattern and history of interactions until the time the document is written. Below are the detailed generative process for each document in a corpus $D$ and its plate notation (Figure 1), and Table 1 summarizes the notations used in this paper:
 \begin{itemize}
@@ -430,8 +433,136 @@ for the complete fixed-point iteration is given in algorithm 2.2 of \cite{wallac
 \section{Appliction to North Carolina email data}
 To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Exploratory analysis revealed that Dare county experienced significant change in the pattern of email exchanges; specifically, during the emergency period, email interactions significanty less rely on previous history of interactions, compared to the normal period. On the other hand, Vance county did not experience any distinctive change, and the possible reason for the difference is the locations of two counties. Here we apply IPTM to both data to see the differences in detail, in terms of the interaction patterns and topics of the corpus.
 \subsection{Vance county email data}
-After treating multicast emails (those involving a single sender but multiple receivers) as multiple distinct emails, Vance county data contains 269 emails (only count the email with the number of words greater than 0) between 18 actors, including 620 vocabulary in total. We used $K=10$ topics and $C=3$ interaction patterns, with the parameters fixed as $\alpha=50/K=50/10=5$ with $\boldsymbol{m}=(1,...,1)^T/K$ ($\alpha$ and $\boldsymbol{m}$ are fixed only at the initial step), $\delta=0.01$, and $\eta=50/C=50/3=16.67$, following the common practice. The asymmetric model uses same $\delta$ and $\eta$, but $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$ are optimized for every outer iteration, for every interaction pattern. \\ \newline MCMC sampling was implemented based on the order and scheme illustrated in Section 3. We set the outer iteration number as $I=1000$, the inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. First 50 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $3^{rd}$ sample was taken as a thinning process of third inner iteration. In addition, after some experimentation, $\delta_B$ was set as 0.5, to ensure sufficient acceptance rate (in our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.260). As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. After these post-processing, MCMC diagnostic plots are attached in APPENDIX C, as well as the geweke test statistics. \\\newline
-Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects corresponding to the interaction pattern, (b) the top 3 topics most likely to be generated conditioned on the interaction pattern, and (c) the top 10 most likely words to have generated conditioned on the topic and interaction pattern.
+After treating multicast emails (those involving a single sender but multiple receivers) as multiple distinct emails, Vance county data contains 269 emails (only count the email with the number of words greater than 0) between 18 actors, including 620 vocabulary in total. We used $K=10$ topics and $C=3$ interaction patterns, with the parameters fixed as $\alpha=50/K=50/10=5$ with $\boldsymbol{m}=(1,...,1)^T/K$ ($\alpha$ and $\boldsymbol{m}$ are fixed only at the initial step), $\delta=0.01$, and $\eta=50/C=50/3=16.67$, following the common practice. The asymmetric model uses same $\delta$ and $\eta$, but $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$ are optimized for every outer iteration, for every interaction pattern. \\ \newline MCMC sampling was implemented based on the order and scheme illustrated in Section 3. We set the outer iteration number as $I=500$, the inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. First 50 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $3^{rd}$ sample was taken as a thinning process of third inner iteration. In addition, after some experimentation, $\delta_B$ was set as 0.5, to ensure sufficient acceptance rate. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. After these post-processing, MCMC diagnostic plots are attached in APPENDIX C, as well as the geweke test statistics. \\\newline
+Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects $\boldsymbol{\beta}^{(c)}$ corresponding to the interaction pattern, (b) the top 3 topics most likely to be generated conditioned on the interaction pattern, and (c) the top 10 most likely words to have generated conditioned on the topic and interaction pattern.
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{|c|c|c|c|} 
+		\hline
+		& \textbf{IP1} (54 emails) & \textbf{IP2} (107 emails) &\textbf{IP3} (108 emails) \\
+		\hline
+		\textbf{intercept} & 0.515 [-0.523, 1.546]& -0.364 [-2.108, 1.934]& -1.230 [-1.948, 0.194]\\
+		\textbf{send}&  1.916* [1.130, 2.937]& 2.843* [1.969, 3.885]& 2.531* [1.595, 3.568]\\
+		\textbf{receive}& 0.158 [-1.126, 1.098]& 3.068* [2.427, 4.509]& 1.067* [0.488, 1.781]\\
+		\textbf{triangles} & 1.483 [-0.507, 2.558]& -1.478* [-2.038, -0.918]& -1.787* [-3.062, -0.958]\\
+		\textbf{outdegree} & 0.514 [-0.570, 1.377]& 0.492 [-0.804, 1.665]& 0.771 [-1.152, 2.544]\\
+		\textbf{indegree} & 2.166* [1.534, 2.895]& 1.397* [0.720, 2.187]& 2.464* [1.840, 3.327]\\
+						\hline
+	\end{tabular}
+	\caption {Summary of posterior estimates of $\boldsymbol{\beta}^{(c)}$ for Vance county emails}
+	\label{table:Vancebeta}
+\end{table}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{betaplot.pdf} 
+	\caption{Posterior distribution of  $\boldsymbol{\beta}^{(c)}$ for Vance county emails}
+	\label{fig:Vanceboxplot}
+\end{figure}
+\begin{comment}
+\newline First, Table 2 summarizes the posterior means and 95\% credible interval for $\boldsymbol{\beta}^{(c)}$ corresponding to each interaction patterns. Below are the several examples of the interpretation of estimates, in the context of point process framework in Section 2.1. The interpretation can be extended to any other interaction patterns and time intervals between the two emails.
+\begin{itemize} 
+	\item (\textbf{Intercept}) Assuming no history at all between the sender and receiver, the document is $\frac{e^{(0.014)}}{e^{(-0.110)}}\approx 1.132$ times more likely to be IP3 relative to IP1, $\frac{e^{(0.014)}}{e^{(-0.189)}}\approx 1.225$ times more likely to be IP3 relative to IP2, and $\frac{e^{(-0.110)}}{e^{(-0.189)}}\approx 1.082$ times more likely to be IP2 relative to IP1
+	\item (\textbf{Send}) If $i$ sends an email to $j$ at time $t$, the likelihoods of $i$ sends email of IP1 to $j$ after 1 hour and 2 hours are multiplied by $e^{(2.345\times e^{(-0.05)})}\approx 9.306$ and $e^{(2.345\times e^{(-2\times 0.05)})}\approx 8.347$, respectively.
+	\item (\textbf{Receive}) If $j$ sends an email to $i$ at time $t$, the likelihoods of $i$ sends email of IP1 to $j$ after 30 minutes and 30 hours are multiplied by $e^{(1.530\times e^{(-0.5\times 0.05)})}\approx 4.447$ and $e^{(1.530\times e^{(-30\times 0.05)})}\approx 1.407$, respectively.
+	\item (\textbf{Triangles}) If $i$ sends/receives an email to/from $k$ at time $t$, and $k$ sends/receives an email to/from $j$ at time $t+1$ (i.e. after 1 hour from $t$), then $i$ sends/receives email to/from $j$ at time $t+2$ (i.e. after 2 hour from $t$) at a slightly higher rate if IP1 (likelihood multiplied by $e^{(0.589\times e^{(-1)}\times e^{(-1)})}\approx 1.083$).
+\end{itemize}
+\end{comment}
+By examining the estimates in Table 2 and their corresponding interpretaiton, it seems that there exist strong effects of dynamic network covariates. That is, whether the sender and receiver previously had dyadic or triangle interaction strongly increase the rate of their interactions. Moreover, to see the differences across the interaction patterns more clearly, we compared the posterior distribution using the boxplots in Figure 2 and it seems that there exists notable differences in dynmic network covariates across the interaction patterns. For example, IP2 has the highest send and receive effect and IP3 has the highest outdegree and indegree effect, while its baseline intensity (i.e. intercept) or triangle effect are not as high as other interaction patterns. Later, multiple hypothesis testing could be applied in order to test the significance of the differences in  $\boldsymbol{\beta}^{(c)}$ across the $C$ number of interaction patterns.\\\newline
+Next, we scrutinize the topic distributions corresponding to each interaction patterns in Figure 3. There is some distinctive differences in the topic distributions $\mathcal{Z}$, given the assignment of interaction patterns to the documents $\mathcal{C}$. Specifically, each interaction pattern has different topics as the topic with highest probability.
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{topicplot.pdf} 
+		\includegraphics[width=1\textwidth]{topicplot2.pdf} 
+	\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails, with (upper) and without (lower) considering IP}
+	\label{fig:Vancebarplot}
+\end{figure}
+\normalsize
+\newline
+Furthermore, we look at the distribution of words given the topics, which corresponds to Algorithm 4 in the generative process. Since the topic-word distribution $\phi$ does not depend on the interaction patterns as previous cases, Table 3 lists top 10 topics with top 10 words that have the highest probability conditioned on the topic. In addition, this time we try to check the interaction pattern-word distribution by listing top 10 words that have the highest probability conditioned on the interaction pattern. It seems that the words are not significantly different, having several words like `director', `phones', `department', `description', or `henderson' (county seat of Vance county) appeared repetitively across the most of the topics or interaction patterns. The word 'will' was ranked the top in most of the lists, probably because it was not deleted during the text mining process while other similar type of words like `am', `is', `are', or `can' are all removed. \\
+		\begin{table}[ht]
+			\centering
+\begin{tabular}{|l||l||l|}
+					\hline
+					{\textbf{IP1} (54 emails)}&{\textbf{IP2} (107 emails)}&{\textbf{IP3} (108 emails)}\\
+					\hline\hline
+					K=2 (0.40), K=4 (0.17), K=9 (0.15) & K=8 (0.38), K=5 (0.24)& K=1 (0.31), K=3 (0.17), K=6 (0.15)\\
+					\hline
+					message, electronic, records&phones, phone& henderson, street, description\\
+					time, response, ncgs & week, department& latest, fax, church\\
+					department, hereto, attachments& system, rest& planning, suite, emergency\\
+					heads, finance, director& october, advised& attached, director, center\\
+					request, financial, operations& training, jail& extension, goldvancesealimprovedjordan, phone\\
+					manager, system, work& cutting, send& development, phase, morning\\
+					pursuant, additional, office & cutover, center& e-mail, board, email\\
+					chapter, class, helped& folks, tuesday& good, rural, excel\\ 
+					public, local, internal& instructions, monday& young, funds, lease\\
+					subject, communications, reporting& dss, thursday& list, turn, form\\
+					\hline
+				\end{tabular}
+				\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Symmetric)}
+				\label{table:VancewordsMCMC}
+			\end{table}
+\begin{comment}
+\begin{table}[ht]
+	\centering
+	\scalebox{0.9}{	\begin{tabular}{|l|l||l|l||l|l||l|l||l|l|}
+			\hline
+			\multicolumn{2}{|l||}{\textbf{Topic 9} (0.0946)}&\multicolumn{2}{l||}{\textbf{Topic 19} (0.0907)}&\multicolumn{2}{l||}{\textbf{Topic 2} (0.0869)}&\multicolumn{2}{l||}{\textbf{Topic 13} (0.0849)}&\multicolumn{2}{l|}{\textbf{Topic 8} (0.0671)}\\
+			\hline\hline
+			\scriptsize will&\scriptsize 0.0622&\scriptsize will&\scriptsize 0.0487&\scriptsize will&\scriptsize 0.709&\scriptsize will&\scriptsize 0.0237&\scriptsize will&\scriptsize 0.0419\\
+			\scriptsize suite&\scriptsize 0.0184&\scriptsize director&\scriptsize  0.0428&\scriptsize director&\scriptsize 0.0370&\scriptsize street&\scriptsize 0.0221&\scriptsize system&\scriptsize 0.0279\\
+			\scriptsize henderson&\scriptsize  0.0170&\scriptsize description&\scriptsize 0.0310&\scriptsize department&\scriptsize 0.0277&\scriptsize phones&\scriptsize 0.0189&\scriptsize phones&\scriptsize 0.0259\\
+			\scriptsize october&\scriptsize 0.0170&\scriptsize message&\scriptsize 0.0206&\scriptsize henderson&\scriptsize 0.0200&\scriptsize  october&\scriptsize 0.0173&\scriptsize director&\scriptsize 0.0200\\
+			\scriptsize system&\scriptsize 0.0170&\scriptsize phones&\scriptsize  0.0177&\scriptsize center&\scriptsize0.0154&\scriptsize fax&\scriptsize 0.0158&\scriptsize center&\scriptsize 0.0180\\
+			\scriptsize extension&\scriptsize 0.0156&\scriptsize meeting&\scriptsize 0.0162&\scriptsize phone&\scriptsize 0.0154&\scriptsize suite&\scriptsize 0.0158&\scriptsize  emergency&\scriptsize 0.0160\\
+			\scriptsize meeting&\scriptsize 0.0156&\scriptsize fax&\scriptsize  0.0147&\scriptsize october&\scriptsize 0.0139&\scriptsize church&\scriptsize 0.0142&\scriptsize october&\scriptsize 0.0160\\
+			\scriptsize phone&\scriptsize 0.0156&\scriptsize latest&\scriptsize  0.0147&\scriptsize street&\scriptsize 0.0139&\scriptsize phone&\scriptsize 0.0142&\scriptsize  attached&\scriptsize 0.0140\\
+			\scriptsize electronic&\scriptsize 0.0141&\scriptsize october&\scriptsize  0.0147&\scriptsize church&\scriptsize 0.0123&\scriptsize advised&\scriptsize 0.0139&\scriptsize  department&\scriptsize 0.0140\\
+			\scriptsize heads&\scriptsize 0.0141&\scriptsize street&\scriptsize  0.0147&\scriptsize fax&\scriptsize 0.0123&\scriptsize heads&\scriptsize 0.0126&\scriptsize message&\scriptsize0.0140\\
+			\hline\hline
+			\multicolumn{2}{|l||}{\textbf{Topic 15} (0.0628)}&\multicolumn{2}{l||}{\textbf{Topic 7} ( 0.0566)}&\multicolumn{2}{l||}{\textbf{Topic 3} (0.0435)}&\multicolumn{2}{l||}{\textbf{Topic 6} (0.0427)}&\multicolumn{2}{l|}{\textbf{Topic 16} (0.0400)}\\
+			\hline\hline
+			\scriptsize will&\scriptsize 0.0554&\scriptsize henderson&\scriptsize 0.0378&\scriptsize heads&\scriptsize 0.0308&\scriptsize department&\scriptsize 0.0502&\scriptsize operations&\scriptsize 0.0268\\
+			\scriptsize henderson&\scriptsize 0.0256&\scriptsize will&\scriptsize  0.0355&\scriptsize will&\scriptsize 0.0277&\scriptsize will&\scriptsize 0.0408&\scriptsize phone&\scriptsize 0.0268\\
+			\scriptsize phones&\scriptsize 0.0256&\scriptsize phone&\scriptsize 0.0307&\scriptsize director&\scriptsize 0.0246&\scriptsize director&\scriptsize 0.0345&\scriptsize system&\scriptsize 0.0268\\
+			\scriptsize phone&\scriptsize 0.0192&\scriptsize church&\scriptsize 0.0189&\scriptsize street&\scriptsize 0.0215&\scriptsize phone&\scriptsize 0.0251&\scriptsize department&\scriptsize 0.0234\\
+			\scriptsize street&\scriptsize 0.0192&\scriptsize coming&\scriptsize 0.0189&\scriptsize directory&\scriptsize 0.0185&\scriptsize electronic&\scriptsize 0.0219&\scriptsize church&\scriptsize 0.0201\\
+			\scriptsize suite&\scriptsize 0.0192&\scriptsize phones&\scriptsize 0.0189&\scriptsize phone&\scriptsize 0.0185&\scriptsize week&\scriptsize 0.0219&\scriptsize director&\scriptsize 0.0201\\
+			\scriptsize cutting&\scriptsize 0.0171&\scriptsize suite&\scriptsize 0.0165&\scriptsize  attached&\scriptsize 0.0154&\scriptsize church&\scriptsize 0.0157&\scriptsize message&\scriptsize 0.0201\\
+			\scriptsize department&\scriptsize 0.0171&\scriptsize training&\scriptsize 0.0165&\scriptsize days&\scriptsize 0.0154&\scriptsize description&\scriptsize 0.057&\scriptsize phones&\scriptsize 0.0201\\
+			\scriptsize electronic&\scriptsize 0.0149&\scriptsize  attached&\scriptsize 0.0142&\scriptsize description&\scriptsize 0.0154&\scriptsize development&\scriptsize 0.0157&\scriptsize will&\scriptsize 0.0201\\
+			\scriptsize rest&\scriptsize 0.0149&\scriptsize description&\scriptsize  0.0142&\scriptsize e-mail&\scriptsize 0.0154&\scriptsize emergency&\scriptsize 0.0157&\scriptsize directory&\scriptsize0.0167\\
+			\hline
+		\end{tabular}}
+		\caption {Summary of top 10 topics with top 10 words that have the highest probability conditioned on the topic}
+		\label{table:VancewordsMCMC}
+	\end{table}
+	\normalsize
+	\begin{table}[ht]
+		\centering
+		\scalebox{0.9}{	\begin{tabular}{|l|l||l|l||l|l|}
+				\hline
+				\multicolumn{2}{|l||}{\textbf{IP1} (0.4721)}&\multicolumn{2}{l||}{\textbf{IP2} (0.2082)}&\multicolumn{2}{l||}{\textbf{IP3} (0.3197)}\\
+				\hline\hline
+				\scriptsize will&\scriptsize 0.0505&\scriptsize will&\scriptsize 0.0551&\scriptsize director&\scriptsize 0.257\\
+				\scriptsize director&\scriptsize 0.0201&\scriptsize director&\scriptsize  0.0187&\scriptsize will&\scriptsize 0.0216\\
+				\scriptsize phones&\scriptsize  0.0198&\scriptsize department&\scriptsize 0.0177&\scriptsize henderson&\scriptsize 0.0199\\
+				\scriptsize henderson&\scriptsize 0.0164&\scriptsize description&\scriptsize 0.0167&\scriptsize operations&\scriptsize 0.0193\\
+				\scriptsize phone&\scriptsize 0.0164&\scriptsize phones&\scriptsize  0.0152&\scriptsize street&\scriptsize0.0187\\
+				\scriptsize department&\scriptsize 0.0159&\scriptsize phone&\scriptsize 0.0141&\scriptsize emergency&\scriptsize 0.0175\\
+				\scriptsize street&\scriptsize 0.0156&\scriptsize henderson&\scriptsize  0.0136&\scriptsize fax&\scriptsize 0.0164\\
+				\scriptsize system&\scriptsize 0.0148&\scriptsize street&\scriptsize  0.0131&\scriptsize church&\scriptsize 0.0140\\
+				\scriptsize october&\scriptsize 0.0132&\scriptsize heads&\scriptsize  0.0126&\scriptsize suite&\scriptsize 0.0140\\
+				\scriptsize week&\scriptsize 0.0119&\scriptsize meeting&\scriptsize  0.0111&\scriptsize latest&\scriptsize 0.0134\\
+				\hline
+			\end{tabular}}
+			\caption {Summary of top 10 words that have the highest probability conditioned on the interaction patterns}
+			\label{table:VancewordsMCMC2}
+		\end{table}
+		\normalsize
+		\newline
+		Although Vance county email data did not display distinctive idiosyncrasy across the interaction patterns and the topic-token assignments, it is not surprising because Vance county is a small county (land area: 253.52 sq. mi and population: 44,998), and our exploratory data analysis did not find any significant change in the email exchanges of department managers during the period of hurricand Sandy. Yet, it is definitely worthwhile to further look at this in terms of showing the applicability of interaction-partitioned topic model (IPTM), in case of email data. In the next section, we apply the methods for implementing an asymmetric Dirichlet prior in \cite{wallach2008structured} and \cite{wallach2009rethinking}, in hope of improving the model fitting and finding more interesting results in terms of interaction patterns-topics-words relationship.
+		\end{comment}
 \subsection{Dare county email data}
 After treating multicast emails (those involving a single sender but multiple receivers) as multiple distinct emails, Dare county data contains 4845 emails (only count the email with the number of words greater than 0) between 27 actors, including 2907 vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns, with the parameters fixed as$\alpha=50/K=50/10=5$ and $\eta = 50/C=50/3=16.67$). For topic-word distributions, we assumed that $\phi$ follows symmectic Dirichlet distribution with the concentration parameter $\delta=0.01$. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=150$, and inner iteration numbers as $n_1=1, n_2=1,$ and $n_3=3300$. In addition, after some experimentation, $\delta_B$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every 3rd samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics.
 		\clearpage
