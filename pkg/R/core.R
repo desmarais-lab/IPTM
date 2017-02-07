@@ -4,12 +4,12 @@ NULL
 
 
 #' @title parupdate
-#' @description parameter optimization of alpha and mvec at the same time 
+#' @description parameter optimization of alpha and mvec at the same time
 #'
 #' @param nIP number of interaction pattern specified by the user
 #' @param K number of topics specified by the user
 #' @param currentC current state of the assignment of interaction patterns
-#' @param currentZ current state of the assignment of topics 
+#' @param currentZ current state of the assignment of topics
 #' @param alpha Dirichlet concentration prior for topic distribution
 #' @param mvec Dirichlet base prior for topic distribution
 #'
@@ -35,15 +35,15 @@ parupdate =  function(nIP, K, currentC, currentZ, alpha, mvec) {
 
 	while ((abs(alpha[IP] - sum(vec)) > 0.001) | (iter == 1)) {
 	alpha[IP] = sum(vec)
-	S = Supdate(alpha[IP], ctable)		
-	s = Skupdate(vec, cktable)	
+	S = Supdate(alpha[IP], ctable)
+	s = Skupdate(vec, cktable)
 	vec = vec * s/S
 	iter = iter + 1
 	}
 	finalvec[[IP]] = vec
-	}	
-	return(finalvec)	
-}	
+	}
+	return(finalvec)
+}
 
 #' @title selected
 #' @description find out the chosen category from the multinomial distribution
@@ -75,7 +75,7 @@ betapartC = function(nIP, lambdai, specificedge) {
   for (IP in 1:nIP) {
     edge = matrix(specificedge, ncol = 3)
     receiver = edge[, 2]
-    receiver[edge[, 1] <= edge[, 2]] = edge[edge[, 1] <= edge[, 2], 2] - 1 
+    receiver[edge[, 1] <= edge[, 2]] = edge[edge[, 1] <= edge[, 2], 2] - 1
     const[IP] = lambdai[[IP]][receiver] - log(sum(exp(lambdai[[IP]])))
   }
   return(const)
@@ -86,10 +86,10 @@ betapartC = function(nIP, lambdai, specificedge) {
 #'
 #' @param nIP number of interaction patterns specified by the user
 #' @param K number of topics specified by the user
-#' @param currentZ current state of the assignment of topics 
+#' @param currentZ current state of the assignment of topics
 #' @param alpha Dirichlet concentration prior for topic distribution
 #' @param mvec Dirichlet base prior for topic distribution
-#' @param document specific document of interest 
+#' @param document specific document of interest
 #'
 #' @return the log of topic-IP part (last term of Eq. 11)
 #'
@@ -109,12 +109,12 @@ topicpartC = function(nIP, K, currentZ, alpha, mvec, document) {
 #' @title topicpartZ
 #' @description calculate the log of topic-IP part used to obtain the constants for multinomial sampling of K
 #'
-#' @param currentC current state of the assignment of interaction patterns 
+#' @param currentC current state of the assignment of interaction patterns
 #' @param K number of topics specified by the user
-#' @param currentZ current state of the assignment of topics 
+#' @param currentZ current state of the assignment of topics
 #' @param alpha Dirichlet concentration prior for document-topic distribution
 #' @param mvec Dirichlet base prior for document-topic distribution
-#' @param document specific document of interest 
+#' @param document specific document of interest
 #'
 #' @return the log of topic-IP part (first term of Eq. 13)
 #'
@@ -134,14 +134,14 @@ topicpartZ = function(currentC, K, currentZ, alpha, mvec, document) {
 #' @param vocabulary all vocabularies used over the corpus
 #' @param nIP number of interaction patterns specified by the user
 #' @param K number of topics pattern specified by the user
-#' @param delta_B proposal distribution variance parameter for beta 
+#' @param delta_B proposal distribution variance parameter for beta
 #' @param lambda parameter of speed at which sender replies, with larger values indicating faster response time
-#' @param outer size of outer iteration 
+#' @param outer size of outer iteration
 #' @param n1 size of first inner iteration for updates of interaction patterns C
 #' @param n2 size of second inner iteration for updates of topics K
 #' @param n3 size of third inner iteration for updates of betas B
 #' @param burn iterations to be discarded at the beginning of the chain
-#' @param thin the thinning interval 
+#' @param thin the thinning interval
 #' @param seed an integer value which controls random number generation
 #' @param plot to plot the convergence diagnostics or not (TRUE/FALSE)
 #'
@@ -150,7 +150,7 @@ topicpartZ = function(currentC, K, currentZ, alpha, mvec, document) {
 #' @export
 MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05, outer = 1000,
   n1 = 3, n2 = 3, n3 = 5500, burn = 500, thin = 5, seed = 1, plot = TRUE) {
-  	
+
   require(MCMCpack)
   require(mvtnorm)
   require(entropy)
@@ -170,10 +170,10 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05
   currentC = selected(nrow(edge), gammas)
   theta = lapply(1:nrow(edge), function(d) {
   	      rdirichlet(1, alpha[currentC[d]] * mvec[,currentC[d]])
-  	      })					
+  	      })
   currentZ = lapply(1:nrow(edge), function(d) {
 			 selected(length(textlist[[d]]), theta[[d]])
-			 })	  
+			 })
 
   # initialize beta
   P = 6
@@ -183,26 +183,26 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05
     bmat[[IP]] = matrix(0, nrow = P, ncol = (n3 - burn) / thin)
   }
 
-  #to check the convergence  
+  #to check the convergence
   if (plot) {
-  	logWZmat = c()							  
+  	logWZmat = c()
  	alphamat = c()
   	entropymat = c()
 	}
-	
+
   #start outer iteration
   for(o in 1:outer) {
     cat("outer iteration = ", o, "\n")
-  
+
   #update the hyperparameter alpha and mvec
    vec = parupdate(nIP, K, currentC, currentZ, alpha, mvec)
    alpha = unlist(lapply(vec, sum))
-   mvec = vapply(1:nIP, function(IP) {vec[[IP]] / alpha[IP]}, rep(1, K))	
+   mvec = vapply(1:nIP, function(IP) {vec[[IP]] / alpha[IP]}, rep(1, K))
 
     cat("inner iteration 1", "\n")
     lambdai = list()
     corpusC  = sortedZ(nIP, currentC, currentZ)
-    
+
     for (i1 in 1:n1) {
       # C update given Z and B - within each document d
       for (d in 1:nrow(edge)) {
@@ -237,7 +237,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05
           zwnew = selected(1, exp(const2))
           if (zwnew != zwold) {
           	currentZ[[d]][w] = zwnew
-          	topicpartd = topicpartZ(currentC, K, currentZ, alpha, mvec, d)	
+          	topicpartd = topicpartZ(currentC, K, currentZ, alpha, mvec, d)
             tableW[[zwold]][textlistd[w]] = tableW[[zwold]][textlistd[w]] - 1
             tableW[[zwnew]][textlistd[w]] = tableW[[zwnew]][textlistd[w]] + 1
             topicpartd = topicpartZ(currentC, K, currentZ, alpha, mvec, d)
@@ -246,12 +246,12 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05
         }
       }
     }
-    
+
     if (plot) {
     entropymat = c(entropymat, entropy.empirical(currentC))
 	alphamat = rbind(alphamat, alpha)
     logWZmat = c(logWZmat, logWZ(nIP, K, currentC, currentZ, textlist, tableW,
-      alpha, mvec, delta, nvec))    	
+      alpha, mvec, delta, nvec))
     }
 
     cat("inner iteration 3", "\n")
@@ -259,7 +259,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05
     bnew = list()
     lambdaiold = list()
     lambdainew = list()
-   
+
     allxmatlist2 = list()
     edgeC = sortedC(nIP, currentC, edge)
     for (IP in 1:nIP) {
@@ -314,7 +314,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05
 	matplot(t(bmat[[1]]), lty = 1, col = 1:P, type="l", main="Traceplot of beta", xlab="(Inner) Iterations", ylab="")
 	abline(h = apply(t(bmat[[1]]), 2, median), lty = 1, col = 1:P)
 	}
-	
+
   out = list(C = currentC, Z = currentZ, B = bmat)
 
   return(out)
@@ -365,7 +365,7 @@ plot_betaIP = function(MCMCchain) {
 	abline(h = 0, lty = 1, col = 'red')
 	axis(2, labels = TRUE)
 	box()
-	axis(side = 1, at = c(sapply(1:P, function(x){median(((nIP + 1) * x - nIP):((nIP + 1) * x - 1))})), line = 0.5, 
+	axis(side = 1, at = c(sapply(1:P, function(x){median(((nIP + 1) * x - nIP):((nIP + 1) * x - 1))})), line = 0.5,
 	lwd = 0, labels = c('intercept','send','receive','triangles', 'outdegree', 'indegree'))
 	legend(locator(1), c(paste('IP', 1:nIP)), col = gray.colors(nIP), pch = 15)
 }
@@ -386,7 +386,7 @@ plot_topicIP = function(MCMCchain, K) {
 		Zsummary[[IP]] = list()
 		iter = 1
 		for (d in which(MCMCchain$C == IP)) {
-			Zsummary[[IP]][[iter]] = MCMCchain$Z[[d]]; 
+			Zsummary[[IP]][[iter]] = MCMCchain$Z[[d]];
 			iter = iter + 1
 			}
 		}
@@ -395,7 +395,7 @@ plot_topicIP = function(MCMCchain, K) {
 				}))
 	colnames(topicdist) = c(1:K)
 	barplot(topicdist, beside = TRUE, xlab = "topic", ylab = "proportion", main ='Topic Distritubitions given IPs')
-	
+
 	legend(locator(1), c(paste('IP', 1:nIP)), col = gray.colors(nIP), pch = 15)
 	}
 
@@ -407,7 +407,7 @@ plot_topicIP = function(MCMCchain, K) {
 #'
 #' @return barplot of the topic distribution
 #'
-#' @export	
+#' @export
 plot_topic = function(MCMCchain, K) {
 	Zsummary = list()
 		for (d in 1:length(MCMCchain$C)) {
@@ -457,8 +457,3 @@ table_wordIP = function(MCMCchain, K, textlist, vocabulary) {
 		}
 	return(table_word)
 }
-
-
-
-
-
