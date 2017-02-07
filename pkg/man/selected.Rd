@@ -7,12 +7,13 @@
 selected(samples, proportions)
 }
 \arguments{
-\item{proportions}{}
+\item{samples}{number of samples to draw}
+
+\item{proportions}{numeric non-negative vector of length K, specifying the probability for the K classes}
 }
 \value{
-
+the chosen category from the rmultinom
 }
 \description{
 find out the chosen category from the multinomial distribution
 }
-

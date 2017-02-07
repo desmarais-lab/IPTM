@@ -4,15 +4,24 @@
 \alias{topicpartZ}
 \title{topicpartZ}
 \usage{
-topicpartZ(currentIP, zcnew, alpha, mvec)
+topicpartZ(currentC, K, currentZ, alpha, mvec, document)
 }
 \arguments{
-\item{mvec}{}
+\item{currentC}{current state of the assignment of interaction patterns}
+
+\item{K}{number of topics specified by the user}
+
+\item{currentZ}{current state of the assignment of topics}
+
+\item{alpha}{Dirichlet concentration prior for document-topic distribution}
+
+\item{mvec}{Dirichlet base prior for document-topic distribution}
+
+\item{document}{specific document of interest}
 }
 \value{
-
+the log of topic-IP part (first term of Eq. 13)
 }
 \description{
 calculate the log of topic-IP part used to obtain the constants for multinomial sampling of K
 }
-

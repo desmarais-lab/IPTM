@@ -1,4 +1,9 @@
 #' @useDynLib IPTM
+#' @import mvtnorm
+#' @import MCMCpack
+#' @import entropy
+#' @import lda
+#' 
 #' @importFrom Rcpp sourceCpp
 NULL
 
@@ -151,9 +156,6 @@ topicpartZ = function(currentC, K, currentZ, alpha, mvec, document) {
 MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05, outer = 1000,
   n1 = 3, n2 = 3, n3 = 5500, burn = 500, thin = 5, seed = 1, plot = TRUE) {
 
-  require(MCMCpack)
-  require(mvtnorm)
-  require(entropy)
   set.seed(seed)
 
   # initialize alpha, mvec, delta, nvec, eta, lvec, and gammas
@@ -430,7 +432,6 @@ plot_topic = function(MCMCchain, K) {
 #'
 #' @export
 table_wordIP = function(MCMCchain, K, textlist, vocabulary) {
-	require(lda)
 	W = length(vocabulary)
 	nIP = length(MCMCchain$B)
 	table_word = list()

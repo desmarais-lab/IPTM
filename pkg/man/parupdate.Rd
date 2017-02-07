@@ -7,12 +7,21 @@
 parupdate(nIP, K, currentC, currentZ, alpha, mvec)
 }
 \arguments{
-\item{mvec}{}
+\item{nIP}{number of interaction pattern specified by the user}
+
+\item{K}{number of topics specified by the user}
+
+\item{currentC}{current state of the assignment of interaction patterns}
+
+\item{currentZ}{current state of the assignment of topics}
+
+\item{alpha}{Dirichlet concentration prior for topic distribution}
+
+\item{mvec}{Dirichlet base prior for topic distribution}
 }
 \value{
-
+optimized value of alpha * mvec
 }
 \description{
-parameter optimization of alpha and mvec at the same time -> need to be faster
+parameter optimization of alpha and mvec at the same time
 }
-

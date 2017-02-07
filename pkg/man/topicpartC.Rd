@@ -4,15 +4,24 @@
 \alias{topicpartC}
 \title{topicpartC}
 \usage{
-topicpartC(nIP, currentZ, zc, alpha, mvec, document)
+topicpartC(nIP, K, currentZ, alpha, mvec, document)
 }
 \arguments{
-\item{document}{}
+\item{nIP}{number of interaction patterns specified by the user}
+
+\item{K}{number of topics specified by the user}
+
+\item{currentZ}{current state of the assignment of topics}
+
+\item{alpha}{Dirichlet concentration prior for topic distribution}
+
+\item{mvec}{Dirichlet base prior for topic distribution}
+
+\item{document}{specific document of interest}
 }
 \value{
-
+the log of topic-IP part (last term of Eq. 11)
 }
 \description{
 calculate the log of topic-IP part used to obtain the constants for multinomial sampling of IP
 }
-

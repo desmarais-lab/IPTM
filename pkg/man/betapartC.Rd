@@ -7,12 +7,15 @@
 betapartC(nIP, lambdai, specificedge)
 }
 \arguments{
-\item{specificedge}{}
+\item{nIP}{number of interaction patterns specified by the user}
+
+\item{lambdai}{stochastic intensity of specific sender 'i'}
+
+\item{specificedge}{a row of specific edge of interest (i.e. vector of sender, reciever, and time)}
 }
 \value{
-
+the log of beta part (first term of Eq. 11)
 }
 \description{
 calculate the log of beta part used to obtain the constants for multinomial sampling of IP
 }
-
