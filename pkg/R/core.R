@@ -442,7 +442,7 @@ table_wordIP = function(MCMCchain, K, textlist, vocabulary) {
 		iter = 1
 		for (d in which(MCMCchain$C==IP)) {
 			Zsummary[[iter]] = MCMCchain$Z[[d]]
-			names(Zsummary[[iter]])<- vocabulary[text[[d]]]
+			names(Zsummary[[iter]])<- vocabulary[textlist[[d]]]
 			iter = iter+1
 			}
 		topicdist = t(tabulateC(unlist(Zsummary), K)/length(unlist(Zsummary)))
