@@ -268,7 +268,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05
       bold[[IP]] = bmat[[IP]][, (n3 - burn) / thin]
       allxmatlist2[[IP]] = list()
       for (d in 1:nrow(edgeC[[IP]])) {
-          allxmat2 = timediff(edge, node, edgeC[[IP]][d, 3], lambda)
+          allxmat2 = timediff(edgeC[[IP]], node, edgeC[[IP]][d, 3], lambda)
           allxmatlist2[[IP]][[d]] = netstats(allxmat2, node, edgeC[[IP]][d, 1])
       }
       lambdaiold[[IP]] = multiplyXB2(allxmatlist2[[IP]], bold[[IP]], edgeC[[IP]])
