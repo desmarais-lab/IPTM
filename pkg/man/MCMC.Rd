@@ -45,5 +45,5 @@ MCMC(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05,
 MCMC output containing IP assignment, topic assignment, beta, the plots to check the convergence
 }
 \description{
-
+...
 }

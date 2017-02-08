@@ -1,8 +1,13 @@
 #' @useDynLib IPTM
+#' @import stats
+#' @import grDevices
+#' @import graphics
 #' @import mvtnorm
 #' @import MCMCpack
 #' @import entropy
 #' @import lda
+#' @import reshape
+#' @importFrom coda mcmc
 #' 
 #' @importFrom Rcpp sourceCpp
 NULL
@@ -126,12 +131,12 @@ topicpartC = function(nIP, K, currentZ, alpha, mvec, document) {
 #' @export
 topicpartZ = function(currentC, K, currentZ, alpha, mvec, document) {
 	tabletopics = tabulateC(currentZ[[document]], K)
-	const = log(tabletopics - as.numeric(tabletopics > 0) + alpha[currentC[document]] * mvec[,currentC[document]])
+	const = log(tabletopics - as.numeric(tabletopics > 0) + alpha[currentC[document]] * mvec[, currentC[document]])
 	return(const)
 }
 
 #' @title MCMC
-#' @description
+#' @description ...
 #'
 #' @param edge edgelist in the form of matrix with 3 columns (col1:sender, col2:receiver, col3=time in unix.time format)
 #' @param node nodelist containing the ID of nodes (ID's starting from 1)
@@ -331,7 +336,6 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05
 #'
 #' @export
 table_betaIP = function(MCMCchain) {
-	require(MCMCpack)
 	tables = lapply(MCMCchain$B, function(x) {
 		summary(mcmc(t(x)))$quantiles[,c(3,1,5)]
  	})
@@ -351,7 +355,6 @@ table_betaIP = function(MCMCchain) {
 #'
 #' @export
 plot_betaIP = function(MCMCchain) {
-	require(reshape)
 	data = list()
 	P = nrow(MCMCchain$B[[1]])
 	nIP = length(MCMCchain$B)

@@ -15,6 +15,8 @@ Imports:
     MCMCpack,
     entropy,
     Rcpp,
-    lda
+    lda,
+    reshape,
+    coda
 LinkingTo: Rcpp
 RoxygenNote: 6.0.1
