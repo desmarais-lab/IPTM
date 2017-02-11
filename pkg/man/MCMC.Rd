@@ -4,24 +4,24 @@
 \alias{MCMC}
 \title{MCMC}
 \usage{
-MCMC(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05,
-  outer = 1000, n1 = 3, n2 = 3, n3 = 5500, burn = 500, thin = 5,
-  seed = 1, plot = TRUE)
+MCMC(edge, node, textlist, vocabulary, nIP, K, delta.B, lambda = 0.05,
+  outer = 1000, n1 = 3, n2 = 3, n3 = 3300, burn = 300, thin = 10,
+  netstat = c("dyadic", "triadic", "degree"), seed = 1, plot = TRUE)
 }
 \arguments{
-\item{edge}{edgelist in the form of matrix with 3 columns (col1:sender, col2:receiver, col3=time in unix.time format)}
+\item{edge}{list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)}
 
-\item{node}{nodelist containing the ID of nodes (ID's starting from 1)}
+\item{node}{nodelist containing the ID of nodes (ID starting from 1)}
 
 \item{textlist}{list of text (length=number of documents in total) containing the words in each document}
 
 \item{vocabulary}{all vocabularies used over the corpus}
 
-\item{nIP}{number of interaction patterns specified by the user}
+\item{nIP}{total number of interaction patterns specified by the user}
 
-\item{K}{number of topics pattern specified by the user}
+\item{K}{total number of topics specified by the user}
 
-\item{delta_B}{proposal distribution variance parameter for beta}
+\item{delta.B}{proposal distribution variance parameter for beta}
 
 \item{lambda}{parameter of speed at which sender replies, with larger values indicating faster response time}
 
@@ -31,19 +31,22 @@ MCMC(edge, node, textlist, vocabulary, nIP, K, delta_B, lambda = 0.05,
 
 \item{n2}{size of second inner iteration for updates of topics K}
 
-\item{n3}{size of third inner iteration for updates of betas B}
+\item{n3}{size of third inner iteration for updates of beta B}
 
-\item{burn}{iterations to be discarded at the beginning of the chain}
+\item{burn}{iterations to be discarded at the beginning of beta chain}
 
-\item{thin}{the thinning interval}
+\item{thin}{the thinning interval of beta chain}
+
+\item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 
 \item{seed}{an integer value which controls random number generation}
 
 \item{plot}{to plot the convergence diagnostics or not (TRUE/FALSE)}
 }
 \value{
-MCMC output containing IP assignment, topic assignment, beta, the plots to check the convergence
+MCMC output containing IP assignment, topic assignment, and beta chain (optional the plots to check the convergence)
 }
 \description{
-...
+Iterate Markov Chain Monte Carlo (MCMC) algorithm to sequentially update the assignments of C, Z, and B
 }
+

@@ -5,124 +5,149 @@
 
 using namespace Rcpp;
 
-// Supdate
-double Supdate(double alpha, IntegerVector ctable);
-RcppExport SEXP IPTM_Supdate(SEXP alphaSEXP, SEXP ctableSEXP) {
+// UpdateDenom
+double UpdateDenom(double alpha, IntegerVector nwordtable);
+RcppExport SEXP IPTM_UpdateDenom(SEXP alphaSEXP, SEXP nwordtableSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type ctable(ctableSEXP);
-    rcpp_result_gen = Rcpp::wrap(Supdate(alpha, ctable));
+    Rcpp::traits::input_parameter< IntegerVector >::type nwordtable(nwordtableSEXP);
+    rcpp_result_gen = Rcpp::wrap(UpdateDenom(alpha, nwordtable));
     return rcpp_result_gen;
 END_RCPP
 }
-// Skupdate
-NumericVector Skupdate(NumericVector vec, List cktable);
-RcppExport SEXP IPTM_Skupdate(SEXP vecSEXP, SEXP cktableSEXP) {
+// UpdateNum
+NumericVector UpdateNum(NumericVector vec, List nKwordtable);
+RcppExport SEXP IPTM_UpdateNum(SEXP vecSEXP, SEXP nKwordtableSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type vec(vecSEXP);
-    Rcpp::traits::input_parameter< List >::type cktable(cktableSEXP);
-    rcpp_result_gen = Rcpp::wrap(Skupdate(vec, cktable));
+    Rcpp::traits::input_parameter< List >::type nKwordtable(nKwordtableSEXP);
+    rcpp_result_gen = Rcpp::wrap(UpdateNum(vec, nKwordtable));
     return rcpp_result_gen;
 END_RCPP
 }
-// sortedZ
-List sortedZ(int nIP, IntegerVector currentC, List currentZ);
-RcppExport SEXP IPTM_sortedZ(SEXP nIPSEXP, SEXP currentCSEXP, SEXP currentZSEXP) {
+// SortedZ
+List SortedZ(int nIP, IntegerVector currentC, List currentZ);
+RcppExport SEXP IPTM_SortedZ(SEXP nIPSEXP, SEXP currentCSEXP, SEXP currentZSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type nIP(nIPSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type currentC(currentCSEXP);
     Rcpp::traits::input_parameter< List >::type currentZ(currentZSEXP);
-    rcpp_result_gen = Rcpp::wrap(sortedZ(nIP, currentC, currentZ));
+    rcpp_result_gen = Rcpp::wrap(SortedZ(nIP, currentC, currentZ));
     return rcpp_result_gen;
 END_RCPP
 }
-// sortedC
-List sortedC(int nIP, IntegerVector currentC, NumericMatrix edge);
-RcppExport SEXP IPTM_sortedC(SEXP nIPSEXP, SEXP currentCSEXP, SEXP edgeSEXP) {
+// SortedC
+List SortedC(int nIP, IntegerVector currentC, List edge);
+RcppExport SEXP IPTM_SortedC(SEXP nIPSEXP, SEXP currentCSEXP, SEXP edgeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type nIP(nIPSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type currentC(currentCSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type edge(edgeSEXP);
-    rcpp_result_gen = Rcpp::wrap(sortedC(nIP, currentC, edge));
+    Rcpp::traits::input_parameter< List >::type edge(edgeSEXP);
+    rcpp_result_gen = Rcpp::wrap(SortedC(nIP, currentC, edge));
     return rcpp_result_gen;
 END_RCPP
 }
-// multiplyXB
-NumericVector multiplyXB(NumericMatrix allxmatlist, NumericVector beta);
-RcppExport SEXP IPTM_multiplyXB(SEXP allxmatlistSEXP, SEXP betaSEXP) {
+// MultiplyXB
+NumericVector MultiplyXB(NumericMatrix X, NumericVector beta);
+RcppExport SEXP IPTM_MultiplyXB(SEXP XSEXP, SEXP betaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type allxmatlist(allxmatlistSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type beta(betaSEXP);
-    rcpp_result_gen = Rcpp::wrap(multiplyXB(allxmatlist, beta));
+    rcpp_result_gen = Rcpp::wrap(MultiplyXB(X, beta));
     return rcpp_result_gen;
 END_RCPP
 }
-// multiplyXB2
-NumericMatrix multiplyXB2(List allxmatlist, NumericVector beta, NumericMatrix edge);
-RcppExport SEXP IPTM_multiplyXB2(SEXP allxmatlistSEXP, SEXP betaSEXP, SEXP edgeSEXP) {
+// MultiplyXBList
+NumericMatrix MultiplyXBList(List X, NumericVector beta);
+RcppExport SEXP IPTM_MultiplyXBList(SEXP XSEXP, SEXP betaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type allxmatlist(allxmatlistSEXP);
+    Rcpp::traits::input_parameter< List >::type X(XSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type edge(edgeSEXP);
-    rcpp_result_gen = Rcpp::wrap(multiplyXB2(allxmatlist, beta, edge));
+    rcpp_result_gen = Rcpp::wrap(MultiplyXBList(X, beta));
     return rcpp_result_gen;
 END_RCPP
 }
-// betapartB
-NumericVector betapartB(int nIP, List lambdai, List edgeC);
-RcppExport SEXP IPTM_betapartB(SEXP nIPSEXP, SEXP lambdaiSEXP, SEXP edgeCSEXP) {
+// BetaInEqB
+NumericVector BetaInEqB(int nIP, List lambdamat, List edgebyC);
+RcppExport SEXP IPTM_BetaInEqB(SEXP nIPSEXP, SEXP lambdamatSEXP, SEXP edgebyCSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type nIP(nIPSEXP);
-    Rcpp::traits::input_parameter< List >::type lambdai(lambdaiSEXP);
-    Rcpp::traits::input_parameter< List >::type edgeC(edgeCSEXP);
-    rcpp_result_gen = Rcpp::wrap(betapartB(nIP, lambdai, edgeC));
+    Rcpp::traits::input_parameter< List >::type lambdamat(lambdamatSEXP);
+    Rcpp::traits::input_parameter< List >::type edgebyC(edgebyCSEXP);
+    rcpp_result_gen = Rcpp::wrap(BetaInEqB(nIP, lambdamat, edgebyC));
     return rcpp_result_gen;
 END_RCPP
 }
-// timediff
-NumericMatrix timediff(NumericMatrix edge, IntegerVector node, double when, double lambda);
-RcppExport SEXP IPTM_timediff(SEXP edgeSEXP, SEXP nodeSEXP, SEXP whenSEXP, SEXP lambdaSEXP) {
+// Timediff
+NumericMatrix Timediff(List edge, IntegerVector node, double when, double lambda);
+RcppExport SEXP IPTM_Timediff(SEXP edgeSEXP, SEXP nodeSEXP, SEXP whenSEXP, SEXP lambdaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type edge(edgeSEXP);
+    Rcpp::traits::input_parameter< List >::type edge(edgeSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
     Rcpp::traits::input_parameter< double >::type when(whenSEXP);
     Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    rcpp_result_gen = Rcpp::wrap(timediff(edge, node, when, lambda));
+    rcpp_result_gen = Rcpp::wrap(Timediff(edge, node, when, lambda));
     return rcpp_result_gen;
 END_RCPP
 }
-// netstats
-NumericMatrix netstats(NumericMatrix allxmat, IntegerVector node, int sender);
-RcppExport SEXP IPTM_netstats(SEXP allxmatSEXP, SEXP nodeSEXP, SEXP senderSEXP) {
+// Dyadic
+NumericMatrix Dyadic(NumericMatrix history, IntegerVector node, int sender);
+RcppExport SEXP IPTM_Dyadic(SEXP historySEXP, SEXP nodeSEXP, SEXP senderSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type allxmat(allxmatSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type history(historySEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
     Rcpp::traits::input_parameter< int >::type sender(senderSEXP);
-    rcpp_result_gen = Rcpp::wrap(netstats(allxmat, node, sender));
+    rcpp_result_gen = Rcpp::wrap(Dyadic(history, node, sender));
     return rcpp_result_gen;
 END_RCPP
 }
-// wordpartZ
-NumericMatrix wordpartZ(int K, IntegerVector textlistd, List tableW, double delta, NumericVector nvec);
-RcppExport SEXP IPTM_wordpartZ(SEXP KSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP deltaSEXP, SEXP nvecSEXP) {
+// Triadic
+NumericMatrix Triadic(NumericMatrix history, IntegerVector node, int sender);
+RcppExport SEXP IPTM_Triadic(SEXP historySEXP, SEXP nodeSEXP, SEXP senderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type history(historySEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
+    Rcpp::traits::input_parameter< int >::type sender(senderSEXP);
+    rcpp_result_gen = Rcpp::wrap(Triadic(history, node, sender));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Degree
+NumericMatrix Degree(NumericMatrix history, IntegerVector node, int sender);
+RcppExport SEXP IPTM_Degree(SEXP historySEXP, SEXP nodeSEXP, SEXP senderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type history(historySEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
+    Rcpp::traits::input_parameter< int >::type sender(senderSEXP);
+    rcpp_result_gen = Rcpp::wrap(Degree(history, node, sender));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WordInEqZ
+NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW, double delta, NumericVector nvec);
+RcppExport SEXP IPTM_WordInEqZ(SEXP KSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP deltaSEXP, SEXP nvecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -131,7 +156,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type tableW(tableWSEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type nvec(nvecSEXP);
-    rcpp_result_gen = Rcpp::wrap(wordpartZ(K, textlistd, tableW, delta, nvec));
+    rcpp_result_gen = Rcpp::wrap(WordInEqZ(K, textlistd, tableW, delta, nvec));
     return rcpp_result_gen;
 END_RCPP
 }
