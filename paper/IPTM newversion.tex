@@ -39,6 +39,7 @@
 %\author{Bomin Kim}
 
 \author[1]{Bomin Kim}
+\author[1]{Zachary Jones}
 \author[1]{Bruce Desmarais}
 \author[2,3]{Hanna Wallach}
 \affil[1]{Pennsylvania State University}
@@ -48,9 +49,10 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-Many textual sources, including emails, have been used to discover the ``topics" that occur in a collection of documents; however, little or no attention has been given to timestamp of documents. By integrating a Cox multiplicative intensity model \citep{PerryWolfe2012} and latent dirichlet allocation \citep{Blei2003},  we jointly analyze the repeated interpersonal interactions over time and the topics and words used in a text corpora. We cluster the documents based on similar temporal and textual patterns, which we call here ``interaction pattern", and look into the consistency within the interaction pattern and incoherence across the interaction patterns. This article presents the applicability and interpretability of the approach using the email data for county government managers from two counties in North Carolina. By considering the patterns in the history of interactions, the model reveal interesting separation of documents which are masked earlier. 
+
+\noindent In this paper we introduce the interaction-partitioned topic model (IPTM), a probabilistic model in which time-stamped textual communications are partitioned on the joint bases of topical attention and network generative process. We integrate the Cox multiplicative intensity model---a generative model for ties in which patterns of ties tend toward network structural features such as reciprocated dyads and triangles, and latent Dirichlet allocation---the canonical statistical topic model. The IPTM is a model for who will communicate with whom about what, and when. In the IPTM, each communication instance is assigned to an interaction pattern, which is characterized by a unique set of network dynamic generative features, as well as a unique distribution over topics---topics that are shared by all interaction patterns. We apply the IPTM to government e-mail corpora representing emails exchanged between the department managers in two county governments in North Carolina---one of which covers the Outer Banks during the period of Hurricane Sandy. The applications illustrate that the IPTM is effective in predicting and explaining continuous time textual communication networks. 
+
 \end{abstract}
-\textbf{Key Words:} topic model, latent dirichlet allocation, social network analysis, Cox multiplicative intensity model
 \section{Ideas}
 Current CPME model does not involve any of temporal component, which plays a key role in email interactions. Intuitively, past interaction behaviors significantly influence future ones; for example, if an actor $i$ sent an email to actor $j$, then $j$ is highly likely to send an email back to $i$ as a response (i.e. reciprocity). Moreover, the recency and frequency of past interactions can also be considered to effectively predict future interactions. Thus, as an exploratory data analysis, point process model for directional interaction is applied to the North Carolina email data. Starting from the existing framework focused on the analysis of content-partitioned subnetworks, I would suggest an extended approach to analyze the data using the timestamps in the email, aiming to develop a joint dynamic or longitudinal model of text-valued ties.\\ \newline
  CPME model is a Bayesian framework using two well-known methods: Latent Dirichlet Allocation (LDA) and Latent Space Model (LSM). Basically, existence of edge depends on topic assignment $k$ (LDA) and its corresponding interaction pattern c. Each topic $k=1,…,K$ has one interaction pattern c=1,…,C, and each interaction pattern posits unique latent space (LSM), thus generating $A\times A$ matrix of probabilities $P^{(c)}$ that a message author
