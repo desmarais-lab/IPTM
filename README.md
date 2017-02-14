@@ -12,10 +12,10 @@ Functionality includes:
 
  - `MCMC` which runs Markov chain Monte Carlo (MCMC) algorithm to compute the time-weighted network statistics from the point process model of Perry and Wolfe (2013) and token-topic assignments of the documents over the corpus, given the interaction-pattern (IP) assignment of each document.
 
- - `table_betaIP` and `plot_betaIP` which summarize the MCMC chain of network statistics for each interaction-pattern (IP), by drawing table and boxplot, respectively.
+ - `TableBetaIP` and `plot_betaIP` which summarize the MCMC chain of network statistics for each interaction-pattern (IP), by drawing table and boxplot, respectively.
 
- - `plot_topic` and `plot_topicIP` which plot the topic distributions without (former) and with (latter) considering the interaction-pattern (IP) assignments.
+ - `PlotTopic` and `PlotTopicIP` which plot the topic distributions without (former) and with (latter) considering the interaction-pattern (IP) assignments.
 
-- `table_wordIP` which generates the table that summarizes interaction-pattern (IP) and token-topic assignments. For each interaction-pattern (IP), the topics of highest proportion and their corresponding most likely words are included.
+- `TableWordIP` which generates the table that summarizes interaction-pattern (IP) and token-topic assignments. For each interaction-pattern (IP), the topics of highest proportion and their corresponding most likely words are included.
  
 The last three functions above are used to make comparison between different interaction-patterns (IP).
