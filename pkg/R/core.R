@@ -351,7 +351,6 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B, lambda = 0.05
   
     cat("inner iteration 1", "\n")
     lambda.i = list()
-    corpus.byC  = SortedZ(nIP, currentC, currentZ)
     for (i1 in 1L:n1) {
       # C update given Z and B - within each document d
       for (d in seq(along = edge)) {
