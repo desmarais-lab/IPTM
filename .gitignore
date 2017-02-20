@@ -1,2 +1,5 @@
 .DS_STORE
 .Rhistory
+*.aux
+*.log
+*.synctex.gz
