@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2015)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: IPTM.aux
+The style file: apalike.bst
+Database file #1: IPTM.bib
+Warning--I didn't find a database entry for "zhou2015infinite"
+Warning--there's a number but no volume in snijders2017stochastic
+You've used 8 entries,
+            1935 wiz_defined-function locations,
+            525 strings with 4952 characters,
+and the built_in function-call counts, 3064 in all, are:
+= -- 314
+> -- 95
+< -- 7
++ -- 30
+- -- 30
+* -- 239
+:= -- 526
+add.period$ -- 23
+call.type$ -- 8
+change.case$ -- 54
+chr.to.int$ -- 8
+cite$ -- 9
+duplicate$ -- 127
+empty$ -- 221
+format.name$ -- 40
+if$ -- 609
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 6
+newline$ -- 42
+num.names$ -- 24
+pop$ -- 45
+preamble$ -- 1
+purify$ -- 55
+quote$ -- 0
+skip$ -- 105
+stack$ -- 0
+substring$ -- 238
+swap$ -- 25
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 48
+warning$ -- 1
+while$ -- 28
+width$ -- 0
+write$ -- 103
+(There were 2 warnings)

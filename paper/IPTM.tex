@@ -67,10 +67,13 @@
 	this application, we demonstrate that the IPTM is effective at
 	predicting and explaining continuous-time textual communications.	
 \end{abstract}
+\newpage
 \section{IPTM Model}
 In this section, we first introduce the multiplicative Cox intensity model in the context of tie formation process in a continuous-time textual communication network. Then, we illustrate the generative process of the model which incorporates the generative process of stochastic actor-oriented models and latent Dirichlet allocation. Lastly, specification of the dynamic network statistics used is demonstrated. For concreteness, we frame our discussion of this model in terms of email data, although it is generally applicable to any similarly-structured communication data.
-\subsection{Multiplicative Cox Intensity Model}
-A single email, indexed by $d$, is represented by the four components ($i^{(d)}, J^{(d)}, t^{(d)},  W^{(d)}$). The first two are the sender and receiver of the email: an integer $i^{(d)} \in \{1,...,A\}$ indicates the identity of the sender out of $A$ number of actors (or nodes) and an integer vector $J^{(d)} = \{j_r^{(d)}\}_{r=1}^{|J^{(d)}|} $ indicates the identity of the receiver (or receivers) out of $A-1$ number of actors (by excluding the sender), where $|J^{(d)}|\in \{1,...,A-1\}$ denotes the total number of the receivers. Next, $t^{(d)}$ is the (unix time-based) timestamp of the email, and $W^{(d)} = \{w^{(d)}_m \}_{n=1}^{N^{(d)}}$ is a set of tokens that comprise the text of the email. In this section, we only consider the first three , ($i^{(d)}, J^{(d)}, t^{(d)}$), and explain how we apply the basic survival analysis concepts and multiplicative Cox intensity model to the generating process of a document (or a tie). \\ \newline Let $T$ denote the survival time. In our context, survival times measure the time to send the document. Following the typical survival analysis framework, the distribution of $T$ is described or characterized by three functions, namely:
+\subsection{Multiplicative Intensity}
+A single email, indexed by $d$, is represented by the four components ($i^{(d)}, J^{(d)}, t^{(d)},  W^{(d)}$). The first two are the sender and receiver of the email: an integer $i^{(d)} \in \{1,...,A\}$ indicates the identity of the sender out of $A$ number of actors (or nodes) and an integer vector $J^{(d)} = \{j_r^{(d)}\}_{r=1}^{|J^{(d)}|} $ indicates the identity of the receiver (or receivers) out of $A-1$ number of actors (by excluding the sender), where $|J^{(d)}|\in \{1,...,A-1\}$ denotes the total number of the receivers. Next, $t^{(d)}$ is the (unix time-based) timestamp of the email, and $W^{(d)} = \{w^{(d)}_m \}_{n=1}^{N^{(d)}}$ is a set of tokens that comprise the text of the email. In this section, we only consider the first three , ($i^{(d)}, J^{(d)}, t^{(d)}$), and explain how we apply multiplicative intensity model to the generating process of a document (or a tie). \\ \newline 
+\begin{comment}
+Let $T$ denote the survival time. In our context, survival times measure the time to send the document. Following the typical survival analysis framework, the distribution of $T$ is described or characterized by three functions, namely:
 \begin{itemize}
 	\item [1. ] the probability density function $f(t)$: \newline the probability of sending a document in a small interval per unit time
 	\begin{align*}
@@ -107,6 +110,7 @@ Given the equations above, we derive:
 				\end{align*}
 and thus following the dominant method for summarizing survival data, we will use the hazard function $\lambda(t)$ for the generative process of the document. Now we move to Cox multiplicative intensity model \citep{cox1992regression} using covariates
 that depend on the history of the process. Cox multiplicative intensity model, also known as the Cox proportional hazards (PH) model, is the most common approach to model covariate effects on survival. \\ \newline
+\end{comment}
 The IPTM assigns each communication to an ``interaction pattern," characterized by a set of dynamic network features and a distribution over a shared set of topics. Here we illustrate how a set of dynamic network features contribute uniquely identifies each interaction pattern. Assume that each interaction pattern $c \in \{1,...,C\}$ has an $A\times A$ stochastic intensity (or hazard) matrix of $\boldsymbol{\lambda}^{(c)}(t) = \{\{\lambda^{(c)}_{ij}(t)\}_{i=1}^{A}\}_{j=1}^{A}$, where $\lambda^{(c)}_{ij}(t)$=P\{for interaction pattern $c$, $i\rightarrow j$ occurs in time interval $[t, t+dt)$, given that it has not ben sent until time $t$\}. There could be various static and dynamic covariates of $(i, j)$ that affects the stochastic intensity, however, we decide to use the covariates
 that depend on the history of the process, considering the strong recency and reciprocity effects of textual communications, especially emails. The detailed specifications of the dynamic network covariates are illustrated in Section 1.3.\\ \newline
 Following the multiplicative Cox model of the intensity process $\boldsymbol{\lambda}^{(c)}(t)$ given $\boldsymbol{x}_t^{(c)}(i, j)$, the $p$-dimensional vector of time-dependent covariates corresponding to each pair of $(i, j)$, the intensity forms:
@@ -122,6 +126,7 @@ receivers—are allowed for this model, we expand the rate of interaction betwee
 \begin{equation}
 \lambda^{(c)}_{iJ}(t|\boldsymbol{x}_t^{*(c)}(i, J))= \mbox{exp}\Big\{\sum\limits_{j \in J} \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}\cdot \prod\limits_{j \in J}1\{j \in \mathcal{A}_{\backslash i}\}.
 \end{equation}
+\begin{comment}
 Conditioned upon the existence of a unique document at some particular time $t$, the probability that the document is sent from $i$ to $j$ is
 	\begin{align*}
 	&L_{ij}(\boldsymbol{\beta}^{(c)}) = \frac{\mbox{exp}\Big\{ \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}}{\mbox{exp}\Big\{\sum\limits_{j \in \mathcal{A}_{\backslash i}} \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}},
@@ -145,20 +150,34 @@ where the approximation $\mbox{log}{L}_t(\boldsymbol{\beta}^{(c)})\approx \mbox{
 \mbox{log}[({\sum\limits_{j \in \mathcal{A}_{\backslash i^{(d)}} } \mbox{exp}\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}})^{|J^{(d)}|}]\\& = |J^{(d)}|\times\mbox{log}\big[\sum_{j\in \mathcal{A}_{\backslash i^{(d)}}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]
 \end{split}
 \end{equation}
+\end{comment}
 \subsection{Generative Process}
 The interaction-partitioned topic model (IPTM) is a probabilistic model of who communicates with whom about what, and when. The generative process of IPTM consists of two parts: 1) generation of the ties (i.e. `who', `whom', and `when') and 2) generation of content (i.e. `what'). The tie generating process resembles that of stochastic actor-oriented models (SAOMs) of \cite{snijders1996stochastic}, and the content generating process directly follows latent Dirichlet allocation (LDA) of \cite{Blei2003}. In this section, we illustrate the two generative process separately, and show how the two processes can jointly generate a document.
 \subsubsection{Tie Generating Process}
 Motivated from stochastic actor-oriented model (SAOM) of \cite{snijders2017stochastic}, we assume the following generative process for each document $d$ in a corpus $D$:
 \begin{itemize}
 	\item[1.] Choose the interaction pattern $c^{(d)} \sim \mbox{Multinomial}(\gamma)$
-	\item[2.] Set $t=t^{(d-1)}$, $\boldsymbol{\beta}=\boldsymbol{\beta}^{(c^{(d)})}$ and $\boldsymbol{X}=\{\{\boldsymbol{x}^{*(c^{(d)})}_{t_+}(i, j)\}_{i=1}^{A}\}_{j=1}^{A}$ (NOTE: $\boldsymbol{x}^{*(c^{(d)})}_{t_+^{(d-1)}}(i, j) = \boldsymbol{x}^{*(c^{(d)})}_{t_-^{(d)}}(i, j) $)
-	\item[3.] Generate $\Delta T_{ij} \sim \mbox{Exponential}(\lambda_{ij}(\boldsymbol{\beta}, \boldsymbol{X}_{ij}))$ for every $(i, j)$, where $\lambda_{ij}(\boldsymbol{\beta}, \boldsymbol{X}_{ij})= \mbox{exp}\Big\{\boldsymbol{\beta}^{T}\boldsymbol{X}_{ij}\Big\}$
-	 \item[4.] Set the timestamp $t^{(d)} = t+\mbox{min}(\Delta T_{ij})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{ij})}$, and $j_1^{(d)} = j_{\mbox{min}(\Delta T_{ij})}$.
-\item[5.] Decide whether to add any receiver or not for each $j \in \mathcal{A}_{\backslash i, j_1^{(d)}}$ using (Bernoulli) probabilities
-\begin{align*}\frac{1}{1+\delta\lambda_{ij}(\boldsymbol{\beta}, \boldsymbol{X}_{ij}))},
-\end{align*}
-where $\delta$ is a tuning parameter to control the number of multicasts. 
+	\item[2.] Set $t=t^{(d-1)}$, $\boldsymbol{\beta}=\boldsymbol{\beta}^{(c^{(d)})}$ and $\boldsymbol{X}=\{\{\boldsymbol{x}^{*(c^{(d)})}_{t_+}(i, j)\}_{i=1}^{A}\}_{j=1}^{A}$ (i.e. calculate the network statistics at $t^{(d-1)}$, including the timepoint itself)
+	\item[3.] (Data augmentation) For each sender $i = 1,...,A$, create a list of receivers $J_i$ by applying the Bernoulli probabilities to every $j \in \mathcal{A}_{\backslash i}$
+	\begin{align*} I(i \rightarrow j) \sim \mbox{Ber}\Big(1-\mbox{exp}(-\delta\lambda_{ij}(\boldsymbol{\beta}, \boldsymbol{X}_{ij}))\Big),
+	\end{align*}
+	where the probability is called a Bernoulli-Poisson (BerPo) link function \citep{zhou2015infinite} and $\delta$ is a tuning parameter to control the number of multicasts.
+	\item[4.] For each sender $i = 1,...,A$, generate the time increments $\Delta T_{i{J_i}} \sim \mbox{Exponential}(\lambda_{i{J_i}}(\boldsymbol{\beta}, \boldsymbol{X}_{i{J_i}}))$, where $\lambda_{i{J_i}}(\boldsymbol{\beta}, \boldsymbol{X}_{i{J_i}})= \mbox{exp}\Big\{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{T}\boldsymbol{X}_{ij}\Big\}$
+	 \item[5.] Set the timestamp $t^{(d)} = t+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$.
 \end{itemize}
+Then, conditioned upon the existence of a document at some particular time $t^{(d)}$, the probability that the document is sent from $i^{(d)}$ to $J^{(d)} (=J_{i^{(d)}})$ is
+\begin{equation}
+\begin{split}
+\mathcal{L}(\boldsymbol{\beta}^{(c^{(d)})}) &= P\Big(\Delta T_{i^{(d)}{J^{(d)}}}\sim\mbox{Exp}(\lambda_{i^{(d)}{J^{(d)}}}(\boldsymbol{\beta}, \boldsymbol{X}_{i^{(d)}{J^{(d)}}}))\Big)\times P\Big(\mbox{min}(\Delta T_{i{J_i}}) = \Delta T_{i^{(d)}{J^{(d)}}}\Big)\times P\Big(\mbox{Edge creations}\Big)\\&
+=\Big(\lambda_{i^{(d)}{J^{(d)}}}(\boldsymbol{\beta}, \boldsymbol{X}_{i^{(d)}{J^{(d)}}})e^{-(t^{(d)}-t^{(d-1)})\lambda_{i^{(d)}{J^{(d)}}}(\boldsymbol{\beta}, \boldsymbol{X}_{i^{(d)}{J^{(d)}}})}\Big)\times \Big(e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \neq i^{(d)}}\lambda_{i{J_i}}(\boldsymbol{\beta}, \boldsymbol{X}_{i{J_i}})}\Big)\\ & \quad\quad\times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (1-e^{-\delta\lambda_{ij}(\boldsymbol{\beta}, \boldsymbol{X}_{ij})})^{I(j \in J_i)}(e^{-\delta\lambda_{ij}(\boldsymbol{\beta}, \boldsymbol{X}_{ij})})^{1-I(j \in J_i)}\Big)\\
+& = \Big(\lambda_{i^{(d)}{J^{(d)}}}(\boldsymbol{\beta}, \boldsymbol{X}_{i^{(d)}{J^{(d)}}})e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}(\boldsymbol{\beta}, \boldsymbol{X}_{i{J_i}})}\Big) \times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda_{ij}(\boldsymbol{\beta}, \boldsymbol{X}_{ij})}-1)^{I(j \in J_i)}e^{-\delta\lambda_{ij}(\boldsymbol{\beta}, \boldsymbol{X}_{ij})}\Big),
+\end{split}
+\end{equation}
+where $\lambda_{i{J}}(\boldsymbol{\beta}, \boldsymbol{X}_{i{J}})=\mbox{exp}\Big\{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)\Big\}$ and $\lambda_{ij}(\boldsymbol{\beta}, \boldsymbol{X}_{ij})=\mbox{exp}\Big\{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)\Big\}$. Applying this to the every document in the corpus and taking the log, then we obtain the joint probability, the full likelihood function as:
+\begin{equation}
+\begin{split}
+\ell(\boldsymbol{\beta}^{(c^{(d)})}) &=\sum_{d=1}^D\Big\{\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i^{(d)}, j)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\\&\quad\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}}-1)-\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\Big)\Big\}.
+\end{split}\end{equation}
 \subsubsection{Content Generating Process}
 By simply adding the interaction pattern assignment of each doeument to LDA, we assume the following generative process for each document $d$ in a corpus $D$:
 \begin{itemize}
@@ -493,8 +512,7 @@ Vance county data contains $D=185$ emails sent between $A=18$ actors, including 
  \end{table}
  \newpage
  \subsection{Dare county email data}
- Dare county data contains $D=2247$ emails between $A=27$ actors, including $W=2907$ vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=1000$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. In addition, after some experimentation, $\delta_B$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every $10^{th}$ samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics.
- 
+ Dare county data contains $D=2247$ emails between $A=27$ actors, including $W=2907$ vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=1000$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. In addition, after some experimentation, $\delta_B$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every $10^{th}$ samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics. 
  \clearpage
  \section*{APPENDIX}
  \subsection*{APPENDIX A: Notations in IPTM}

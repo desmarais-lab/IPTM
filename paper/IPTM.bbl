@@ -1,0 +1,45 @@
+\begin{thebibliography}{}
+
+\bibitem[Blei et~al., 2003]{Blei2003}
+Blei, D.~M., Ng, A.~Y., and Jordan, M.~I. (2003).
+\newblock Latent dirichlet allocation.
+\newblock {\em J. Mach. Learn. Res.}, 3:993--1022.
+
+\bibitem[Jasra et~al., 2005]{jasra2005markov}
+Jasra, A., Holmes, C., and Stephens, D. (2005).
+\newblock Markov chain monte carlo methods and the label switching problem in
+  bayesian mixture modeling.
+\newblock {\em Statistical Science}, pages 50--67.
+
+\bibitem[Minka, 2000]{minka2000estimating}
+Minka, T. (2000).
+\newblock Estimating a dirichlet distribution.
+
+\bibitem[Perry and Wolfe, 2013]{PerryWolfe2012}
+Perry, P.~O. and Wolfe, P.~J. (2013).
+\newblock Point process modelling for directed interaction networks.
+\newblock {\em Journal of the Royal Statistical Society: Series B (Statistical
+  Methodology)}, 75(5):821--849.
+
+\bibitem[Snijders, 1996]{snijders1996stochastic}
+Snijders, T.~A. (1996).
+\newblock Stochastic actor-oriented models for network change.
+\newblock {\em Journal of mathematical sociology}, 21(1-2):149--172.
+
+\bibitem[Snijders, 2017]{snijders2017stochastic}
+Snijders, T.~A. (2017).
+\newblock Stochastic actor-oriented models for network dynamics.
+\newblock {\em Annual Review of Statistics and Its Application}, (0).
+
+\bibitem[Wallach, 2008]{wallach2008structured}
+Wallach, H.~M. (2008).
+\newblock {\em Structured topic models for language}.
+\newblock PhD thesis, University of Cambridge.
+
+\bibitem[Wallach et~al., 2009]{wallach2009rethinking}
+Wallach, H.~M., Mimno, D.~M., and McCallum, A. (2009).
+\newblock Rethinking lda: Why priors matter.
+\newblock In {\em Advances in neural information processing systems}, pages
+  1973--1981.
+
+\end{thebibliography}
