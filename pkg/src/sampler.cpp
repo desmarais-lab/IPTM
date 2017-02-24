@@ -349,14 +349,14 @@ NumericMatrix Degree(NumericMatrix history, IntegerVector node, int sender) {
 
 // [[Rcpp::export]]
 NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW, 
-                        double delta, NumericVector nvec){
+                        double beta, NumericVector nvec){
   // Calculate word-topic part of the equation used in multinomial sampling of Z
   //
   // Args:
   //  K: total number of topics specified by the user
   //  textlistd: list of text containing the words in specific document d
   //  tableW: summary table of topic-word assignments
-  //  delta: Dirichlet concentration prior for topic-word distribution
+  //  beta: Dirichlet concentration prior for topic-word distribution
   //  nvec: Dirichlet base prior for topic-word distribution
   //
   // Returns:
@@ -367,9 +367,9 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 		NumericVector num(textlistd.size());
 		for (int w = 0; w < textlistd.size(); w++){
 			num[w] = log(tablek[textlistd[w] - 1]-(tablek[textlistd[w] - 1] > 0) + 
-			         delta*nvec[textlistd[w] - 1]);  
+			         beta*nvec[textlistd[w] - 1]);  
 		}
-		double denom = log(sum(tablek) - sum(tablek > 0)+delta);
+		double denom = log(sum(tablek) - sum(tablek > 0)+beta);
 		consts(_,k) = num - rep(denom, textlistd.size());
 	}
 	return consts;
@@ -396,7 +396,7 @@ IntegerVector tabulateC(const IntegerVector& x, const unsigned max) {
 
 // [[Rcpp::export]]
 double logWZ(int nIP, int K, IntegerVector currentC, List currentZ, List textlist, 
-             List tableW, NumericVector alpha, NumericMatrix mvec, double delta, 
+             List tableW, NumericVector alpha, NumericMatrix mvec, double beta, 
              NumericVector nvec){
   // Calculate the log of unnormalized constant to check the convergence
   //
@@ -409,7 +409,7 @@ double logWZ(int nIP, int K, IntegerVector currentC, List currentZ, List textlis
   //  tableW: summary table of topic-word assignments
   //  alpha: Dirichlet concentration prior for document-topic distribution
   //  mvec: Dirichlet base prior for document-topic distribution
-  //  delta: Dirichlet concentration prior for topic-word distribution
+  //  beta: Dirichlet concentration prior for topic-word distribution
   //  nvec: Dirichlet base prior for topic-word distribution
   //
   // Returns:
@@ -423,8 +423,8 @@ double logWZ(int nIP, int K, IntegerVector currentC, List currentZ, List textlis
 		int iter = 0;
 		for (int k = 0; k < currentZ_d.size(); k++) {
 			IntegerVector table_Wk = tableW[currentZ_d[iter] - 1];
-			double part1 = log(table_Wk[textlist_d[iter] - 1] - 1 + delta * nvec[textlist_d[iter] - 1]);
-			double part2 = log(sum(table_Wk) - sum(table_Wk>0) + delta);
+			double part1 = log(table_Wk[textlist_d[iter] - 1] - 1 + beta * nvec[textlist_d[iter] - 1]);
+			double part2 = log(sum(table_Wk) - sum(table_Wk>0) + beta);
 			double part3 = log(k_table[currentZ_d[iter] - 1] - 1 + 
                      alpha[currentC[d] - 1] * mvec(currentZ_d[iter] - 1,currentC[d] - 1));
 			finalsum += part1 - part2 + part3 - part4;

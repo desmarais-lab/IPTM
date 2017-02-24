@@ -45,15 +45,15 @@ Degree <- function(history, node, sender) {
     .Call('IPTM_Degree', PACKAGE = 'IPTM', history, node, sender)
 }
 
-WordInEqZ <- function(K, textlistd, tableW, delta, nvec) {
-    .Call('IPTM_WordInEqZ', PACKAGE = 'IPTM', K, textlistd, tableW, delta, nvec)
+WordInEqZ <- function(K, textlistd, tableW, beta, nvec) {
+    .Call('IPTM_WordInEqZ', PACKAGE = 'IPTM', K, textlistd, tableW, beta, nvec)
 }
 
 tabulateC <- function(x, max) {
     .Call('IPTM_tabulateC', PACKAGE = 'IPTM', x, max)
 }
 
-logWZ <- function(nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, delta, nvec) {
-    .Call('IPTM_logWZ', PACKAGE = 'IPTM', nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, delta, nvec)
+logWZ <- function(nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, beta, nvec) {
+    .Call('IPTM_logWZ', PACKAGE = 'IPTM', nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, beta, nvec)
 }
 

@@ -303,7 +303,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B, lambda = 0.05
   # initialize alpha, mvec, delta, nvec, eta, lvec, and gammas
   alpha = rep(50 / K, nIP)
   mvec = matrix(1 / K, nrow = K, ncol = nIP)
-  delta = 0.01
+  beta = 10
   W = length(vocabulary)
   nvec = rep(1, W) / W
   eta = 50 / nIP
@@ -378,7 +378,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B, lambda = 0.05
       for (d in (seq(along = edge))[-empty.docs]) { 
         textlist.d = textlist[[d]]
         topicpart.d = TopicInEqZ(K, currentC, currentZ, alpha, mvec, d)
-        wordpart.d = WordInEqZ(K, textlist.d, table.W, delta, nvec)
+        wordpart.d = WordInEqZ(K, textlist.d, table.W, beta, nvec)
         for (w in 1L:nrow(wordpart.d)) {
           const.Z = topicpart.d + wordpart.d[w, ]
           zw.old = currentZ[[d]][w]
@@ -386,7 +386,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B, lambda = 0.05
           if (zw.new != zw.old) {
             currentZ[[d]][w] = zw.new
             topicpart.d = TopicInEqZ(K, currentC, currentZ, alpha, mvec, d)	
-            wordpart.d = WordInEqZ(K, textlist.d, table.W, delta, nvec)
+            wordpart.d = WordInEqZ(K, textlist.d, table.W, beta, nvec)
             table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
             table.W[[zw.new]][textlist.d[w]] = table.W[[zw.new]][textlist.d[w]] + 1
           }
@@ -399,7 +399,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B, lambda = 0.05
       alpha.mat = rbind(alpha.mat, alpha)
       logWZ.mat = c(logWZ.mat, 
                     logWZ(nIP, K, currentC[-empty.docs], currentZ[-empty.docs],
-                    textlist[-empty.docs], table.W, alpha, mvec, delta, nvec))
+                    textlist[-empty.docs], table.W, alpha, mvec, beta, nvec))
       }
     
     cat("inner iteration 3", "\n")
@@ -470,7 +470,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B, lambda = 0.05
 }
 
 #' @title TableBetaIP
-#' @description Generate a table summary of the MCMC chain of network statistics (beta) for each interaction pattern
+#' @description Generate a table summary of the MCMC chain of network statistics coefficients (beta) for each interaction pattern
 #'
 #' @param MCMCchain a chain obtained using MCMC function
 #'
@@ -656,4 +656,79 @@ TableWordIP = function(MCMCchain, K, textlist, vocabulary) {
 	return(table.word)
 }
 
-
+#' @title GenerateDocs
+#' @description Generate the documents according to the generative process
+#'
+#' @param nDocs number of documents to be generated
+#' @param betas network statistics coefficients (beta) for each interaction pattern
+#' @param gammas distribution of interaction patterns
+#' @param node nodelist containing the ID of nodes (ID starting from 1)
+#' @param vocabulary all vocabularies used over the corpus
+#' @param alpha Dirichlet concentration prior for topic distribution
+#' @param mvec Dirichlet base prior for topic distribution
+#' @param beta Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
+#' @param lambda parameter of speed at which sender replies, with larger values indicating faster response time
+#' @param delta tuning parameter
+#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
+#' @param seed an integer value which controls random number generation
+#'
+#' @return edge and text generated according to the generative process
+#'
+#' @export
+GenerateDocs = function(nDocs, betas, gammas, node, vocabulary, alpha, mvec, beta, nvec, lambda, delta = 1,
+						netstat = c("dyadic", "triadic", "degree"), seed = 1) {
+	
+	P = 1 + 2 * ("dyadic" %in% netstat) + 1 * ("triadic" %in% netstat) + 2 * ("degree" %in% netstat)
+	nIP = length(betas)
+	currentIP = Selected(nDocs, gammas)
+	phi = lapply(1:nrow(mvec), function(k) {
+		rdirichlet(1, beta * nvec)
+	})
+	t.d = 0
+	edge = list()
+	text = list()	
+	
+	options(warn = -1)
+	for (d in 1:nDocs) {
+		edge.byC = lapply(1:nIP, function(IP) {
+			if (d > 1) edge[which(currentIP[1:(d-1)] == IP)]
+		})
+		if (d == 1 | length(edge.byC[[currentIP[d]]]) == 0) {
+			history.t.IP = matrix(0, nrow = length(node), ncol = length(node))
+		} else {
+			history.t.IP = Timediff(edge.byC[[currentIP[d]]], node, t.d, lambda)
+			}
+		X = lapply(node, function(i) {
+				Netstats(history.t.IP, node, i, netstat)
+				})
+		XB = MultiplyXBList(X, betas[[currentIP[d]]])
+		iJi = lapply(1:nrow(XB), function(i) {
+			sapply(1:ncol(XB), function(j) {
+				rbinom(1, 1, 1-exp(-delta*exp(XB[i, j])))	
+				})
+			})
+		LambdaiJi = sapply(1:length(iJi), function(i) {
+			exp(sum(iJi[[i]]*XB[i,]))
+		})
+		LambdaiJi[LambdaiJi == 1] = NA
+		Time.inc = sapply(LambdaiJi, function(i) {
+			rexp(1, i)
+			})
+		i.d = which(Time.inc == min(Time.inc[!is.na(Time.inc)]))
+		j.d = which(iJi[[i.d]] == 1)
+		j.d[j.d >= i.d] = j.d[j.d >= i.d] + 1
+		t.d = t.d + Time.inc[i.d]
+		edge[[d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)
+		
+		N.d = rpois(1, 10)
+		theta.d = rdirichlet(1, alpha[currentIP[d]] * mvec[,currentIP[d]])	
+		text[[d]] = rep(NA, N.d)
+		for (n in 1:N.d){
+			topic.n = Selected(1, theta.d)
+			text[[d]][n] = vocabulary[Selected(1, phi[[topic.n]])]
+		}		
+	}
+	options(warn = 0)
+	return(list(edge = edge, text = text))	
+}

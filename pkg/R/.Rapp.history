@@ -1906,3 +1906,13 @@ check()
 document()
 install()
 check()
+devtools::document()
+devtools::install()
+devtools::check()
+?GenerateDocs
+?MCMC
+library(MCMC)
+library(IPTM)
+?MCMC
+devtools::document()
+devtools::install()

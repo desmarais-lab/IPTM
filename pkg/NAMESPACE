@@ -2,6 +2,7 @@
 
 export(AlphamvecOpt)
 export(BetaInEqC)
+export(GenerateDocs)
 export(MCMC)
 export(Netstats)
 export(PlotBetaIP)

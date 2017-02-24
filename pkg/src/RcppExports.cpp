@@ -146,17 +146,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // WordInEqZ
-NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW, double delta, NumericVector nvec);
-RcppExport SEXP IPTM_WordInEqZ(SEXP KSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP deltaSEXP, SEXP nvecSEXP) {
+NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW, double beta, NumericVector nvec);
+RcppExport SEXP IPTM_WordInEqZ(SEXP KSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP betaSEXP, SEXP nvecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type K(KSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type textlistd(textlistdSEXP);
     Rcpp::traits::input_parameter< List >::type tableW(tableWSEXP);
-    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type nvec(nvecSEXP);
-    rcpp_result_gen = Rcpp::wrap(WordInEqZ(K, textlistd, tableW, delta, nvec));
+    rcpp_result_gen = Rcpp::wrap(WordInEqZ(K, textlistd, tableW, beta, nvec));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -173,8 +173,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // logWZ
-double logWZ(int nIP, int K, IntegerVector currentC, List currentZ, List textlist, List tableW, NumericVector alpha, NumericMatrix mvec, double delta, NumericVector nvec);
-RcppExport SEXP IPTM_logWZ(SEXP nIPSEXP, SEXP KSEXP, SEXP currentCSEXP, SEXP currentZSEXP, SEXP textlistSEXP, SEXP tableWSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP deltaSEXP, SEXP nvecSEXP) {
+double logWZ(int nIP, int K, IntegerVector currentC, List currentZ, List textlist, List tableW, NumericVector alpha, NumericMatrix mvec, double beta, NumericVector nvec);
+RcppExport SEXP IPTM_logWZ(SEXP nIPSEXP, SEXP KSEXP, SEXP currentCSEXP, SEXP currentZSEXP, SEXP textlistSEXP, SEXP tableWSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP betaSEXP, SEXP nvecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -186,9 +186,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type tableW(tableWSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type mvec(mvecSEXP);
-    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type nvec(nvecSEXP);
-    rcpp_result_gen = Rcpp::wrap(logWZ(nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, delta, nvec));
+    rcpp_result_gen = Rcpp::wrap(logWZ(nIP, K, currentC, currentZ, textlist, tableW, alpha, mvec, beta, nvec));
     return rcpp_result_gen;
 END_RCPP
 }

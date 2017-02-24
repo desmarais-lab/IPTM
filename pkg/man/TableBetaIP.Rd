@@ -13,6 +13,6 @@ TableBetaIP(MCMCchain)
 List of table containing the posterior summary of beta for each interaction pattern
 }
 \description{
-Generate a table summary of the MCMC chain of network statistics (beta) for each interaction pattern
+Generate a table summary of the MCMC chain of network statistics coefficients (beta) for each interaction pattern
 }
 
