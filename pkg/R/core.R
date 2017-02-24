@@ -524,7 +524,7 @@ PlotBetaIP = function(MCMCchain) {
 	forbox = melt(combined.data)
 	boxplot = boxplot(forbox$value ~ forbox$X2 + forbox$L1,
 	          at = c(sapply(1L:P, function(x){
-	            ((nIP+1) * x - nIP)((nIP+1) * x - 1)
+	            ((nIP+1) * x - nIP):((nIP+1) * x - 1)
 	            })),
 	          col = gray.colors(nIP), axes = FALSE, 
 	          main = "Comparison of beta coefficients for different IPs")
@@ -533,7 +533,7 @@ PlotBetaIP = function(MCMCchain) {
 	box()
 	axis(side = 1, line = 0.5, lwd = 0, 
 	     at = c(sapply(1L:P, function(x){
-	       median(((nIP + 1) * x - nIP)((nIP + 1) * x - 1))
+	       median(((nIP + 1) * x - nIP):((nIP + 1) * x - 1))
 	       })), 
 	     labels = c("Intercept", "Send", "Receive", 
 	                "Triangles", "Outdegree", "Indegree"))
