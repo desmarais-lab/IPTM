@@ -1916,3 +1916,88 @@ library(IPTM)
 ?MCMC
 devtools::document()
 devtools::install()
+devtools::document()
+devtools::document()
+devtools::document()
+devtools::document()
+devtools::install()
+devtools::check()
+library(IPTM)
+load('/Users/bomin8319/Desktop/IPTMpaper/data/Vancenew.RData')#
+Vance$node = 1:nrow(Vance$node)#
+for (n in 1:length(Vance$edge)){#
+  Vance$edge[[n]][3] = Vance$edge[[n]][[3]] / 3600#
+}#
+Vance$edge = lapply(Vance$edge, function(x){x[1:3]})
+attach(Vance)#
+Vancetest <- MCMC(edge, node, text, vocab, nIP = 2, K = 10, delta.B = 0.5, lambda = 0.05, outer = 100)
+log(-1)
+Vancetest <- MCMC(edge, node, text, vocab, nIP = 3, K = 10, delta.B = 0.5, lambda = 0.05, outer = 100)
+Vancetest <- MCMC(edge, node, text, vocab, nIP = 3, K = 10, delta.B = 0.5, lambda = 0.05, outer = 10)
+par(mfrow = c(1, 1))#
+TableBetaIP(Vancetest)
+PlotBetaIP(Vancetest)
+PlotBetaIP(Vancetest)
+PLotBetaIP
+PlotBetaIP
+Vancetest$B
+PlotBetaIP = function(MCMCchain) {#
+	# Draw a boxplot of the MCMC chain of beta for each IP#
+	##
+	# Args #
+	#  MCMCchain a chain obtained using MCMC function#
+	##
+	# Returns#
+	#  Joint boxplot of the posterior summary of beta (should click for the locator)#
+	combined.data = list()#
+	P = nrow(MCMCchain$B[[1]])#
+	nIP = length(MCMCchain$B)#
+	for(b in 1L:P){#
+	combined.data[[b]] = sapply(1L:nIP, function(c){#
+		cbind(MCMCchain$B[[c]][b,])#
+		})#
+		}#
+	forbox = melt(combined.data)#
+	boxplot = boxplot(forbox$value ~ forbox$X2 + forbox$L1,#
+	          at = c(sapply(1L:P, function(x){#
+	            ((nIP+1) * x - nIP):((nIP+1) * x - 1)#
+	            })),#
+	          col = gray.colors(nIP), axes = FALSE, #
+	          main = "Comparison of beta coefficients for different IPs")#
+	abline(h = 0, lty = 1, col = "red")#
+	axis(2, labels = TRUE)#
+	box()#
+	axis(side = 1, line = 0.5, lwd = 0, #
+	     at = c(sapply(1L:P, function(x){#
+	       median(((nIP + 1) * x - nIP):((nIP + 1) * x - 1))#
+	       })), #
+	     labels = c("Intercept", "Send", "Receive", #
+	                "Triangles", "Outdegree", "Indegree"))#
+	legend(locator(1), c(paste("IP", 1L:nIP)), col = gray.colors(nIP), pch = 15)#
+}
+PlotBetaIP(Vancetest)
+library(reshape)
+PlotBetaIP(Vancetest)
+par(mfrow = c(1,2))#
+PlotTopicIP(Vancetest, 10)#
+#
+PlotTopic(Vancetest, 10)
+TableWordIP(Vancetest, 10, text, vocab)
+library(IPTM)#
+load('/Users/bomin8319/Desktop/IPTMpaper/data/Vancenew.RData')#
+Vance$node = 1:nrow(Vance$node)#
+for (n in 1:length(Vance$edge)){#
+  Vance$edge[[n]][3] = Vance$edge[[n]][[3]] / 3600#
+}#
+Vance$edge = lapply(Vance$edge, function(x){x[1:3]})#
+#
+attach(Vance)#
+Vancetest <- MCMC(edge, node, text, vocab, nIP = 2, K = 10, delta.B = 0.5, lambda = 0.05, outer = 100)
+Vancetest <- MCMC(edge, node, text, vocab, nIP = 2, K = 10, delta.B = 0.5, lambda = 0.05, outer = 100, seed = 2)
+Vancetest <- MCMC(edge, node, text, vocab, nIP = 2, K = 10, delta.B = 0.5, lambda = 0.05, outer = 20, seed = 2)
+par(mfrow = c(1, 1))#
+TableBetaIP(Vancetest)#
+#
+PlotBetaIP(Vancetest)
+PlotTopicIP(Vancetest, 10)
+TableWordIP(Vancetest, 10, text, vocab)

@@ -36,7 +36,7 @@ NumericVector UpdateNum(NumericVector vec, List nKwordtable) {
     IntegerVector newtable = nKwordtable[k];
     for (int n = 1; n < (newtable.size() + 1); n++) {
       d += 1 / (n - 1 + vec[k]);
-      s[k] += newtable[n-1] * d;
+      s[k] += newtable[n - 1] * d;
     }
   }
   return s;
@@ -189,7 +189,7 @@ NumericVector BetaInEqB(int nIP, List lambdamat, List edgebyC){
   			} else {
   				receiver_dnew[r2] = receiver_d[r2] - 1;
   			}
-  			sum_r += lambda_IP(d, receiver_dnew[r2]-1);
+  			sum_r += lambda_IP(d, receiver_dnew[r2] - 1);
   		}
   		sum = sum + sum_r - receiver_d.size() * log(sum_receiver);
   	}
@@ -327,8 +327,8 @@ NumericMatrix Degree(NumericMatrix history, IntegerVector node, int sender) {
   double outdegree = 0;
   for (int b = 0; b < node_i.size(); b++) {
     int receiver = node_i[b];
-    double send = history(sender-1, receiver-1);
-    IntegerVector node_ij(node_i.size()-1);		
+    double send = history(sender - 1, receiver - 1);
+    IntegerVector node_ij(node_i.size() - 1);		
     int iter2=0;
     for (int d = 0; d < node_i.size(); d++) {
       if (node_i[d]!=receiver) {node_ij[iter2] = node_i[d];}
@@ -337,7 +337,7 @@ NumericMatrix Degree(NumericMatrix history, IntegerVector node, int sender) {
     NumericVector indegree(node_ij.size());
     for (int h = 0; h < node_ij.size(); h++) {
       int third = node_ij[h];
-      double htor = history(third-1, receiver-1);
+      double htor = history(third - 1, receiver - 1);
       indegree[h] = htor;
       }			
     outdegree = outdegree + send;

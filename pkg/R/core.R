@@ -164,8 +164,8 @@ TopicInEqC = function(nIP, K, currentZ, alpha, mvec, document) {
 		} else {
 			table.topics = rep(0, K)
 		}
-		num = sum(log(table.topics[topics] - 1 + alpha[IP] * mvec[topics, IP]))
-		denom = length(topics) * log(length(topics) - 1 + alpha[IP])
+		num = sum(log(table.topics[topics] - (table.topics[topics] > 0) + alpha[IP] * mvec[topics, IP]))
+		denom = length(topics) * log(length(topics) - (length(topics) > 0) + alpha[IP])
 		const[IP] = num - denom
 		}
   return(const)
