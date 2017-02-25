@@ -3,47 +3,50 @@ Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: IPTM.aux
 The style file: apalike.bst
 Database file #1: IPTM.bib
-Warning--I didn't find a database entry for "zhou2015infinite"
+Repeated entry---line 342 of file IPTM.bib
+ : @article{snijders2017stochastic
+ :                                ,
+I'm skipping whatever remains of this entry
 Warning--there's a number but no volume in snijders2017stochastic
-You've used 8 entries,
+You've used 9 entries,
             1935 wiz_defined-function locations,
-            525 strings with 4952 characters,
-and the built_in function-call counts, 3064 in all, are:
-= -- 314
-> -- 95
-< -- 7
-+ -- 30
-- -- 30
-* -- 239
-:= -- 526
-add.period$ -- 23
-call.type$ -- 8
-change.case$ -- 54
-chr.to.int$ -- 8
-cite$ -- 9
-duplicate$ -- 127
-empty$ -- 221
-format.name$ -- 40
-if$ -- 609
+            529 strings with 5064 characters,
+and the built_in function-call counts, 3366 in all, are:
+= -- 342
+> -- 102
+< -- 8
++ -- 32
+- -- 32
+* -- 257
+:= -- 579
+add.period$ -- 26
+call.type$ -- 9
+change.case$ -- 60
+chr.to.int$ -- 9
+cite$ -- 10
+duplicate$ -- 145
+empty$ -- 250
+format.name$ -- 43
+if$ -- 671
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 6
-newline$ -- 42
-num.names$ -- 24
-pop$ -- 45
+missing$ -- 7
+newline$ -- 47
+num.names$ -- 27
+pop$ -- 55
 preamble$ -- 1
-purify$ -- 55
+purify$ -- 61
 quote$ -- 0
-skip$ -- 105
+skip$ -- 114
 stack$ -- 0
-substring$ -- 238
-swap$ -- 25
+substring$ -- 250
+swap$ -- 26
 text.length$ -- 2
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 48
+type$ -- 54
 warning$ -- 1
-while$ -- 28
+while$ -- 30
 width$ -- 0
-write$ -- 103
-(There were 2 warnings)
+write$ -- 115
+(There was 1 error message)

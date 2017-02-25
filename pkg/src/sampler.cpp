@@ -199,14 +199,14 @@ NumericVector BetaInEqB(int nIP, List lambdamat, List edgebyC){
 }
 
 // [[Rcpp::export]]
-NumericMatrix Timediff(List edge, IntegerVector node, double when, double lambda) {
+NumericMatrix Timediff(List edge, IntegerVector node, double when, double mu) {
   // Calculate the weighted time difference from previous interactions to certain time 'when'
   //
   // Args:
   //  edge: list of document information with 3 elements (sender, receiver, time)
   //  node: nodelist containing the ID of nodes
   //  when: specific timepoint that we are calculating the time difference from
-  //  lambda: parameter of response speed with larger values indicating faster response
+  //  mu: parameter of response speed with larger values indicating faster response
   //
   // Returns:
   //  Matrix of weighted time differences between all nodes
@@ -226,7 +226,7 @@ NumericMatrix Timediff(List edge, IntegerVector node, double when, double lambda
 	    IntegerVector receiver = document2[1];
 	    double time = document2[2];
 	    for (int r = 0; r < receiver.size(); r++){
-	      histmat(sender - 1, receiver[r] - 1) = histmat(sender - 1, receiver[r] - 1) + exp(- lambda * (when - time));
+	      histmat(sender - 1, receiver[r] - 1) = histmat(sender - 1, receiver[r] - 1) + exp(- mu * (when - time));
 	   }
 	 }
   }

@@ -42,4 +42,10 @@ Wallach, H.~M., Mimno, D.~M., and McCallum, A. (2009).
 \newblock In {\em Advances in neural information processing systems}, pages
   1973--1981.
 
+\bibitem[Zhou, 2015]{zhou2015infinite}
+Zhou, M. (2015).
+\newblock Infinite edge partition models for overlapping community detection
+  and link prediction.
+\newblock In {\em AISTATS}.
+
 \end{thebibliography}

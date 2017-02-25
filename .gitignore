@@ -3,3 +3,7 @@
 *.aux
 *.log
 *.synctex.gz
+
+*.history
+
+*.blg
