@@ -380,12 +380,15 @@ In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol
 Let $t^{(d)}$ be the observed time, $t_i$ be the latent time associated with the latent email sent by $i$, and $i \rightarrow j$ be an indicator of whether sender $i$ added $j$ to the latent email receivers (i.e. $j \in J_i$). 
   \begin{equation}
   \begin{split}
-P(i \rightarrow j|\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}) &= \frac{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j)}{P(\Delta T_{i{J_i}} > t^{(d)})}  \\&= \frac{P(\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j)}{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j) + P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \not\to j)P(i \not\to j)} \\ & = \frac{e^{-(t^{(d)}-t^{(d-1)})\lambda_{iJ_i}(t_+^{(d-1)})}(1-e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})}{e^{-(t^{(d)}-t^{(d-1)})\lambda_{iJ_i}(t_+^{(d-1)})}(1-e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})+e^{-(t^{(d)}-t^{(d-1)})\lambda_{iJ_i}(t_+^{(d-1)})}(e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})}
+P(i \rightarrow j|\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}) &= \frac{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j)}{P(\Delta T_{i{J_i}} > t^{(d)})}  \\&= \frac{P(\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j)}{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j) + P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \not\to j)P(i \not\to j)} 
   \end{split}
   \end{equation}
-  where $P(\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)$ and $P(\Delta T_{i{J_i}} >\Delta T_{i^{(d)}{J^{(d)}}}|i \not\to j)$ are given by the cumulative exponential distributions associated with the respective $\lambda_{iJ_i}(t_+^{(d-1)})$ and $P(i \rightarrow j)$ and $P(i \not\to j)$ are given by the Bernoulli transformation in Section \ref{subsubsec: Tie Generating Process}.
-  \\ \newline
- When it comes to the inference, conditioned upon the existence of the $d^{th}$ document at some particular time $t^{(d)}$, the probability that the document is sent from $i^{(d)}$ to $J^{(d)} (=J_{i^{(d)}})$ is
+  where $P(\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)$ and $P(\Delta T_{i{J_i}} >\Delta T_{i^{(d)}{J^{(d)}}}|i \not\to j)$ are given by the cumulative exponential distributions associated with the respective $\lambda_{iJ_i}(t_+^{(d-1)})$ and $P(i \rightarrow j)$ and $P(i \not\to j)$ are given by the Bernoulli transformation in Section \ref{subsubsec: Tie Generating Process}. Therefore, we determine the latent ties $I(i\rightarrow j)$ from Bernoulli distribution of probability:
+    \begin{equation}
+ \frac{e^{-(t^{(d)}-t^{(d-1)})\lambda^j_{iJ_i}(t_+^{(d-1)})}(1-e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})}{e^{-(t^{(d)}-t^{(d-1)})\lambda^j_{iJ_i}(t_+^{(d-1)})}(1-e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})+e^{-(t^{(d)}-t^{(d-1)})\lambda^{-j}_{iJ_i}(t_+^{(d-1)})}(e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})},
+    \end{equation}
+    where $\lambda^j_{iJ_i}$ is calculated from the receiver set of $i$ that includes $j$, while $\lambda^{-j}_{iJ_i}$ is calculated from the receiver set of $i$ that excludes $j$.\\ \newline
+Next, when it comes to the inference, conditioned upon the existence of the $d^{th}$ document at some particular time $t^{(d)}$, the probability that the document is sent from $i^{(d)}$ to $J^{(d)} (=J_{i^{(d)}})$ is
   \begin{equation}
   \begin{split}
   \mathcal{L}(\boldsymbol{\beta}^{(c^{(d)})}) &= P\Big(\Delta T_{i^{(d)}{J^{(d)}}}\sim\mbox{Exp}(\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)}))\Big)\times P\Big(\mbox{min}(\Delta T_{i{J_i}}) = \Delta T_{i^{(d)}{J^{(d)}}}\Big)\times P\Big(\mbox{Edge creations}\Big)\\&
