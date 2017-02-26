@@ -67,9 +67,9 @@
 	this application, we demonstrate that the IPTM is effective at
 	predicting and explaining continuous-time textual communications.	
 \end{abstract}
-\section{IPTM Model}
+\section{IPTM Model} \label{sec: IPTM Model}
 We first introduce the multiplicative Cox intensity model in the context of tie formation process in a continuous-time textual communication network. We then illustrate the generative process of the model which incorporates the generative process of stochastic actor-oriented models and latent Dirichlet allocation. Lastly, specification of the dynamic network statistics used is demonstrated. For concreteness, we frame our discussion of this model in terms of email data, although it is generally applicable to any similarly-structured communication data.
-\subsection{Cox Multiplicative Intensity}
+\subsection{Cox Multiplicative Intensity} \label{subsec: Cox Multiplicative Intensity}
 Assume we have a collection of documents, consisting of $D$ number of unique documents. A single email, indexed by $d \in \{1,...,D\}$, is represented by the four components ($i^{(d)}, J^{(d)}, t^{(d)},  W^{(d)}$). The first two are the sender and receiver of the email: an integer $i^{(d)} \in \{1,...,A\}$ indicates the identity of the sender out of $A$ number of actors (or nodes) and an integer vector $J^{(d)} = \{j_r^{(d)}\}_{r=1}^{|J^{(d)}|} $ indicates the identity of the receiver (or receivers) out of $A-1$ number of actors (by excluding self-loop), where $|J^{(d)}|\in \{1,...,A-1\}$ denotes the total number of the receivers. Next, $t^{(d)}$ is the (unix time-based) timestamp of the email $d$, and $W^{(d)} = \{w^{(d)}_m \}_{n=1}^{N^{(d)}}$ is a set of tokens that comprise the text of the email. In this section, we only consider the first three , ($i^{(d)}, J^{(d)}, t^{(d)}$), and explain how we apply multiplicative intensity model to the generating process of a document (or a tie). \\ \newline 
 \begin{comment}
 Let $T$ denote the survival time. In our context, survival times measure the time to send the document. Following the typical survival analysis framework, the distribution of $T$ is described or characterized by three functions, namely:
@@ -111,7 +111,7 @@ and thus following the dominant method for summarizing survival data, we will us
 that depend on the history of the process. Cox multiplicative intensity model, also known as the Cox proportional hazards (PH) model, is the most common approach to model covariate effects on survival. \\ \newline
 \end{comment}
 The interaction-partitioned topic model (IPTM) assigns each communication to an ``interaction pattern," characterized by a set of dynamic network features and a distribution over a shared set of topics. Here we illustrate how a set of dynamic network features contribute uniquely identifies each interaction pattern. Assume that each interaction pattern $c \in \{1,...,C\}$ has an $A\times A$ stochastic intensity (or hazard) matrix of $\boldsymbol{\lambda}^{(c)}(t) = \{\{\lambda^{(c)}_{ij}(t)\}_{i=1}^{A}\}_{j=1}^{A}$, where $\lambda^{(c)}_{ij}(t)$=P\{for interaction pattern $c$, $i\rightarrow j$ occurs in time interval $[t, t+dt)$, given that it has not ben sent until time $t$\}. There could be various static and dynamic covariates $\boldsymbol{x}^{(c)}_t(i, j)$ that affects the stochastic intensity, however, we decide to use the covariates
-that depend on the history of the process, considering the strong recency and reciprocity effects of textual communications, especially emails. The detailed specifications of the dynamic network covariates are illustrated in Section 1.3.\\ \newline
+that depend on the history of the process, considering the strong recency and reciprocity effects of textual communications, especially emails. The detailed specifications of the dynamic network covariates are illustrated in Section \ref{subsec: Dynamic covariates}.\\ \newline
 Following the multiplicative Cox model, the $(i, j)^{th}$ element of the intensity matrix $\boldsymbol{\lambda}^{(c)}(t)$ forms:
 \begin{equation}
 \lambda^{(c)}_{ij}(t)=\lambda_0\cdot \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\},
@@ -150,9 +150,9 @@ where the approximation $\mbox{log}{L}_t(\boldsymbol{\beta}^{(c)})\approx \mbox{
 \end{split}
 \end{equation}
 \end{comment}
-\subsection{Generative Process}
+\subsection{Generative Process} \label{subsec: Generative Process}
 The interaction-partitioned topic model (IPTM) is a probabilistic model of who communicates with whom about what, and when. The generative process of IPTM consists of two parts: 1) generation of the ties (i.e. `who', `whom', and `when') and 2) generation of content (i.e. `what'). The tie generating process resembles that of stochastic actor-oriented models (SAOMs) of \cite{snijders1996stochastic}, and the content generating process directly follows latent Dirichlet allocation (LDA) of \cite{Blei2003}. In this section, we illustrate the two generative process separately, and show how the two processes can jointly generate a document.
-\subsubsection{Tie Generating Process}
+\subsubsection{Tie Generating Process}\label{subsubsec: Tie Generating Process}
 Motivated from stochastic actor-oriented model (SAOM) of \cite{snijders2017stochastic}, a model which assumes that the network evolves as a stochastic process `driven by the actors’, we assume the following generative process for each document $d$ in a corpus $D$:
 \begin{itemize}
 	\item[1.] Choose the interaction pattern $c^{(d)} \sim \mbox{Multinomial}(\gamma)$
@@ -163,20 +163,7 @@ Motivated from stochastic actor-oriented model (SAOM) of \cite{snijders2017stoch
 	\item[3.] For each sender $i = 1,...,A$, generate the time increments $\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}(t_+^{(d-1)}))$, where $\lambda_{i{J_i}}(t_+^{(d-1)})= \mbox{exp}\Big\{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\}$
 	 \item[4.] Set the timestamp $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$.
 \end{itemize}
-Then, conditioned upon the existence of the $d^{th}$ document at some particular time $t^{(d)}$, the probability that the document is sent from $i^{(d)}$ to $J^{(d)} (=J_{i^{(d)}})$ is
-\begin{equation}
-\begin{split}
-\mathcal{L}(\boldsymbol{\beta}^{(c^{(d)})}) &= P\Big(\Delta T_{i^{(d)}{J^{(d)}}}\sim\mbox{Exp}(\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)}))\Big)\times P\Big(\mbox{min}(\Delta T_{i{J_i}}) = \Delta T_{i^{(d)}{J^{(d)}}}\Big)\times P\Big(\mbox{Edge creations}\Big)\\&
-=\Big(\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})e^{-(t^{(d)}-t^{(d-1)})\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})}\Big)\times \Big(e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \neq i^{(d)}}\lambda_{i{J_i}}(t_+^{(d-1)})}\Big)\\ & \quad\quad\times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (1-e^{-\delta\lambda_{ij}(t_+^{(d-1)})})^{I(j \in J_i)}(e^{-\delta\lambda_{ij}(t_+^{(d-1)})})^{1-I(j \in J_i)}\Big)\\
-& = \Big(\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}(t_+^{(d-1)})}\Big) \times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda_{ij}(t_+^{(d-1)})}\Big),
-\end{split}
-\end{equation}
-Applying this to the every document in the corpus and taking the log,  we obtain the full likelihood function used for the inference of $\{\boldsymbol{\beta}^{(c)}\}_{c=1}^C$ as:
-\begin{equation}
-\begin{split}
-\ell(\boldsymbol{\beta}^{(c^{(d)})}) &=\sum_{d=1}^D\Big\{\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i^{(d)}, j)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\\&\quad\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}}-1)-\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\Big)\Big\}.
-\end{split}\end{equation}
-\subsubsection{Content Generating Process}
+\subsubsection{Content Generating Process} \label{subsubsec: Content Generating Process}
 By simply adding the interaction pattern assignment of each document to the existing framework of latent Dirichlet allocation (LDA), we assume the following generative process for each document $d$ in a corpus $D$:
 \begin{itemize}
 	\item[1.] Choose the interaction pattern $c^{(d)} \sim \mbox{Multinomial}(\gamma)$
@@ -188,7 +175,7 @@ By simply adding the interaction pattern assignment of each document to the exis
  			\item[(b)] Choose a word $w_n^{(d)} \sim\mbox{Multinomial} (\phi^{(z_n^{(d)})})$
  		\end{itemize}
 \end{itemize}
-\subsubsection{Joint Generation Process of Document}
+\subsubsection{Joint Generative Process of Document} \label{subsubsec: Joint Generative Process of Document}
  Below are the joint generative process for each document in a corpus $D$ and the corresponding plate notation (Figure 1).
 \begin{itemize}
 	\item[1.] {$\boldsymbol{\phi}^{(k)} \sim \mbox{Dir}(\beta, \bf u)$} \textbf{[See Algorithm 1]}\\
@@ -198,7 +185,7 @@ By simply adding the interaction pattern assignment of each document to the exis
 			\item [(a)] $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$ \\
 			- The vector of coefficients depends on the interaction pattern $c$. This means that there is variation in the degree of influence from the dynamic network statistics.
 			\item [(b)]  Set $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$\\
-			- The topic proportions for documents in the same cluster share the same parameters in the Dirichlet distribution. How we choose these parameters will be explained in Section 2.4.
+			- The topic proportions for documents in the same cluster share the same parameters in the Dirichlet distribution. How we choose these parameters will be explained in Section \ref{subsec: Asymmetric Dirichlet prior over theta}.
 		\end{itemize}
 	\item[3.] For the document $d=1,...,D$ \textbf{[See Algorithm 3]}:
 	\begin{itemize}
@@ -349,7 +336,7 @@ set $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$
  	\label{fig:plate1}
  \end{figure}
 \fi
- \subsection{Dynamic covariates to measure network effects}
+ \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates}
  The network statistics $\boldsymbol{x}^{*(c)}_t(i, j)$ of Equation (2), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). Since time-invariant covariates can be easily specified in various manners (e.g. homophily or group-level effects), here we only consider specification of dynamic covariates.\\
  \begin{figure}[ht]
  	\centering
@@ -368,7 +355,7 @@ set $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$
  \end{itemize}
  Here, time decaying function $g(t-t^{(d)})$ reflects the difference between current time $t$ and the timestamp of previous email $t^{(d)}$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t^{(d)})=e^{-\mu(t-t^{(d)})}$ where $\mu$ is the parameter of speed at
  which sender replies to emails, with larger values indicating faster response times. Indeed, $\mu^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, in our simulation we fixed $\mu=0.05$ (i.e. $g(t-t^{(d)})=e^{-0.05(t-t^{(d)})}$), but this setup may vary based on the nature of document.
-  \section{Inference}
+  \section{Inference} \label{sec: Inference}
 In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the sender, recipient, and timestamps $(i=i^{(d)}, j=J^{(d)}, t=t^{(d)})$ of the email in the form of the counting process $\mathcal{N}=\{\boldsymbol{N}^{(d)}(t^{(d)}) \}_{d=1}^{D}.$ Next,  $\mathcal{X}=\{\boldsymbol{x}^{(c)}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}^{(d)} \}_{d=1}^{D},$ and $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$.\\
  \newline 
  Below is the the big joint distribution
@@ -388,7 +375,31 @@ In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol
  P( \mathcal{Z}, \mathcal{C}, \mathcal{B}|\mathcal{W}, \mathcal{N}, \mathcal{X}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2) \propto P(\mathcal{W},  \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N} | \mathcal{X}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)
  \end{equation}
  Either Gibbs sampling or Metropolis-Hastings algorithm is applied by sequentially resampling each latent variables from their respective conditional posterior.
- \subsection{Resampling $\mathcal{C}$}
+  \subsection{Data augmentation} \label{subsec: Data augmentation}
+  As mentioned earlier in Section \ref{subsubsec: Tie Generating Process}, we use data augmentation to make inference on $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$. That is, for every document $d$, we generate the latent sender-receivers $(i, J_i)$ for all $i \in \mathcal{A}_{\backslash i}$ and plug the generated sets into the likelihood function of $\boldsymbol{\beta}^{(c)}$. Note that in latent data generating step, the sets $(i, J_i)$ should account for the probability $P(\mbox{latent receiver}| \mbox{latent time} < \mbox{observed time})$. This probability can be derived fairly easily using Bayes' theorem: \\\newline
+Let $t^{(d)}$ be the observed time, $t_i$ be the latent time associated with the latent email sent by $i$, and $i \rightarrow j$ be an indicator of whether sender $i$ added $j$ to the latent email receivers (i.e. $j \in J_i$). 
+  \begin{equation}
+  \begin{split}
+P(i \rightarrow j|\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}) &= \frac{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j)}{P(\Delta T_{i{J_i}} > t^{(d)})}  \\&= \frac{P(\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j)}{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j) + P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \not\to j)P(i \not\to j)} \\ & = \frac{e^{-(t^{(d)}-t^{(d-1)})\lambda_{iJ_i}(t_+^{(d-1)})}(1-e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})}{e^{-(t^{(d)}-t^{(d-1)})\lambda_{iJ_i}(t_+^{(d-1)})}(1-e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})+e^{-(t^{(d)}-t^{(d-1)})\lambda_{iJ_i}(t_+^{(d-1)})}(e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})}
+  \end{split}
+  \end{equation}
+  where $P(\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)$ and $P(\Delta T_{i{J_i}} >\Delta T_{i^{(d)}{J^{(d)}}}|i \not\to j)$ are given by the cumulative exponential distributions associated with the respective $\lambda_{iJ_i}(t_+^{(d-1)})$ and $P(i \rightarrow j)$ and $P(i \not\to j)$ are given by the Bernoulli transformation in Section \ref{subsubsec: Tie Generating Process}.
+  \\ \newline
+ When it comes to the inference, conditioned upon the existence of the $d^{th}$ document at some particular time $t^{(d)}$, the probability that the document is sent from $i^{(d)}$ to $J^{(d)} (=J_{i^{(d)}})$ is
+  \begin{equation}
+  \begin{split}
+  \mathcal{L}(\boldsymbol{\beta}^{(c^{(d)})}) &= P\Big(\Delta T_{i^{(d)}{J^{(d)}}}\sim\mbox{Exp}(\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)}))\Big)\times P\Big(\mbox{min}(\Delta T_{i{J_i}}) = \Delta T_{i^{(d)}{J^{(d)}}}\Big)\times P\Big(\mbox{Edge creations}\Big)\\&
+  =\Big(\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})e^{-(t^{(d)}-t^{(d-1)})\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})}\Big)\times \Big(e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \neq i^{(d)}}\lambda_{i{J_i}}(t_+^{(d-1)})}\Big)\\ & \quad\quad\times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (1-e^{-\delta\lambda_{ij}(t_+^{(d-1)})})^{I(j \in J_i)}(e^{-\delta\lambda_{ij}(t_+^{(d-1)})})^{1-I(j \in J_i)}\Big)\\
+  & = \Big(\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}(t_+^{(d-1)})}\Big) \times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda_{ij}(t_+^{(d-1)})}\Big),
+  \end{split}
+  \end{equation}
+  Applying this to the every document in the corpus and taking the log,  we obtain the full likelihood function used for the inference of $\{\boldsymbol{\beta}^{(c)}\}_{c=1}^C$ as:
+  \begin{equation}
+  \begin{split}
+  \ell(\boldsymbol{\beta}^{(c^{(d)})}) &=\sum_{d=1}^D\Big\{\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i^{(d)}, j)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\\&\quad\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}}-1)-\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\Big)\Big\},
+  \end{split}\end{equation}
+  and since the equation above is the joint likelihood function of the sender, receivers and timestamp $(i^{(d)}, J^{(d)}, t^{(d)})$, it will be used for $P( \mathbf{N}^{(d)}{(t^{(d)})}| c^{(d)}=c, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X})$ in the next following steps.
+ \subsection{Resampling $\mathcal{C}$} \label{subsec: Resampling C}
  The first variable we are going to resample is the document-interaction pattern assignments, one document at a time. To obtain the Gibbs sampling equation, which is the posterior conditional probability for the interaction pattern $\mathcal{C}$ for $d^{th}$ document, i.e. $P(c^{(d)}=c|\mathcal{W}, \mathcal{Z},  \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)$. We can derive the equation as below:
  \begin{equation}
  \begin{aligned} & P(c^{(d)}=c|\mathcal{W}, \mathcal{Z}, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\
@@ -407,7 +418,7 @@ In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol
  \Big[\mbox{log}(\gamma_{c})\Big]&+\Big[\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i^{(d)}, j)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\\&+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}}-1)-\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\Big)\Big]\\&+\Big[\sum_{n=1}^{N^{(d)}}\mbox{log}\Big(N_{z_n^{(d)}|d, \backslash d, n}+\alpha^{(c)} \boldsymbol{m}^{(c)}_{z_n^{(d)}}\Big)-\mbox{log}{\Big(N_{\cdot|d, \backslash d, n}+\alpha^{(c)}}\Big)\Big].
  \end{split}
  \end{equation}
- \subsection{Resampling $\mathcal{Z}$}
+ \subsection{Resampling $\mathcal{Z}$}  \label{subsec: Resampling Z}
  Next, the new values of $z^{(d)}_m$ are sampled for all of the token topic assignments (one token at a time), using the conditional posterior probability of being topic $k$ as we derived in APPENDIX C:
  \begin{equation}
  \begin{aligned} & 
@@ -422,7 +433,7 @@ In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol
  \end{aligned}
  \end{equation}
  which is the well-known form of collapsed Gibbs sampling equation for LDA.
- \subsection{Resampling $\mathcal{B}$}
+ \subsection{Resampling $\mathcal{B}$}  \label{subsec: Resampling B}
  Finally, we wan to update the interaction pattern parameter $\boldsymbol{\beta}^{(c)}$, one interaction pattern at a time. For this, we will use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with variance $\boldsymbol{\beta}^2_B$ (proposal distirbution variance parameters set by the
  user), centered on the current values of $\boldsymbol{\beta}^{(c)}$. Then we draw a proposal $\boldsymbol{\beta}'^{(c)}$ at each iteration. Under symmetric proposal distribution (such as multivariate Gaussian), we cancel out Q-ratio and obtain the acceptance probability equal to:
  \begin{equation}
@@ -439,7 +450,7 @@ In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol
  \frac{P(\mathcal{B'}|\mathcal{W},\mathcal{Z}, \mathcal{C}, \mathcal{N}, \mathcal{X})}{P(\mathcal{B}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{N}, \mathcal{X})} &=\frac{P(\mathcal{N}|\mathcal{B'}, \mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X})P(\mathcal{B'})}{P(\mathcal{N}|\mathcal{B}, \mathcal{W}, \mathcal{Z},  \mathcal{C}, \mathcal{X})P(\mathcal{B})}\\&=\frac{P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B'})P(\mathcal{B'})}{P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})P(\mathcal{B})},
  \end{aligned}
  \end{equation}
- where $P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})$ is the partial likelihood in Equation (4).\\ \newline For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. Similar to what we did in Section 3.1, we can take the log and obtain the log of acceptance ratio as following:
+ where $P(\mathcal{N}|\mathcal{C}, \mathcal{X}, \mathcal{B})$ is the partial likelihood in Equation (4).\\ \newline For $P(\mathcal{B})$, we select a multivarate Gaussian priors as mentioned earlier. Similar to what we did in Section \ref{subsec: Resampling C}, we can take the log and obtain the log of acceptance ratio as following:
  \begin{equation}
  \begin{aligned} 
  &\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)-\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&+\sum_{d:c^{(d)}=c}\Big[\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}^{\prime(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i^{(d)}, j)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{\prime(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\\&+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta e^{\boldsymbol{\beta}^{\prime(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}}-1)-\delta e^{\boldsymbol{\beta}^{\prime(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\Big)\Big]\\&-\sum_{d:c^{(d)}=c} \Big[\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i^{(d)}, j)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\\&+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}}-1)-\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\Big)\Big],
@@ -451,7 +462,7 @@ In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol
  \mbox{log(Acceptance Probability) = min((18), 0) }
  \end{equation}
  To determine whether we accept the proposed update or not, we take the usual approach, by comparing the log of acceptance ratio we have to the log of a sample from uniform(0,1).\\
- \subsection{Asymmetric Dirichlet prior over $\Theta$ (topic distribution)}
+ \subsection{Asymmetric Dirichlet prior over $\Theta$ (topic distribution)}  \label{subsec: Asymmetric Dirichlet prior over theta}
  \cite{wallach2009rethinking} demonstrated that the typical implementations of topic models using symmetric Dirichlet priors with fixed concentration parameters often result in less practical results, and the model fitting can be improved by applying an asymmetric Dirichlet prior over the document–topic distributions (i.e. $\Theta$). Therefore, we assign an asymmetric Dirichlet prior over the interaction pattern-topic distributions, $\Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}$, where $\boldsymbol{\theta}^{(d)}$ is drawn from Dir($\alpha^{(c^{(d)})}, \boldsymbol{m}^{(c^{(d)})}$). While \cite{wallach2009rethinking} illustrates two different methods, adding a hierarchy to $\Theta$ and optimizing the hyperparameters ($\alpha$ and $\boldsymbol{m}$), we choose to use hyperparameter
  optimization steps since it is computationally efficient and also sufficient to achieve the desired performance gains. Now, we assume $\boldsymbol{m}^{(c)}$ to be non-uniform base measures (while $\alpha^{(c)}$ is still a fixed concentration parameter), and implement the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured} based on Minka’s fixed-point iteration \citep{minka2000estimating}.\\ \newline
  Here we summarize Chapter 2 of \cite{wallach2008structured} and its extension to our IPTM, to illustrate the basic steps and equations used for our optimization. Basically, we want to find the optimal hyperparameter $[\alpha\boldsymbol{m}]^*$ given the data $\mathcal{D}$ such that the probability of the
@@ -474,21 +485,21 @@ In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol
  [\alpha^{(c)} m^{(c)}_k]^*=\alpha^{(c)} m^{(c)}_k\frac{\sum_{n=1}^{\mbox{max}_dN_{k|d}}C_k(n)\sum_{f=1}^n \frac{1}{f-1+\alpha^{(c)} m^{(c)}_k}}{\sum_{n=1}^{\mbox{max}_dN_{\cdot|d}}C_\cdot(n)\sum_{f=1}^n \frac{1}{f-1+\alpha^{(c)}}}.
  \end{equation}
  This method is as accurate as Mika's fixed-point iteration method, but it acheives computational efficiency since the digamma recurrence relation reduces the number of new calculations required for each successive $n$ to one. Pseudocode
- for the complete fixed-point iteration is given in algorithm 2.2 of \cite{wallach2008structured}. \subsection{Pseudocode}
+ for the complete fixed-point iteration is given in algorithm 2.2 of \cite{wallach2008structured}. \subsection{Pseudocode}  \label{subsec: Pseudocode}
  To implement the inference procedure outlined above, we provide a pseudocode for Markov Chain Monte Carlo (MCMC) sampling. Note that we use two loops, outer iteration and inner iteration, in order to avoid the label switching problem \citep{jasra2005markov}, which is an issue caused by the nonidentifiability of the components under symmetric priors in Bayesian mixture modeling. When summarizing model results, we will only use the values from the last $I^{th}$ outer loop because there is no label switching problem within the inner iteration.
  \begin{algorithm}[H]
  	\SetAlgoLined
  	\caption{MCMC($I, n_1, n_2, n_3, \beta_B$ )}
  	set initial values $\mathcal{C}^{(0)}, \mathcal{Z}^{(0)},$ and $\mathcal{B}^{(0)}$\\
  	\For{i=1 to I}{
- 		optimize $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$ using hyperparameter optimization in Section 2.4, for $c=1,...,C$\\
+ 		optimize $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$ using hyperparameter optimization in Section \ref{subsec: Asymmetric Dirichlet prior over theta}, for $c=1,...,C$\\
  			\For{d=1 to D}{
- 				sample the augmented data $(i, J_i)$ for $i \in\mathcal{A}_{\backslash i^{(d)}}$ (See Section 1.2.1)
+ 				sample the augmented data $(i, J_i)$ for $i \in\mathcal{A}_{\backslash i^{(d)}}$ (See Section \ref{subsubsec: Tie Generating Process})
  			}
  		\For{n=1 to $n_1$}{
  			fix $\mathcal{Z}=\mathcal{Z}^{(i-1)}$ and $\mathcal{B}=\mathcal{B}^{(i-1)}$ \\
  			\For{d=1 to D}{
- 				calculate $\boldsymbol{x}^{*(c)}_{t^{(d)}}(i^{(d)}, j)$ according to Section 1.3, for every $c=1,...,C$\\
+ 				calculate $\boldsymbol{x}^{*(c)}_{t^{(d)}}(i^{(d)}, j)$ according to Section \ref{subsec: Dynamic covariates}, for every $c=1,...,C$\\
  				calculate $p^\mathcal{C}|\boldsymbol{z}^{(d)}, \boldsymbol{\beta}^{(c^{(d)})}=(p_1,...,p_C),$ where $p_c=$ exp(Eq. (11) corresponding to $c$)\\
  				draw $c^{(d)}\sim \mbox{multinomial}(p^\mathcal{C})$}}
  		\For{n=1 to $n_2$}{
@@ -500,18 +511,18 @@ In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol
  		}
  		\For{n=1 to $n_3$}{
  			fix $\mathcal{C}=\mathcal{C}^{(i)}$, $\mathcal{Z}=\mathcal{Z}^{(i)}$, and $\mathcal{B}^{(0)}=$ last value ($n_3^{th}$) of $\mathcal{B}^{(i-1)}$\\
- 			calculate $\mathcal{X}=\{\boldsymbol{x}^{*(c)}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ according to Section 1.3, given fixed $\mathcal{C}$\\
- 			\For{c=1 to C}{draw $\boldsymbol{\beta}^{(c)}| \mathcal{C}, \mathcal{Z}, \mathcal{B}^{(n-1)}$ using M-H algorithm in Section 2.3\\
+ 			calculate $\mathcal{X}=\{\boldsymbol{x}^{*(c)}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ according to Section \ref{subsec: Dynamic covariates} given fixed $\mathcal{C}$\\
+ 			\For{c=1 to C}{draw $\boldsymbol{\beta}^{(c)}| \mathcal{C}, \mathcal{Z}, \mathcal{B}^{(n-1)}$ using M-H algorithm in Section \ref{subsec: Resampling B}\\
  			\textcolor{red}{draw $\delta$, a tuning parameter that controls the number of multicasts\\
  			draw $\mu$, the time decay parameter}
  		}
  		}
  	}	summarize the results using:\\ the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$
  \end{algorithm}
- \section{Appliction to North Carolina email data}
+ \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
- \subsection{Vance county email data}
-Vance county data contains $D=185$ emails sent between $A=18$ actors, including $W=620$ vocabulary in total. We used $K=10$ topics and $C=2$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated in Section 3. We set the outer iteration number as $I=1000$, the inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. First 100 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $10^{th}$ sample was taken as a thinning process of third inner iteration. In addition, after some experimentation, $\delta_B$ was set as 0.5, to ensure sufficient acceptance rate. MCMC diagnostic plots are attached in APPENDIX D, as well as the geweke test statistics. \\\newline
+ \subsection{Vance county email data} \label{subsec: Vance county email data}
+Vance county data contains $D=185$ emails sent between $A=18$ actors, including $W=620$ vocabulary in total. We used $K=10$ topics and $C=2$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We set the outer iteration number as $I=1000$, the inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. First 100 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $10^{th}$ sample was taken as a thinning process of third inner iteration. In addition, after some experimentation, $\delta_B$ was set as 0.5, to ensure sufficient acceptance rate. MCMC diagnostic plots are attached in APPENDIX D, as well as the geweke test statistics. \\\newline
  Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects $\boldsymbol{\beta}^{(c)}$ corresponding to the interaction pattern, (b) the top 3 topics most likely to be generated conditioned on the interaction pattern, and (c) the top 10 most likely words to have generated conditioned on the topic and interaction pattern.
  \begin{table}[ht]
  	\centering
@@ -569,7 +580,7 @@ Vance county data contains $D=185$ emails sent between $A=18$ actors, including 
  	\label{table:VancewordsMCMC}
  \end{table}
  \newpage
- \subsection{Dare county email data}
+ \subsection{Dare county email data} \label{subsec: Dare county email data}
  Dare county data contains $D=2247$ emails between $A=27$ actors, including $W=2907$ vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=1000$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. In addition, after some experimentation, $\delta_B$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every $10^{th}$ samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics. 
  \clearpage
  \section*{APPENDIX}
