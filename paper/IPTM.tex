@@ -67,6 +67,11 @@
 	this application, we demonstrate that the IPTM is effective at
 	predicting and explaining continuous-time textual communications.	
 \end{abstract}
+\section{Introduction} \label{sec: Introduction}
+Since Latent Dirichlet Allocation \citep{Blei2003}, which models of words alone, a variety of useful topic models have been developed by considering additional components other than words. One direction incorporated the network aspect by using the author and receiver information such as Author-Topic Models \citep{rosen2004author}, Author-Recipient-Topic Models and Role-Author-Recipient-Topic Models \citep{mccallum2005topic}, however, all of the models treat the author and recipients as observed variable thus generative processes only involve topics and words in a document. On the other side, there have been a lot of topic
+models that focus on the timestamps of documents. For example, Dynamic Topic Models \citep{blei2006dynamic} introduced logistic normal topic models that rely on Markov assumptions with discretization of time, and Topics Over Time \citep{wang2006topics} suggested a countinuous-time model by generating a timestamp from the Beta distribution with its parameter depending on each topic assignment. However none of the above mentioned topic models are jointly dealing with the author-recipient and timestamps of the documents, although it is common in the field of dynamic network analysis to study who connects to whom and when $(i, j, t)$. \\ \newline
+In this paper, we develop the interaction-partitioned topic model (IPTM), a dynamic topic model which reflects the network dynamics (sender or author, recipients, and timestamp) and the contents of the document (topics and words). By assigning each communication to an
+``interaction pattern," IPTM connects the two separate processes, tie generating process from the Cox multiplicative intensity model and content generating process from latent Dirichlet allocation, and model the process of who communicates with whom about what, and when. 
 \section{IPTM Model} \label{sec: IPTM Model}
 We first introduce the multiplicative Cox intensity model in the context of tie formation process in a continuous-time textual communication network. We then illustrate the generative process of the model which incorporates the generative process of stochastic actor-oriented models and latent Dirichlet allocation. Lastly, specification of the dynamic network statistics used is demonstrated. For concreteness, we frame our discussion of this model in terms of email data, although it is generally applicable to any similarly-structured communication data.
 \subsection{Cox Multiplicative Intensity} \label{subsec: Cox Multiplicative Intensity}
@@ -125,6 +130,7 @@ receivers—are allowed for this model, we expand the rate of interaction betwee
 \begin{equation}
 \lambda^{(c)}_{iJ}(t)= \mbox{exp}\Big\{\sum\limits_{j \in J} \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}\cdot \prod\limits_{j \in J}1\{j \in \mathcal{A}_{\backslash i}\}.
 \end{equation}
+In case of single receivers ($|J|=1$),  Equation (3) is reduced to Equation (2), thus in the following sections we use the Equation (3) of multicast cases as a general form of the stochastic intensity between the sender and receivers.
 \begin{comment}
 Conditioned upon the existence of a unique document at some particular time $t$, the probability that the document is sent from $i$ to $j$ is
 	\begin{align*}
@@ -164,7 +170,7 @@ Motivated from stochastic actor-oriented model (SAOM) of \cite{snijders2017stoch
 	 \item[4.] Set the timestamp $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$.
 \end{itemize}
 \subsubsection{Content Generating Process} \label{subsubsec: Content Generating Process}
-By simply adding the interaction pattern assignment of each document to the existing framework of latent Dirichlet allocation (LDA), we assume the following generative process for each document $d$ in a corpus $D$:
+The content generating process is a simple addition of the interaction pattern assignment to the existing generative process of Latent Dirichlet Allocation \cite{Blei2003}. This concept is also very similar to the Cluster-Based Topic Modelling \citep{wallach2008structured}, in a way that every document is assigned its group $c^{(d)}$ and then each document-specific topic distribution $\boldsymbol{\theta}^{(d)}$ can instead be drawn from a group-specific $\mbox{Dir}(\alpha^{(c^{(d)})}, \boldsymbol{m}^{(c^{(d)})})$, thereby respecting the document groupings. We assume the following generative process for each document $d$ in a corpus $D$:
 \begin{itemize}
 	\item[1.] Choose the interaction pattern $c^{(d)} \sim \mbox{Multinomial}(\gamma)$
 	\item[2.] Choose the number of words $N^{(d)} \sim \mbox{Poisson}(\zeta)$
@@ -238,7 +244,7 @@ set $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$
  \small
  \begin{figure}[ht]
  	\centering
- \begin{tikzpicture}
+\scalebox{0.74}{  \begin{tikzpicture}
  		\tikzstyle{main}=[circle, minimum size = 13mm, thick, draw =black!80, node distance = 10.5mm]
  		\tikzstyle{connect}=[-latex, thick]
  		\tikzstyle{box}=[rectangle, draw=black!100]
@@ -254,7 +260,7 @@ set $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$
  									\node[main] (beta) [left=of N ,label=center:$\boldsymbol{\beta}^{(c)}$] { };
  									\node[main, fill = black!10] (x) [below=of beta ,label=center:$\boldsymbol{x}^{(c)}_t$] { };
  										\node[main] (sigma) [left=of beta,label=center:$\sigma^2$] { };
- 										\node[main] (delta) [left=of x,label=center:$\delta$] { };
+ 										\node[main] (mu) [left=of x,label=center:$\mu$] { };
  											\node[main] (alpha) [right=of theta,label=center:${\alpha}^{(c)}$] { };
  											\node[main] (m) [below=of alpha,label=center:$\boldsymbol{m}^{(c)}$] { };
  											
@@ -267,7 +273,7 @@ set $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$
   								(beta2) edge [connect] (phi)
   									(x) edge [connect] (N)
   									(beta) edge [connect] (N)
-  									(delta) edge [connect] (x)
+  									(mu) edge [connect] (x)
   									(sigma) edge [connect] (beta)
   										(alpha) edge [connect] (theta)
   										(m) edge [connect] (theta)
@@ -282,7 +288,7 @@ set $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$
   								\node[rectangle, inner sep=4mm, fit= (beta)(x) ,label= below left:$C$, xshift=6mm, yshift=-5.5mm] {};
   										\node[rectangle, inner sep=3mm,draw=black!100, fit= (alpha)(m)] {};
   										\node[rectangle, inner sep=4mm, fit= (alpha)(m) ,label= below left:$C$, xshift=6mm, yshift=-5.5mm] {};
- 	 		\end{tikzpicture}
+ 	 		\end{tikzpicture}}
  	\caption{Plate notation of IPTM}
  	\label{fig:plate}
  \end{figure}
@@ -344,7 +350,7 @@ set $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$
  	\label{fig:PerryWolfeplot}
  \end{figure}
  \newline Following \cite{PerryWolfe2012} (refer to Fig.3 of \cite{PerryWolfe2012} attached above), we use 4 effects as components of $\boldsymbol{x}^{*(c)}_t(i, j)$, including the intercept to estimate the baseline intensities. The two behaviors (send and receive) are dyadic, involving exactly two actors,
- while the one is triadic (sum of 2-send, 2-receive, sibling, and cosibling), involving exactly three actors. In addition to the ones from \cite{PerryWolfe2012}, we also include the indegree for receiver and outdegree for sender effects to measure the popularity and centrality. However, one different point from the existing specification is that we define the effects not to be based on finite sub-interval, which require large number of dimension. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. As a result, all of the statistics can be seen as time-weighted dynamic network statistics.\\
+ while the one is triadic (sum of 2-send, 2-receive, sibling, and cosibling), involving exactly three actors. In addition to the ones from \cite{PerryWolfe2012}, we also include the indegree for receiver and outdegree for sender effects to measure the popularity and centrality. However, one different point from the existing specification is that we define the effects not to be based on finite sub-interval, which require large number of dimension. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. As a result, all of the statistics can be seen as time-weighted dynamic network statistics.
  \begin{itemize}[leftmargin=*,rightmargin=-1cm]
  	\item [1.] $\mbox{intercept}^{(c)}_t(i, j) = 1$
  	\item [2.]  $\mbox{send}^{(c)}_t(i, j)=\sum\limits_{d: c^{(d)}=c}\sum\limits_{d: t^{(d)}<t} I\{i\rightarrow j\}\cdot g(t-t^{(d)})$
@@ -353,8 +359,8 @@ set $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$
  	\item [5.]  $\mbox{outdegree}^{(c)}_t(i)=\sum\limits_{d: c^{(d)}=c}\sum\limits_{j\neq i}\sum\limits_{d: t^{(d)}<t} I\{i\rightarrow j\}\cdot g(t-t^{(d)})$
  	\item [6.] $\mbox{indegree}^{(c)}_t(j)=\sum\limits_{d: c^{(d)}=c}\sum\limits_{i \neq j}\sum\limits_{d: t^{(d)}<t} I\{j\rightarrow i\}\cdot g(t-t^{(d)})$
  \end{itemize}
- Here, time decaying function $g(t-t^{(d)})$ reflects the difference between current time $t$ and the timestamp of previous email $t^{(d)}$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t^{(d)})=e^{-\mu(t-t^{(d)})}$ where $\mu$ is the parameter of speed at
- which sender replies to emails, with larger values indicating faster response times. Indeed, $\mu^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, in our simulation we fixed $\mu=0.05$ (i.e. $g(t-t^{(d)})=e^{-0.05(t-t^{(d)})}$), but this setup may vary based on the nature of document.
+\vspace{3mm}
+Here, time decaying function $g(t-t^{(d)})$ reflects the difference between current time $t$ and the timestamp of previous email $t^{(d)}$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t^{(d)})=e^{-\mu(t-t^{(d)})}$ where $\mu$ is the parameter of speed at which sender replies to emails, with larger values indicating faster response times. Indeed, $\mu^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, in our simulation we fixed $\mu=0.05$ (i.e. $g(t-t^{(d)})=e^{-0.05(t-t^{(d)})}$), but $\mu$ can also be esitimated.
   \section{Inference} \label{sec: Inference}
 In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the sender, recipient, and timestamps $(i=i^{(d)}, j=J^{(d)}, t=t^{(d)})$ of the email in the form of the counting process $\mathcal{N}=\{\boldsymbol{N}^{(d)}(t^{(d)}) \}_{d=1}^{D}.$ Next,  $\mathcal{X}=\{\boldsymbol{x}^{(c)}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}^{(d)} \}_{d=1}^{D},$ and $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$.\\
  \newline 
@@ -387,6 +393,7 @@ P(i \rightarrow j|\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}) &= \frac{P(\D
     \begin{equation}
  \frac{e^{-(t^{(d)}-t^{(d-1)})\lambda^j_{iJ_i}(t_+^{(d-1)})}(1-e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})}{e^{-(t^{(d)}-t^{(d-1)})\lambda^j_{iJ_i}(t_+^{(d-1)})}(1-e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})+e^{-(t^{(d)}-t^{(d-1)})\lambda^{-j}_{iJ_i}(t_+^{(d-1)})}(e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})},
     \end{equation}
+    \textcolor{red}{QUESTION: We need baseline $\lambda_{iJ_i}$ before we add $j$ into the recipient set.....}\\
     where $\lambda^j_{iJ_i}$ is calculated from the receiver set of $i$ that includes $j$, while $\lambda^{-j}_{iJ_i}$ is calculated from the receiver set of $i$ that excludes $j$.\\ \newline
 Next, when it comes to the inference, conditioned upon the existence of the $d^{th}$ document at some particular time $t^{(d)}$, the probability that the document is sent from $i^{(d)}$ to $J^{(d)} (=J_{i^{(d)}})$ is
   \begin{equation}
@@ -401,7 +408,8 @@ Next, when it comes to the inference, conditioned upon the existence of the $d^{
   \begin{split}
   \ell(\boldsymbol{\beta}^{(c^{(d)})}) &=\sum_{d=1}^D\Big\{\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i^{(d)}, j)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\\&\quad\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}}-1)-\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\Big)\Big\},
   \end{split}\end{equation}
-  and since the equation above is the joint likelihood function of the sender, receivers and timestamp $(i^{(d)}, J^{(d)}, t^{(d)})$, it will be used for $P( \mathbf{N}^{(d)}{(t^{(d)})}| c^{(d)}=c, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X})$ in the next following steps.
+  and since Equation (10) above is the joint likelihood function of the sender, receivers and timestamp $(i^{(d)}, J^{(d)}, t^{(d)})$, it will be used for $P( \mathbf{N}^{(d)}{(t^{(d)})}| c^{(d)}=c, \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}_{\backslash d}, \mathcal{X})$ in the next following steps.
+  \newpage
  \subsection{Resampling $\mathcal{C}$} \label{subsec: Resampling C}
  The first variable we are going to resample is the document-interaction pattern assignments, one document at a time. To obtain the Gibbs sampling equation, which is the posterior conditional probability for the interaction pattern $\mathcal{C}$ for $d^{th}$ document, i.e. $P(c^{(d)}=c|\mathcal{W}, \mathcal{Z},  \mathcal{C}_{\backslash d}, \mathcal{B}, \mathcal{N}, \mathcal{X}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)$. We can derive the equation as below:
  \begin{equation}
@@ -432,10 +440,13 @@ Next, when it comes to the inference, conditioned upon the existence of the $d^{
  where the subscript $``{\backslash d, n}"$ denotes the exclsuion of position $n$ in $d^{th}$ email. In the last line of equation (13), it is the contribution of LDA, so we can write the conditional probability:
  \begin{equation}
  \begin{aligned} 
- & \propto(N_{k|d, \backslash d, n}+\alpha^{(c^{(d)})} \boldsymbol{m}^{(c^{(d)})}_k)\times\frac{N_{w_n^{(d)}k, \backslash d, n}^{WK}+\beta u_w}{\sum_{w=1}^WN_{wk,  \backslash d, n}^{WK}+\beta}
+ & \propto(N_{k|d, \backslash d, n}+\alpha^{(c^{(d)})} \boldsymbol{m}^{(c^{(d)})}_k)\times\frac{N_{w_n^{(d)}k, \backslash d, n}^{WK}+\beta u_w}{\sum_{w=1}^WN_{wk,  \backslash d, n}^{WK}+\beta}.
  \end{aligned}
  \end{equation}
- which is the well-known form of collapsed Gibbs sampling equation for LDA.
+ which is the well-known form of collapsed Gibbs sampling equation for LDA. After taking the log, we finally obtain:
+  \begin{equation}
+\mbox{log}(N_{k|d, \backslash d, n}+\alpha^{(c^{(d)})} \boldsymbol{m}^{(c^{(d)})}_k)+\mbox{log}(N_{w_n^{(d)}k, \backslash d, n}^{WK}+\beta u_w)-\mbox{log}({\sum_{w=1}^WN_{wk,  \backslash d, n}^{WK}+\beta}).
+  \end{equation}
  \subsection{Resampling $\mathcal{B}$}  \label{subsec: Resampling B}
  Finally, we wan to update the interaction pattern parameter $\boldsymbol{\beta}^{(c)}$, one interaction pattern at a time. For this, we will use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with variance $\boldsymbol{\beta}^2_B$ (proposal distirbution variance parameters set by the
  user), centered on the current values of $\boldsymbol{\beta}^{(c)}$. Then we draw a proposal $\boldsymbol{\beta}'^{(c)}$ at each iteration. Under symmetric proposal distribution (such as multivariate Gaussian), we cancel out Q-ratio and obtain the acceptance probability equal to:
@@ -465,7 +476,7 @@ Next, when it comes to the inference, conditioned upon the existence of the $d^{
  \mbox{log(Acceptance Probability) = min((18), 0) }
  \end{equation}
  To determine whether we accept the proposed update or not, we take the usual approach, by comparing the log of acceptance ratio we have to the log of a sample from uniform(0,1).\\
- \subsection{Asymmetric Dirichlet prior over $\Theta$ (topic distribution)}  \label{subsec: Asymmetric Dirichlet prior over theta}
+ \subsection{Asymmetric Dirichlet prior over $\Theta$}  \label{subsec: Asymmetric Dirichlet prior over theta}
  \cite{wallach2009rethinking} demonstrated that the typical implementations of topic models using symmetric Dirichlet priors with fixed concentration parameters often result in less practical results, and the model fitting can be improved by applying an asymmetric Dirichlet prior over the document–topic distributions (i.e. $\Theta$). Therefore, we assign an asymmetric Dirichlet prior over the interaction pattern-topic distributions, $\Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}$, where $\boldsymbol{\theta}^{(d)}$ is drawn from Dir($\alpha^{(c^{(d)})}, \boldsymbol{m}^{(c^{(d)})}$). While \cite{wallach2009rethinking} illustrates two different methods, adding a hierarchy to $\Theta$ and optimizing the hyperparameters ($\alpha$ and $\boldsymbol{m}$), we choose to use hyperparameter
  optimization steps since it is computationally efficient and also sufficient to achieve the desired performance gains. Now, we assume $\boldsymbol{m}^{(c)}$ to be non-uniform base measures (while $\alpha^{(c)}$ is still a fixed concentration parameter), and implement the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured} based on Minka’s fixed-point iteration \citep{minka2000estimating}.\\ \newline
  Here we summarize Chapter 2 of \cite{wallach2008structured} and its extension to our IPTM, to illustrate the basic steps and equations used for our optimization. Basically, we want to find the optimal hyperparameter $[\alpha\boldsymbol{m}]^*$ given the data $\mathcal{D}$ such that the probability of the
