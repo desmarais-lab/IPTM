@@ -395,6 +395,11 @@ P(i \rightarrow j|\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}) &= \frac{P(\D
     \end{equation}
     \textcolor{red}{QUESTION: We need baseline $\lambda_{iJ_i}$ before we add $j$ into the recipient set.....}\\
     where $\lambda^j_{iJ_i}$ is calculated from the receiver set of $i$ that includes $j$, while $\lambda^{-j}_{iJ_i}$ is calculated from the receiver set of $i$ that excludes $j$.\\ \newline
+    
+    Perhaps Bayes' Theorem is not the correct approach given the rest of the recipient set for sender $j$. Let $R_i^{(-j)}$ denote the vector of recipient indicators other than $r_{ij}$. Then what we are looking for is $$P(r_{ij}=1| \Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} \cap R_i^{(-j)}) = \frac{P(r_{ij}=1 \cap \Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} \cap R_i^{(-j)})}{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} \cap R_i^{(-j)})}.$$  Both the numerator and denominator are tractable if we rewrite as  
+    
+    $$ \frac{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} | r_{ij}=1 \cap R_i^{(-j)})P(r_{ij}=1 \cap R_i^{(-j)})}{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} \cap R_i^{(-j)}|r_{ij}=1)P(r_{ij}=1)+P( \Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} \cap R_i^{(-j)}|r_{ij}=0)P(r_{ij}=0)}.$$
+    
 Next, when it comes to the inference, conditioned upon the existence of the $d^{th}$ document at some particular time $t^{(d)}$, the probability that the document is sent from $i^{(d)}$ to $J^{(d)} (=J_{i^{(d)}})$ is
   \begin{equation}
   \begin{split}
