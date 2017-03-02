@@ -121,11 +121,11 @@ Following the multiplicative Cox model, the $(i, j)^{th}$ element of the intensi
 \begin{equation}
 \lambda^{(c)}_{ij}(t)=\lambda_0\cdot \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\},
 \end{equation}
-where $\lambda_0$ is the common baseline hazards for the overall interaction (assume that $\lambda_0$ does not depend on $t$), $\boldsymbol{\beta}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$, $\boldsymbol{x}^{(c)}_t(i, j)$ is a vector of the $p$-dimensional dynamic network statistics for directed edge $(i, j)$ at time $t$, and $\mathcal{A}_{\backslash i}$ is the predictable receiver set of sender $i$ within the set of all possible actors $\mathcal{A}$ (no self-loop). Equivalently, by fixing $\lambda_0=1$, we can avoid unknown baseline hazard rate and rewrite (1) as: 
+where $\lambda_0$ is the common baseline hazards for the overall interaction (assume that $\lambda_0$ does not depend on $t$), $\boldsymbol{\beta}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$, $\boldsymbol{x}^{(c)}_t(i, j)$ is a vector of the $p$-dimensional dynamic network statistics for directed edge $(i, j)$ at time $t$, and $\mathcal{A}_{\backslash i}$ is the predictable receiver set of sender $i$ within the set of all possible actors $\mathcal{A}$ (no self-loop). After we include intercept into $\boldsymbol{x}^{(c)}_t(i, j)$, we can rewrite (1) as: 
 \begin{equation}
 \lambda^{(c)}_{ij}(t)= \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\},
 \end{equation}
-where the first element of $\boldsymbol{\beta}^{(c)}$ corresponds to the deviation from $\lambda_0$, by including the intercept term and setting $\boldsymbol{x}^{*(c)}_t(i, j)=(\boldsymbol{1}, \boldsymbol{x}^{(c)}_t(i, j))$. Since multicast interactions—those involving a single sender but multiple
+where the first element of $\boldsymbol{\beta}^{(c)}$ corresponds to the baseline intensity of interaction pattern $c$ by including the intercept term and setting $\boldsymbol{x}^{*(c)}_t(i, j)=(\boldsymbol{1}, \boldsymbol{x}^{(c)}_t(i, j))$. Since multicast interactions—those involving a single sender but multiple
 receivers—are allowed for this model, we expand the rate of interaction between sender $i$ and the receivers in a set $J$ as:
 \begin{equation}
 \lambda^{(c)}_{iJ}(t)= \mbox{exp}\Big\{\sum\limits_{j \in J} \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}\cdot \prod\limits_{j \in J}1\{j \in \mathcal{A}_{\backslash i}\}.
@@ -165,7 +165,7 @@ Motivated from stochastic actor-oriented model (SAOM) of \cite{snijders2017stoch
 	\item[2.] (Data augmentation) For each sender $i \in \{1,...,A\}$, create a list of receivers $J_i$ by applying the Bernoulli probabilities to every $j \in \mathcal{A}_{\backslash i}$
 	\begin{align*} I(i \rightarrow j) \sim \mbox{Ber}\Big(1-\mbox{exp}(-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)}))\Big),
 	\end{align*}
-	where the probability is called a Bernoulli-Poisson (BerPo) link function \citep{zhou2015infinite} and $\delta$ is a tuning parameter to control the number of multicasts. Note that $_+$ denotes including the timepoint itself, meaning that $\lambda_{ij}$ is obtained using the history of interactions until and including $t^{(d-1)}$. (i.e. $\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})=\mbox{exp}\Big\{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$)
+	where the probability is called a Bernoulli-Poisson (BerPo) link function \citep{zhou2015infinite} and $\delta$ is a tuning parameter to control the number of recipients and the urgency of the document to be sent. Note that $_+$ denotes including the timepoint itself, meaning that $\lambda_{ij}$ is obtained using the history of interactions until and including $t^{(d-1)}$. (i.e. $\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})=\mbox{exp}\Big\{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$)
 	\item[3.] For each sender $i = 1,...,A$, generate the time increments $\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}(t_+^{(d-1)}))$, where $\lambda_{i{J_i}}(t_+^{(d-1)})= \mbox{exp}\Big\{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\}$
 	 \item[4.] Set the timestamp $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$.
 \end{itemize}
@@ -350,17 +350,17 @@ set $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$
  	\label{fig:PerryWolfeplot}
  \end{figure}
  \newline Following \cite{PerryWolfe2012} (refer to Fig.3 of \cite{PerryWolfe2012} attached above), we use 4 effects as components of $\boldsymbol{x}^{*(c)}_t(i, j)$, including the intercept to estimate the baseline intensities. The two behaviors (send and receive) are dyadic, involving exactly two actors,
- while the one is triadic (sum of 2-send, 2-receive, sibling, and cosibling), involving exactly three actors. In addition to the ones from \cite{PerryWolfe2012}, we also include the indegree for receiver and outdegree for sender effects to measure the popularity and centrality. However, one different point from the existing specification is that we define the effects not to be based on finite sub-interval, which require large number of dimension. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. As a result, all of the statistics can be seen as time-weighted dynamic network statistics.
+ while the one is triadic (sum of 2-send, 2-receive, sibling, and cosibling), involving exactly three actors. In addition to the ones from \cite{PerryWolfe2012}, we also include the indegree for receiver and outdegree for sender effects to measure the popularity and centrality. However, one different point from the existing specification is that we define the effects not to be based on finite sub-interval, which require large number of dimension. Instead, we create a single statistic for each effect by incorporating the recency of event into the statistic itself. As a result, all of the statistics can be seen as (geometrically) time-weighted dynamic network statistics.
  \begin{itemize}[leftmargin=*,rightmargin=-1cm]
  	\item [1.] $\mbox{intercept}^{(c)}_t(i, j) = 1$
- 	\item [2.]  $\mbox{send}^{(c)}_t(i, j)=\sum\limits_{d: c^{(d)}=c}\sum\limits_{d: t^{(d)}<t} I\{i\rightarrow j\}\cdot g(t-t^{(d)})$
- 	\item [3.] $\mbox{receive}^{(c)}_t(i, j)=\sum\limits_{d: c^{(d)}=c}\sum\limits_{d: t^{(d)}<t} I\{j\rightarrow i\}\cdot g(t-t^{(d)})$
- 	\item [4.] $\mbox{triangle}^{(c)}_t(i, j)=\sum\limits_{d: c^{(d)}=c}\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)}<t}  I\{i\rightarrow h \mbox{ or } h\rightarrow j \}\cdot g(t-t^{(d)})\Big)\Big(\sum\limits_{d: t^{(d)}<t} I\{j\rightarrow h \mbox{ or } h\rightarrow j\}\cdot g(t-t^{(d)})\Big)$
- 	\item [5.]  $\mbox{outdegree}^{(c)}_t(i)=\sum\limits_{d: c^{(d)}=c}\sum\limits_{j\neq i}\sum\limits_{d: t^{(d)}<t} I\{i\rightarrow j\}\cdot g(t-t^{(d)})$
- 	\item [6.] $\mbox{indegree}^{(c)}_t(j)=\sum\limits_{d: c^{(d)}=c}\sum\limits_{i \neq j}\sum\limits_{d: t^{(d)}<t} I\{j\rightarrow i\}\cdot g(t-t^{(d)})$
+ 	\item [2.]  $\mbox{send}^{(c)}_t(i, j)= \frac{\#\{(i\rightarrow j)^{(c)} \mbox{ in } [0, t)\}}{(1+\mbox{geomean}(\Delta t))^\mu}$
+ 	\item [3.] $\mbox{receive}^{(c)}_t(i, j)=\frac{\#\{(j\rightarrow i)^{(c)} \mbox{ in } [0, t)\}}{(1+\mbox{geomean}(\Delta t))^\mu}$
+ 	\item [4.] $\mbox{triangle}^{(c)}_t(i, j)=\sum\limits_{h \neq i, j}\Big(\frac{\#\{(i\rightarrow h \mbox{ or } h \rightarrow i )^{(c)} \mbox{ in } [0, t)\}}{(1+\mbox{geomean}(\Delta t))^\mu}\Big)\Big(\frac{\#\{(j\rightarrow h \mbox{ or } h \rightarrow j )^{(c)} \mbox{ in } [0, t)\}}{(1+\mbox{geomean}(\Delta t))^\mu}\Big)$
+ 	\item [5.]  $\mbox{outdegree}^{(c)}_t(i)=\sum\limits_{d: c^{(d)}=c}\sum\limits_{j\neq i}\frac{\#\{(i\rightarrow j)^{(c)} \mbox{ in } [0, t)\}}{(1+\mbox{geomean}(\Delta t))^\mu}$
+ 	\item [6.] $\mbox{indegree}^{(c)}_t(j)=\sum\limits_{d: c^{(d)}=c}\sum\limits_{i \neq j}\frac{\#\{(i\rightarrow j)^{(c)} \mbox{ in } [0, t)\}}{(1+\mbox{geomean}(\Delta t))^\mu}$
  \end{itemize}
 \vspace{3mm}
-Here, time decaying function $g(t-t^{(d)})$ reflects the difference between current time $t$ and the timestamp of previous email $t^{(d)}$, thus measuring the recency. Inspired by the self-exciting Hawkes process, which is often used to model the temporal effect of email data, we can take the exponential kernel $g(t-t^{(d)})=e^{-\mu(t-t^{(d)})}$ where $\mu$ is the parameter of speed at which sender replies to emails, with larger values indicating faster response times. Indeed, $\mu^{-1}$ is the expected number of hours it takes to reply to a typical email. For simplicity, in our simulation we fixed $\mu=0.05$ (i.e. $g(t-t^{(d)})=e^{-0.05(t-t^{(d)})}$), but $\mu$ can also be esitimated.
+Here, $(i\rightarrow j)^{(c)}$ denotes $i$ sends a document to $j$ of the interaction pattern $c$, and $\mbox{geomean}(\Delta t)$ denotes the geometric mean (i.e. $(\prod\limits_{n=1}^N\Delta t_n)^{\frac{1}{N}}$) of the time differences $\Delta t=t-t^{(d)}$ where $t^{(d)}$ corresponds to the timestamp of the incident counted in the numerator. For example, in case of $\mbox{send}^{(c)}_t(i, j)$, every time we observe $(i\rightarrow j)^{(c)}$ between time $[0, t)$, we record the time differences $\Delta t=t-t_{(i\rightarrow j)^{(c)}}^{(d)}$ and then take the geometric mean of every time differences we observed. Moreover, $\mu$ is the parameter of decay, measuring how fast or slow the previos history of interaction lose its influence on the future interaction, and it will be estimated along with $\{\boldsymbol{\beta}^{(c)}\}_{c=1}^C$.
   \section{Inference} \label{sec: Inference}
 In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the sender, recipient, and timestamps $(i=i^{(d)}, j=J^{(d)}, t=t^{(d)})$ of the email in the form of the counting process $\mathcal{N}=\{\boldsymbol{N}^{(d)}(t^{(d)}) \}_{d=1}^{D}.$ Next,  $\mathcal{X}=\{\boldsymbol{x}^{(c)}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}^{(d)} \}_{d=1}^{D},$ and $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$.\\
  \newline 
@@ -382,25 +382,22 @@ In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol
  \end{equation}
  Either Gibbs sampling or Metropolis-Hastings algorithm is applied by sequentially resampling each latent variables from their respective conditional posterior.
   \subsection{Data augmentation} \label{subsec: Data augmentation}
-  As mentioned earlier in Section \ref{subsubsec: Tie Generating Process}, we use data augmentation to make inference on $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$. That is, for every document $d$, we generate the latent sender-receivers $(i, J_i)$ for all $i \in \mathcal{A}_{\backslash i}$ and plug the generated sets into the likelihood function of $\boldsymbol{\beta}^{(c)}$. Note that in latent data generating step, the sets $(i, J_i)$ should account for the probability $P(\mbox{latent receiver}| \mbox{latent time} < \mbox{observed time})$. This probability can be derived fairly easily using Bayes' theorem: \\\newline
-Let $t^{(d)}$ be the observed time, $t_i$ be the latent time associated with the latent email sent by $i$, and $i \rightarrow j$ be an indicator of whether sender $i$ added $j$ to the latent email receivers (i.e. $j \in J_i$). 
+  As mentioned earlier in Section \ref{subsubsec: Tie Generating Process}, we use data augmentation to make inference on $\mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$. That is, for every document $d$, we generate the latent sender-receivers $(i, J_i)$ for all $i \in \mathcal{A}_{\backslash i}$ and plug the generated sets into the likelihood function of $\boldsymbol{\beta}^{(c)}$. \\\newline
+In latent data generating step, the sets $(i, J_i)$ should account for the probability $P(\mbox{latent receiver}| \mbox{latent time} < \mbox{observed time})$. Let $\Delta T_{i^{(d)}{J^{(d)}}}$ be the observed time increment, $\Delta T_{i{J_i}}$ be the latent time increment associated with the latent email sent by $i$, and $r_{ij}$ be an indicator of whether sender $i$ added $j$ to the latent email receivers (i.e. $j \in J_i$), and $J_i^{(-j)}$ denote the vector of recipient indicators other than $j$. 
   \begin{equation}
   \begin{split}
-P(i \rightarrow j|\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}) &= \frac{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j)}{P(\Delta T_{i{J_i}} > t^{(d)})}  \\&= \frac{P(\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j)}{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)P(i \rightarrow j) + P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}|i \not\to j)P(i \not\to j)} 
+&P\Big(r_{ij}=1|(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}})\cap( J_i^{(-j)})\Big)\\ &=\frac{P\Big((r_{ij}=1)\cap (\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}})\cap (J_i^{(-j)})\Big)}{P\Big((\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}})\cap (J_i^{(-j)})\Big)}\\
+& = \frac{P\Big(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} | (r_{ij}=1)\cap (J_i^{(-j)})\Big)P\Big((r_{ij}=1) \cap (J_i^{(-j)})\Big)}{P\Big((\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}})\cap (J_i^{(-j)})|r_{ij}=1\Big)P\Big(r_{ij}=1\Big)+P\Big( (\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}) \cap (J_i^{(-j)})|r_{ij}=0\Big)P\Big(r_{ij}=0\Big)},
   \end{split}
   \end{equation}
-  where $P(\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}}|i \rightarrow j)$ and $P(\Delta T_{i{J_i}} >\Delta T_{i^{(d)}{J^{(d)}}}|i \not\to j)$ are given by the cumulative exponential distributions associated with the respective $\lambda_{iJ_i}(t_+^{(d-1)})$ and $P(i \rightarrow j)$ and $P(i \not\to j)$ are given by the Bernoulli transformation in Section \ref{subsubsec: Tie Generating Process}. Therefore, we determine the latent ties $I(i\rightarrow j)$ from Bernoulli distribution of probability:
+  where $P\Big(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} | (r_{ij}=1)\cap (J_i^{(-j)})\Big)$, $P\Big((\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}})\cap (J_i^{(-j)})|r_{ij}=1\Big)$, and $P\Big((\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}})\cap (J_i^{(-j)})|r_{ij}=0\Big)$ are given by the cumulative exponential distributions associated with the respective $\lambda_{iJ_i}(t_+^{(d-1)})$ and $P\Big((r_{ij}=1) \cap (J_i^{(-j)})\Big)$,  $P\Big(r_{ij}=1\Big)$, and $P\Big(r_{ij}=0\Big)$ are given by the Bernoulli equation in Section \ref{subsubsec: Tie Generating Process}. We plug in the equations and update the latent ties $r_{ij}$ with the probability:
     \begin{equation}
- \frac{e^{-(t^{(d)}-t^{(d-1)})\lambda^j_{iJ_i}(t_+^{(d-1)})}(1-e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})}{e^{-(t^{(d)}-t^{(d-1)})\lambda^j_{iJ_i}(t_+^{(d-1)})}(1-e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})+e^{-(t^{(d)}-t^{(d-1)})\lambda^{-j}_{iJ_i}(t_+^{(d-1)})}(e^{-\delta\lambda^{(c^{(d)})}_{ij}(t_+^{(d-1)})})},
-    \end{equation}
-    \textcolor{red}{QUESTION: We need baseline $\lambda_{iJ_i}$ before we add $j$ into the recipient set.....}\\
-    where $\lambda^j_{iJ_i}$ is calculated from the receiver set of $i$ that includes $j$, while $\lambda^{-j}_{iJ_i}$ is calculated from the receiver set of $i$ that excludes $j$.\\ \newline
-    
-    Perhaps Bayes' Theorem is not the correct approach given the rest of the recipient set for sender $j$. Let $R_i^{(-j)}$ denote the vector of recipient indicators other than $r_{ij}$. Then what we are looking for is $$P(r_{ij}=1| \Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} \cap R_i^{(-j)}) = \frac{P(r_{ij}=1 \cap \Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} \cap R_i^{(-j)})}{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} \cap R_i^{(-j)})}.$$  Both the numerator and denominator are tractable if we rewrite as  
-    
-    $$ \frac{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} | r_{ij}=1 \cap R_i^{(-j)})P(r_{ij}=1 \cap R_i^{(-j)})}{P(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} \cap R_i^{(-j)}|r_{ij}=1)P(r_{ij}=1)+P( \Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} \cap R_i^{(-j)}|r_{ij}=0)P(r_{ij}=0)}.$$
-    
-Next, when it comes to the inference, conditioned upon the existence of the $d^{th}$ document at some particular time $t^{(d)}$, the probability that the document is sent from $i^{(d)}$ to $J^{(d)} (=J_{i^{(d)}})$ is
+      \begin{split}
+      &=\frac{e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{j \in J_i^{(+j)}}\lambda_{ij}(t_+^{(d-1)})}\times(1-e^{-\delta\lambda_{ij}(t_+^{(d-1)})})\times\Big(\prod_{a \in \mathcal{A}_{\backslash i, j}} (e^{\delta\lambda_{ia}(t_+^{(d-1)})}-1)^{I(a \in J_i)}e^{-\delta\lambda_{ia}(t_+^{(d-1)})}\Big)}{e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{j \in J_i^{(+j)}}\lambda_{ij}(t_+^{(d-1)})}\times(1-e^{-\delta\lambda_{ij}(t_+^{(d-1)})})+e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{j \in J_i^{(-j)}}\lambda_{ij}(t_+^{(d-1)})}e^{-\delta\lambda_{ij}(t_+^{(d-1)})}}\\
+&=\frac{e^{-(t^{(d)}-t^{(d-1)})\lambda_{ij}(t_+^{(d-1)})}\times(1-e^{-\delta\lambda_{ij}(t_+^{(d-1)})})\times\Big(\prod_{a \in \mathcal{A}_{\backslash i, j}} (e^{\delta\lambda_{ia}(t_+^{(d-1)})}-1)^{I(a \in J_i)}e^{-\delta\lambda_{ia}(t_+^{(d-1)})}\Big)}{e^{-(t^{(d)}-t^{(d-1)})\lambda_{ij}(t_+^{(d-1)})}\times(1-e^{-\delta\lambda_{ij}(t_+^{(d-1)})})+e^{-\delta\lambda_{ij}(t_+^{(d-1)})}}.
+  \end{split}
+   \end{equation}
+    Next, when it comes to the inference, conditioned upon the existence of the $d^{th}$ document at some particular time $t^{(d)}$, the probability that the document is sent from $i^{(d)}$ to $J^{(d)} (=J_{i^{(d)}})$ is
   \begin{equation}
   \begin{split}
   \mathcal{L}(\boldsymbol{\beta}^{(c^{(d)})}) &= P\Big(\Delta T_{i^{(d)}{J^{(d)}}}\sim\mbox{Exp}(\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)}))\Big)\times P\Big(\mbox{min}(\Delta T_{i{J_i}}) = \Delta T_{i^{(d)}{J^{(d)}}}\Big)\times P\Big(\mbox{Edge creations}\Big)\\&
@@ -408,7 +405,7 @@ Next, when it comes to the inference, conditioned upon the existence of the $d^{
   & = \Big(\lambda_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}(t_+^{(d-1)})}\Big) \times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda_{ij}(t_+^{(d-1)})}\Big),
   \end{split}
   \end{equation}
-  Applying this to the every document in the corpus and taking the log,  we obtain the full likelihood function used for the inference of $\{\boldsymbol{\beta}^{(c)}\}_{c=1}^C$ as:
+  Applying to the every document, the full loglikelihood function used for the inference of $\{\boldsymbol{\beta}^{(c)}\}_{c=1}^C$ is:
   \begin{equation}
   \begin{split}
   \ell(\boldsymbol{\beta}^{(c^{(d)})}) &=\sum_{d=1}^D\Big\{\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i^{(d)}, j)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\\&\quad\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}}-1)-\delta e^{\boldsymbol{\beta}^{(c^{(d)})T}\boldsymbol{x}^{*(c^{(d)})}_{t^{(d-1)}_+}(i, j)}\Big)\Big\},
@@ -513,7 +510,7 @@ Next, when it comes to the inference, conditioned upon the existence of the $d^{
  	\For{i=1 to I}{
  		optimize $\alpha^{(c)}$ and $\boldsymbol{m}^{(c)}$ using hyperparameter optimization in Section \ref{subsec: Asymmetric Dirichlet prior over theta}, for $c=1,...,C$\\
  			\For{d=1 to D}{
- 				sample the augmented data $(i, J_i)$ for $i \in\mathcal{A}_{\backslash i^{(d)}}$ (See Section \ref{subsubsec: Tie Generating Process})
+ 				sample the augmented data $(i, J_i)$ for $i \in\mathcal{A}_{\backslash i^{(d)}}$ (See Section \ref{subsec: Data augmentation})
  			}
  		\For{n=1 to $n_1$}{
  			fix $\mathcal{Z}=\mathcal{Z}^{(i-1)}$ and $\mathcal{B}=\mathcal{B}^{(i-1)}$ \\
