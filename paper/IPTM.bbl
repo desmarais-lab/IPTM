@@ -11,11 +11,23 @@ Blei, D.~M., Ng, A.~Y., and Jordan, M.~I. (2003).
 \newblock Latent dirichlet allocation.
 \newblock {\em J. Mach. Learn. Res.}, 3:993--1022.
 
+\bibitem[Burgess et~al., 2004]{burgess2004email}
+Burgess, A., Jackson, T., and Edwards, J. (2004).
+\newblock Email overload: Tolerance levels of employees within the workplace.
+\newblock In {\em Innovations Through Information Technology: 2004 Information
+  Resources Management Association International Conference, New Orleans,
+  Louisiana, USA, May 23-26, 2004}, volume~1, page 205. IGI Global.
+
 \bibitem[Jasra et~al., 2005]{jasra2005markov}
 Jasra, A., Holmes, C., and Stephens, D. (2005).
 \newblock Markov chain monte carlo methods and the label switching problem in
   bayesian mixture modeling.
 \newblock {\em Statistical Science}, pages 50--67.
+
+\bibitem[Kanungo and Jain, 2008]{kanungo2008modeling}
+Kanungo, S. and Jain, V. (2008).
+\newblock Modeling email use: a case of email system transition.
+\newblock {\em System Dynamics Review}, 24(3):299--319.
 
 \bibitem[McCallum et~al., 2005]{mccallum2005topic}
 McCallum, A., Corrada-Emmanuel, A., and Wang, X. (2005).
@@ -30,6 +42,11 @@ Perry, P.~O. and Wolfe, P.~J. (2013).
 \newblock Point process modelling for directed interaction networks.
 \newblock {\em Journal of the Royal Statistical Society: Series B (Statistical
   Methodology)}, 75(5):821--849.
+
+\bibitem[Pew, 2016]{pew2016}
+Pew, R.~C. (2016).
+\newblock Social media fact sheet.
+\newblock {\em Accessed on 03/07/17}.
 
 \bibitem[Rosen-Zvi et~al., 2004]{rosen2004author}
 Rosen-Zvi, M., Griffiths, T., Steyvers, M., and Smyth, P. (2004).
@@ -46,6 +63,11 @@ Snijders, T.~A. (1996).
 Snijders, T.~A. (2017).
 \newblock Stochastic actor-oriented models for network dynamics.
 \newblock {\em Annual Review of Statistics and Its Application}, (0).
+
+\bibitem[Sz{\'o}stek, 2011]{szostek2011dealing}
+Sz{\'o}stek, A.~M. (2011).
+\newblock ?dealing with my emails?: Latent user needs in email management.
+\newblock {\em Computers in Human Behavior}, 27(2):723--729.
 
 \bibitem[Wallach, 2008]{wallach2008structured}
 Wallach, H.~M. (2008).
