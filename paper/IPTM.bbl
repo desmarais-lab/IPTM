@@ -18,6 +18,29 @@ Burgess, A., Jackson, T., and Edwards, J. (2004).
   Resources Management Association International Conference, New Orleans,
   Louisiana, USA, May 23-26, 2004}, volume~1, page 205. IGI Global.
 
+\bibitem[Butts, 2008]{Butts2008}
+Butts, C.~T. (2008).
+\newblock A relational event framework for social action.
+\newblock {\em Sociological Methodology}, 38(1):155--200.
+
+\bibitem[Chatterjee et~al., 2013]{chatterjee2013estimating}
+Chatterjee, S., Diaconis, P., et~al. (2013).
+\newblock Estimating and understanding exponential random graph models.
+\newblock {\em The Annals of Statistics}, 41(5):2428--2461.
+
+\bibitem[Desmarais and Cranmer, 2017]{desmarais2017statistical}
+Desmarais, B.~A. and Cranmer, S.~J. (2017).
+\newblock Statistical inference in political networks research.
+\newblock In Victor, J.~N., Montgomery, A.~H., and Lubell, M., editors, {\em
+  The Oxford Handbook of Political Networks}. Oxford University Press.
+
+\bibitem[Hunter et~al., 2008]{hunter2008ergm}
+Hunter, D.~R., Handcock, M.~S., Butts, C.~T., Goodreau, S.~M., and Morris, M.
+  (2008).
+\newblock ergm: A package to fit, simulate and diagnose exponential-family
+  models for networks.
+\newblock {\em Journal of statistical software}, 24(3):nihpa54860.
+
 \bibitem[Jasra et~al., 2005]{jasra2005markov}
 Jasra, A., Holmes, C., and Stephens, D. (2005).
 \newblock Markov chain monte carlo methods and the label switching problem in
@@ -47,6 +70,12 @@ Perry, P.~O. and Wolfe, P.~J. (2013).
 Pew, R.~C. (2016).
 \newblock Social media fact sheet.
 \newblock {\em Accessed on 03/07/17}.
+
+\bibitem[Robins et~al., 2007]{robins2007introduction}
+Robins, G., Pattison, P., Kalish, Y., and Lusher, D. (2007).
+\newblock An introduction to exponential random graph (p*) models for social
+  networks.
+\newblock {\em Social networks}, 29(2):173--191.
 
 \bibitem[Rosen-Zvi et~al., 2004]{rosen2004author}
 Rosen-Zvi, M., Griffiths, T., Steyvers, M., and Smyth, P. (2004).
