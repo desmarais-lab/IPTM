@@ -35,7 +35,7 @@
 	\gdef\rowfonttype{#1}#1%
 }
 \newcolumntype{L}{>{\rowfonttype}l}
-\title{A Network Model for Continuous Time Textual Communications\\ with Application to Government Email Corpora}
+\title{Network Modeling of Dynamic Textual Communication\\ with Application to Government Email Corpora}
 %\author{Bomin Kim}
 
 \author[1]{Bomin Kim}
@@ -52,19 +52,18 @@
 	
 	\noindent In this paper, we introduce the interaction-partitioned topic model
 	(IPTM)---a probabilistic model of who communicates with whom about
-	what, and when. Broadly speaking, the IPTM partitions time-stamped
+	what, and when. Broadly speaking, the IPTM partitions the content in time-stamped
 	textual communications, such as emails, according to both the network
-	dynamics that they reflect and their content. To do this, it draws on
-	the Cox multiplicative intensity model---a generative model for ties
-	that tend toward structural features such as reciprocated dyads and
+	dynamics that they reflect and their content. To define the IPTM, we integrate
+	 a dynamic version of the exponential random graph model---a generative 
+	 model for ties that tend toward structural features such as 
 	triangles---and latent Dirichlet allocation---a generative model for
-	topic-based content. The IPTM assigns each communication to an
+	topic-based content. The IPTM assigns each topic to an
 	``interaction pattern," characterized by a set of dynamic network
-	features and a distribution over a shared set of topics. We use the
-	IPTM to analyze emails sent between department managers in two county
-	governments in North Carolina; one of these email corpora covers the
-	Outer Banks during the time period surrounding Hurricane Sandy. Via
-	this application, we demonstrate that the IPTM is effective at
+	generative processes. We use the IPTM to analyze emails sent between 
+	department managers in two county governments in North Carolina; one of 
+	these email corpora covers the Outer Banks during the time period surrounding 
+	Hurricane Sandy. Via this application, we demonstrate that the IPTM is effective at
 	predicting and explaining continuous-time textual communications.	
 \end{abstract}
 \section{Introduction} \label{sec: Introduction}
