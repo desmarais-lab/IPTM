@@ -1,11 +1,5 @@
 \begin{thebibliography}{}
 
-\bibitem[Blei and Lafferty, 2006]{blei2006dynamic}
-Blei, D.~M. and Lafferty, J.~D. (2006).
-\newblock Dynamic topic models.
-\newblock In {\em Proceedings of the 23rd international conference on Machine
-  learning}, pages 113--120. ACM.
-
 \bibitem[Blei et~al., 2003]{Blei2003}
 Blei, D.~M., Ng, A.~Y., and Jordan, M.~I. (2003).
 \newblock Latent dirichlet allocation.
@@ -52,14 +46,6 @@ Kanungo, S. and Jain, V. (2008).
 \newblock Modeling email use: a case of email system transition.
 \newblock {\em System Dynamics Review}, 24(3):299--319.
 
-\bibitem[McCallum et~al., 2005]{mccallum2005topic}
-McCallum, A., Corrada-Emmanuel, A., and Wang, X. (2005).
-\newblock Topic and role discovery in social networks.
-
-\bibitem[Minka, 2000]{minka2000estimating}
-Minka, T. (2000).
-\newblock Estimating a dirichlet distribution.
-
 \bibitem[Perry and Wolfe, 2013]{PerryWolfe2012}
 Perry, P.~O. and Wolfe, P.~J. (2013).
 \newblock Point process modelling for directed interaction networks.
@@ -77,22 +63,6 @@ Robins, G., Pattison, P., Kalish, Y., and Lusher, D. (2007).
   networks.
 \newblock {\em Social networks}, 29(2):173--191.
 
-\bibitem[Rosen-Zvi et~al., 2004]{rosen2004author}
-Rosen-Zvi, M., Griffiths, T., Steyvers, M., and Smyth, P. (2004).
-\newblock The author-topic model for authors and documents.
-\newblock In {\em Proceedings of the 20th conference on Uncertainty in
-  artificial intelligence}, pages 487--494. AUAI Press.
-
-\bibitem[Snijders, 1996]{snijders1996stochastic}
-Snijders, T.~A. (1996).
-\newblock Stochastic actor-oriented models for network change.
-\newblock {\em Journal of mathematical sociology}, 21(1-2):149--172.
-
-\bibitem[Snijders, 2017]{snijders2017stochastic}
-Snijders, T.~A. (2017).
-\newblock Stochastic actor-oriented models for network dynamics.
-\newblock {\em Annual Review of Statistics and Its Application}, (0).
-
 \bibitem[Sz{\'o}stek, 2011]{szostek2011dealing}
 Sz{\'o}stek, A.~M. (2011).
 \newblock ?dealing with my emails?: Latent user needs in email management.
@@ -102,19 +72,6 @@ Sz{\'o}stek, A.~M. (2011).
 Wallach, H.~M. (2008).
 \newblock {\em Structured topic models for language}.
 \newblock PhD thesis, University of Cambridge.
-
-\bibitem[Wallach et~al., 2009]{wallach2009rethinking}
-Wallach, H.~M., Mimno, D.~M., and McCallum, A. (2009).
-\newblock Rethinking lda: Why priors matter.
-\newblock In {\em Advances in neural information processing systems}, pages
-  1973--1981.
-
-\bibitem[Wang and McCallum, 2006]{wang2006topics}
-Wang, X. and McCallum, A. (2006).
-\newblock Topics over time: a non-markov continuous-time model of topical
-  trends.
-\newblock In {\em Proceedings of the 12th ACM SIGKDD international conference
-  on Knowledge discovery and data mining}, pages 424--433. ACM.
 
 \bibitem[Zhou, 2015]{zhou2015infinite}
 Zhou, M. (2015).
