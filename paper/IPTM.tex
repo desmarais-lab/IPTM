@@ -249,13 +249,14 @@ The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), correspon
 	  		\node[main] (phi) [left=of w,label=center:$\boldsymbol{\phi}^{(k)}$] { };
 	  		\node[main] (beta) [left=of phi, label=center:$\beta$] { };
 	  		\node[main] (m) [below=of alpha,label=center:$\boldsymbol{m}$] { };
-	  		\node[main] (x) [right=of theta,label=center:$\boldsymbol{x}^{(c)}_{t_+^{(d-1)}}$] { };
-	  		\node[main] (lambda) [below=of x,label=center:$\boldsymbol{\lambda}^{(d)}(t_+^{(d-1)})$] { };
-	  		\node[main] (mu) [above=of x,label=center:$\mu$] { };
-	  		\node[main] (c) [right=of mu,label=center:$c_k$] { };
+	  			  		\node[main] (p) [right=of theta,label=center:$p_c^{(d)}$] { };
+	  		\node[main] (x) [below=of p,label=center:$\boldsymbol{x}^{(c)}_{t_+^{(d-1)}}$] { };
+	  		\node[main] (lambda) [right=of x,label=center:$\boldsymbol{\lambda}^{(d)}(t_+^{(d-1)})$] { };
+	  		\node[main] (c) [above=of p,label=center:$c_k$] { };
+	  		\node[main] (mu) [right=of c,label=center:$\mu$] { };
 	  		\node[main] (e) [right=of lambda,label=center:${(i, J_i)}^{(d)}$] { };
 	  		\node[main] (delta) [right=of e,label=center:$\delta$] { };
-	  		\node[main] (b) [above=of delta,label=center:$\boldsymbol{b}^{(c)}$] { };
+	  		\node[main] (b) [right=of mu,label=center:$\boldsymbol{b}^{(c)}$] { };
 	  		\node[main] (t) [below=of e,label=center:${\Delta T_{iJ_i}}^{(d)}$] { };
 	  		\node[main] (sigma) [right=of b,label=center:$\sigma^2$] { };
 	  		\node[main, fill = black!10] (N) [below=of t,label=center:${(i, J, t)}^{(d)}$] { };
@@ -265,12 +266,12 @@ The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), correspon
 	  		(alpha) edge [connect] (theta)
 	  		(phi) edge [connect] (w)
 	  		(beta) edge [connect] (phi)
-	  		(z) edge [connect] (x)
-	  		(z) edge [connect] (lambda)
+	  		(z) edge [connect] (p)
 	  		(mu) edge [connect] (x)
 	  		(x) edge [connect] (lambda)
-	  		(c) edge [connect] (x)
-	  		(c) edge [connect] (lambda)
+	  		(c) edge [connect] (p)
+	  		(p) edge [connect] (x)
+	  		(p) edge [connect] (lambda)
 	  		(b) edge [connect] (lambda)
 	  		(lambda) edge [connect] (e)
 	  		(lambda) edge [connect] (t)
@@ -286,7 +287,7 @@ The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), correspon
 	  		\node[rectangle, inner sep=3mm, draw=black!100, fit= (c)] {};
 	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (b)] {};
 	  		\node[rectangle, inner sep=4mm, fit= (b),label= below right:$C$, xshift=-6mm, yshift=6mm] {};
-	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (x)] {};
+	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (x)(p)] {};
 	  		\node[rectangle, inner sep=3mm, fit= (x),label= below right:$C$, xshift=-6mm, yshift=5mm] {};
 	  		\node[rectangle, inner sep=0mm, fit= (phi),label=below right:$K$, xshift=-2mm, yshift=1.5mm] {};
 	  		\node[rectangle, inner sep=0mm, fit= (c),label=below right:$K$, xshift=-2mm, yshift=1.5mm] {};
@@ -316,7 +317,7 @@ P(\mathcal{E}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \delta)P(\mat
 \end{equation}
 NOTE: Refer to Equation (15) in Section 3.1. \\\newline$P(\mathcal{E}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \delta)$ corresponds to $P(\mbox{edge creations})$ - Bernoulli part of tie generation\\\newline $P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \mathcal{E})$ corresponds to $P(\Delta T_{i^{(d)}J^{(d)}}\sim \mbox{Exp}(\lambda^{(d)}_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})))$ part (but need to account for all latent edge pairs $(i, J_i)$) - Exponential part of tie generation\\\newline
 $P(\mathcal{O}|\mathcal{E}, \mathcal{T})$ corresponds to $P(\mbox{min}(\Delta T_{i{J_i}}) = \Delta T_{i^{(d)}{J^{(d)}}})$ - can use the property: minimum of Exponential is also Exponential. \\ \newline
-Since $\boldsymbol{\lambda}^{(d)}$ is a deterministic function of $(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X})$, we do not include $\Lambda=\{\boldsymbol{\lambda}^{(d)}\}_{d=1}^{D}$ in the joint distribution.\\ \newline
+Since $p_c^{(d)}$ is a deterministic function of $(\mathcal{Z}, \mathcal{C})$ and $\boldsymbol{\lambda}^{(d)}$ is a deterministic function of $(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X})$, we do not include them in the joint distribution.\\ \newline
 \textcolor{red} {Cannot complete factorization due to $P(\mathcal{X}|\mathcal{Z}, \mathcal{C}, \mathcal{O}, \mu)$...HOW?}
 \section{Inference} \label{sec: Inference}
 In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the sender, recipient, and timestamps $(i=i^{(d)}, j=J^{(d)}, t=t^{(d)})$ of the document $d$, which we jointly denote as $\mathcal{N}_{\mbox{obs}} = \{\boldsymbol{N}^{(d)}\}_{d=1}^D=\{(i, J, t)^{(d)}\}_{d=1}^D$ in the inference, meaning the network features. Next,  $\mathcal{X}=\{\{\boldsymbol{x}^{(c)}_{t^{(d)}}(i, j)\}_{c=1}^C\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{C}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{b}^{(c)} \}_{c=1}^{C}$ and the latent sender, recipient, and timestamps $(i'=i^{(d)}, j'=J^{(d)}, t'=t^{(d)})$ of the document $d$ generated from data augmentation, $\mathcal{N}_{\mbox{aug}} = \{\boldsymbol{N}'^{(d)}\}_{d=1}^D=\{\{(i', J'_i, t')^{(d)}\}_{i\neq i^{(d)}}\}_{d=1}^D$.\\
