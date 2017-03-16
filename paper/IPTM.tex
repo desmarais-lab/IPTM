@@ -311,7 +311,7 @@ We can simplify this further by integreting out $\Phi$ and $\Theta$ using Dirich
 \begin{equation}
 \begin{aligned}
 &P(\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B},\mathcal{X}, \mathcal{E}, \mathcal{T}| \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \mu, \delta) \\& 
-= P(\mathcal{Z})P(\mathcal{W}|\mathcal{Z}) P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \sigma^2)\textcolor{red}{P(\mathcal{X}|\mathcal{Z}, \mathcal{C}, \mathcal{O}, \mu)}
+= P(\mathcal{Z}|\alpha, \boldsymbol{m})P(\mathcal{W}|\mathcal{Z}, \beta, \boldsymbol{u}) P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \sigma^2)\textcolor{red}{P(\mathcal{X}|\mathcal{Z}, \mathcal{C}, \mathcal{O}, \mu)}
 P(\mathcal{E}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \delta)P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \mathcal{E})P(\mathcal{O}|\mathcal{E}, \mathcal{T}).
 \end{aligned}
 \end{equation}
