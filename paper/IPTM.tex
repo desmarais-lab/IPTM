@@ -80,11 +80,9 @@ models that focus on the timestamps of documents. For example, Dynamic Topic Mod
 \end{comment}
 
 \section{Generative Process} \label{sec: Generative Process}
-
-
 Assume we have a collection of documents, consisting of $D$ number of unique documents. A single email, indexed by $d \in \{1,...,D\}$, is represented by the four components ($i^{(d)}, J^{(d)}, t^{(d)},  \boldsymbol{w}^{(d)}$). The first two are the sender and receiver of the email: an integer $i^{(d)} \in \{1,...,A\}$ indicates the identity of the sender out of $A$ number of actors (or nodes) and an integer vector $J^{(d)} = \{j_r^{(d)}\}_{r=1}^{|J^{(d)}|} $ indicates the identity of the receiver (or receivers) out of $A-1$ number of actors (by excluding self-loop), where $|J^{(d)}|\in \{1,...,A-1\}$ denotes the total number of the receivers. Next, $t^{(d)}$ is the (unix time-based) timestamp of the email $d$, and $\boldsymbol{w}^{(d)} = \{w^{(d)}_m \}_{n=1}^{N^{(d)}}$ is a set of tokens that comprise the text of the email. In this section, we illustrate how the words $\boldsymbol{w}^{(d)}$ are generated according to the variant of latent Dirichlet allocation \citep{Blei2003}, and then how the rest three components, ($i^{(d)}, J^{(d)}, t^{(d)}$), are simulatneously generated from the stochastic intensity and topic assignments of the document.
 \subsection{Content Generating Process} \label{subsec: Content Generating Process}
-The content generating process is a simple addition of the interaction pattern assignment to the existing generative process of Latent Dirichlet Allocation \cite{Blei2003}. This concept is also very similar to the content-partitioned multinetwork embeddings (CPME) model {\bf [ASK BRUCE FOR CITES]}, in a way that each topic $k$ is also associated with a cluster assignment $C_k$, where $C_k$ can take one of $c = \{1,...,C\}$ values. \\ \newline
+The content generating process is a simple addition of the interaction pattern assignment to the existing generative process of Latent Dirichlet Allocation \cite{Blei2003}. This concept is also very similar to the content-partitioned multinetwork embeddings (CPME) model {\bf [ASK BRUCE FOR CITES]}, in a way that each topic $k$ is also associated with a cluster assignment $c_k$, where $c_k$ can take one of $c = \{1,...,C\}$ values. \\ \newline
 First we generate the global (corpus-wide) variables. There are two main sets of global variables:
 those that describe the topics people talk about and those that describe how people interact (interaction patterns). These variables are linked by a third set of variables that associate each topic with the pattern that best describes how people interact when talking about that topic.\\ \newline
 There are $K$ topics. Each topic $k$ is a discrete distribution over $V$ word types.
@@ -92,108 +90,70 @@ There are $K$ topics. Each topic $k$ is a discrete distribution over $V$ word ty
 	\item[1.] {$\boldsymbol{\phi}^{(k)} \sim \mbox{Dir}(\beta, \bf u)$} \textbf{[See Algorithm 1]}\\
 	- A “topic” $k$ is characterized by a discrete distribution over $V$ word types with probability vector $\phi^{(k)}$. A symmetric Dirichlet prior $\bf u$ with the concentration parameter $\beta$ is placed.
 \end{itemize}
-\noindent There are $C$ interaction patterns. Each interaction pattern consists of a vector of coefficients $\boldsymbol{\gamma}^{(c)}$ in $\boldsymbol{R}^{P}$ and a vector of P-dimensional dynamic network statistics for directed edge $(i, j)$ at time $t$ $\boldsymbol{x}^{(c)}_t(i, j)$; however, we assume that our generative process is conditioned on these covariates. 
+\noindent There are $C$ interaction patterns. Each interaction pattern consists of a vector of coefficients $\boldsymbol{b}^{(c)}$ in $\boldsymbol{R}^{P}$ and a vector of P-dimensional dynamic network statistics for directed edge $(i, j)$ at time $t$ $\boldsymbol{x}^{(c)}_t(i, j)$; however, we assume that our generative process is conditioned on these covariates. 
 \begin{itemize}
-	\item[2.] $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$ \textbf{[See Algorithm 2]}: \\
+	\item[2.] $\boldsymbol{b}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$ \textbf{[See Algorithm 2]}: \\
 		- The vector of coefficients depends on the interaction pattern $c$. This means that there is variation in the degree of influence from the dynamic network statistics.
 	\end{itemize}
 \noindent The topics and interaction patterns are tied together via a set of $K$ categorical variables.
 \begin{itemize}
-	\item[3.] $C_k\sim \mbox{Unif}(1, C)$ \textbf{[See Algorithm 3]}: \\
+	\item[3.] $c_k\sim \mbox{Unif}(1, C)$ \textbf{[See Algorithm 3]}: \\
 	- Each topic is associated with a single interaction pattern.\\
 \end{itemize}
 \noindent Then, we generate the local variables. We assume the following generative process for each document $d$ in a corpus $D$ \textbf{[See Algorithm 4]}:
 \begin{itemize}
-	\item[4-1.] Choose the number of words $N^{(d)} \sim \mbox{Poisson}(\zeta)$
+	\item[4-1.] Choose the number of words $N^{(d)} = \mbox{min}(1, \bar N^{(d)})$, where $\bar N^{(d)}\sim \mbox{Poisson}(\zeta)$
 	\item[4-2.] Choose document-topic distribution $\boldsymbol{\theta}^{(d)}\sim \mbox{Dir}(\alpha, \boldsymbol{m})$
-	\item[4-3.] For each of the $N^{(d)}$ words $w_n^{(d)}$:
+	\item[4-3.] For $n=1$ to $N^{(d)}$:
 	\begin{itemize}
 		\item[(a)] Choose a topic $z_n^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(d)})$
-		\item[(b)] Choose a word $w_n^{(d)} \sim\mbox{Multinomial} (\phi^{(z_n^{(d)})})$
+		\item[(b)] if $\bar N^{(d)}>0$, choose a word $w_n^{(d)} \sim\mbox{Multinomial} (\phi^{(z_n^{(d)})})$
 	\end{itemize}
 \end{itemize}
 \subsection{Stochastic Intensity} \label{subsec: Stochastic Intensity}
-\begin{comment}
-Let $T$ denote the survival time. In our context, survival times measure the time to send the document. Following the typical survival analysis framework, the distribution of $T$ is described or characterized by three functions, namely:
-\begin{itemize}
-	\item [1. ] the probability density function $f(t)$: \newline the probability of sending a document in a small interval per unit time
-	\begin{align*}
-	f(t) &= \lim\limits_{\Delta t \rightarrow 0+} \frac{P\{\mbox{a document sent in the interval } (t, t+ \Delta t)\}}{\Delta t} \\&
-	= \lim\limits_{\Delta t \rightarrow 0+} \frac{P[T \in (t, t+ \Delta t)]}{\Delta t}
-	\end{align*}
-	\item [2. ] the survival function $S(t)$\newline
-	the probability that a document is not sent until time $t$
-	\begin{align*}
-	S(t) &= P(T>t) \\& = \int_{t}^{\infty} f(u)du \\& = 1-F(t)
-	\end{align*}
-	\item [3. ] the hazard rate function $\lambda(t)$ \newline
-	the probability of sending a document in a very short interval $t$ to  $t+ \Delta t$  per unit time, given that the document has not sent until time $t$ 
-		\begin{align*}
-		\lambda(t) &= \lim\limits_{\Delta t \rightarrow 0+} \frac{P\{\mbox{a document sent in the interval } (t, t+ \Delta t)|\mbox{not sent until time $t$}\}}{\Delta t} \\&
-		= \lim\limits_{\Delta t \rightarrow 0+} \frac{P\{t \leq T < t+ \Delta t|T\geq t\}}{\Delta t}
-		\end{align*}
-		Since our $T$ is a continuous random variable, we have
-				\begin{align*}
-				\lambda(t) &=\frac{f(t)}{S(t)} = \frac{f(t)}{1-F(t)} = -\frac{d}{dt} \mbox{log}[S(t)].
-				\end{align*}
-		The hazard function can alternatively be represented in terms of the cumulative hazard function
-			\begin{align*}
-			\Lambda(t) &=  \int_{0}^{t} \lambda(u)du = -\mbox{log}[S(t)],
-			\end{align*}
-			which establishes another relationship
-				\begin{align*}
-				S(t) &=  \mbox{exp}(-\Lambda(t)).
-				\end{align*}
-\end{itemize}
-Given the equations above, we derive:
-				\begin{align*}
-				f(t) &=-\frac{d}{dt}S(t) = -\frac{d}{dt}\mbox{exp}(-\Lambda(t)) = \lambda(t)S(t) = \lambda(t)e^{-\int_{0}^{t}\lambda(u)du},
-				\end{align*}
-and thus following the dominant method for summarizing survival data, we will use the hazard function $\lambda(t)$ for the generative process of the document. Now we move to Cox multiplicative intensity model \citep{cox1992regression} using covariates
-that depend on the history of the process. Cox multiplicative intensity model, also known as the Cox proportional hazards (PH) model, is the most common approach to model covariate effects on survival. \\ \newline
-\end{comment}
 Here we illustrate how a set of dynamic network features and topic-interaction assignments  jointly identify the stochastic intensity of a document, which plays a key role in tie generating process in \ref{subsec: Tie Generating Process}. Assume that each document $d \in \{1,...,D\}$ has an $A\times A$ stochastic intensity (or hazard) matrix of $\boldsymbol{\lambda}^{(d)}(t) = \{\{\lambda^{(d)}_{ij}(t)\}_{i=1}^{A}\}_{j=1}^{A}$, where $\lambda^{(d)}_{ij}(t)$=P\{for document $d$, $i\rightarrow j$ occurs in time interval $[t, t+dt)$, given that it has not ben sent until time $t$\}. \\ \newline
 To calculate the distribution of interaction patterns within a document, we estimate the (empirical) proportion of the words in document $d$ which are assigned the topics corresponding to the interaction pattern $c$ from \ref{subsec: Content Generating Process}: 
 \begin{equation}
-p_c^{(d)} = \frac{\sum_{n=1}^{N^{(d)}}I(C_{z_n^{(d)}}=c)}{N^{(d)}},
+p_c^{(d)} = \frac{\sum\limits_{k: c_k=c} N^{(k|d)}}{N^{(d)}},
 \end{equation}
-where $I$ is the indicator function (1/0) and $\sum\limits_{c=1}^{C}p_c^{(d)}=1$.\\\\ \newline
+where $\sum\limits_{c=1}^{C}p_c^{(d)}=1$.\\\\ \newline
 Now, we define the $(i, j)^{th}$ element of the stochastic intensity matrix $\boldsymbol{\lambda}^{(d)}(t)$ forms:
 \begin{equation}
-\lambda^{(d)}_{ij}(t)=\lambda_0\sum\limits_{c=1}^{C} p^{(d)}_c\cdot \mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\},
+\lambda^{(d)}_{ij}(t)=\sum\limits_{c=1}^{C} p^{(d)}_c
+\cdot  \mbox{exp}\Big\{\lambda^{(c)}_0\cdot \boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\},
 \end{equation}
-where $\lambda_0$ is the common baseline hazards for the overall interaction (assume that $\lambda_0$ does not depend on $t$), $p_c^{(d)}$ is as defined above, $\boldsymbol{\beta}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$ corresponding to the interaction pattern $c$, $\boldsymbol{x}^{(c)}_t(i, j)$ is a vector of the $p$-dimensional dynamic network statistics for directed edge $(i, j)$ at time $t$ corresponding to the interaction pattern $c$, and $\mathcal{A}_{\backslash i}$ is the predictable receiver set of sender $i$ within the set of all possible actors $\mathcal{A}$ (no self-loop). After we include intercept into $\boldsymbol{x}^{(c)}_t(i, j)$, we rewrite (2) as: 
+where $p_c^{(d)}$ is as defined above, $\lambda^{(c)}_0$ is the baseline hazards for the interaction pattern $c$, $\boldsymbol{b}^{(c)}$ is an unknown vector of coefficients in $\boldsymbol{R}^{p}$ corresponding to the interaction pattern $c$, $\boldsymbol{x}^{*(c)}_t(i, j)$ is a vector of the $p$-dimensional dynamic network statistics for directed edge $(i, j)$ at time $t$ corresponding to the interaction pattern $c$, and $\mathcal{A}_{\backslash i}$ is the predictable receiver set of sender $i$ within the set of all possible actors $\mathcal{A}$ (no self-loop). After we include intercept and set $\boldsymbol{x}^{(c)}_t(i, j)=(\boldsymbol{1}, \boldsymbol{x}^{*(c)}_t(i, j))$, we rewrite (2) as: 
 \begin{equation}
-\lambda^{(d)}_{ij}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\},
+\lambda^{(d)}_{ij}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\},
 \end{equation}
-where the first element of $\boldsymbol{\beta}^{(c)}$ corresponds to the baseline intensity of interaction pattern $c$ by including the intercept term and setting $\boldsymbol{x}^{*(c)}_t(i, j)=(\boldsymbol{1}, \boldsymbol{x}^{(c)}_t(i, j))$. This can be seen as the weighted average of stochastic intensities across the interaction patterns. Next, since multicast interactions—those involving a single sender but multiple
+where now the first element of $\boldsymbol{b}^{(c)}$ corresponds to the baseline intensity of interaction pattern $c$. This $\lambda$ can be seen as the weighted average of stochastic intensities across the interaction patterns. Next, since multicast interactions—those involving a single sender but multiple
 receivers—are allowed for this model, we expand the rate of interaction between sender $i$ and the receivers in a set $J$ as:
 \begin{equation}
-\lambda^{(d)}_{iJ}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\sum\limits_{j \in J} \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}\cdot \prod\limits_{j \in J}1\{j \in \mathcal{A}_{\backslash i}\}.
+\lambda^{(d)}_{iJ}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}\cdot \prod\limits_{j \in J}1\{j \in \mathcal{A}_{\backslash i}\}.
 \end{equation}
 In case of single receivers ($|J|=1$),  Equation (4) is reduced to Equation (3), thus in the following sections we use the Equation (4) of multicast cases as a general form of the stochastic intensity between the sender and receivers.
 \begin{comment}
 Conditioned upon the existence of a unique document at some particular time $t$, the probability that the document is sent from $i$ to $j$ is
 	\begin{align*}
-	&L_{ij}(\boldsymbol{\beta}^{(c)}) = \frac{\mbox{exp}\Big\{ \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}}{\mbox{exp}\Big\{\sum\limits_{j \in \mathcal{A}_{\backslash i}} \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}},
+	&L_{ij}(\boldsymbol{b}^{(c)}) = \frac{\mbox{exp}\Big\{ \boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}}{\mbox{exp}\Big\{\sum\limits_{j \in \mathcal{A}_{\backslash i}} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_t(i, j)\Big\}},
 	\end{align*}
 and considering the multicasts and treating the documents being statistically independent, the joint probability, the full likelihood function is:
 \begin{equation}
-L(\boldsymbol{\beta}^{(c)})=\prod_{d: c^{(d)}=c} \frac{\mbox{exp}\{\sum\limits_{j \in J^{(d)}} \boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}{\sum\limits_{\substack{J \subseteq \mathcal{A}_{\backslash i^{(d)}} \\|J|=|J^{(d)}|}} \mbox{exp}\{\sum\limits_{j \in J} \boldsymbol{\beta}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}.
+L(\boldsymbol{b}^{(c)})=\prod_{d: c^{(d)}=c} \frac{\mbox{exp}\{\sum\limits_{j \in J^{(d)}} \boldsymbol{b}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}{\sum\limits_{\substack{J \subseteq \mathcal{A}_{\backslash i^{(d)}} \\|J|=|J^{(d)}|}} \mbox{exp}\{\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}x^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}.
 \end{equation}
-This is exactly the form of the partial likelihood function of \cite{cox1992regression}, however, in our case it is full likelihood since we do not have baseline hazard (incorporated into $\boldsymbol{x}$) in $\lambda^{(c)}_{ij}(t|\boldsymbol{x}_t^{*(c)}(i, j))$. Therefore, for interaction pattern $c=1,...,C$, estimation for $\boldsymbol{\beta}^{(c)}$ proceeds by maximizing the log-likelihood function: 
+This is exactly the form of the partial likelihood function of \cite{cox1992regression}, however, in our case it is full likelihood since we do not have baseline hazard (incorporated into $\boldsymbol{x}$) in $\lambda^{(c)}_{ij}(t|\boldsymbol{x}_t^{*(c)}(i, j))$. Therefore, for interaction pattern $c=1,...,C$, estimation for $\boldsymbol{b}^{(c)}$ proceeds by maximizing the log-likelihood function: 
 \begin{equation}
-\mbox{log}L(\boldsymbol{\beta}^{(c)})=\sum_{d: c^{(d)}=c} \Big\{\sum\limits_{j \in J^{(d)}} \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}-\mbox{log}[{\sum\limits_{\substack{J \subseteq \mathcal{A}_{\backslash i^{(d)}} \\|J|=|J^{(d)}|}} \mbox{exp}\{ \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}]\Big\},
+\mbox{log}L(\boldsymbol{b}^{(c)})=\sum_{d: c^{(d)}=c} \Big\{\sum\limits_{j \in J^{(d)}} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}-\mbox{log}[{\sum\limits_{\substack{J \subseteq \mathcal{A}_{\backslash i^{(d)}} \\|J|=|J^{(d)}|}} \mbox{exp}\{ \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}]\Big\},
 \end{equation}
 where the risk set in the denominater is defined as all possible sets of recievers with the same cardinality as $|J^{(d)}|$. To prevent the bias in the parameter estimates from treating multicast interactions as well as achieve computational efficiency, we use the log-partial likelihood defined in \cite{PerryWolfe2012}:
 \begin{equation}
-\mbox{log}\widetilde{L}(\boldsymbol{\beta}^{(c)})=\sum_{d: c^{(d)}=c} \Big\{\sum\limits_{j \in J^{(d)}}\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)-|J^{(d)}|\mbox{log}\big[\sum_{j\in \mathcal{A}_{\backslash i^{(d)}}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\},
+\mbox{log}\widetilde{L}(\boldsymbol{b}^{(c)})=\sum_{d: c^{(d)}=c} \Big\{\sum\limits_{j \in J^{(d)}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)-|J^{(d)}|\mbox{log}\big[\sum_{j\in \mathcal{A}_{\backslash i^{(d)}}}\mbox{exp}\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]\Big\},
 \end{equation}
-where the approximation $\mbox{log}{L}_t(\boldsymbol{\beta}^{(c)})\approx \mbox{log}\widetilde{L}_t(\boldsymbol{\beta}^{(c)})$ is suggested in \cite{PerryWolfe2012} by replacing the sum over all sets of size $|J^{(d)}|$ in (5) with a sum over all multisets of size $|J^{(d)}|$ (i.e. allowing duplicate elements from $\mathcal{A}_{\backslash i^{(d)}}$) as below: 
+where the approximation $\mbox{log}{L}_t(\boldsymbol{b}^{(c)})\approx \mbox{log}\widetilde{L}_t(\boldsymbol{b}^{(c)})$ is suggested in \cite{PerryWolfe2012} by replacing the sum over all sets of size $|J^{(d)}|$ in (5) with a sum over all multisets of size $|J^{(d)}|$ (i.e. allowing duplicate elements from $\mathcal{A}_{\backslash i^{(d)}}$) as below: 
 \begin{equation}
 \begin{split}
-\mbox{log}[{\sum\limits_{\substack{J \subseteq \mathcal{A}_{\backslash i^{(d)}} \\|J|=|J^{(d)}|}} \mbox{exp}\{\sum\limits_{j \in J} \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}]&\approx
-\mbox{log}[({\sum\limits_{j \in \mathcal{A}_{\backslash i^{(d)}} } \mbox{exp}\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}})^{|J^{(d)}|}]\\& = |J^{(d)}|\times\mbox{log}\big[\sum_{j\in \mathcal{A}_{\backslash i^{(d)}}}\mbox{exp}\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]
+\mbox{log}[{\sum\limits_{\substack{J \subseteq \mathcal{A}_{\backslash i^{(d)}} \\|J|=|J^{(d)}|}} \mbox{exp}\{\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}}]&\approx
+\mbox{log}[({\sum\limits_{j \in \mathcal{A}_{\backslash i^{(d)}} } \mbox{exp}\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}})^{|J^{(d)}|}]\\& = |J^{(d)}|\times\mbox{log}\big[\sum_{j\in \mathcal{A}_{\backslash i^{(d)}}}\mbox{exp}\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d)}}(i^{(d)}, j)\}\big]
 \end{split}
 \end{equation}
 \end{comment}
@@ -203,14 +163,31 @@ We assume the following generative process for each document $d$ in a corpus $D$
 	\item[1.] (Data augmentation) For each sender $i \in \{1,...,A\}$, create a list of receivers $J_i$ by applying the Bernoulli probabilities to every $j \in \mathcal{A}_{\backslash i}$
 	\begin{equation} I(i \rightarrow j) \sim \mbox{Ber}\Big(1-\mbox{exp}(-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)}))\Big),
 	\end{equation}
-	where the probability is called a Bernoulli-Poisson (BerPo) link function \citep{zhou2015infinite} and $\delta$ is a tuning parameter to control the number of recipients and the urgency of the document to be sent. Note that $_+$ denotes including the timepoint itself, meaning that $\lambda_{ij}$ is obtained using the history of interactions until and including the timestamp $t^{(d-1)}$. (i.e. $\lambda^{(d)}_{ij}(t_+^{(d-1)})=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$)
-	\item[2.] For each sender $i = 1,...,A$, generate the time increments $\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}(t_+^{(d-1)}))$, where $\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\}$
-	 \item[3.] Set the timestamp $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$.
+	where the probability is called a Bernoulli-Poisson (BerPo) link function \citep{zhou2015infinite} and $\delta$ is a tuning parameter to control the number of recipients and the urgency of the document to be sent. Note that $_+$ denotes including the timepoint itself, meaning that $\lambda_{ij}$ is obtained using the history of interactions until and including the timestamp $t^{(d-1)}$. \iffalse (i.e. $\lambda^{(d)}_{ij}(t_+^{(d-1)})=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$)\fi
+	\item[2.] For each sender $i = 1,...,A$, generate the time increments \begin{equation}
+\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}(t_+^{(d-1)})).
+	\end{equation}
+\iffalse	where $\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\sum\limits_{j \in{J_i}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\}$\fi
+	 	 \item[3.] Set timestamp $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, sender $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and receivers $J^{(d)} = J_{i^{(d)}}$.
 \end{itemize}
-To simplify the notation, we use $(i, J, t)^{(d)} \sim \mbox{GP}(\boldsymbol{\lambda}^{(d)}(t_+^{(d-1)}))$ to refer to the joint generating process of $(i^{(d)}, J^{(d)}, t^{(d)})$ above.
-
+ \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates}
+\iffalse
+The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). There could be various static and dynamic covariates $\boldsymbol{x}^{(c)}_t(i, j)$ that affects the stochastic intensity, however, we decide to use the covariates that depend on the history of the process, considering the strong recency and reciprocity effects of textual communications, especially emails.\fi
+ We use six effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, send, receive, triangle, outdegree, indegree), measuring reciprocity, transitivity, popularity and centrality. Additionally, we define a time-weighting function so that we can use a single statistic for each effect by incorporating the recency of event into the statistic itself. The time-weighting function estimated at time $t$ is specified as:
+ \begin{equation}
+ \mbox{TW}_t(\{t_n^{(a\rightarrow b)}\}_{n=1}^N, \mu) = (1+(\prod\limits_{n=1}^N\Delta t_n)^{\frac{1}{N}})^\mu,
+ \end{equation}
+ where the first input $\{t_n^{(a\rightarrow b)}\}_{n=1}^N$ denotes the timestamps of the documents where the sender equals to $a$ and the receiver set contains $b$ before time $t$ (of total length $N = \sum_{d: t^{(d)}<t} I\{a\rightarrow b\}$), and the second input $\mu$ is the parameter of decay, measuring how fast the past interactions lose their influence on the future interactions. Then, the output is a function of the geometric mean of the time differences $\Delta t_n=t-t_n^{(a\rightarrow b)}, \mbox{ for } n=1,..,N$. Note that we add 1, in order to ensure that the base is always greater than 1. Below are the time-weighted dynamic network statistics used in this paper:\\
+ \begin{itemize}[leftmargin=*,rightmargin=-1cm]
+ 	\item [1.] $\mbox{intercept}^{(c)}_t(i, j) = 1$
+ 	\item [2.]  $\mbox{send}^{(c)}_t(i, j)= \frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow j\}}{\mbox{TW}_t(\{t_n^{(i\rightarrow j)}\}_{n=1}^N, \mu) }$, where $N = \sum\limits_{d: t^{(d)}<t} I\{i\rightarrow j\}$
+ 	\item [3.] $\mbox{receive}^{(c)}_t(i, j)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow j\}}{\mbox{TW}_t(\{t_n^{(j\rightarrow i)}\}_{n=1}^N, \mu) }$, where $N = \sum\limits_{d: t^{(d)}<t} I\{j\rightarrow i\}$
+ 	\item [4.] $\mbox{triangle}^{(c)}_t(i, j)=\frac{\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow h \mbox{ or } h\rightarrow i\}\Big)\Big(\sum\limits_{d': t^{(d')}<t}p_c^{(d')}\cdot I\{j\rightarrow h \mbox{ or } h\rightarrow j\}\Big)}{\mbox{TW}_t(\{t_n^{(i\rightarrow h \mbox{ or } h\rightarrow i \mbox{ or } j\rightarrow h \mbox{ or } j\rightarrow h)}\}_{n=1}^N, \mu) }$, \\where $N = \sum\limits_{d: t^{(d)}<t} I\{i\rightarrow h \mbox{ or } h\rightarrow i \mbox{ or } j\rightarrow h \mbox{ or } j\rightarrow h\}$
+ 	\item [5.]  $\mbox{outdegree}^{(c)}_t(i)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow \forall j\}}{\mbox{TW}_t(\{t_n^{(i\rightarrow \forall j)}\}_{n=1}^N, \mu) }$, where $N = \sum\limits_{d: t^{(d)}<t} I\{i\rightarrow \forall j\}$
+ 	\item [6.] $\mbox{indegree}^{(c)}_t(j)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{\forall i\rightarrow j\}}{\mbox{TW}_t(\{t_n^{(\forall i\rightarrow  j)}\}_{n=1}^N, \mu)}, $ where $N = \sum\limits_{d: t^{(d)}<t} I\{\forall i\rightarrow j\}$
+ \end{itemize}
 \subsection{Joint Generative Process of Document} \label{subsec: Joint Generative Process of Document}
- Below are the joint generative process for each document in a corpus $D$ and the corresponding plate notation (Figure 1).
+ Below are the joint generative process for each document in a corpus $D$, integrating \ref{subsec: Content Generating Process}, \ref{subsec: Stochastic Intensity}, \ref{subsec: Tie Generating Process}, and \ref{subsec: Dynamic covariates}.  Figure 1 is the corresponding plate notation of IPTM.
 \begin{algorithm}[H]
 	\SetAlgoLined
 	\caption{Topic Word Distributions}
@@ -222,7 +199,7 @@ To simplify the notation, we use $(i, J, t)^{(d)} \sim \mbox{GP}(\boldsymbol{\la
 	\SetAlgoLined
 	\caption{Interaction Pattern Parameters}
 	\For{c=1 to C}{
-		draw $\boldsymbol{\beta}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$
+		draw $\boldsymbol{b}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$
 	}
 \end{algorithm}
 \begin{algorithm}[H]
@@ -236,89 +213,113 @@ To simplify the notation, we use $(i, J, t)^{(d)} \sim \mbox{GP}(\boldsymbol{\la
 		\SetAlgoLined
 		\caption{Document Generating Process}
 		\For{d=1 to D}{
-			draw $N^{(d)} \sim \mbox{Poisson}(\zeta)$\\
+			draw $N^{(d)}= \mbox{min}(1, \bar N^{(d)})$, where $\bar N^{(d)}\sim \mbox{Poisson}(\zeta) $\\
 			draw $\boldsymbol{\theta}^{(d)}\sim \mbox{Dir}(\alpha, \boldsymbol{m})$\\
 				\For{n=1 to ${N}^{(d)}$}{
 					draw $z_n^{(d)} \sim \mbox{Multinom}(\boldsymbol{\theta}^{(d)})$\\
-					{draw $w_n^{(d)} \sim\mbox{Multinom} (\boldsymbol{\phi}^{(z_n^{(d)})})$
-					}}
+					\If {$\bar N^{(d)}>0$} {
+							draw $w_n^{(d)} \sim\mbox{Multinom} (\boldsymbol{\phi}^{(z_n^{(d)})})$
+				}
+			}
                    \For{c=1 to $C$}{
-                   set $p_c^{(d)} = \frac{\sum_{n=1}^{N^{(d)}}I(C_{z_n^{(d)}}=c)}{N^{(d)}}$
+                   set $p_c^{(d)} = \frac{\sum\limits_{k: c_k=c} N^{(k|d)}}{N^{(d)}}$
                    }
-				draw ($i, J, t)^{(d)}\sim \mbox{GP}(\boldsymbol{\lambda}^{(d)}(t_+^{(d-1)}))$		}
-	\end{algorithm}
-     \small
- \begin{figure}[ht]
- 	\centering
-\scalebox{0.74}{  \begin{tikzpicture}
- 		\tikzstyle{main}=[circle, minimum size = 15mm, thick, draw =black!80, node distance = 10.5mm]
- 		\tikzstyle{connect}=[-latex, thick]
- 		\tikzstyle{box}=[rectangle, draw=black!100]
-        	\node[main] (theta) [label=center:${\theta}^{(d)}$] { };
- 					\node[main] (z) [below=of theta,label=center:$z_n^{(d)}$] {};
-                    	\node[main, fill = black!10] (N) [right=of z, label=center:${(i, J, t)}^{(d)}$] { };	
- 						\node[main, fill = black!10] (w) [below=of z,label=center:$w_n^{(d)}$] { };
- 								\node[main] (phi) [left=of w,label=center:$\boldsymbol{\phi}^{(k)}$] { };
- 								\node[main] (beta2) [left=of phi, label=center:$\beta$] { };
- 									\node[main] (beta) [right=of N ,label=center:$\boldsymbol{\beta}^{(c)}$] { };
- 									\node[main, fill = black!10] (x) [below=of beta ,label=center:$\boldsymbol{x}^{(c)}_t$] { };										\node[main] (sigma) [right=of beta,label=center:$\sigma^2$] { };
- 										\node[main] (mu) [right=of x,label=center:$\mu$] { };
- 											\node[main] (alpha) [left=of theta,label=center:${\alpha}$] { };
- 											\node[main] (m) [below=of alpha,label=center:$\boldsymbol{m}$] { };
-                                            \node[main] (C) [above = of beta, label = center:$C$]{};
-                                             \node[main] (delta) [right = of C, label = center:$\delta$]{};
-  		\path 
-  					(theta) edge [connect] (z)
-  						(z) edge [connect] (w)
-  							(phi) edge [connect] (w)
-  								(beta2) edge [connect] (phi)
-  									(x) edge [connect] (N)
-  									(beta) edge [connect] (N)
-  									(mu) edge [connect] (x)
-  									(sigma) edge [connect] (beta)
-  										(alpha) edge [connect] (theta)
-                                        (z) edge [connect] (N)
-                                        (C) edge [connect] (N)
-                                        (delta) edge [connect] (N)
-   										(m) edge [connect] (theta);
-  				\node[rectangle, inner sep=5mm, draw=black!100, fit =(z) (w) (N) (theta) ] {};
-  				\node[rectangle, inner sep=2mm, fit= (N) (z) (w) (theta),label=below right:$D$, xshift=-3mm, yshift=-10.5mm] {};
-  				\node[rectangle, inner sep=3mm, draw=black!100, fit= (phi)] {};
-                \node[rectangle, inner sep=3mm, draw=black!100, fit= (C)] {};
-  					\node[rectangle, inner sep=0mm, fit= (phi),label=below right:$K$, xshift=-2mm, yshift=1.5mm] {};
-                    	\node[rectangle, inner sep=0mm, fit= (C),label=below right:$K$, xshift=-2mm, yshift=1.5mm] {};
-  						\node[rectangle, inner sep=0mm, fit= (w),label=below right:$N^{(d)}$, xshift=-5.5mm, yshift=2mm] {};
-  							\node[rectangle, inner sep=3mm,draw=black!100, fit= (w)(z)] {};
-  								\node[rectangle, inner sep=3mm,draw=black!100, fit= (beta)(x)] {};
-  								\node[rectangle, inner sep=4mm, fit= (beta)(x) ,label= below right:$C$, xshift=-6mm, yshift=-7mm] {};
- 	 		\end{tikzpicture}}
- 	\caption{Plate notation of IPTM}
- 	\label{fig:plate}
- \end{figure}
 
-  \section{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates}
- The network statistics $\boldsymbol{x}^{*(c)}_t(i, j)$ of Equation (3), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). There could be various static and dynamic covariates $\boldsymbol{x}^{(c)}_t(i, j)$ that affects the stochastic intensity, however, we decide to use the covariates that depend on the history of the process, considering the strong recency and reciprocity effects of textual communications, especially emails. 
- \begin{figure}[ht]
- 	\centering
- 	\includegraphics[width=0.56\textwidth]{PerryWolfe.pdf} 
- 	\label{fig:PerryWolfeplot}
- \end{figure}
-  \newline Following \cite{PerryWolfe2012} (refer to Figure above), we use 4 effects as components of $\boldsymbol{x}^{*(c)}_t(i, j)$, including the intercept to estimate the baseline intensities. The two behaviors (send and receive) are dyadic, involving exactly two actors, while the one is triadic (sum of 2-send, 2-receive, sibling, and cosibling), involving three actors. In addition to those, we further include the indegree for receiver and outdegree for sender effects to measure the popularity and centrality. However, one novel point in this paper is that we define the effects not to be based on finite sub-interval, which require large number of dimension. Instead, we create a time-weighting function so that we can use a single statistic for each effect by incorporating the recency of event into the statistic itself. The time-weighting function estimated at time $t$ is specified as:
- \begin{equation}
-\mbox{TW}_t(\{t_n^{(a\rightarrow b)}\}_{n=1}^N, \mu) = (1+(\prod\limits_{n=1}^N\Delta t_n)^{\frac{1}{N}})^\mu,
- \end{equation}
- where the first input $\{t_n^{(a\rightarrow b)}\}_{n=1}^N$ denotes the timestamps of the documents where the sender equals to $a$ and the receiver set contains $b$ before time $t$ (of total length $N = \sum_{d: t^{(d)}<t} I\{a\rightarrow b\}$), and the second input $\mu$ is the parameter of decay, measuring how fast the past interactions lose their influence on the future interactions. Then, the output is a function of the geometric mean of the time differences $\Delta t_n=t-t_n^{(a\rightarrow b)}, \mbox{ for } n=1,..,N$. Note that we add 1 before taking $\mu^{th}$ power, in order to ensure that the base is always greater than 1.\\ \newline
- As a result, all of the statistics below can be seen as time-weighted dynamic network statistics.
- \begin{itemize}[leftmargin=*,rightmargin=-1cm]
- 	\item [1.] $\mbox{intercept}^{(c)}_t(i, j) = 1$
- 	\item [2.]  $\mbox{send}^{(c)}_t(i, j)= \frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow j\}}{\mbox{TW}_t(\{t_n^{(i\rightarrow j)}\}_{n=1}^N, \mu) }$, where $N = \sum\limits_{d: t^{(d)}<t} I\{i\rightarrow j\}$
- 	\item [3.] $\mbox{receive}^{(c)}_t(i, j)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow j\}}{\mbox{TW}_t(\{t_n^{(j\rightarrow i)}\}_{n=1}^N, \mu) }$, where $N = \sum\limits_{d: t^{(d)}<t} I\{j\rightarrow i\}$
- 	\item [4.] $\mbox{triangle}^{(c)}_t(i, j)=\frac{\sum\limits_{d: t^{(d)}<t}\sum\limits_{h \neq i, j}\Big(p_c^{(d)}\cdot I\{i\rightarrow h \mbox{ or } h\rightarrow i\}\Big)\Big(p_c^{(d)}\cdot I\{j\rightarrow h \mbox{ or } h\rightarrow j\}\Big)}{\mbox{TW}_t(\{t_n^{(i\rightarrow h \mbox{ or } h\rightarrow i \mbox{ or } j\rightarrow h \mbox{ or } j\rightarrow h)}\}_{n=1}^N, \mu) }$, \\where $N = \sum\limits_{d: t^{(d)}<t} I\{i\rightarrow h \mbox{ or } h\rightarrow i \mbox{ or } j\rightarrow h \mbox{ or } j\rightarrow h\}$
- 	\item [5.]  $\mbox{outdegree}^{(c)}_t(i)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow \forall j\}}{\mbox{TW}_t(\{t_n^{(i\rightarrow \forall j)}\}_{n=1}^N, \mu) }$, where $N = \sum\limits_{d: t^{(d)}<t} I\{i\rightarrow \forall j\}$
- 	\item [6.] $\mbox{indegree}^{(c)}_t(j)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{\forall i\rightarrow j\}}{\mbox{TW}_t(\{t_n^{(\forall i\rightarrow  j)}\}_{n=1}^N, \mu)}, $ where $N = \sum\limits_{d: t^{(d)}<t} I\{\forall i\rightarrow j\}$
- \end{itemize}
+                    \For{i=1 to $A$}{
+                    	\For{j=1 to $A$}{
+                    		\If {j $\neq$ i} {
+                    			  calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
+                    			  set $\lambda^{(d)}_{ij}(t_+^{(d-1)})=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
+                        draw I($i \rightarrow j$) $\sim \mbox{Ber}(1-\mbox{exp}(-\delta\lambda_{ij}^{(d)}(t_+^{(d-1)})))$}  }
+					draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)}(t_+^{(d-1)}))$
+                    }
+                    set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
+	}
+	\end{algorithm}
+	  \begin{figure}[ht]
+	  	\centering
+	  	\scalebox{0.65}{  \begin{tikzpicture}
+	  		\tikzstyle{main}=[circle, minimum size = 18mm, thick, draw =black!80, node distance = 10.5mm]
+	  		\tikzstyle{connect}=[-latex, thick]
+	  		\tikzstyle{box}=[rectangle, draw=black!100]
+	  		\node[main] (theta) [label=center:${\theta}^{(d)}$] { };
+	  		\node[main] (alpha) [left=of theta,label=center:${\alpha}$] { };
+	  		\node[main] (z) [below=of theta,label=center:$z_n^{(d)}$] {};
+	  		\node[main, fill = black!10] (w) [below=of z,label=center:$w_n^{(d)}$] { };
+	  		\node[main] (phi) [left=of w,label=center:$\boldsymbol{\phi}^{(k)}$] { };
+	  		\node[main] (beta) [left=of phi, label=center:$\beta$] { };
+	  		\node[main] (m) [below=of alpha,label=center:$\boldsymbol{m}$] { };
+	  		\node[main] (x) [right=of theta,label=center:$\boldsymbol{x}^{(c)}_{t_+^{(d-1)}}$] { };
+	  		\node[main] (lambda) [below=of x,label=center:$\boldsymbol{\lambda}^{(d)}(t_+^{(d-1)})$] { };
+	  		\node[main] (mu) [above=of x,label=center:$\mu$] { };
+	  		\node[main] (c) [right=of mu,label=center:$c_k$] { };
+	  		\node[main] (e) [right=of lambda,label=center:${(i, J_i)}^{(d)}$] { };
+	  		\node[main] (delta) [right=of e,label=center:$\delta$] { };
+	  		\node[main] (b) [above=of delta,label=center:$\boldsymbol{b}^{(c)}$] { };
+	  		\node[main] (t) [below=of e,label=center:${\Delta T_{iJ_i}}^{(d)}$] { };
+	  		\node[main] (sigma) [right=of b,label=center:$\sigma^2$] { };
+	  		\node[main, fill = black!10] (N) [below=of t,label=center:${(i, J, t)}^{(d)}$] { };
+	  		\path 
+	  		(theta) edge [connect] (z)
+	  		(z) edge [connect] (w)
+	  		(alpha) edge [connect] (theta)
+	  		(phi) edge [connect] (w)
+	  		(beta) edge [connect] (phi)
+	  		(z) edge [connect] (x)
+	  		(z) edge [connect] (lambda)
+	  		(mu) edge [connect] (x)
+	  		(x) edge [connect] (lambda)
+	  		(c) edge [connect] (x)
+	  		(c) edge [connect] (lambda)
+	  		(b) edge [connect] (lambda)
+	  		(lambda) edge [connect] (e)
+	  		(lambda) edge [connect] (t)
+	  		(sigma) edge [connect] (b)
+	  		(e) edge [connect] (t)
+	  		(delta) edge [connect] (e)
+	  		(t) edge [connect] (N)
+	  		(N) edge [connect, red] (x)
+	  		(m) edge [connect] (theta);
+	  		\node[rectangle, inner sep=5mm, draw=black!100, fit =(z) (w) (x) (theta) (N) (e)(lambda) ] {};
+	  		\node[rectangle, inner sep=2mm, fit= (z) (w)(e)(theta)(x)(N) (lambda),label=below right:$D$, xshift=-3mm, yshift=-10.5mm] {};
+	  		\node[rectangle, inner sep=3mm, draw=black!100, fit= (phi)] {};
+	  		\node[rectangle, inner sep=3mm, draw=black!100, fit= (c)] {};
+	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (b)] {};
+	  		\node[rectangle, inner sep=4mm, fit= (b),label= below right:$C$, xshift=-6mm, yshift=6mm] {};
+	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (x)] {};
+	  		\node[rectangle, inner sep=3mm, fit= (x),label= below right:$C$, xshift=-6mm, yshift=5mm] {};
+	  		\node[rectangle, inner sep=0mm, fit= (phi),label=below right:$K$, xshift=-2mm, yshift=1.5mm] {};
+	  		\node[rectangle, inner sep=0mm, fit= (c),label=below right:$K$, xshift=-2mm, yshift=1.5mm] {};
+	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (w)(z)] {};
+	  		\node[rectangle, inner sep=0mm, fit= (w),label=below right:$N^{(d)}$, xshift=-5.5mm, yshift=2mm] {};
+	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (e)(t)] {};
+	  		\node[rectangle, inner sep=0mm, fit= (e)(t),label=below right:$A$, xshift=-2mm, yshift=-12.5mm] {};
+	  		\end{tikzpicture}}
+	  	\caption{Plate notation of IPTM}
+	  	\label{fig:plate}
+	  \end{figure}
+\noindent This joint generative process implies a particular factorization of the joint distribution over the variables $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D},\mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D},  \mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{b}^{(c)} \}_{c=1}^{C},$ $\mathcal{X}=\{\{\boldsymbol{x}^{(c)}_{t_+^{(d-1)}}(i, j)\}_{c=1}^C\}_{d=1}^{D}, \mathcal{E}=\{\{(i^{(d)}, J^{(d)}_i)\}_{i=1}^{A}\}_{d=1}^D$, $\mathcal{T}=\{  \{\Delta T_{iJ_i}^{(d)}\}_{i=1}^{A}\}_{d=1}^D$, and $\mathcal{O}=\{(i, J, t)^{(d)}\}_{d=1}^D$ given the hyperparameters $(\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \mu, \delta)$:
+\begin{equation}
+\begin{aligned}
+&P(\Phi, \Theta, \mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B},\mathcal{X}, \mathcal{E}, \mathcal{T}, \mathcal{O}| \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \mu, \delta) \\& 
+= P(\Phi|\beta, \boldsymbol{u})P(\Theta|\alpha, \boldsymbol{m})P(\mathcal{Z}|\Theta)P(\mathcal{W}|\mathcal{Z}, \Phi) P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \sigma^2)\\&\quad \quad \times\textcolor{red}{P(\mathcal{X}|\mathcal{Z}, \mathcal{C}, \mathcal{O}, \mu) }
+P(\mathcal{E}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \delta)P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \mathcal{E})P(\mathcal{O}|\mathcal{E}, \mathcal{T}).
+\end{aligned}
+\end{equation}
+We can simplify this further by integreting out $\Phi$ and $\Theta$ using Dirichlet-multinomial conjugacy:
+\begin{equation}
+\begin{aligned}
+&P(\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B},\mathcal{X}, \mathcal{E}, \mathcal{T}| \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \mu, \delta) \\& 
+= P(\mathcal{Z})P(\mathcal{W}|\mathcal{Z}) P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \sigma^2)\textcolor{red}{P(\mathcal{X}|\mathcal{Z}, \mathcal{C}, \mathcal{O}, \mu)}
+P(\mathcal{E}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \delta)P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \mathcal{E})P(\mathcal{O}|\mathcal{E}, \mathcal{T}).
+\end{aligned}
+\end{equation}
+NOTE: Refer to Equation (15) in Section 3.1. \\\newline$P(\mathcal{E}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \delta)$ corresponds to $P(\mbox{edge creations})$ - Bernoulli part of tie generation\\\newline $P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \mathcal{E})$ corresponds to $P(\Delta T_{i^{(d)}J^{(d)}}\sim \mbox{Exp}(\lambda^{(d)}_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})))$ part (but need to account for all latent edge pairs $(i, J_i)$) - Exponential part of tie generation\\\newline
+$P(\mathcal{O}|\mathcal{E}, \mathcal{T})$ corresponds to $P(\mbox{min}(\Delta T_{i{J_i}}) = \Delta T_{i^{(d)}{J^{(d)}}})$ - can use the property: minimum of Exponential is also Exponential. \\ \newline
+Since $\boldsymbol{\lambda}^{(d)}$ is a deterministic function of $(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X})$, we do not include $\Lambda=\{\boldsymbol{\lambda}^{(d)}\}_{d=1}^{D}$ in the joint distribution.\\ \newline
+\textcolor{red} {Cannot complete factorization due to $P(\mathcal{X}|\mathcal{Z}, \mathcal{C}, \mathcal{O}, \mu)$...HOW?}
 \section{Inference} \label{sec: Inference}
-In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the sender, recipient, and timestamps $(i=i^{(d)}, j=J^{(d)}, t=t^{(d)})$ of the document $d$, which we jointly denote as $\mathcal{N}_{\mbox{obs}} = \{\boldsymbol{N}^{(d)}\}_{d=1}^D=\{(i, J, t)^{(d)}\}_{d=1}^D$ in the inference, meaning the network features. Next,  $\mathcal{X}=\{\{\boldsymbol{x}^{(c)}_{t^{(d)}}(i, j)\}_{c=1}^C\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{C}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{\beta}^{(c)} \}_{c=1}^{C}$ and the latent sender, recipient, and timestamps $(i'=i^{(d)}, j'=J^{(d)}, t'=t^{(d)})$ of the document $d$ generated from data augmentation, $\mathcal{N}_{\mbox{aug}} = \{\boldsymbol{N}'^{(d)}\}_{d=1}^D=\{\{(i', J'_i, t')^{(d)}\}_{i\neq i^{(d)}}\}_{d=1}^D$.\\
+In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the sender, recipient, and timestamps $(i=i^{(d)}, j=J^{(d)}, t=t^{(d)})$ of the document $d$, which we jointly denote as $\mathcal{N}_{\mbox{obs}} = \{\boldsymbol{N}^{(d)}\}_{d=1}^D=\{(i, J, t)^{(d)}\}_{d=1}^D$ in the inference, meaning the network features. Next,  $\mathcal{X}=\{\{\boldsymbol{x}^{(c)}_{t^{(d)}}(i, j)\}_{c=1}^C\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{C}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{b}^{(c)} \}_{c=1}^{C}$ and the latent sender, recipient, and timestamps $(i'=i^{(d)}, j'=J^{(d)}, t'=t^{(d)})$ of the document $d$ generated from data augmentation, $\mathcal{N}_{\mbox{aug}} = \{\boldsymbol{N}'^{(d)}\}_{d=1}^D=\{\{(i', J'_i, t')^{(d)}\}_{i\neq i^{(d)}}\}_{d=1}^D$.\\
  \newline 
  Below is the the big joint distribution
  \begin{equation}
@@ -330,7 +331,7 @@ In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol
  \end{equation}
  Now we can integrate out $\Phi$ and $\Theta$ in latent Dirichlet allocation by applying Dirichlet-multinomial conjugacy. See APPENDIX B for the detailed steps. After integration, our inference goal is to draw samples from the posterior distribution:
  \begin{equation}
- \propto P( \mathcal{Z}|\mathcal{W},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m})P(\mathcal{N}_{\mbox{aug}}|\mathcal{N}_{\mbox{obs}}, \mathcal{Z}, \mathcal{C}, \mathcal{B},\mathcal{X}, \mu, \delta)P(\mathcal{B}|\mathcal{C}, \sigma^2)P(\mathcal{C}|\boldsymbol{\gamma})
+ \propto P( \mathcal{Z}|\mathcal{W},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m})P(\mathcal{N}_{\mbox{aug}}|\mathcal{N}_{\mbox{obs}}, \mathcal{Z}, \mathcal{C}, \mathcal{B},\mathcal{X}, \mu, \delta)P(\mathcal{B}|\mathcal{C}, \sigma^2)P(\mathcal{C})
  \end{equation}
 In practice, we can achieve this inference goal by sequentially resampling the value of each latent variable $\mathcal{Z}, \mathcal{C}, \mathcal{B}$ and $\mathcal{N}_{\mbox{aug}}$ from its conditional posterior distribution, using the equation below:
  \begin{equation}
@@ -392,21 +393,21 @@ In practice, we can achieve this inference goal by sequentially resampling the v
 &=\prod_{d=1}^{D} \Big(\lambda^{(d)}_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})}\Big) \times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\Big),
 \end{aligned}
 \end{equation}
-where $\lambda^{(d)}_{ij}(t_+^{(d-1)})$ equals to $\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$.
-After replacing $\lambda$ to the function of $\boldsymbol{\beta}$ and $\boldsymbol{x}$ and then taking the log of Equation (18) to avoid numerical issue from exponentiation and increase the speed of computation, the sampling equation used for the update of interaction pattern assignment is:
+where $\lambda^{(d)}_{ij}(t_+^{(d-1)})$ equals to $\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$.
+After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x}$ and then taking the log of Equation (19) to avoid numerical issue from exponentiation and increase the speed of computation, the sampling equation used for the update of interaction pattern assignment is:
  \begin{equation}
  \begin{split}
-& \sum_{d=1}^D\Big\{\sum\limits_{c=1}^C\Big(\mbox{log}(p_c^{(d)})+\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i^{(d)}, j)\Big)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\sum\limits_{c=1}^C\Big(p_c^{(d)}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\\&\quad\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)}-1)-\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\Big)\Big\},
+& \sum_{d=1}^D\Big\{\sum\limits_{c=1}^C\Big(\mbox{log}(p_c^{(d)})+\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i^{(d)}, j)\Big)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\sum\limits_{c=1}^C\Big(p_c^{(d)}e^{\sum\limits_{j \in{J_i}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\\&\quad\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)}-1)-\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\Big)\Big\},
  \end{split}
  \end{equation}
  with $C_k=c$ throughout, making only $\{p_c^{(d)}\}_{d=1}^D$ vary by $C_k$. Note that in the product over $d$, we need only consider those emails that actually use topic $k$; the others will have no terms involving $C_k$.
  \subsection{Resampling $\mathcal{B}$}  \label{subsec: Resampling B}
- Finally, we update the interaction pattern parameter $\boldsymbol{\beta}^{(c)}$, one interaction pattern at a time. For this, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with variance $\boldsymbol{\beta}^2_B$ (proposal distirbution variance parameters set by the
- user), centered on the current values of $\boldsymbol{\beta}^{(c)}$. Then we draw a proposal $\boldsymbol{\beta}'^{(c)}$ at each iteration. Under symmetric proposal distribution (such as multivariate Gaussian), we cancel out Q-ratio and obtain the acceptance probability equal to:
+ Finally, we update the interaction pattern parameter $\boldsymbol{b}^{(c)}$, one interaction pattern at a time. For this, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with variance $\boldsymbol{b}^2_B$ (proposal distirbution variance parameters set by the
+ user), centered on the current values of $\boldsymbol{b}^{(c)}$. Then we draw a proposal $\boldsymbol{b}'^{(c)}$ at each iteration. Under symmetric proposal distribution (such as multivariate Gaussian), we cancel out Q-ratio and obtain the acceptance probability equal to:
  \begin{equation}
  \begin{split}
  & \mbox{Acceptance Probability}=
- \begin{cases}  \frac{P(\boldsymbol{\beta}'^{(c)}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}_{\backslash c}, \mathcal{N},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)}{P(\boldsymbol{\beta}^{(c)}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}_{\backslash c}, \mathcal{N},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)}\quad\text{if}  <1\\
+ \begin{cases}  \frac{P(\boldsymbol{b}'^{(c)}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}_{\backslash c}, \mathcal{N},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)}{P(\boldsymbol{b}^{(c)}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}_{\backslash c}, \mathcal{N},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)}\quad\text{if}  <1\\
  1 \quad \text{else}
  \end{cases}
  \end{split}
@@ -414,20 +415,20 @@ After replacing $\lambda$ to the function of $\boldsymbol{\beta}$ and $\boldsymb
  After factorization, we get
  \begin{equation}
  \begin{aligned}
-&\frac{P(\boldsymbol{\beta}'^{(c)}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}_{\backslash c},  \mathcal{N},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)}{P(\boldsymbol{\beta}^{(c)}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X},  \mathcal{B}_{\backslash c}, \mathcal{N},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)} \\&=\frac{P(\boldsymbol{\beta}'^{(c)}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}_{\backslash c},  \mathcal{N},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)}{P(\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N} |\mathcal{X},  \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)}\\&=\frac{P(\boldsymbol{\beta}'^{(c)})}{P(\boldsymbol{\beta}^{(c)})}\times\frac{P(\mathcal{N}|\boldsymbol{\beta}'^{(c)}, \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}_{\backslash c}, \mu, \delta)}{P(\mathcal{N}|\mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}, \mu, \delta)},
+&\frac{P(\boldsymbol{b}'^{(c)}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}_{\backslash c},  \mathcal{N},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)}{P(\boldsymbol{b}^{(c)}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X},  \mathcal{B}_{\backslash c}, \mathcal{N},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)} \\&=\frac{P(\boldsymbol{b}'^{(c)}|\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}_{\backslash c},  \mathcal{N},\beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)}{P(\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N} |\mathcal{X},  \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \sigma^2, \mu, \delta)}\\&=\frac{P(\boldsymbol{b}'^{(c)})}{P(\boldsymbol{b}^{(c)})}\times\frac{P(\mathcal{N}|\boldsymbol{b}'^{(c)}, \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}_{\backslash c}, \mu, \delta)}{P(\mathcal{N}|\mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}, \mu, \delta)},
  \end{aligned}
  \end{equation}
- where $P(\mathcal{N}| \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}, \mu, \delta)$ is Equation (18). As in Section \ref{subsec: Resampling C}, we obtain the log of acceptance ratio:
+ where $P(\mathcal{N}| \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}, \mu, \delta)$ is Equation (19). As in Section \ref{subsec: Resampling C}, we obtain the log of acceptance ratio:
  \begin{equation}
  \begin{aligned} 
- &\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)-\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&+  \sum_{d=1}^D\Big\{\sum\limits_{c=1}^C\Big(\mbox{log}(p_c^{(d)})+\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i^{(d)}, j)\Big)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\sum\limits_{c=1}^C\Big(p_c^{(d)}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\\&\quad\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{\beta}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)}-1)-\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{\beta}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\Big)\Big\}
- \\& -\sum_{d=1}^D\Big\{\sum\limits_{c=1}^C\Big(\mbox{log}(p_c^{(d)})+\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i^{(d)}, j)\Big)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\sum\limits_{c=1}^C\Big(p_c^{(d)}e^{\sum\limits_{j \in{J_i}}\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\\&\quad\quad-\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)}-1)-\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\Big)\Big\},
+ &\mbox{log}\Big(\phi_d(\boldsymbol{b}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)-\mbox{log}\Big(\phi_d(\boldsymbol{b}^{(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&+  \sum_{d=1}^D\Big\{\sum\limits_{c=1}^C\Big(\mbox{log}(p_c^{(d)})+\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{b}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i^{(d)}, j)\Big)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\sum\limits_{c=1}^C\Big(p_c^{(d)}e^{\sum\limits_{j \in{J_i}}\boldsymbol{b}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\\&\quad\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{b}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)}-1)-\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{b}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\Big)\Big\}
+ \\& -\sum_{d=1}^D\Big\{\sum\limits_{c=1}^C\Big(\mbox{log}(p_c^{(d)})+\sum\limits_{j \in{J_{i^{(d)}}}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i^{(d)}, j)\Big)-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\sum\limits_{c=1}^C\Big(p_c^{(d)}e^{\sum\limits_{j \in{J_i}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\\&\quad\quad-\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)}-1)-\delta\sum\limits_{c=1}^C\Big(p_c^{(d)} e^{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\Big)\Big\},
  \end{aligned}
  \end{equation}
  where $\phi_d(\cdot;\mu, \Sigma)$ is the $d$-dimensional multivariate normal density. After some simplification, we finally use:
   \begin{equation}
   \begin{aligned} 
-  &\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)-\mbox{log}\Big(\phi_d(\boldsymbol{\beta}^{(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&\quad+  \sum_{d=1}^D\Big\{\sum\limits_{c=1}^C\Big(\sum\limits_{j \in{J_{i^{(d)}}}}{(\boldsymbol{\beta}'^{(c)}-\boldsymbol{\beta}^{(c)})}^T\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i^{(d)}, j)\Big)\\&\quad-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\sum\limits_{c=1}^Cp_c^{(d)}\Big(e^{\sum\limits_{j \in{J_i}} \boldsymbol{\beta}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}-e^{\sum\limits_{j \in{J_i}} \boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\\&\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta\sum\limits_{c=1}^Cp_c^{(d)}\Big( e^{\boldsymbol{\beta}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}-e^{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)}-1)\\&\quad\quad\quad\quad\quad\quad-\delta\sum\limits_{c=1}^Cp_c^{(d)} \Big(e^{\boldsymbol{\beta}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}-e^{\boldsymbol{\beta}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\Big)\Big\}.
+  &\mbox{log}\Big(\phi_d(\boldsymbol{b}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big)-\mbox{log}\Big(\phi_d(\boldsymbol{b}^{(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&\quad+  \sum_{d=1}^D\Big\{\sum\limits_{c=1}^C\Big(\sum\limits_{j \in{J_{i^{(d)}}}}{(\boldsymbol{b}'^{(c)}-\boldsymbol{b}^{(c)})}^T\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i^{(d)}, j)\Big)\\&\quad-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\sum\limits_{c=1}^Cp_c^{(d)}\Big(e^{\sum\limits_{j \in{J_i}} \boldsymbol{b}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}-e^{\sum\limits_{j \in{J_i}} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\\&\quad+\sum\limits_{i\in \mathcal{A}}\sum\limits_{j \in \mathcal{A}_{\backslash i }}\Big(I(j \in J_i)\cdot\mbox{log}(e^{\delta\sum\limits_{c=1}^Cp_c^{(d)}\Big( e^{\boldsymbol{b}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}-e^{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)}-1)\\&\quad\quad\quad\quad\quad\quad-\delta\sum\limits_{c=1}^Cp_c^{(d)} \Big(e^{\boldsymbol{b}'^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}-e^{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)}\Big)\Big)\Big\}.
   \end{aligned}
   \end{equation}
  Then the log of acceptance ratio we have is:
@@ -454,7 +455,7 @@ After replacing $\lambda$ to the function of $\boldsymbol{\beta}$ and $\boldsymb
  \begin{equation}
  [\alpha^{(c)} m^{(c)}_k]^*=\alpha^{(c)} m^{(c)}_k\frac{\sum_{n=1}^{\mbox{max}_dN_{k|d}}C_k(n)[\Psi(n+\alpha^{(c)} m^{(c)}_k)-\Psi(\alpha^{(c)} m^{(c)}_k)]}{\sum_{n=1}^{\mbox{max}_dN_{\cdot|d}}C_\cdot(n)[\Psi(n+\alpha^{(c)})-\Psi(\alpha^{(c)})]}.
  \end{equation}
- Finally, applying the digamma recurrence relation (for any positive integer $n$) $$\Psi(n+z)-\Psi(z)=\sum_{f=1}^{n}\frac{1}{f-1+z},$$ we subtitute Equation (20) for below:
+ Finally, applying the digamma recurrence relation (for any positive integer $n$) $$\Psi(n+z)-\Psi(z)=\sum_{f=1}^{n}\frac{1}{f-1+z},$$ we subtitute Equation (21) for below:
  \begin{equation}
  [\alpha^{(c)} m^{(c)}_k]^*=\alpha^{(c)} m^{(c)}_k\frac{\sum_{n=1}^{\mbox{max}_dN_{k|d}}C_k(n)\sum_{f=1}^n \frac{1}{f-1+\alpha^{(c)} m^{(c)}_k}}{\sum_{n=1}^{\mbox{max}_dN_{\cdot|d}}C_\cdot(n)\sum_{f=1}^n \frac{1}{f-1+\alpha^{(c)}}}.
  \end{equation}
@@ -463,7 +464,7 @@ After replacing $\lambda$ to the function of $\boldsymbol{\beta}$ and $\boldsymb
 \end{comment}
 \subsection{Sampling of tuning parameters $(\mu, \delta)$}
 $\mu$ and $\delta$ are the two tuning parameters; $\mu$ is a parameter of time-decay, reflecting the duration of influence of past interactions on future interactions, and $\delta$ is a parameter in the tie generating process that controls the number of recipients and the urgency of the document. Since these two parameters both are only involved in $P(\mathcal{N}| \mathcal{Z}, \mathcal{C}, \mathcal{X}, \mathcal{B}, \mu, \delta)$, sampling of $(\mu, \delta)$ could be incorporated into sampling of $\mathcal{B}$.\\\newline
-\textcolor{red}{Should we transform $(\mu, \delta)$ to $(\mu^{(c)}, \delta^{(c)})$? Current setup does not allow simultaneous sampling since we update $\boldsymbol{\beta}^{(c)}$, one interaction pattern at a time. Alternatively, we can sample $\mathcal{B}$ all at once, instead of one interaction at a time. CPME tried both, but latter (all at once) may yield low acceptance rate since we have $C\times P+2$ elements updated at once, while the former ($(\mu^{(c)}, \delta^{(c)})$) does $C$ different sampling of $P+2$ elements.}
+\textcolor{red}{Should we transform $(\mu, \delta)$ to $(\mu^{(c)}, \delta^{(c)})$? Current setup does not allow simultaneous sampling since we update $\boldsymbol{b}^{(c)}$, one interaction pattern at a time. Alternatively, we can sample $\mathcal{B}$ all at once, instead of one interaction at a time. CPME tried both, but latter (all at once) may yield low acceptance rate since we have $C\times P+2$ elements updated at once, while the former ($(\mu^{(c)}, \delta^{(c)})$) does $C$ different sampling of $P+2$ elements.}
  \subsection{Pseudocode}  \label{subsec: Pseudocode}
  To implement the inference procedure outlined above, we provide a pseudocode for Markov Chain Monte Carlo (MCMC) sampling. Note that we use two loops, outer iteration and inner iteration, in order to avoid the label switching problem \citep{jasra2005markov}, which is an issue caused by the nonidentifiability of the components under symmetric priors in Bayesian mixture modeling. When summarizing model results, we will only use the values from the last $I^{th}$ outer loop because there is no label switching problem within the inner iteration.
  \begin{algorithm}[H]
@@ -479,19 +480,19 @@ $\mu$ and $\delta$ are the two tuning parameters; $\mu$ is a parameter of time-d
  				fix $\mathcal{C}=\mathcal{C}^{(i)}$ and $\mathcal{B}=\mathcal{B}^{(i-1)}$ \\
  				\For{d=1 to D}{
  					\For{n=1 to $N^{(d)}$}{
- 						calculate $p^\mathcal{Z}|\mbox{others} =(p_1,...,p_K)$ using Equation (15)\\
+ 						calculate $p^\mathcal{Z}|\mbox{others} =(p_1,...,p_K)$ using Equation (18)\\
  						draw of $z_n^{(d)}\sim\mbox{multinomial}(p^\mathcal{Z})$}}
  			}
  		\For{n=1 to $n_2$}{
  			fix $\mathcal{Z}=\mathcal{Z}^{(i-1)}$ and $\mathcal{B}=\mathcal{B}^{(i-1)}$ \\
  			\For{k=1 to K}{
- 				calculate $p^\mathcal{C}|\mbox{others}=(p_1,...,p_C)$ using Equation (18)\\
+ 				calculate $p^\mathcal{C}|\mbox{others}=(p_1,...,p_C)$ using Equation (21)\\
  				draw $C_k\sim \mbox{multinomial}(p^\mathcal{C})$}}
  	
  		\For{n=1 to $n_3$}{
  			fix $\mathcal{C}=\mathcal{C}^{(i)}$, $\mathcal{Z}=\mathcal{Z}^{(i)}$, and $\mathcal{B}^{(0)}=$ last value ($n_3^{th}$) of $\mathcal{B}^{(i-1)}$\\
  			calculate $\mathcal{X}=\{\boldsymbol{x}^{*(c)}_{t^{(d)}}(i, j)\}_{d=1}^{D}$ according to Section \ref{subsec: Dynamic covariates} conditioned on others\\
- 			\For{c=1 to C}{sample $\boldsymbol{\beta}^{(c)}|\mbox{others}$ using Equation (22) and (23)\\
+ 			\For{c=1 to C}{sample $\boldsymbol{b}^{(c)}|\mbox{others}$ using Equation (25) and (26)\\
  			\textcolor{red}{draw $\delta$, a tuning parameter that controls the number of multicasts\\
  			draw $\mu$, the time decay parameter}
  		}
@@ -502,7 +503,7 @@ $\mu$ and $\delta$ are the two tuning parameters; $\mu$ is a parameter of time-d
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
  \subsection{Vance county email data} \label{subsec: Vance county email data}
 Vance county data contains $D=185$ emails sent between $A=18$ actors, including $W=620$ vocabulary in total. We used $K=10$ topics and $C=2$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We set the outer iteration number as $I=1000$, the inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. First 100 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $10^{th}$ sample was taken as a thinning process of third inner iteration. In addition, after some experimentation, $\delta_B$ was set as 0.5, to ensure sufficient acceptance rate. MCMC diagnostic plots are attached in APPENDIX D, as well as the geweke test statistics. \\\newline
- Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects $\boldsymbol{\beta}^{(c)}$ corresponding to the interaction pattern, (b) the top 3 topics most likely to be generated conditioned on the interaction pattern, and (c) the top 10 most likely words to have generated conditioned on the topic and interaction pattern.
+ Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, (b) the top 3 topics most likely to be generated conditioned on the interaction pattern, and (c) the top 10 most likely words to have generated conditioned on the topic and interaction pattern.
  \begin{table}[ht]
  	\centering
  	\begin{tabular}{|c|c|c|c|} 
@@ -517,15 +518,15 @@ Vance county data contains $D=185$ emails sent between $A=18$ actors, including 
  		\textbf{indegree} & 2.166* [1.534, 2.895]& 1.397* [0.720, 2.187]& 2.464* [1.840, 3.327]\\
  		\hline
  	\end{tabular}
- 	\caption {Summary of posterior estimates of $\boldsymbol{\beta}^{(c)}$ for Vance county emails}
+ 	\caption {Summary of posterior estimates of $\boldsymbol{b}^{(c)}$ for Vance county emails}
  	\label{table:Vancebeta}
  \end{table}
  \begin{figure}[ht]
  	\centering
- 	\caption{Posterior distribution of  $\boldsymbol{\beta}^{(c)}$ for Vance county emails}
+ 	\caption{Posterior distribution of  $\boldsymbol{b}^{(c)}$ for Vance county emails}
  	\label{fig:Vanceboxplot}
  \end{figure}
- By examining the estimates in Table 2 and their corresponding interpretaiton, it seems that there exist strong effects of dynamic network covariates. That is, whether the sender and receiver previously had dyadic or triangle interaction strongly increase the rate of their interactions. Moreover, to see the differences across the interaction patterns more clearly, we compared the posterior distribution using the boxplots in Figure 2 and it seems that there exists notable differences in dynmic network covariates across the interaction patterns. For example, IP2 has the highest send and receive effect and IP3 has the highest outdegree and indegree effect, while its baseline intensity (i.e. intercept) or triangle effect are not as high as other interaction patterns. Later, multiple hypothesis testing could be applied in order to test the significance of the differences in  $\boldsymbol{\beta}^{(c)}$ across the $C$ number of interaction patterns.\\\newline
+ By examining the estimates in Table 2 and their corresponding interpretaiton, it seems that there exist strong effects of dynamic network covariates. That is, whether the sender and receiver previously had dyadic or triangle interaction strongly increase the rate of their interactions. Moreover, to see the differences across the interaction patterns more clearly, we compared the posterior distribution using the boxplots in Figure 2 and it seems that there exists notable differences in dynmic network covariates across the interaction patterns. For example, IP2 has the highest send and receive effect and IP3 has the highest outdegree and indegree effect, while its baseline intensity (i.e. intercept) or triangle effect are not as high as other interaction patterns. Later, multiple hypothesis testing could be applied in order to test the significance of the differences in  $\boldsymbol{b}^{(c)}$ across the $C$ number of interaction patterns.\\\newline
  Next, we scrutinize the topic distributions corresponding to each interaction patterns in Figure 3. There is some distinctive differences in the topic distributions $\mathcal{Z}$, given the assignment of interaction patterns to the documents $\mathcal{C}$. Specifically, each interaction pattern has different topics as the topic with highest probability.
  \begin{figure}[ht]
  	\centering
@@ -559,7 +560,7 @@ Vance county data contains $D=185$ emails sent between $A=18$ actors, including 
  	\label{table:VancewordsMCMC}
  \end{table}
  \subsection{Dare county email data} \label{subsec: Dare county email data}
- Dare county data contains $D=2247$ emails between $A=27$ actors, including $W=2907$ vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=1000$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. In addition, after some experimentation, $\delta_B$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{\beta}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every $10^{th}$ samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics. 
+ Dare county data contains $D=2247$ emails between $A=27$ actors, including $W=2907$ vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=1000$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. In addition, after some experimentation, $\delta_B$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{b}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every $10^{th}$ samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics. 
  \clearpage
  \section*{APPENDIX}
  \subsection*{APPENDIX A: Notations in IPTM}
@@ -621,7 +622,7 @@ Vance county data contains $D=185$ emails sent between $A=18$ actors, including 
   			\hline
   			Probabilities of the topics given the $d^{th}$ document &$\boldsymbol{\theta}^{(d)}$ & $K$-dimensional vector\\
   			\hline		
-  			Coefficient of the intensity process given interaction pattern $c$ &$\boldsymbol{\beta}^{(c)}$ & $p$-dimensional vector\\
+  			Coefficient of the intensity process given interaction pattern $c$ &$\boldsymbol{b}^{(c)}$ & $p$-dimensional vector\\
   			\hline		
   			Network statistics for $(i, j)$ at time $t$ given interaction pattern $c$ &$\boldsymbol{x}^{(c)}_t{(i,j)}$ & $p$-dimensional vector\\
   			\hline		
@@ -645,7 +646,7 @@ Vance county data contains $D=185$ emails sent between $A=18$ actors, including 
    &  P(\Phi, \Theta, \mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}_{\mbox{obs}}, \mathcal{N}_{\mbox{aug}}, \mathcal{X}| \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \mu, \delta)  \\& 
  \propto  P(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}_{\mbox{aug}}, |\mathcal{W},  \mathcal{N}_{\mbox{obs}}, \mathcal{X}, \Phi, \Theta, \sigma^2, \mu, \delta) P(\Phi, \Theta |\beta, \boldsymbol{u}, \alpha, \boldsymbol{m})
    \\&\propto P(\mathcal{Z}| \mathcal{W}, \Theta)P(\mathcal{N}_{\mbox{aug}}| \mathcal{N}_{\mbox{obs}},\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \mathcal{B}, \mu, \delta)P(\mathcal{B}|\mathcal{C}, \sigma^2)P(\mathcal{W}|\Phi)P(\Phi|\beta, \boldsymbol{u})P(\Theta|\alpha, \boldsymbol{m})P(\mathcal{C})
-  \\&=\Big[\prod_{d=1}^{D}\prod_{n=1}^{N^{(d)}} P( z_n^{(d)}|w_n^{(d)},  \boldsymbol{\theta}^{(d)})\Big]\times \Big[\prod_{d=1}^{D} P( \boldsymbol{N}^{(d)}(t^{(d)})|\mathcal{C}, \mathcal{X}, \mathcal{B}, \mu, \delta)\Big]  \times\Big[\prod_{c=1}^{C} P( \boldsymbol{\beta}^{(c)}| \sigma^2)\Big]\\&\quad \quad \times\Big[\prod_{d=1}^{D}\prod_{n=1}^{N^{(d)}} P(w_n^{(d)}| \phi_{z_n^{(d)}})\Big]\times \Big[\prod_{k=1}^{K} P( \boldsymbol{\phi}^{(k)}| \beta, \boldsymbol{u})\Big]\times \Big[\prod_{d=1}^{D} P( \boldsymbol{\theta}^{(d)}|\alpha, \boldsymbol{m})\Big]\times \Big[\prod_{k=1}^{K} P(C_k)\Big]
+  \\&=\Big[\prod_{d=1}^{D}\prod_{n=1}^{N^{(d)}} P( z_n^{(d)}|w_n^{(d)},  \boldsymbol{\theta}^{(d)})\Big]\times \Big[\prod_{d=1}^{D} P( \boldsymbol{N}^{(d)}(t^{(d)})|\mathcal{C}, \mathcal{X}, \mathcal{B}, \mu, \delta)\Big]  \times\Big[\prod_{c=1}^{C} P( \boldsymbol{b}^{(c)}| \sigma^2)\Big]\\&\quad \quad \times\Big[\prod_{d=1}^{D}\prod_{n=1}^{N^{(d)}} P(w_n^{(d)}| \phi_{z_n^{(d)}})\Big]\times \Big[\prod_{k=1}^{K} P( \boldsymbol{\phi}^{(k)}| \beta, \boldsymbol{u})\Big]\times \Big[\prod_{d=1}^{D} P( \boldsymbol{\theta}^{(d)}|\alpha, \boldsymbol{m})\Big]\times \Big[\prod_{k=1}^{K} P(C_k)\Big]
   \end{aligned}
   \end{equation}
   Dropping the terms independent of tokens out, we further rewrite the equation (24) as below:
@@ -660,7 +661,7 @@ Vance county data contains $D=185$ emails sent between $A=18$ actors, including 
   where $N^{WK}_{wk}$ is the number of times the $w^{th}$ word in the vocabulary is assigned to topic $k$, and $N_{k|d}$ is the number of times topic k shows up in the document $d$. By looking at the forms of the terms involving  $\Theta$ and $\Phi$ in Equation (21), we integrate out the random variables $\Theta$ and $\Phi$, making use of the fact that the Dirichlet distribution is a conjugate prior of multinomial distribution. Applying the well-known formula $\int\prod_{n=1}^{M}[x_m^{k_m-1}dx_m]=\frac{\prod_{n=1}^M\Gamma(k_m)}{\Gamma(\sum_{n=1}^Mk_m)}$ to (22), we have:
   \begin{equation}
   \begin{aligned}
-  &P(\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}_{\mbox{obs}}, \mathcal{N}_{\mbox{aug}}, \mathcal{X}| \mathcal{X}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \boldsymbol{\gamma}, \boldsymbol{\eta}, \sigma^2)\\&=\mbox{Const.}\int_{\Theta}\int_{\Phi}\Big[\prod_{k=1}^{K}\prod_{w=1}^{W}\phi_{wk}^{N^{WK}_{wk}+\beta u_w-1}\Big]\Big[\prod_{d=1}^{D}\prod_{k=1}^{K}(\boldsymbol{\theta}^{(d)}_{k})^{N_{k|d}+\alpha m_k-1}\Big]d\Phi d\Theta
+  &P(\mathcal{W}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{N}_{\mbox{obs}}, \mathcal{N}_{\mbox{aug}}, \mathcal{X}| \mathcal{X}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)\\&=\mbox{Const.}\int_{\Theta}\int_{\Phi}\Big[\prod_{k=1}^{K}\prod_{w=1}^{W}\phi_{wk}^{N^{WK}_{wk}+\beta u_w-1}\Big]\Big[\prod_{d=1}^{D}\prod_{k=1}^{K}(\boldsymbol{\theta}^{(d)}_{k})^{N_{k|d}+\alpha m_k-1}\Big]d\Phi d\Theta
   \\&=\mbox{Const.}\Big[\prod_{k=1}^{K}\int_{\phi_{:k}}\prod_{w=1}^{W}\phi_{wk}^{N^{WK}_{wk}+\beta u_w-1  }d\phi_{:k}\Big]\times\Big[\prod_{d=1}^{D}\int_{\theta_{:d}}\prod_{k=1}^{K}(\boldsymbol{\theta}^{(d)}_{k})^{N_{k|d}+\alpha m_k-1}d\theta_{:d}\Big]
   \\&=\mbox{Const.}\Big[\prod_{k=1}^{K}\frac{\prod_{w=1}^W\Gamma(N_{wk}^{WK}+\frac{\beta}{W})}{\Gamma(\sum_{w=1}^WN_{wk}^{WK}+\beta )}\Big]\times\Big[\prod_{d=1}^{D}\frac{\prod_{k=1}^K\Gamma(N_{k|d}+\alpha m_k)}{\Gamma(N_{\cdot|d}+\alpha)}\Big].
   \end{aligned}
