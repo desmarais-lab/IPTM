@@ -168,7 +168,7 @@ We assume the following generative process for each document $d$ in a corpus $D$
 \Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}(t_+^{(d-1)})).
 	\end{equation}
 \iffalse	where $\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\sum\limits_{j \in{J_i}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\}$\fi
-	 	 \item[3.] Set timestamp $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, sender $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and receivers $J^{(d)} = J_{i^{(d)}}$.
+	 	 \item[3.] Set timestamp $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, sender $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and receivers $J^{(d)} = J_{i^{(d)}}$. Note: $i^{(0)}=J^{(0)}=\emptyset$ and $t^{(0)}=0$.
 \end{itemize}
  \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates}
 \iffalse
@@ -282,7 +282,7 @@ The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), correspon
 	  		(N) edge [connect, red] (x)
 	  		(m) edge [connect] (theta);
 	  		\node[rectangle, inner sep=5mm, draw=black!100, fit =(z) (w) (x) (theta) (N) (e)(lambda) ] {};
-	  		\node[rectangle, inner sep=2mm, fit= (z) (w)(e)(theta)(x)(N) (lambda),label=below right:$D$, xshift=-3mm, yshift=-10.5mm] {};
+	  		\node[rectangle, inner sep=2mm, fit= (N) ,label=below right:$D$, xshift=-3mm, yshift=2.5mm] {};
 	  		\node[rectangle, inner sep=3mm, draw=black!100, fit= (phi)] {};
 	  		\node[rectangle, inner sep=3mm, draw=black!100, fit= (c)] {};
 	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (b)] {};
@@ -319,6 +319,90 @@ NOTE: Refer to Equation (15) in Section 3.1. \\\newline$P(\mathcal{E}| \mathcal{
 $P(\mathcal{O}|\mathcal{E}, \mathcal{T})$ corresponds to $P(\mbox{min}(\Delta T_{i{J_i}}) = \Delta T_{i^{(d)}{J^{(d)}}})$ - can use the property: minimum of Exponential is also Exponential. \\ \newline
 Since $p_c^{(d)}$ is a deterministic function of $(\mathcal{Z}, \mathcal{C})$ and $\boldsymbol{\lambda}^{(d)}$ is a deterministic function of $(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X})$, we do not include them in the joint distribution.\\ \newline
 \textcolor{red} {Cannot complete factorization due to $P(\mathcal{X}|\mathcal{Z}, \mathcal{C}, \mathcal{O}, \mu)$...HOW?}
+\newpage
+	  \begin{figure}[ht]
+	  	\centering
+	  	\scalebox{0.65}{  \begin{tikzpicture}
+	  		\tikzstyle{main}=[circle, minimum size = 22mm, thick, draw =black!80, node distance = 10.5mm]
+	  		\tikzstyle{connect}=[-latex, thick]
+	  		\tikzstyle{box}=[rectangle, draw=black!100]
+	  		\node[main] (theta) [label=center:${\theta}^{(d)}$] { };
+	  		\node[main] (alpha) [left=of theta,label=center:${\alpha}$] { };
+	  		\node[main] (z) [below=of theta,label=center:$z_n^{(d)}$] {};
+	  		\node[main, fill = black!10] (w) [below=of z,label=center:$w_n^{(d)}$] { };
+	  		\node[main] (phi) [left=of w,label=center:$\boldsymbol{\phi}^{(k)}$] { };
+	  		\node[main] (beta) [left=of phi, label=center:$\beta$] { };
+	  		\node[main] (m) [below=of alpha,label=center:$\boldsymbol{m}$] { };
+	  		\node[main] (p) [right=of theta,label=center:$p_c^{(d)}$] { };
+	  		\node[main] (x) [below=of p,label=center:$\boldsymbol{x}^{(c)}_{t_+^{(d-1)}}$] { };
+	  		\node[main] (lambda) [right=of x,label=center:$\boldsymbol{\lambda}^{(d)}(t_+^{(d-1)})$] { };
+	  		\node[main] (c) [above=of p,label=center:$c_k$] { };
+	  		\node[main] (mu) [right=of c,label=center:$\mu$] { };
+	  		\node[main] (e) [right=of lambda,label=center:${(i, J_i)}^{(d)}$] { };
+	  		\node[main] (delta) [right=of e,label=center:$\delta$] { };
+	  		\node[main] (b) [right=of mu,label=center:$\boldsymbol{b}^{(c)}$] { };
+	  		\node[main] (t) [below=of e,label=center:${\Delta T_{iJ_i}}^{(d)}$] { };
+	  		\node[main] (sigma) [right=of b,label=center:$\sigma^2$] { };
+	  		\node[main, fill = black!10] (N) [below=of t,label=center:${(i, J, t)}^{(d)}$] { };
+	  			\node[main, fill = black!10] (H) [below=of x,label=center:${(i, J, t)}^{(0:(d-1))}$] { };
+	  		\path 
+	  		(theta) edge [connect] (z)
+	  		(z) edge [connect] (w)
+	  		(alpha) edge [connect] (theta)
+	  		(phi) edge [connect] (w)
+	  		(beta) edge [connect] (phi)
+	  		(z) edge [connect] (p)
+	  		(mu) edge [connect] (x)
+	  		(x) edge [connect] (lambda)
+	  		(c) edge [connect] (p)
+	  		(p) edge [connect] (x)
+	  		(p) edge [connect] (lambda)
+	  		(b) edge [connect] (lambda)
+	  		(lambda) edge [connect] (e)
+	  		(lambda) edge [connect] (t)
+	  		(sigma) edge [connect] (b)
+	  		(e) edge [connect] (t)
+	  		(delta) edge [connect] (e)
+	  		(t) edge [connect] (N)
+	  		(m) edge [connect] (theta)
+	  		(H) edge [connect] (x);
+	  		\node[rectangle, inner sep=5mm, draw=black!100, fit =(z) (w) (x) (theta) (N) (e)(lambda) ] {};
+	  		\node[rectangle, inner sep=2mm, fit=(N),label=below right:$D$, xshift=-3mm, yshift=2.5mm] {};
+	  		\node[rectangle, inner sep=3mm, draw=black!100, fit= (phi)] {};
+	  		\node[rectangle, inner sep=3mm, draw=black!100, fit= (c)] {};
+	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (b)] {};
+	  		\node[rectangle, inner sep=4mm, fit= (b),label= below right:$C$, xshift=-6mm, yshift=6mm] {};
+	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (x)(p)] {};
+	  		\node[rectangle, inner sep=3mm, fit= (x),label= below right:$C$, xshift=-6mm, yshift=5mm] {};
+	  		\node[rectangle, inner sep=0mm, fit= (phi),label=below right:$K$, xshift=-2mm, yshift=1.5mm] {};
+	  		\node[rectangle, inner sep=0mm, fit= (c),label=below right:$K$, xshift=-2mm, yshift=1.5mm] {};
+	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (w)(z)] {};
+	  		\node[rectangle, inner sep=0mm, fit= (w),label=below right:$N^{(d)}$, xshift=-5.5mm, yshift=2mm] {};
+	  		\node[rectangle, inner sep=3mm,draw=black!100, fit= (e)(t)] {};
+	  		\node[rectangle, inner sep=0mm, fit= (e)(t),label=below right:$A$, xshift=-2mm, yshift=-12.5mm] {};
+	  		\end{tikzpicture}}
+	  	\caption{Plate notation of IPTM}
+	  	\label{fig:plate}
+	  \end{figure}
+	  \noindent This joint generative process implies a particular factorization of the joint distribution over the variables $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D},\mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D},  \mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{b}^{(c)} \}_{c=1}^{C},$ $\mathcal{X}=\{\{\boldsymbol{x}^{(c)}_{t_+^{(d-1)}}(i, j)\}_{c=1}^C\}_{d=1}^{D}, \mathcal{E}=\{\{(i^{(d)}, J^{(d)}_i)\}_{i=1}^{A}\}_{d=1}^D$, $\mathcal{T}=\{  \{\Delta T_{iJ_i}^{(d)}\}_{i=1}^{A}\}_{d=1}^D$, and $\mathcal{O}=\{(i, J, t)^{(d)}\}_{d=1}^D$ given \textcolor{red}{the observed history $\mathcal{H}=\{(i, J, t)^{(0:(d-1))}\}_{d=1}^D$} and the hyperparameters $(\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \mu, \delta)$:
+	  \begin{equation}
+	  \begin{aligned}
+	  &P(\Phi, \Theta, \mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B},\mathcal{X}, \mathcal{E}, \mathcal{T}, \mathcal{O}| \mathcal{H}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \mu, \delta) \\& 
+	  = P(\Phi|\beta, \boldsymbol{u})P(\Theta|\alpha, \boldsymbol{m})P(\mathcal{Z}|\Theta)P(\mathcal{W}|\mathcal{Z}, \Phi) P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \sigma^2)\\&\quad \quad \times\textcolor{red}{P(\mathcal{X}|\mathcal{Z}, \mathcal{C}, \mathcal{H}, \mu) }
+	  P(\mathcal{E}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \delta)P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \mathcal{E})P(\mathcal{O}|\mathcal{E}, \mathcal{T}).
+	  \end{aligned}
+	  \end{equation}
+	  We can simplify this further by integreting out $\Phi$ and $\Theta$ using Dirichlet-multinomial conjugacy:
+	  \begin{equation}
+	  \begin{aligned}
+	  &P(\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B},\mathcal{X}, \mathcal{E}, \mathcal{T}| \mathcal{H}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \mu, \delta) \\& 
+	  = P(\mathcal{Z}|\alpha, \boldsymbol{m})P(\mathcal{W}|\mathcal{Z}, \beta, \boldsymbol{u}) P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \sigma^2)\textcolor{red}{P(\mathcal{X}|\mathcal{Z}, \mathcal{C}, \mathcal{H}, \mu)}
+	  P(\mathcal{E}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \delta)P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \mathcal{E})P(\mathcal{O}|\mathcal{E}, \mathcal{T}).
+	  \end{aligned}
+	  \end{equation}
+	  NOTE: Refer to Equation (15) in Section 3.1. \\\newline$P(\mathcal{E}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \delta)$ corresponds to $P(\mbox{edge creations})$ - Bernoulli part of tie generation\\\newline $P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X}, \mathcal{E})$ corresponds to $P(\Delta T_{i^{(d)}J^{(d)}}\sim \mbox{Exp}(\lambda^{(d)}_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})))$ part (but need to account for all latent edge pairs $(i, J_i)$) - Exponential part of tie generation\\\newline
+	  $P(\mathcal{O}|\mathcal{E}, \mathcal{T})$ corresponds to $P(\mbox{min}(\Delta T_{i{J_i}}) = \Delta T_{i^{(d)}{J^{(d)}}})$ - can use the property: minimum of Exponential is also Exponential. \\ \newline
+	  Since $p_c^{(d)}$ is a deterministic function of $(\mathcal{Z}, \mathcal{C})$ and $\boldsymbol{\lambda}^{(d)}$ is a deterministic function of $(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{X})$, we do not include them in the joint distribution. \textcolor{red}{Now, we can complete the factorization but there could be overparameterization from $\mathcal{H}$ and $\mathcal{O}$.}
 \section{Inference} \label{sec: Inference}
 In this case, what we actually observe are the tokens $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$ and the sender, recipient, and timestamps $(i=i^{(d)}, j=J^{(d)}, t=t^{(d)})$ of the document $d$, which we jointly denote as $\mathcal{N}_{\mbox{obs}} = \{\boldsymbol{N}^{(d)}\}_{d=1}^D=\{(i, J, t)^{(d)}\}_{d=1}^D$ in the inference, meaning the network features. Next,  $\mathcal{X}=\{\{\boldsymbol{x}^{(c)}_{t^{(d)}}(i, j)\}_{c=1}^C\}_{d=1}^{D}$ is the metadata, and the latent variables are $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}, \mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{C}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{b}^{(c)} \}_{c=1}^{C}$ and the latent sender, recipient, and timestamps $(i'=i^{(d)}, j'=J^{(d)}, t'=t^{(d)})$ of the document $d$ generated from data augmentation, $\mathcal{N}_{\mbox{aug}} = \{\boldsymbol{N}'^{(d)}\}_{d=1}^D=\{\{(i', J'_i, t')^{(d)}\}_{i\neq i^{(d)}}\}_{d=1}^D$.\\
  \newline 
