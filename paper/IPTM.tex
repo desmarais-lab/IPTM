@@ -193,16 +193,19 @@ The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), correspon
  	\item [6.] $\mbox{indegree}^{(c)}_t(j)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{\forall i\rightarrow j\}}{\mbox{TW}_t(\{t_n^{(\forall i\rightarrow  j)}\}_{n=1}^N, \mu)}, $ where $N = \sum\limits_{d: t^{(d)}<t} I\{\forall i\rightarrow j\}$
  \end{itemize}
  \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates2}
- For the network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), we use 9 different effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling) to measure popularity, centrality, reciprocity, and transitivity. Following \cite{PerryWolfe2012}, we introduce binary indicators for all 9 effects as components of $x_t(i, j)$. These indicators depend
+ For the network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), we use 9 different effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling) to measure popularity, centrality, reciprocity, and transitivity. First, we have intercept term to estimate the baseline intensity for each interaction pattern $c=1,...,C$:
+ \begin{itemize}
+	\item [1.] $\mbox{\textbf{intercept}}^{(c)}= 1$
+ \end{itemize}
+Next, following \cite{PerryWolfe2012}, \iffalse we introduce binary indicators for all 9 effects as components of $x_t(i, j)$. These indicators depend
 on the sender $i$, the receiver $j$, and the history of the process at the current time $t$. By the
-shorthand notation 1\{\textbf{send}\}, we indicates if $i$ has sent $j$ a message before time $t$, with the remaining notations (1\{\textbf{receive}\}, 1\{\textbf{2-receive}\}, etc.) defined similarly.\\ \newline
-To measure higher-order time dependence, we introduce additional covariates of the following
+shorthand notation 1\{\textbf{send}\}, we indicates if $i$ has sent $j$ a message before time $t$, with the remaining notations (1\{\textbf{receive}\}, 1\{\textbf{2-receive}\}, etc.) defined similarly.\\ \newline\fi
+we introduce additional covariates to measure higher-order time dependence with the following
 form. We partition the interval $[-\infty, t)$ into $L= 7$ sub-intervals: 
 $$[-\infty,t) =[t-\Delta_L, t-\Delta_{L-1}) \cup [t-\Delta_{L-1}, t-\Delta_{L-2})\cup \cdots \cup [t-\Delta_1, t-\Delta_{0}),$$
 where $\infty = \Delta_L > \Delta_{L-1}>\cdots >\Delta_1 > \Delta_0 = 0$ and $t-\infty$ is defined to be $-\infty$. Specifically, we set $\Delta_l$ = (7.5 minutes) $\times  4^t$ for $l=1,...,L-1$ so that for $t$ in this range $\Delta_l$ takes the values 30 minutes, 2 hours, 8 hours, 32 hours, 5.33 days, and 21.33 days.\\ \newline
 Define the half-open interval $I_t^{(l)} = [t-\Delta_l, t-\Delta_{l-1})$. For the time interval $l=1,...,L$ and for the interaction pattern $c = 1,...,C$, the dyadic efffects are
  \begin{itemize}
- 	\item [1.] $\mbox{\textbf{intercept}}^{(c|l)}= 1$
  	 	 \item [2.]  $\mbox{\textbf{outdegree}}^{(c|l)}_t(i)=\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow \forall j\}$
  	 	 \item [3.] $\mbox{\textbf{indegree}}^{(c|l)}_t(j)=\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{\forall i \rightarrow j\}$	 	 	
  	 	 \item [4.]  $\mbox{\textbf{send}}^{(c|l)}_t(i, j)=\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow j\}$
