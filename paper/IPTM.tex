@@ -127,9 +127,9 @@ where $p_c^{(d)}$ is as defined above, $\lambda^{(c)}_0$ is the baseline hazards
 \lambda^{(d)}_{ij}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\},
 \end{equation}
 where now the first element of $\boldsymbol{b}^{(c)}$ corresponds to the baseline intensity of interaction pattern $c$. This $\lambda$ can be seen as the weighted average of stochastic intensities across the interaction patterns. Next, since multicast interactions—those involving a single sender but multiple
-receivers—are allowed for this model, we expand the rate of interaction between sender $i$ and the receivers in a set $J$ as:
+receivers—are allowed for this model, we expand the rate of interaction between sender $i$ and the receivers in a set $J$ by taking the average of $\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)$ terms across the receivers:
 \begin{equation}
-\lambda^{(d)}_{iJ}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}\cdot \prod\limits_{j \in J}1\{j \in \mathcal{A}_{\backslash i}\}.
+\lambda^{(d)}_{iJ}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\frac{1}{|J|}\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}\cdot \prod\limits_{j \in J}1\{j \in \mathcal{A}_{\backslash i}\}.
 \end{equation}
 In case of single receivers ($|J|=1$),  Equation (4) is reduced to Equation (3), thus in the following sections we use the Equation (4) of multicast cases as a general form of the stochastic intensity between the sender and receivers.
 \begin{comment}
@@ -165,9 +165,9 @@ We assume the following generative process for each document $d$ in a corpus $D$
 	\end{equation}
 	where the probability is called a Bernoulli-Poisson (BerPo) link function \citep{zhou2015infinite} and $\delta$ is a positive tuning parameter to control the number of recipients. Note that $_+$ denotes including the timepoint itself, meaning that $\lambda_{ij}$ is obtained using the history of interactions until and including the timestamp $t^{(d-1)}$. \\(i.e. $\lambda^{(d)}_{ij}(t_+^{(d-1)})=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$)
 	\item[2.] For sender with nonempty receiver sets $i \in \mathcal{A}_{\backslash J_i=\emptyset}$, generate the time increments \begin{equation}
-\Delta T_{i{J_i}} \sim \mbox{Exp}(\gamma\lambda_{i{J_i}}^{(d)}(t_+^{(d-1)})).
+\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}(t_+^{(d-1)})).
 	\end{equation}
-	where $\gamma$ is the parameter reflecting the urgency of the document to be sent with $\gamma \sim \mbox{Beta}(1, |J_i|)$ to adjust for the number of receivers, and $\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\sum\limits_{j \in{J_i}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\}$
+	where $\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\frac{1}{|J_i|}\sum\limits_{j \in{J_i}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\}$
 	 	 \item[3.] Set timestamp, sender, and receivers simultaneously:
 	 	 \begin{equation}
 	 	 \begin{aligned}
@@ -179,18 +179,44 @@ We assume the following generative process for each document $d$ in a corpus $D$
 \end{itemize}
  \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates}
 The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). There could be various static and dynamic covariates $\boldsymbol{x}^{(c)}_t(i, j)$ that affects the stochastic intensity, however, we decide to use the covariates that depend on the history of the process, considering the strong recency and reciprocity effects of textual communications, especially emails.
- We use six effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, send, receive, triangle, outdegree, indegree), measuring reciprocity, transitivity, popularity and centrality. Additionally, we define a time-weighting function so that we can use a single statistic for each effect by incorporating the recency of event into the statistic itself. The time-weighting function estimated at time $t$ is specified as:
+ We use six effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, send, receive, triangle, outdegree, indegree), measuring reciprocity, transitivity, popularity and centrality. Additionally, we define a time-weighting function so that we can use a single statistic for each effect by incorporating the recency of event into the statistic itself. The time-weighting function at time $t$ is specified as:
  \begin{equation}
  \mbox{TW}_t(\{t_n^{(a\rightarrow b)}\}_{n=1}^N, \mu) = (1+(\prod\limits_{n=1}^N\Delta t_n)^{\frac{1}{N}})^\mu,
  \end{equation}
- where the first input $\{t_n^{(a\rightarrow b)}\}_{n=1}^N$ denotes the timestamps of the documents where the sender equals to $a$ and the receiver set contains $b$ before time $t$ (of total length $N = \sum_{d: t^{(d)}<t} I\{a\rightarrow b\}$), and the second input $\mu$ is the parameter of decay, measuring how fast the past interactions lose their influence on the future interactions ($\mu >0$). Then, the output is a function of the geometric mean of the time differences $\Delta t_n=t-t_n^{(a\rightarrow b)}, \mbox{ for } n=1,..,N$. Note that we add 1, in order to ensure that the base is always greater than 1. Below are the time-weighted dynamic network statistics used in this paper:\\
- \begin{itemize}[leftmargin=*,rightmargin=-1cm]
+ where the first input $\{t_n^{(a\rightarrow b)}\}_{n=1}^N$ denotes the timestamps of the documents where the sender equals to $a$ and the receiver set contains $b$ before time $t$ (of total length $N = \sum_{d: t^{(d)}<t} I\{a\rightarrow b\}$), and the second input $\mu$ is the parameter of decay, measuring how fast the past interactions lose their influence on the future interactions ($\mu >0$). Then, the output is a function of the geometric mean of the time differences $\Delta t_n=t-t_n^{(a\rightarrow b)}, \mbox{ for } n=1,..,N$. Note that we add 1, in order to ensure that the base is always greater than 1. Below are the time-weighted dynamic network statistics:
+ \begin{itemize}
  	\item [1.] $\mbox{intercept}^{(c)}_t(i, j) = 1$
  	\item [2.]  $\mbox{send}^{(c)}_t(i, j)= \frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow j\}}{\mbox{TW}_t(\{t_n^{(i\rightarrow j)}\}_{n=1}^N, \mu) }$, where $N = \sum\limits_{d: t^{(d)}<t} I\{i\rightarrow j\}$
  	\item [3.] $\mbox{receive}^{(c)}_t(i, j)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{j\rightarrow i\}}{\mbox{TW}_t(\{t_n^{(j\rightarrow i)}\}_{n=1}^N, \mu) }$, where $N = \sum\limits_{d: t^{(d)}<t} I\{j\rightarrow i\}$
  	\item [4.] $\mbox{triangle}^{(c)}_t(i, j)=\frac{\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow h \mbox{ or } h\rightarrow i\}\Big)\Big(\sum\limits_{d': t^{(d')}<t}p_c^{(d')}\cdot I\{j\rightarrow h \mbox{ or } h\rightarrow j\}\Big)}{\mbox{TW}_t(\{t_n^{(i\rightarrow h \mbox{ or } h\rightarrow i \mbox{ or } j\rightarrow h \mbox{ or } j\rightarrow h)}\}_{n=1}^N, \mu) }$, \\where $N = \sum\limits_{d: t^{(d)}<t} I\{i\rightarrow h \mbox{ or } h\rightarrow i \mbox{ or } j\rightarrow h \mbox{ or } j\rightarrow h\}$
  	\item [5.]  $\mbox{outdegree}^{(c)}_t(i)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow \forall j\}}{\mbox{TW}_t(\{t_n^{(i\rightarrow \forall j)}\}_{n=1}^N, \mu) }$, where $N = \sum\limits_{d: t^{(d)}<t} I\{i\rightarrow \forall j\}$
  	\item [6.] $\mbox{indegree}^{(c)}_t(j)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{\forall i\rightarrow j\}}{\mbox{TW}_t(\{t_n^{(\forall i\rightarrow  j)}\}_{n=1}^N, \mu)}, $ where $N = \sum\limits_{d: t^{(d)}<t} I\{\forall i\rightarrow j\}$
+ \end{itemize}
+ \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates2}
+ For the network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), we use 9 different effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling) to measure popularity, centrality, reciprocity, and transitivity. First, we have intercept term to estimate the baseline intensity for each interaction pattern $c=1,...,C$:
+ \begin{itemize}
+	\item [1.] $\mbox{\textbf{intercept}}^{(c)}= 1$
+ \end{itemize}
+Next, following \cite{PerryWolfe2012}, \iffalse we introduce binary indicators for all 9 effects as components of $x_t(i, j)$. These indicators depend
+on the sender $i$, the receiver $j$, and the history of the process at the current time $t$. By the
+shorthand notation 1\{\textbf{send}\}, we indicates if $i$ has sent $j$ a message before time $t$, with the remaining notations (1\{\textbf{receive}\}, 1\{\textbf{2-receive}\}, etc.) defined similarly.\\ \newline\fi
+we introduce additional covariates to measure higher-order time dependence with the following
+form. We partition the interval $[-\infty, t)$ into $L= 7$ sub-intervals: 
+$$[-\infty,t) =[t-\Delta_L, t-\Delta_{L-1}) \cup [t-\Delta_{L-1}, t-\Delta_{L-2})\cup \cdots \cup [t-\Delta_1, t-\Delta_{0}),$$
+where $\infty = \Delta_L > \Delta_{L-1}>\cdots >\Delta_1 > \Delta_0 = 0$ and $t-\infty$ is defined to be $-\infty$. Specifically, we set $\Delta_l$ = (7.5 minutes) $\times  4^t$ for $l=1,...,L-1$ so that for $t$ in this range $\Delta_l$ takes the values 30 minutes, 2 hours, 8 hours, 32 hours, 5.33 days, and 21.33 days.\\ \newline
+Define the half-open interval $I_t^{(l)} = [t-\Delta_l, t-\Delta_{l-1})$. For the time interval $l=1,...,L$ and for the interaction pattern $c = 1,...,C$, the dyadic efffects are
+ \begin{itemize}
+ 	 	 \item [2.]  $\mbox{\textbf{outdegree}}^{(c|l)}_t(i)=\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow \forall j\}$
+ 	 	 \item [3.] $\mbox{\textbf{indegree}}^{(c|l)}_t(j)=\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{\forall i \rightarrow j\}$	 	 	
+ 	 	 \item [4.]  $\mbox{\textbf{send}}^{(c|l)}_t(i, j)=\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow j\}$
+ 	\item [5.] $\mbox{\textbf{receive}}^{(c|l)}_t(i, j)=\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{j\rightarrow i\}$
+ \end{itemize}
+and for the triadic effects involve pairs of messages, for $l = 1,...,L$, $m=1,...,M$ and $c=1,...,C$ we define the triadic effects
+\begin{itemize}
+	 	\item [6.] $\mbox{\textbf{2-send}}^{(c|l, m)}_t(i, j)=\sum_{h \neq i, j}\Big(\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow h\}\Big)\cdot \Big(\sum_{d': t^{(d')} \in I_t^{(m)}}p_c^{(d')}\cdot I\{h\rightarrow j\}\Big)$
+ 	\item [7.] $\mbox{\textbf{2-receive}}^{(c|l, m)}_t(i, j)=\sum_{h \neq i, j}\Big(\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{h\rightarrow i\}\Big)\cdot \Big(\sum_{d': t^{(d')} \in I_t^{(m)}}p_c^{(d')}\cdot I\{j\rightarrow h\}\Big)$
+ 	\item [8.] $\mbox{\textbf{sibling}}^{(c|l, m)}_t(i, j)=\sum_{h \neq i, j}\Big(\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{h\rightarrow i\}\Big)\cdot \Big(\sum_{d': t^{(d')} \in I_t^{(m)}}p_c^{(d')}\cdot I\{h\rightarrow j\}\Big)$
+ 	\item [9.] $\mbox{\textbf{cosibling}}^{(c|l, m)}_t(i, j)=\sum_{h \neq i, j}\Big(\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow h\}\Big)\cdot \Big(\sum_{d': t^{(d')} \in I_t^{(m)}}p_c^{(d')}\cdot I\{j\rightarrow h\}\Big)$
  \end{itemize}
 \subsection{Joint Generative Process of Document} \label{subsec: Joint Generative Process of Document}
  Below are the joint generative process for each document in a corpus $D$, integrating \ref{subsec: Content Generating Process}, \ref{subsec: Stochastic Intensity}, \ref{subsec: Tie Generating Process}, and \ref{subsec: Dynamic covariates}.  Figure 1 is the corresponding plate notation of IPTM.
@@ -237,7 +263,7 @@ The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), correspon
                     			  calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
                     			  set $\lambda^{(d)}_{ij}(t_+^{(d-1)})=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
                         draw I($i \rightarrow j$) $\sim \mbox{Ber}(1-\mbox{exp}(-\delta\lambda_{ij}^{(d)}(t_+^{(d-1)})))$}  }
-					draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\gamma\lambda_{iJ_i}^{(d)}(t_+^{(d-1)}))$
+					draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)}(t_+^{(d-1)}))$
                     }
                     set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
 	}
@@ -341,20 +367,20 @@ Note that on the right hand side we have dropped the conditional dependence on (
   \begin{equation}
   \begin{aligned}
 &P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mu, \delta)\\&=P\Big(\mbox{latent receivers generation}\Big) \times P\Big(\mbox{latent time generation}\Big)\times P\Big(\mbox{choose the observed}\Big) \\&=P\Big(\mbox{from Equation (5)}\Big) \times P\Big(\mbox{from Equation (6)}\Big)\times P\Big(\mbox{from Equation (7)}\Big) \\&
-=\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}}\Big(I(i \rightarrow j)\sim \mbox{Ber}(1-\mbox{exp}(-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})))\Big) \\&\quad\quad\quad\quad\times \prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}}\Big(\Delta T_{iJ_i}\sim\mbox{Exp}(\gamma\lambda^{(d)}_{iJ_i}(t_+^{(d-1)}))\Big) \times P\Big(\mbox{min}_i (\Delta T_{i{J_i}}) = \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&
-=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (1-e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})})^{I(j \in J_i)}(e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})})^{1-I(j \in J_i)}\Big)\\&\quad\quad\quad\quad\times \Big(\prod_{i \in\mathcal{A}_{\backslash J_i=\emptyset}}\gamma\lambda^{(d)}_{iJ_i}(t_+^{(d-1)})e^{-(t^{(d)}-t^{(d-1)})\gamma\lambda^{(d)}_{iJ_i}(t_+^{(d-1)})}\Big)\times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}e^{-(t^{(d)}-t^{(d-1)})\gamma\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})}\Big),
+=\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}}\Big(I(i \rightarrow j)\sim \mbox{Ber}(1-\mbox{exp}(-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})))\Big) \\&\quad\quad\quad\quad\times \prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}}\Big(\Delta T_{iJ_i}\sim\mbox{Exp}(\lambda^{(d)}_{iJ_i}(t_+^{(d-1)}))\Big) \times P\Big(\mbox{min}_i (\Delta T_{i{J_i}}) = \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&
+=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (1-e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})})^{I(j \in J_i)}(e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})})^{1-I(j \in J_i)}\Big)\\&\quad\quad\quad\quad\times \Big(\prod_{i \in\mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{iJ_i}(t_+^{(d-1)})e^{-(t^{(d)}-t^{(d-1)})\lambda^{(d)}_{iJ_i}(t_+^{(d-1)})}\Big)\times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}e^{-(t^{(d)}-t^{(d-1)})\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})}\Big),
   \end{aligned}
   \end{equation}
   where the last term is given by the cumulative exponential distributions associated with the respective $\lambda_{iJ_i}(t_+^{(d-1)})$. Therefore, we can simplify the above equation as below:
   \begin{equation}
   \begin{aligned}
-  &P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mu, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\Big)\\&\quad\quad\quad\quad \times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \gamma\lambda^{(d)}_{iJ_i}(t_+^{(d-1)})\Big)\times \Big(e^{-(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\gamma\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\gamma\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\big)}\Big).
+  &P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mu, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\Big)\\&\quad\quad\quad\quad \times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \lambda^{(d)}_{iJ_i}(t_+^{(d-1)})\Big)\times \Big(e^{-(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\big)}\Big).
   \end{aligned}
   \end{equation}
 For implementation, we need to compute these equations in log space to prevent underflow:
  \begin{equation}
  \begin{aligned}
- &\mbox{log}\Big(P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mu, \delta)\Big)\\&=\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}\Big(e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1\Big) {-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\\&\quad\quad\quad\quad + \sum_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \mbox{log}(\gamma\lambda^{(d)}_{iJ_i}(t_+^{(d-1)})){-(t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\gamma\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\gamma\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\Big)}.
+ &\mbox{log}\Big(P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mu, \delta)\Big)\\&=\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}\Big(e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1\Big) {-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\\&\quad\quad\quad\quad + \sum_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \mbox{log}(\lambda^{(d)}_{iJ_i}(t_+^{(d-1)})){-(t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\Big)}.
  \end{aligned}
  \end{equation}
  To actually perform inference, we therefore want to use Gibbs sampling, where we will sequentially resample the values of each of our latent variables from their posterior distribution, conditional on all of our other variables.
@@ -497,7 +523,6 @@ After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x
  This method is as accurate as Mika's fixed-point iteration method, but it acheives computational efficiency since the digamma recurrence relation reduces the number of new calculations required for each successive $n$ to one. Pseudocode
  for the complete fixed-point iteration is given in algorithm 2.2 of \cite{wallach2008structured}.
 \end{comment}
-\newpage
  \subsection{Pseudocode}  \label{subsec: Pseudocode}
  To implement the inference procedure outlined above, we provide a pseudocode for Markov Chain Monte Carlo (MCMC) sampling. Note that we use two loops, outer iteration and inner iteration, in order to avoid the label switching problem \citep{jasra2005markov}, which is an issue caused by the nonidentifiability of the components under symmetric priors in Bayesian mixture modeling. When summarizing model results, we will only use the values from the last $I^{th}$ outer loop because there is no label switching problem within the inner iteration.
  \begin{algorithm}[H]
