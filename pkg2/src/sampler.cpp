@@ -1,8 +1,9 @@
 #include <Rcpp.h>
 
 using namespace Rcpp; 
+
 // [[Rcpp::export]]
-List History(List edge, NumericMatrix pd, IntegerVector node, double when, int nIP) {
+List History(List edge, NumericMatrix pd, IntegerVector node, double when) {
   // Calculate the weighted time difference from previous interactions to certain time 'when'
   //
   // Args:
@@ -13,12 +14,15 @@ List History(List edge, NumericMatrix pd, IntegerVector node, double when, int n
   //
   // Returns:
   //  Matrix of time differences between all nodes
-  NumericMatrix histmat(node.size(), node.size());
-  NumericMatrix countmat(node.size(), node.size());
+  int nIP = pd.ncol();
   List IPmat(nIP);
   for (int IP = 1; IP < (nIP + 1); IP++) {
-  	NumericMatrix IPmat_IP(node.size(), node.size());
-  		IPmat[IP - 1] = IPmat_IP;
+  	List IPlist_IP(4);
+  	for (int l = 0; l < 4; l++){
+  		NumericMatrix IP_l(node.size(), node.size());
+  		IPlist_IP[l] = IP_l;
+  	}
+  		IPmat[IP - 1] = IPlist_IP;
   }
 	int iter = 0;
 	for (int d = 0; d < edge.size(); d++) {
@@ -34,23 +38,97 @@ List History(List edge, NumericMatrix pd, IntegerVector node, double when, int n
 	    int sender = document2[0];
 	    IntegerVector receiver = document2[1];
 	    double time = document2[2];
+	    double time1 = when - 384;
+		double time2 = when - 96;
+		double time3 = when - 24; 
 	    for (int r = 0; r < receiver.size(); r++){
-	    	countmat(sender - 1, receiver[r] - 1) = countmat(sender - 1, receiver[r] - 1) + 1;
-	      	histmat(sender - 1, receiver[r] - 1) = histmat(sender - 1, receiver[r] - 1) + log(when - time);
 	       for (int IP = 1; IP < (nIP + 1); IP++) {
-  			NumericMatrix IPmat_IP = IPmat[IP - 1];
-  			IPmat_IP(sender - 1, receiver[r] - 1) = IPmat_IP(sender - 1, receiver[r] - 1) + pd(i, IP -1);
-  			IPmat[IP - 1] = IPmat_IP;
+  			List IPlist_IP = IPmat[IP - 1];
+  			if (time < time1) {
+  				NumericMatrix IP_l = IPlist_IP[0];
+  				IP_l(sender - 1, receiver[r] -1) += pd(i, IP -1);	
+  				IPlist_IP[0] = IP_l;
+			}
+  			if (time >= time1 && time < time2) {
+  				NumericMatrix IP_l = IPlist_IP[1];
+				IP_l(sender - 1, receiver[r] -1) += pd(i, IP -1);
+				IPlist_IP[1] = IP_l;
+			} 
+  			if (time >= time2 && time < time3) {
+  				NumericMatrix IP_l = IPlist_IP[2];
+				IP_l(sender - 1, receiver[r] -1) += pd(i, IP -1);
+				IPlist_IP[2] = IP_l;
+			}  				
+			if (time >= time3) {
+				NumericMatrix IP_l = IPlist_IP[3];
+				IP_l(sender - 1, receiver[r] -1) += pd(i, IP -1);
+				IPlist_IP[3] = IP_l;
+			}		
+			IPmat[IP - 1] = IPlist_IP;
   			}
 	   }
 	 }
   }
-	return List::create(countmat, histmat, IPmat);
+	return IPmat;
 }
 
+// [[Rcpp::export]]
+List Degree(List history, IntegerVector node, int sender) {
+  // Calculate degree statistics (indegree and outdegree) given the history of interactions
+  //
+  // Args:
+  //  history: list of document information with 3 elements (sender, receiver, time)
+  //  node: nodelist containing the ID of nodes
+  //  sender: specific timepoint that we are calculating the time difference from
+  //
+  // Returns:
+  //  Degree network statistic for specific sender and all possible receivers
+  int nIP = history.size();
+  List IPmat(nIP);
+ 
+  IntegerVector node_i(node.size() - 1);
+  int iter = 0;
+  for (int a = 0; a < node.size(); a++) {
+    if (node[a] != sender) {node_i[iter] = node[a];}
+    if (node[a] != sender) {iter = iter + 1;}
+  }
+  for (int IP = 1; IP < (nIP + 1); IP++) {
+  	 NumericMatrix degreemat_IP(node.size() - 1, 8);
+  	 List historyIP = history[IP - 1];
+     NumericVector degree(8); 
+	 
+   for (int b = 0; b < node_i.size(); b++) {
+    int receiver = node_i[b];
+    for (int l = 0; l < 4; l++) {
+    	NumericMatrix historyIP_l = historyIP[l];
+    	double send = historyIP_l(sender - 1, receiver - 1);
+    	IntegerVector node_ij(node_i.size() - 1);		
+    	int iter2 = 0;
+    	for (int d = 0; d < node_i.size(); d++) {
+     	 if (node_i[d] != receiver) {node_ij[iter2] = node_i[d];}
+     	 if (node_i[d] != receiver) {iter2 = iter2 + 1;}
+   		}
+   		 NumericVector indegree(node_ij.size());
+    	for (int h = 0; h < node_ij.size(); h++) {
+     	 int third = node_ij[h];
+     	 double htor = historyIP_l(third - 1, receiver - 1);
+    	  indegree[h] = htor;
+     	 }
+    	 degree[l + 4] = send + sum(indegree);			
+    	 degree[l] = degree[l] + send;
+      }
+      degreemat_IP(b,_) = degree;
+      }
+      for (int l = 0; l < 4; l++) {
+      degreemat_IP(_, l) = rep(max(degreemat_IP(_,l)), node.size()-1);
+      }
+    IPmat[IP - 1] = degreemat_IP;
+  }
+  return IPmat;
+}
 
 // [[Rcpp::export]]
-List Dyadic(List history, IntegerVector node, int sender, int nIP) {
+List Dyadic(List history, IntegerVector node, int sender) {
   // Calculate dyadic network statistics (send and receive) given the history of interactions
   //
   // Args:
@@ -60,34 +138,37 @@ List Dyadic(List history, IntegerVector node, int sender, int nIP) {
   //
   // Returns: 
   //  Dyadic network statistic for specific sender and all possible receivers
-
+  int nIP = history.size();
   List IPmat(nIP);
-  for (int IP = 1; IP < (nIP + 1); IP++) {
-  	NumericMatrix dyadicmat(node.size() - 1, 2);
-  	IPmat[IP - 1] = dyadicmat;
-  }
+
   IntegerVector node_i(node.size() - 1);
   int iter = 0;
   for (int a = 0; a < node.size(); a++) {
     if (node[a] != sender) {node_i[iter] = node[a];}
     if (node[a] != sender) {iter = iter + 1;}
-  }
-  for (int b = 0; b < node_i.size(); b++) {
-    int receiver = node_i[b];
-    for (int IP = 1; IP < (nIP+1); IP++) {
-      NumericMatrix historyIP = history[IP - 1];
-      NumericMatrix dyadicmat_IP = IPmat[IP - 1];
-      double send = historyIP(sender - 1, receiver - 1);
-      double receive = historyIP(receiver - 1, sender - 1);
-      dyadicmat_IP(b, _) = NumericVector::create(send, receive);
+  }    
+  
+  for (int IP = 1; IP < (nIP + 1); IP++) {
+  	 NumericMatrix dyadicmat_IP(node.size() - 1, 8);
+  	 List historyIP = history[IP - 1];
+     NumericVector dyadic(8); 
+     for (int b = 0; b < node_i.size(); b++) {
+    	int receiver = node_i[b];
+        for (int l = 0; l < 4; l++) {
+    		NumericMatrix historyIP_l = historyIP[l];
+    		dyadic[l] = historyIP_l(sender - 1, receiver - 1);
+    		dyadic[l + 4] = historyIP_l(receiver - 1, sender - 1);
+    	}
+      dyadicmat_IP(b, _) = dyadic;
+      }
       IPmat[IP - 1] = dyadicmat_IP;
-    }
    } 
   return IPmat;
 }  
 
+
 // [[Rcpp::export]]
-List Triadic(List history, IntegerVector node, int sender, int nIP) {
+List Triadic(List history, IntegerVector node, int sender) {
   // Calculate Triadic network statistics (2-send, 2-receive, sibling, cosibling) given the history of interactions
   //
   // Args:
@@ -97,269 +178,64 @@ List Triadic(List history, IntegerVector node, int sender, int nIP) {
   //
   // Returns:
   //  Triadic network statistic for specific sender and all possible receivers
-  List IPmat(nIP);
-  for (int IP = 1; IP < (nIP + 1); IP++) {
-  	NumericMatrix triadmat(node.size() - 1, 4);
-   	IPmat[IP - 1] = triadmat;
-  }
+   int nIP = history.size();
+   List IPmat(nIP);
+
   IntegerVector node_i(node.size() - 1);
   int iter = 0;
   for (int a = 0; a < node.size(); a++) {
     if (node[a] != sender) {node_i[iter] = node[a];}
     if (node[a] != sender) {iter = iter + 1;}
   }
-  for (int b = 0; b < node_i.size(); b++) {
-    int receiver = node_i[b];
-    IntegerVector node_ij(node_i.size() - 1);		
-    int iter2 = 0;
-    for (int d = 0; d < node_i.size(); d++) {
-      if (node_i[d] != receiver) {node_ij[iter2] = node_i[d];}
-      if (node_i[d] != receiver) {iter2 = iter2 + 1;}
-    }
-    NumericVector twosend(node_ij.size());
-    NumericVector tworeceive(node_ij.size());
-    NumericVector sibling(node_ij.size());
-    NumericVector cosibling(node_ij.size());
+  
     for (int IP = 1; IP < (nIP+1); IP++) {
-      NumericMatrix historyIP = history[IP - 1];
-      NumericMatrix triadmat_IP = IPmat[IP - 1];
-    for (int h = 0; h < node_ij.size(); h++) {
-      int third = node_ij[h];
-      double stoh = historyIP(sender - 1, third - 1);
-      double htos = historyIP(third - 1, sender - 1); 
-      double rtoh = historyIP(receiver - 1, third - 1);
-      double htor = historyIP(third - 1, receiver - 1);
-      twosend[h] = stoh * htor;
-      tworeceive[h] = htos * rtoh;
-      sibling[h] = htos * htor;
-      cosibling[h] = stoh * rtoh;
-      }			
-    triadmat_IP(b,_) = NumericVector::create(sum(twosend), sum(tworeceive), sum(sibling), sum(cosibling));
+      NumericMatrix triadmat_IP(node.size() - 1, 64);
+  	  List historyIP = history[IP - 1];
+  	  NumericVector triadic(64); 
+       
+        for (int b = 0; b < node_i.size(); b++) {
+        	int receiver = node_i[b];
+        	IntegerVector node_ij(node_i.size()-1);
+        	int iter2 = 0;
+        	for (int d = 0; d < node_i.size(); d++) {
+        		if (node_i[d] != receiver) {node_ij[iter2] = node_i[d];}
+        		if (node_i[d] != receiver) {iter2 = iter2 + 1;}
+        	}
+        NumericVector twosend(node_ij.size());
+        NumericVector tworeceive(node_ij.size());
+        NumericVector sibling(node_ij.size());
+        NumericVector cosibling(node_ij.size()); 
+        int iter1 = 0;
+        for (int l = 0; l < 4; l++) {
+        for (int m = 0; m < 4; m++){
+       
+         NumericMatrix historyIP_l = historyIP[l];
+         NumericMatrix historyIP_m = historyIP[m];
+       
+       	 for (int h = 0; h < node_ij.size(); h++) {
+     	   int third = node_ij[h];	
+     	   double stoh = historyIP_l(sender - 1, third - 1);
+      	 double htos = historyIP_l(third - 1, sender - 1); 
+     	   double rtoh = historyIP_m(receiver - 1, third - 1);
+      	 double htor = historyIP_m(third - 1, receiver - 1);
+      	 twosend[h] = stoh * htor;
+      	 tworeceive[h] = htos * rtoh;
+      	 sibling[h] = htos * htor;
+      	 cosibling[h] = stoh * rtoh;
+       	}
+       	triadic[iter1] = sum(twosend);
+       	triadic[iter1 + 16] = sum(tworeceive);
+       	triadic[iter1 + 32] = sum(sibling);
+       	triadic[iter1 + 48] = sum(cosibling);
+        iter1 = iter1 + 1;
+       }
+     }
+        triadmat_IP(b,_) = triadic;
+        }
     IPmat[IP - 1] = triadmat_IP;
   }
-  }
   return IPmat;
 }
-
-// [[Rcpp::export]]
-List Degree(List history, IntegerVector node, int sender, int nIP) {
-  // Calculate degree statistics (indegree and outdegree) given the history of interactions
-  //
-  // Args:
-  //  history: list of document information with 3 elements (sender, receiver, time)
-  //  node: nodelist containing the ID of nodes
-  //  sender: specific timepoint that we are calculating the time difference from
-  //
-  // Returns:
-  //  Degree network statistic for specific sender and all possible receivers
-   List IPmat(nIP);
-  for (int IP = 1; IP < (nIP + 1); IP++) {
-  	NumericMatrix degreemat(node.size() - 1, 2);
-   	IPmat[IP - 1] = degreemat;
-  }
-  IntegerVector node_i(node.size() - 1);
-  int iter = 0;
-  for (int a = 0; a < node.size(); a++) {
-    if (node[a] != sender) {node_i[iter] = node[a];}
-    if (node[a] != sender) {iter = iter + 1;}
-  }
-  for (int IP = 1; IP < (nIP + 1); IP++) {
-      NumericMatrix historyIP = history[IP - 1];
-      NumericMatrix degreemat_IP = IPmat[IP - 1];
-  double outdegree = 0;
-   for (int b = 0; b < node_i.size(); b++) {
-    int receiver = node_i[b];
-    double send = historyIP(sender - 1, receiver - 1);
-    IntegerVector node_ij(node_i.size() - 1);		
-    int iter2 = 0;
-    for (int d = 0; d < node_i.size(); d++) {
-      if (node_i[d]!=receiver) {node_ij[iter2] = node_i[d];}
-      if (node_i[d]!=receiver) {iter2 = iter2 + 1;}
-    }
-    NumericVector indegree(node_ij.size());
-    for (int h = 0; h < node_ij.size(); h++) {
-      int third = node_ij[h];
-      double htor = historyIP(third - 1, receiver - 1);
-      indegree[h] = htor;
-      }			
-    outdegree = outdegree + send;
-    degreemat_IP(b,_) = NumericVector::create(0, send + sum(indegree));
-  }
-  degreemat_IP(_,0) = rep(outdegree, node_i.size());
-  IPmat[IP - 1] = degreemat_IP;
-  }
-  return IPmat;
-}
-
-// [[Rcpp::export]]
-NumericMatrix DyadicTW(List history, IntegerVector node, int sender) {
-  // Calculate dyadic network statistics (send and receive) given the history of interactions
-  //
-  // Args:
-  //  history: list
-  //  node: nodelist containing the ID of nodes
-  //  sender: sender of the document which we exclued from possible receiver set
-  //
-  // Returns: 
-  //  Dyadic network statistic for specific sender and all possible receivers
-  NumericMatrix countmat = history[0];
-  NumericMatrix timemat = history[1];
-  NumericMatrix dyadicmat(node.size() - 1, 2);
-
-  IntegerVector node_i(node.size() - 1);
-  int iter = 0;
-  for (int a = 0; a < node.size(); a++) {
-    if (node[a] != sender) {node_i[iter] = node[a];}
-    if (node[a] != sender) {iter = iter + 1;}
-  }
-  for (int b = 0; b < node_i.size(); b++) {
-    int receiver = node_i[b];
-    double sendtime = 0;
-    double receivetime = 0;
-    if (countmat(sender - 1, receiver - 1) > 0) {
-    	sendtime = timemat(sender - 1, receiver - 1) / countmat(sender - 1, receiver - 1);
-    } 
-     if (countmat(receiver - 1, sender - 1) > 0) {
-    	receivetime = timemat(receiver - 1, sender - 1) / countmat(receiver - 1, sender - 1);
-    } 
-    dyadicmat(b, _) = NumericVector::create(sendtime, receivetime);
-   } 
-  return dyadicmat;
-}  
-
-// [[Rcpp::export]]
-NumericMatrix TriadicTW(List history, IntegerVector node, int sender) {
-  // Calculate Triadic network statistics (2-send, 2-receive, sibling, cosibling) given the history of interactions
-  //
-  // Args:
-  //  history: list of weighted time differences between all nodes
-  //  node: nodelist containing the ID of nodes
-  //  sender: specific timepoint that we are calculating the time difference from
-  //
-  // Returns:
-  //  Triadic network statistic for specific sender and all possible receivers
-  NumericMatrix countmat = history[0];
-  NumericMatrix timemat = history[1];
-  NumericMatrix triadmat(node.size() - 1, 4);
-
-  IntegerVector node_i(node.size() - 1);
-  int iter = 0;
-  for (int a = 0; a < node.size(); a++) {
-    if (node[a] != sender) {node_i[iter] = node[a];}
-    if (node[a] != sender) {iter = iter + 1;}
-  }
-  for (int b = 0; b < node_i.size(); b++) {
-    int receiver = node_i[b];
-    IntegerVector node_ij(node_i.size() - 1);		
-    int iter2 = 0;
-    for (int d = 0; d < node_i.size(); d++) {
-      if (node_i[d] != receiver) {node_ij[iter2] = node_i[d];}
-      if (node_i[d] != receiver) {iter2 = iter2 + 1;}
-    }
-    NumericVector twosend(node_ij.size());
-    IntegerVector twosendTW(node_ij.size());
-    NumericVector tworeceive(node_ij.size());
-    IntegerVector tworeceiveTW(node_ij.size());
-    NumericVector sibling(node_ij.size());
-    IntegerVector siblingTW(node_ij.size());
-    NumericVector cosibling(node_ij.size());
-    IntegerVector cosiblingTW(node_ij.size());
-   
-    for (int h = 0; h < node_ij.size(); h++) {
-      int third = node_ij[h];
-      double shtime = timemat(sender - 1, third - 1);
-      double hstime = timemat(third - 1, sender - 1);
-      double rhtime = timemat(receiver - 1, third - 1);
-      double hrtime = timemat(third - 1, receiver - 1);    
-      int shcount = countmat(sender - 1, third - 1);
-      int hscount = countmat(third - 1, sender - 1);
-      int rhcount = countmat(receiver - 1, third - 1);
-      int hrcount = countmat(third - 1, receiver - 1);
-      twosend[h] = shtime + hrtime;
-      twosendTW[h] = shcount + hrcount;
-      tworeceive[h] = hstime + rhtime;
-      tworeceiveTW[h] = hscount + rhcount;
-      sibling[h] = hstime + hrtime;
-      siblingTW[h] = hscount + hrcount;
-      cosibling[h] = shtime + rhtime;
-      cosiblingTW[h] = shcount + rhcount;
-      }	
-      NumericVector triadic(4);
-      if (sum(twosendTW) > 0) {
-      	triadic[0] = sum(twosend) / sum(twosendTW);
-      	}
-      if (sum(tworeceiveTW) > 0) {
-      	triadic[1] = sum(tworeceive) / sum(tworeceiveTW);
-      	}
-      if (sum(siblingTW) > 0) {
-      	triadic[2] = sum(sibling) / sum(siblingTW);
-      	}
-      if (sum(cosiblingTW) > 0) {
-      	triadic[3] = sum(cosibling) / sum(cosiblingTW);
-      	}
-    triadmat(b,_) = triadic;
-      }
-  return triadmat;
-}
-
-// [[Rcpp::export]]
-NumericMatrix DegreeTW(List history, IntegerVector node, int sender) {
-  // Calculate degree statistics (indegree and outdegree) given the history of interactions
-  //
-  // Args:
-  //  history: list of document information with 3 elements (sender, receiver, time)
-  //  node: nodelist containing the ID of nodes
-  //  sender: specific timepoint that we are calculating the time difference from
-  //
-  // Returns:
-  //  Degree network statistic for specific sender and all possible receivers
-  NumericMatrix countmat = history[0];
-  NumericMatrix timemat = history[1];
-  NumericMatrix degreemat(node.size() - 1, 2);
-  
-  IntegerVector node_i(node.size() - 1);
-  int iter = 0;
-  for (int a = 0; a < node.size(); a++) {
-    if (node[a] != sender) {node_i[iter] = node[a];}
-    if (node[a] != sender) {iter = iter + 1;}
-  }
-   double outtime = 0;
-   int outcount = 0;
-   for (int b = 0; b < node_i.size(); b++) {
-    int receiver = node_i[b];
-    double sendtime = timemat(sender - 1, receiver - 1);
-    int sendcount = countmat(sender - 1, receiver - 1);
-    IntegerVector node_ij(node_i.size() - 1);		
-    int iter2 = 0;
-    for (int d = 0; d < node_i.size(); d++) {
-      if (node_i[d] != receiver) {node_ij[iter2] = node_i[d];}
-      if (node_i[d] != receiver) {iter2 = iter2 + 1;}
-    }
-    NumericVector intime(node_ij.size());
-    IntegerVector incount(node_ij.size());
-    for (int h = 0; h < node_ij.size(); h++) {
-      int third = node_ij[h];
-      double htortime = timemat(third - 1, receiver - 1);
-      double htorcount = countmat(third - 1, receiver - 1);
-      intime[h] = htortime;
-      incount[h] = htorcount;
-      }			
-    outtime = outtime + sendtime;
-    outcount = outcount + sendcount;
-    double indegree = 0;
-    if (sendcount + sum(incount) > 0) {
-    	indegree = (sendtime + sum(intime)) / (sendcount + sum(incount));
-    }
-    degreemat(b,_) = NumericVector::create(0, indegree);
-  }
-  double outdegree = 0;
-  if (outcount > 0) {
-  	outdegree = outtime / outcount;
-  }
-  degreemat(_,0) = rep(outdegree, node_i.size());
-  return degreemat;
-}
-
 
 // [[Rcpp::export]]
 NumericVector MultiplyXB(NumericMatrix X, NumericVector beta){
@@ -489,9 +365,33 @@ double LambdaInEqZ(List iJi, NumericMatrix lambda, NumericVector LambdaiJi, Nume
 	for (int i = 0; i < iJi.size(); i++) {
 		IntegerVector Ji = iJi[i];
 		for (int j = 0; j < iJi.size() - 1; j++) {
-			edges = edges + Ji[j] * log(exp(delta * lambda(i, j) - 1)) - delta * lambda(i, j);
+		  double deltalambda = exp(-delta * lambda(i, j));
+		  if (deltalambda < 0.0000001) { deltalambda += 0.0000001;}
+			edges = edges + Ji[j] * log(1 / deltalambda - 1) - delta * lambda(i, j);
 		}
 	}
 	consts = edges + times - obs;
 	return consts;
 }
+
+
+// [[Rcpp::export]]
+IntegerVector tabulateC(const IntegerVector& x, const unsigned max) {
+  // C++ version of R function: tabulate()
+  //
+  // Args:
+  //  x: a numeric vector, or a factor
+  //  max: the number of bins to be used
+  //
+  // Returns:
+  //  An integer vector counting the number of times each integer occurs in it
+  IntegerVector counts(max);
+  std::size_t n = x.size();
+  for (std::size_t i=0; i < n; i++) {
+    if (x[i] > 0 && x[i] <= max)
+      counts[x[i] - 1]++;
+  }
+  return counts;
+}
+
+
