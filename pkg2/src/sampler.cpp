@@ -86,41 +86,31 @@ List Degree(List history, IntegerVector node, int sender) {
   int nIP = history.size();
   List IPmat(nIP);
  
-  IntegerVector node_i(node.size() - 1);
-  int iter = 0;
-  for (int a = 0; a < node.size(); a++) {
-    if (node[a] != sender) {node_i[iter] = node[a];}
-    if (node[a] != sender) {iter = iter + 1;}
-  }
+ 
   for (int IP = 1; IP < (nIP + 1); IP++) {
-  	 NumericMatrix degreemat_IP(node.size() - 1, 8);
+  	 NumericMatrix degreemat_IP(node.size(), 8);
   	 List historyIP = history[IP - 1];
      NumericVector degree(8); 
 	 
-   for (int b = 0; b < node_i.size(); b++) {
-    int receiver = node_i[b];
+   for (int b = 0; b < node.size(); b++) {
+    int receiver = node[b];
     for (int l = 0; l < 4; l++) {
     	NumericMatrix historyIP_l = historyIP[l];
     	double send = historyIP_l(sender - 1, receiver - 1);
-    	IntegerVector node_ij(node_i.size() - 1);		
-    	int iter2 = 0;
-    	for (int d = 0; d < node_i.size(); d++) {
-     	 if (node_i[d] != receiver) {node_ij[iter2] = node_i[d];}
-     	 if (node_i[d] != receiver) {iter2 = iter2 + 1;}
-   		}
-   		 NumericVector indegree(node_ij.size());
-    	for (int h = 0; h < node_ij.size(); h++) {
-     	 int third = node_ij[h];
+    	
+   		NumericVector indegree(node.size());
+    	for (int h = 0; h < node.size(); h++) {
+     	 int third = node[h];
      	 double htor = historyIP_l(third - 1, receiver - 1);
     	  indegree[h] = htor;
      	 }
-    	 degree[l + 4] = send + sum(indegree);			
+    	 degree[l + 4] = sum(indegree);			
     	 degree[l] = degree[l] + send;
       }
       degreemat_IP(b,_) = degree;
       }
       for (int l = 0; l < 4; l++) {
-      degreemat_IP(_, l) = rep(max(degreemat_IP(_,l)), node.size()-1);
+      degreemat_IP(_, l) = rep(max(degreemat_IP(_,l)), node.size());
       }
     IPmat[IP - 1] = degreemat_IP;
   }
@@ -139,21 +129,14 @@ List Dyadic(List history, IntegerVector node, int sender) {
   // Returns: 
   //  Dyadic network statistic for specific sender and all possible receivers
   int nIP = history.size();
-  List IPmat(nIP);
-
-  IntegerVector node_i(node.size() - 1);
-  int iter = 0;
-  for (int a = 0; a < node.size(); a++) {
-    if (node[a] != sender) {node_i[iter] = node[a];}
-    if (node[a] != sender) {iter = iter + 1;}
-  }    
+  List IPmat(nIP);  
   
   for (int IP = 1; IP < (nIP + 1); IP++) {
-  	 NumericMatrix dyadicmat_IP(node.size() - 1, 8);
+  	 NumericMatrix dyadicmat_IP(node.size(), 8);
   	 List historyIP = history[IP - 1];
      NumericVector dyadic(8); 
-     for (int b = 0; b < node_i.size(); b++) {
-    	int receiver = node_i[b];
+     for (int b = 0; b < node.size(); b++) {
+    	int receiver = node[b];
         for (int l = 0; l < 4; l++) {
     		NumericMatrix historyIP_l = historyIP[l];
     		dyadic[l] = historyIP_l(sender - 1, receiver - 1);
@@ -165,7 +148,6 @@ List Dyadic(List history, IntegerVector node, int sender) {
    } 
   return IPmat;
 }  
-
 
 // [[Rcpp::export]]
 List Triadic(List history, IntegerVector node, int sender) {
@@ -180,31 +162,18 @@ List Triadic(List history, IntegerVector node, int sender) {
   //  Triadic network statistic for specific sender and all possible receivers
    int nIP = history.size();
    List IPmat(nIP);
-
-  IntegerVector node_i(node.size() - 1);
-  int iter = 0;
-  for (int a = 0; a < node.size(); a++) {
-    if (node[a] != sender) {node_i[iter] = node[a];}
-    if (node[a] != sender) {iter = iter + 1;}
-  }
-  
-    for (int IP = 1; IP < (nIP+1); IP++) {
-      NumericMatrix triadmat_IP(node.size() - 1, 64);
+   for (int IP = 1; IP < (nIP+1); IP++) {
+      NumericMatrix triadmat_IP(node.size(), 64);
   	  List historyIP = history[IP - 1];
   	  NumericVector triadic(64); 
        
-        for (int b = 0; b < node_i.size(); b++) {
-        	int receiver = node_i[b];
-        	IntegerVector node_ij(node_i.size()-1);
-        	int iter2 = 0;
-        	for (int d = 0; d < node_i.size(); d++) {
-        		if (node_i[d] != receiver) {node_ij[iter2] = node_i[d];}
-        		if (node_i[d] != receiver) {iter2 = iter2 + 1;}
-        	}
-        NumericVector twosend(node_ij.size());
-        NumericVector tworeceive(node_ij.size());
-        NumericVector sibling(node_ij.size());
-        NumericVector cosibling(node_ij.size()); 
+        for (int b = 0; b < node.size(); b++) {
+        int receiver = node[b];
+ 
+        NumericVector twosend(node.size());
+        NumericVector tworeceive(node.size());
+        NumericVector sibling(node.size());
+        NumericVector cosibling(node.size()); 
         int iter1 = 0;
         for (int l = 0; l < 4; l++) {
         for (int m = 0; m < 4; m++){
@@ -212,16 +181,16 @@ List Triadic(List history, IntegerVector node, int sender) {
          NumericMatrix historyIP_l = historyIP[l];
          NumericMatrix historyIP_m = historyIP[m];
        
-       	 for (int h = 0; h < node_ij.size(); h++) {
-     	   int third = node_ij[h];	
+       	 for (int h = 0; h < node.size(); h++) {
+     	   int third = node[h];	
      	   double stoh = historyIP_l(sender - 1, third - 1);
-      	 double htos = historyIP_l(third - 1, sender - 1); 
+      	   double htos = historyIP_l(third - 1, sender - 1); 
      	   double rtoh = historyIP_m(receiver - 1, third - 1);
-      	 double htor = historyIP_m(third - 1, receiver - 1);
-      	 twosend[h] = stoh * htor;
-      	 tworeceive[h] = htos * rtoh;
-      	 sibling[h] = htos * htor;
-      	 cosibling[h] = stoh * rtoh;
+      	   double htor = historyIP_m(third - 1, receiver - 1); 
+      	   twosend[h] = stoh * htor;
+      	   tworeceive[h] = htos * rtoh;
+      	   sibling[h] = htos * htor;
+      	   cosibling[h] = stoh * rtoh;
        	}
        	triadic[iter1] = sum(twosend);
        	triadic[iter1 + 16] = sum(tworeceive);
@@ -236,6 +205,8 @@ List Triadic(List history, IntegerVector node, int sender) {
   }
   return IPmat;
 }
+
+
 
 // [[Rcpp::export]]
 NumericVector MultiplyXB(NumericMatrix X, NumericVector beta){
@@ -357,17 +328,16 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 }
 
 // [[Rcpp::export]]
-double LambdaInEqZ(List iJi, NumericMatrix lambda, NumericVector LambdaiJi, NumericVector LambdaiJi2, double delta, double tdiff) {
+double LambdaInEqZ(IntegerMatrix iJi, NumericMatrix lambda, NumericVector LambdaiJi, NumericVector LambdaiJi2, double delta, double tdiff) {
 	double edges = 0;
 	double times = sum(log(LambdaiJi));
 	double obs = tdiff * (sum(LambdaiJi) + sum(LambdaiJi2));
 	double consts = 0;
-	for (int i = 0; i < iJi.size(); i++) {
-		IntegerVector Ji = iJi[i];
-		for (int j = 0; j < iJi.size() - 1; j++) {
+	for (int i = 0; i < iJi.nrow(); i++) {
+		for (int j = 0; j < iJi.ncol(); j++) {
 		  double deltalambda = exp(-delta * lambda(i, j));
 		  if (deltalambda < 0.0000001) { deltalambda += 0.0000001;}
-			edges = edges + Ji[j] * log(1 / deltalambda - 1) - delta * lambda(i, j);
+			edges = edges + iJi(i, j) * log(1 / deltalambda - 1) - delta * lambda(i, j);
 		}
 	}
 	consts = edges + times - obs;
