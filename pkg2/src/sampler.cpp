@@ -347,9 +347,11 @@ double EdgeInEqZ2(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 	double edges = 0;
 	for (int i = 0; i < iJi.nrow(); i++) {
 		for (int j = 0; j < iJi.ncol(); j++) {
+			if (i != j) {
 		  double deltalambda = delta * lambda(i, j);
 		  if (deltalambda < 0.0000001) { deltalambda += 0.0000001;}
 			edges = edges + iJi(i, j) * log(deltalambda) - log(deltalambda + 1);
+			}
 		}
 	}
 	return edges;
