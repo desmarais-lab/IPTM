@@ -627,7 +627,11 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 	# below is the f(x0)
     post.old = sum(vapply(seq(along = edge), function(d) {
     			   EdgeInEqZ2(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d], delta)
-    			   }, c(1))) / length(edge)
+    			   }, c(1))) 
+      while (exp(post.old) == 0) {
+            post.old = post.old + 1000
+          }
+			   
     y = runif(1, 0, exp(post.old))
     	Beta.L = lapply(1L:nIP, function(IP) {
     	Beta.old[[IP]] - delta.B * runif(P, 0, 1)
@@ -655,9 +659,15 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         }
 
         delta.new = delta.L + runif(1, 0, 1) * (delta.R - delta.L)
+        while (delta.new < 0) {
+        		delta.new = delta.L + runif(1, 0, 1) * (delta.R - delta.L)
+        }
 	 	post.new = sum(vapply(seq(along = edge), function(d) {
         	 EdgeInEqZ2(iJi[[d]], lambda.new[[d]], delta.new) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d], delta.new)
-      }, c(1))) / length(edge)
+      }, c(1))) 
+           while (exp(post.new) == 0) {
+            post.new = post.new + 1000
+          }
         if (y >= exp(post.new)) {
       	for (IP in 1L:nIP) {
         	Beta.old[[IP]]  = Beta.new[[IP]]
@@ -689,10 +699,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         		}
         	}
         }
-      }	
-     
-              
-     
+
 # #     cat("inner iteration 3", "\n")
     # Beta.new = list()
       # for (d in seq(along = edge)) {
@@ -778,7 +785,8 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 	          main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
 	  abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
 	  }
-  
+   }	
+     
   chain.final = list(C = currentC, Z = currentZ, B = bmat)
 
   return(chain.final)
@@ -931,7 +939,6 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         }
         edgepart.d = EdgeInEqZ2(iJi[[d]], lambda[[d]], delta)
         timepart.d = TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d], delta)
-        print(timepart.d)
         for (w in 1L:length(currentZ[[d]])) {
           const.Z = topicpart.d + edgepart.d + timepart.d + wordpart.d[w, ]
           while (sum(exp(const.Z)) == 0) {
@@ -1037,7 +1044,13 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 	# below is the f(x0)
     post.old = sum(vapply(seq(along = edge), function(d) {
     			   EdgeInEqZ2(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d], delta)
-    			   }, c(1))) / length(edge)
+    			   }, c(1)))
+    	adds = 0		    
+      while (exp(post.old) == 0) {
+            post.old = post.old + 1000
+            adds = adds + 1
+          }
+			   
     y = runif(1, 0, exp(post.old))
     	Beta.L = lapply(1L:nIP, function(IP) {
     	Beta.old[[IP]] - delta.B * runif(P, 0, 1)
@@ -1065,9 +1078,12 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         }
 
         delta.new = delta.L + runif(1, 0, 1) * (delta.R - delta.L)
+        while (delta.new < 0) {
+        		delta.new = delta.L + runif(1, 0, 1) * (delta.R - delta.L)
+        }
 	 	post.new = sum(vapply(seq(along = edge), function(d) {
         	 EdgeInEqZ2(iJi[[d]], lambda.new[[d]], delta.new) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d], delta.new)
-      }, c(1))) / length(edge)
+      }, c(1))) + adds * 1000 
         if (y >= exp(post.new)) {
       	for (IP in 1L:nIP) {
         	Beta.old[[IP]]  = Beta.new[[IP]]
@@ -1099,9 +1115,7 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         		}
         	}
         }
-      }	
-     
-              
+        }	
      
 # #     cat("inner iteration 3", "\n")
     # Beta.new = list()
@@ -1166,8 +1180,7 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
           # }
         # }
       # }
-      
-    }
+
   
   if (plot) {
     burnin = round(outer / 10)
@@ -1188,7 +1201,7 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 	          main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
 	  abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
 	  }
-  
+   }
   chain.final = list(C = currentC, Z = currentZ, B = bmat)
 
   return(chain.final)
