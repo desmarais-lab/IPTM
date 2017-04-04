@@ -328,19 +328,38 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 }
 
 // [[Rcpp::export]]
-double LambdaInEqZ(IntegerMatrix iJi, NumericMatrix lambda, NumericVector LambdaiJi, NumericVector LambdaiJi2, double delta, double tdiff) {
+double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 	double edges = 0;
-	double times = sum(log(LambdaiJi));
-	double obs = tdiff * (sum(LambdaiJi) + sum(LambdaiJi2));
-	double consts = 0;
 	for (int i = 0; i < iJi.nrow(); i++) {
 		for (int j = 0; j < iJi.ncol(); j++) {
 		  double deltalambda = exp(-delta * lambda(i, j));
 		  if (deltalambda < 0.0000001) { deltalambda += 0.0000001;}
-			edges = edges + iJi(i, j) * log(1 / deltalambda - 1) - delta * lambda(i, j);
+		  double deltalambda2 = 1 / deltalambda - 1;
+		  if (deltalambda2 < 0.0000001) { deltalambda2 += 0.0000001;}
+			edges = edges + iJi(i, j) * log(deltalambda2) - delta * lambda(i, j);
 		}
 	}
-	consts = edges + times - obs;
+	return edges;
+}
+
+// [[Rcpp::export]]
+double EdgeInEqZ2(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
+	double edges = 0;
+	for (int i = 0; i < iJi.nrow(); i++) {
+		for (int j = 0; j < iJi.ncol(); j++) {
+		  double deltalambda = delta * lambda(i, j);
+		  if (deltalambda < 0.0000001) { deltalambda += 0.0000001;}
+			edges = edges + iJi(i, j) * log(deltalambda) - log(deltalambda + 1);
+		}
+	}
+	return edges;
+}
+
+// [[Rcpp::export]]
+double TimeInEqZ(NumericVector LambdaiJi, NumericVector LambdaiJi2, double tdiff, double delta) {
+	double times = sum(log(delta * LambdaiJi));
+	double obs = tdiff * delta * (sum(LambdaiJi) + sum(LambdaiJi2));
+	double consts = times - obs;
 	return consts;
 }
 

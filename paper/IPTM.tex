@@ -161,13 +161,13 @@ where the approximation $\mbox{log}{L}_t(\boldsymbol{b}^{(c)})\approx \mbox{log}
 We assume the following generative process for each document $d$ in a corpus $D$:
 \begin{itemize}
 	\item[1.] (Data augmentation) For each sender $i \in \{1,...,A\}$, create a list of receivers $J_i$ by applying the Bernoulli probabilities to every $j \in \mathcal{A}_{\backslash i}$
-	\begin{equation} I(i \rightarrow j) \sim \mbox{Ber}\Big(1-\mbox{exp}(-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)}))\Big),
+	\begin{equation} I(i \rightarrow j) \sim \mbox{Ber}\Big(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1}\Big),
 	\end{equation}
-	where the probability is called a Bernoulli-Poisson (BerPo) link function \citep{zhou2015infinite} and $\delta$ is a positive tuning parameter to control the number of recipients. Note that $_+$ denotes including the timepoint itself, meaning that $\lambda_{ij}$ is obtained using the history of interactions until and including the timestamp $t^{(d-1)}$. \\(i.e. $\lambda^{(d)}_{ij}(t_+^{(d-1)})=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$)
+	where the probability is from a inverse log-logit link function ($=\frac{1}{1 + \mbox{exp}(-\mbox{log}(\delta\lambda^{(d)}_{ij}))}$) using $\lambda^{(d)}_{ij}$ evaluated at time $t_+^{(d-1)}$, and $\delta$ is a positive tuning parameter to control the number of recipients. Note that $_+$ denotes including the timepoint itself, meaning that $\lambda_{ij}$ is obtained using the history of interactions until and including the timestamp $t^{(d-1)}$. \\(i.e. $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$)
 	\item[2.] For sender with nonempty receiver sets $i \in \mathcal{A}_{\backslash J_i=\emptyset}$, generate the time increments \begin{equation}
-\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}(t_+^{(d-1)})).
+\Delta T_{i{J_i}} \sim \mbox{Exp}(\delta\lambda_{i{J_i}}^{(d)}).
 	\end{equation}
-	where $\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\frac{1}{|J_i|}\sum\limits_{j \in{J_i}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\}$
+	where $\delta$ also works as a tuning parameter to controling the urgency of the document to be sent and $\lambda^{(d)}_{i{J_i}}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\frac{1}{|J_i|}\sum\limits_{j \in{J_i}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\}$ as before.
 	 	 \item[3.] Set timestamp, sender, and receivers simultaneously:
 	 	 \begin{equation}
 	 	 \begin{aligned}
@@ -177,6 +177,7 @@ We assume the following generative process for each document $d$ in a corpus $D$
 	 	  \end{aligned}
 	 	 \end{equation} Note: $i^{(0)}=J^{(0)}=\emptyset$ and $t^{(0)}=0$.
 \end{itemize}
+\iffalse
  \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates}
 The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), corresponding to the ordered pair $(i, j)$, can be time-invariant (such as gender) or time-dependent (such as the number of two-paths from $i$ to $j$ just before time $t$). There could be various static and dynamic covariates $\boldsymbol{x}^{(c)}_t(i, j)$ that affects the stochastic intensity, however, we decide to use the covariates that depend on the history of the process, considering the strong recency and reciprocity effects of textual communications, especially emails.
  We use six effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, send, receive, triangle, outdegree, indegree), measuring reciprocity, transitivity, popularity and centrality. Additionally, we define a time-weighting function so that we can use a single statistic for each effect by incorporating the recency of event into the statistic itself. The time-weighting function at time $t$ is specified as:
@@ -192,6 +193,7 @@ The network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), correspon
  	\item [5.]  $\mbox{outdegree}^{(c)}_t(i)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{i\rightarrow \forall j\}}{\mbox{TW}_t(\{t_n^{(i\rightarrow \forall j)}\}_{n=1}^N, \mu) }$, where $N = \sum\limits_{d: t^{(d)}<t} I\{i\rightarrow \forall j\}$
  	\item [6.] $\mbox{indegree}^{(c)}_t(j)=\frac{\sum\limits_{d: t^{(d)}<t}p_c^{(d)}\cdot I\{\forall i\rightarrow j\}}{\mbox{TW}_t(\{t_n^{(\forall i\rightarrow  j)}\}_{n=1}^N, \mu)}, $ where $N = \sum\limits_{d: t^{(d)}<t} I\{\forall i\rightarrow j\}$
  \end{itemize}
+\fi
  \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates2}
  For the network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), we use 9 different effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling) to measure popularity, centrality, reciprocity, and transitivity. First, we have intercept term to estimate the baseline intensity for each interaction pattern $c=1,...,C$:
  \begin{itemize}
@@ -222,8 +224,10 @@ and for the triadic effects involve pairs of messages, for $l = 1,...,L$, $l^\pr
  	\item [8.] $\mbox{\textbf{sibling}}^{(c|l, l^\prime)}_t(i, j)=\sum_{h \neq i, j}\Big(\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{h\rightarrow i\}\Big)\cdot \Big(\sum_{d': t^{(d')} \in I_t^{(l^\prime)}}p_c^{(d')}\cdot I\{h\rightarrow j\}\Big)$
  	\item [9.] $\mbox{\textbf{cosibling}}^{(c|l, l^\prime)}_t(i, j)=\sum_{h \neq i, j}\Big(\sum_{d: t^{(d)} \in I_t^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow h\}\Big)\cdot \Big(\sum_{d': t^{(d')} \in I_t^{(l^\prime)}}p_c^{(d')}\cdot I\{j\rightarrow h\}\Big)$
  \end{itemize}
+In this setting, if we use $L=3$, the dimension of $\boldsymbol{b}^{(c)}$ becomes $$P =  (1 \mbox{ (intercept)} + 8 \mbox{ (indicators)}+ 4 \times L \mbox{ (dyadic)} + 4 \times L^2 \mbox{ (triadic)}) = 57,$$
+for each interaction pattern $c=1,...,C$.
 \subsection{Joint Generative Process of Document} \label{subsec: Joint Generative Process of Document}
- Below are the joint generative process for each document in a corpus $D$, integrating \ref{subsec: Content Generating Process}, \ref{subsec: Stochastic Intensity}, \ref{subsec: Tie Generating Process}, and \ref{subsec: Dynamic covariates}.  Figure 1 is the corresponding plate notation of IPTM.
+ Below are the joint generative process for each document in a corpus $D$, integrating \ref{subsec: Content Generating Process}, \ref{subsec: Stochastic Intensity}, \ref{subsec: Tie Generating Process}, and \ref{subsec: Dynamic covariates2}.  Figure 1 is the corresponding plate notation of IPTM.
 \begin{algorithm}[H]
 	\SetAlgoLined
 	\caption{Topic Word Distributions}
@@ -265,9 +269,9 @@ and for the triadic effects involve pairs of messages, for $l = 1,...,L$, $l^\pr
                     	\For{j=1 to $A$}{
                     		\If {j $\neq$ i} {
                     			  calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
-                    			  set $\lambda^{(d)}_{ij}(t_+^{(d-1)})=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
-                        draw I($i \rightarrow j$) $\sim \mbox{Ber}(1-\mbox{exp}(-\delta\lambda_{ij}^{(d)}(t_+^{(d-1)})))$}  }
-					draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)}(t_+^{(d-1)}))$
+                    			  set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
+                        draw I($i \rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})$}  }
+					draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\delta \lambda_{iJ_i}^{(d)})$
                     }
                     set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
 	}
@@ -287,7 +291,7 @@ and for the triadic effects involve pairs of messages, for $l = 1,...,L$, $l^\pr
 	  		\node[main] (m) [below=of alpha,label=center:$\boldsymbol{m}$] { };
 	  		\node[main] (p) [right=of theta,label=center:$p_c^{(d)}$] { };
 	  		\node[main] (x) [below=of p,label=center:$\boldsymbol{x}^{(c)}_{t_+^{(d-1)}}$] { };
-	  		\node[main] (lambda) [right=of x,label=center:$\boldsymbol{\lambda}^{(d)}(t_+^{(d-1)})$] { };
+	  		\node[main] (lambda) [right=of x,label=center:$\boldsymbol{\lambda}^{(d)}$] { };
 	  		\node[main] (c) [above=of p,label=center:$c_k$] { };
 	  		\node[main] (e) [right=of lambda,label=center:${J_i}^{(d)}$] { };
 	  		\node[main] (delta) [right=of e,label=center:$\delta$] { };
@@ -369,20 +373,20 @@ Note that on the right hand side we have dropped the conditional dependence on (
   \begin{equation}
   \begin{aligned}
 &P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=P\Big(\mbox{latent receivers generation}\Big) \times P\Big(\mbox{latent time generation}\Big)\times P\Big(\mbox{choose the observed}\Big) \\&=P\Big(\mbox{from Equation (5)}\Big) \times P\Big(\mbox{from Equation (6)}\Big)\times P\Big(\mbox{from Equation (7)}\Big) \\&
-=\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}}\Big(I(i \rightarrow j)\sim \mbox{Ber}(1-\mbox{exp}(-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})))\Big) \\&\quad\quad\quad\quad\times \prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}}\Big(\Delta T_{iJ_i}\sim\mbox{Exp}(\lambda^{(d)}_{iJ_i}(t_+^{(d-1)}))\Big) \times P\Big(\mbox{min}_i (\Delta T_{i{J_i}}) = \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&
-=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (1-e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})})^{I(j \in J_i)}(e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})})^{1-I(j \in J_i)}\Big)\\&\quad\quad\quad\quad\times \Big(\prod_{i \in\mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{iJ_i}(t_+^{(d-1)})e^{-(t^{(d)}-t^{(d-1)})\lambda^{(d)}_{iJ_i}(t_+^{(d-1)})}\Big)\times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}e^{-(t^{(d)}-t^{(d-1)})\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})}\Big),
+=\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}}\Big(I(i \rightarrow j)\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})\Big) \times \prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}}\Big(\Delta T_{iJ_i}\sim\mbox{Exp}(\delta\lambda^{(d)}_{iJ_i})\Big) \times P\Big(\mbox{min}_i (\Delta T_{i{J_i}}) = \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&
+=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \big(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1}\big)^{I(j \in J_i)}\big(\frac{1}{\delta\lambda^{(d)}_{ij}+1}\big)^{1-I(j \in J_i)}\Big)\times \Big(\prod_{i \in\mathcal{A}_{\backslash J_i=\emptyset}}\delta\lambda^{(d)}_{iJ_i}e^{-(t^{(d)}-t^{(d-1)})\delta\lambda^{(d)}_{iJ_i}}\Big)\\&\quad\quad\quad\quad\times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}e^{-(t^{(d)}-t^{(d-1)})\delta\lambda^{(d)}_{i{J_i}}}\Big),
   \end{aligned}
   \end{equation}
-  where the last term is given by the cumulative exponential distributions associated with the respective $\lambda_{iJ_i}(t_+^{(d-1)})$. Therefore, we can simplify the above equation as below:
+  where the last term is given by the cumulative exponential distributions associated with the respective $\lambda_{iJ_i}$. Therefore, we can simplify the above equation as below:
   \begin{equation}
   \begin{aligned}
-  &P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\Big)\\&\quad\quad\quad\quad \times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \lambda^{(d)}_{iJ_i}(t_+^{(d-1)})\Big)\times \Big(e^{-(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\big)}\Big).
+  &P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \frac{(\delta\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \delta\lambda^{(d)}_{iJ_i}\Big) \times \Big(e^{-\delta(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}\big)}\Big).
   \end{aligned}
   \end{equation}
 For implementation, we need to compute these equations in log space to prevent underflow:
  \begin{equation}
  \begin{aligned}
- &\mbox{log}\Big(P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B},  \delta)\Big)\\&=\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}\Big(e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1\Big) {-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\\&\quad\quad\quad\quad + \sum_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \mbox{log}(\lambda^{(d)}_{iJ_i}(t_+^{(d-1)})){-(t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\Big)}.
+ &\mbox{log}\Big(P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B},  \delta)\Big)\\&=\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)\\&\quad\quad\quad\quad + \sum_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \mbox{log}(\delta\lambda^{(d)}_{iJ_i}){-\delta(t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}\Big)}.
  \end{aligned}
  \end{equation}
  To actually perform inference, we therefore want to use Gibbs sampling, where we will sequentially resample the values of each of our latent variables from their posterior distribution, conditional on all of our other variables.
@@ -394,16 +398,28 @@ For implementation, we need to compute these equations in log space to prevent u
    		& = \frac{P\Big(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} | (r_{ij}=1)\cap (J_i^{(-j)})\Big)P\Big((r_{ij}=1) \cap (J_i^{(-j)})\Big)}{P\Big((\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}})\cap (J_i^{(-j)})|r_{ij}=1\Big)P\Big(r_{ij}=1\Big)+P\Big( (\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}}) \cap (J_i^{(-j)})|r_{ij}=0\Big)P\Big(r_{ij}=0\Big)},
    	\end{split}
    \end{equation}
-   where $P\Big(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} | (r_{ij}=1)\cap (J_i^{(-j)})\Big)$, $P\Big((\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}})\cap (J_i^{(-j)})|r_{ij}=1\Big)$, and $P\Big((\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}})\cap (J_i^{(-j)})|r_{ij}=0\Big)$ are given by the cumulative exponential distributions associated with the respective $\lambda_{iJ_i}(t_+^{(d-1)})$ and $P\Big((r_{ij}=1) \cap (J_i^{(-j)})\Big)$,  $P\Big(r_{ij}=1\Big)$, and $P\Big(r_{ij}=0\Big)$ are given by the Bernoulli equation in Section \ref{subsec: Tie Generating Process}. We plug in the equations and update the latent ties $r_{ij}$ with the probability:
+   where $P\Big(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}} | (r_{ij}=1)\cap (J_i^{(-j)})\Big)$, $P\Big((\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}})\cap (J_i^{(-j)})|r_{ij}=1\Big)$, and $P\Big((\Delta T_{i{J_i}}> \Delta T_{i^{(d)}{J^{(d)}}})\cap (J_i^{(-j)})|r_{ij}=0\Big)$ are given by the cumulative exponential distributions associated with the respective $\lambda_{iJ_i}$ and $P\Big((r_{ij}=1) \cap (J_i^{(-j)})\Big)$,  $P\Big(r_{ij}=1\Big)$, and $P\Big(r_{ij}=0\Big)$ are given by the Bernoulli equation in Section \ref{subsec: Tie Generating Process}. We plug in the equations and update the latent ties $r_{ij}$ with the probability:
    \begin{equation}
    	\begin{split}
-   		&P\Big(r_{ij}=1|(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}})\cap( J_i^{(-j)})\Big)\\&=\frac{e^{-(t^{(d)}-t^{(d-1)})\frac{1}{|J_i^{(+j)}|}\sum\limits_{j \in J_i^{(+j)}}\lambda^{(d)}_{ij}(t_+^{(d-1)})}\times(1-e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})})\times\Big(\prod_{a \in \mathcal{A}_{\backslash i, j}} (e^{\delta\lambda^{(d)}_{ia}(t_+^{(d-1)})}-1)^{I(a \in J_i)}e^{-\delta\lambda^{(d)}_{ia}(t_+^{(d-1)})}\Big)}{e^{-(t^{(d)}-t^{(d-1)})\frac{1}{|J_i^{(+j)}|}\sum\limits_{j \in J_i^{(+j)}}\lambda^{(d)}_{ij}(t_+^{(d-1)})}\times(1-e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})})+e^{-(t^{(d)}-t^{(d-1)})\frac{1}{|J_i^{(-j)}|}\sum\limits_{j \in J_i^{(-j)}}\lambda^{(d)}_{ij}(t_+^{(d-1)})}e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}}
-   		\\
-   	&=\frac{\Big(\prod_{a \in \mathcal{A}_{\backslash i, j}} (e^{\delta\lambda^{(d)}_{ia}(t_+^{(d-1)})}-1)^{I(a \in J_i)}e^{-\delta\lambda^{(d)}_{ia}(t_+^{(d-1)})}\Big)}{1 + e^{-\delta \lambda^{(d)}_{ij}(t_+^{(d-1)}) + (t^{(d)}-t^{(d-1)})\big(\frac{1}{|J_i^{(+j)}|}\sum\limits_{j \in J_i^{(+j)}}\lambda^{(d)}_{ij}(t_+^{(d-1)}) -\frac{1}{|J_i^{(-j)}|}\sum\limits_{j \in J_i^{(-j)}}\lambda^{(d)}_{ij}(t_+^{(d-1)})  \big)}/(1-e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})})}.
-   	\end{split}
+   		&P\Big(r_{ij}=1|(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}})\cap( J_i^{(-j)})\Big)
+   		\\&=\frac{e^{-\delta(t^{(d)}-t^{(d-1)})\frac{1}{|J_i^{(+j)}|}\sum\limits_{j \in J_i^{(+j)}}\lambda^{(d)}_{ij}}\times(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})\times\Big(\prod_{a \in \mathcal{A}_{\backslash i, j}} {(\delta\lambda^{(d)}_{ij})}^{I(a \in J_i)} / (\delta\lambda^{(d)}_{ij}+1)\Big)}{e^{-\delta(t^{(d)}-t^{(d-1)})\frac{1}{|J_i^{(+j)}|}\sum\limits_{j \in J_i^{(+j)}}\lambda^{(d)}_{ij}}\times(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})+e^{-\delta(t^{(d)}-t^{(d-1)})\frac{1}{|J_i^{(-j)}|}\sum\limits_{j \in J_i^{(-j)}}\lambda^{(d)}_{ij}}\times(\frac{1}{\delta\lambda^{(d)}_{ij}+1})}
+\\&=\frac{\Big(\prod_{a \in \mathcal{A}_{\backslash i, j}} {(\delta\lambda^{(d)}_{ij})}^{I(a \in J_i)} / (\delta\lambda^{(d)}_{ij}+1)\Big)}{1 + e^{\delta(t^{(d)}-t^{(d-1)})\big(\frac{1}{|J_i^{(+j)}|}\sum\limits_{j \in J_i^{(+j)}}\lambda^{(d)}_{ij} -\frac{1}{|J_i^{(-j)}|}\sum\limits_{j \in J_i^{(-j)}}\lambda^{(d)}_{ij} \big)} / \delta\lambda^{(d)}_{ij}}.   	\end{split}
    \end{equation}
-  This probability will be used when we update the augmented data in every outer iteration.
- \subsection{Resampling $\mathcal{Z}$}  \label{subsec: Resampling Z}
+  This probability will be used when we update the augmented data in every outer iteration. For implementation, we need to compute these equations in log space to prevent underflow:
+  \begin{equation}
+  \begin{aligned}
+  &\mbox{log}\Big(P\Big(r_{ij}=1|(\Delta T_{i{J_i}} > \Delta T_{i^{(d)}{J^{(d)}}})\cap( J_i^{(-j)})\Big)\Big)\\&=\sum_{a \in \mathcal{A}_{\backslash i, j}} {{I(a \in J_i)}\cdot \mbox{log}(\delta\lambda^{(d)}_{ij})}- \mbox{log}(\delta\lambda^{(d)}_{ij}+1)\\&-\mbox{log}\Big(1 + e^{\delta(t^{(d)}-t^{(d-1)})\big(\frac{1}{|J_i^{(+j)}|}\sum\limits_{j \in J_i^{(+j)}}\lambda^{(d)}_{ij} -\frac{1}{|J_i^{(-j)}|}\sum\limits_{j \in J_i^{(-j)}}\lambda^{(d)}_{ij} \big) - \mbox{log}(\delta\lambda^{(d)}_{ij})} \Big).   
+  \end{aligned}
+  \end{equation}
+  Here, to protect from numerical underflow and overflow, we use the numerical approximation of $f(y) = \mbox{log}(1+ e^y)$ as below:
+  \begin{equation*}
+  f(y) = \begin{cases}
+  y &y >35\\
+  e^y & y<-10\\
+  \mbox{log}(1+e^y) & \mbox{otherwise}.
+  \end{cases}
+  \end{equation*}
+  \subsection{Resampling $\mathcal{Z}$}  \label{subsec: Resampling Z}
 Second, we are going to resample the topic assignments, one words in a document at a time.  The new values of $z^{(d)}_n$ are sampled using the conditional posterior probability of being topic $k$ as we derived in APPENDIX C:
  \begin{equation}
  \begin{aligned} & 
@@ -426,19 +442,19 @@ Second, we are going to resample the topic assignments, one words in a document 
  where $N^{(w_n^{(d)}|k)}$ is the number of tokens assigned to topic $k$ whose type is the same as that of $w_n^{(d)}$, excluding $w_n^{(d)}$ itself, and $N^{(k)}_{\backslash d, n}=\sum_{w=1}^W N_{\backslash d, n}^{(w_n^{(d)}|k)}$. Finally, in \ref{subsec: Data augmentation}, we have shown that
  \begin{equation}
  \begin{aligned}
-& P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, \mathcal{I}^{(d)}_{\mbox{o}}, \mathcal{J}^{(d)}_{\mbox{o}}, \mathcal{T}^{(d)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \sigma^2, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\Big)\\&\quad\quad\quad\quad \times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \lambda^{(d)}_{iJ_i}(t_+^{(d-1)})\Big)\times \Big(e^{-(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\big)}\Big).
+& P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, \mathcal{I}^{(d)}_{\mbox{o}}, \mathcal{J}^{(d)}_{\mbox{o}}, \mathcal{T}^{(d)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \sigma^2, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \frac{(\delta\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \delta\lambda^{(d)}_{iJ_i}\Big) \times \Big(e^{-\delta(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}\big)}\Big).
  \end{aligned}
  \end{equation}
  Therefore, if $\bar N^{(d)} > 0$, then
  \begin{equation}
  \begin{aligned}
-  &P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B},\mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta)\\&\propto (N^{(k|d)}_{\backslash d, n}+\alpha \boldsymbol{m}_k)\frac{N^{(w_n^{(d)}|k)}_{\backslash d, n}+\frac{\beta}{W} }{N^{(k)}_{\backslash d, n}+\beta}\times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\Big)\\&\quad\quad\quad\quad \times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \lambda^{(d)}_{iJ_i}(t_+^{(d-1)})\Big)\times \Big(e^{-(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\big)}\Big), 
+  &P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B},\mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta)\\&\propto (N^{(k|d)}_{\backslash d, n}+\alpha \boldsymbol{m}_k)\frac{N^{(w_n^{(d)}|k)}_{\backslash d, n}+\frac{\beta}{W} }{N^{(k)}_{\backslash d, n}+\beta}\times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \frac{(\delta\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \delta\lambda^{(d)}_{iJ_i}\Big) \\&\quad\quad\quad\quad\quad\quad\quad\times \Big(e^{-\delta(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}\big)}\Big), 
  \end{aligned}
  \end{equation}
  and if $\bar N^{(d)} = 0$, then the first term becomes $\alpha\boldsymbol{m_k}$ and disappears because it is a constant. The second term disappears since there are no tokens, thus we just have the last three terms, $P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, \mathcal{I}^{(d)}_{\mbox{o}}, \mathcal{J}^{(d)}_{\mbox{o}}, \mathcal{T}^{(d)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \sigma^2, \delta)$, remaining.
   \begin{equation}
   \begin{aligned}
-  &P(z^{(d)}_1=k|\mathcal{Z}_{\backslash d, 1}=\emptyset,   \mathcal{C},   \mathcal{B},\mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2,  \delta)\\&\propto\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\Big)\\&\quad\quad\quad\quad \times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \lambda^{(d)}_{iJ_i}(t_+^{(d-1)})\Big)\times \Big(e^{-(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\big)}\Big).
+  &P(z^{(d)}_1=k|\mathcal{Z}_{\backslash d, 1}=\emptyset,   \mathcal{C},   \mathcal{B},\mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2,  \delta)\\&\propto\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \frac{(\delta\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \delta\lambda^{(d)}_{iJ_i}\Big) \times \Big(e^{-\delta(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}\big)}\Big).
   \end{aligned}
   \end{equation}
  \subsection{Resampling $\mathcal{C}$} \label{subsec: Resampling C}
@@ -452,7 +468,7 @@ Second, we are going to resample the topic assignments, one words in a document 
  where $P(c_k=c) = \frac{1}{C}$ so this term disappears. Therefore, 
  \begin{equation}
  \begin{aligned}
- &P(c_k=c|\mathcal{Z},   \mathcal{C}_{\backslash k},   \mathcal{B},\mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta)\\&\propto P(\mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}| \mathcal{Z}, c_k=c, \mathcal{C}_{\backslash k}, \mathcal{B}, \sigma^2,  \delta)\\&=\prod_{d=1}^D\Bigg(\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\Big)\\&\quad\quad\quad\quad \times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \lambda^{(d)}_{iJ_i}(t_+^{(d-1)})\Big)\times \Big(e^{-(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\big)}\Big)\bigg),
+ &P(c_k=c|\mathcal{Z},   \mathcal{C}_{\backslash k},   \mathcal{B},\mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta)\\&\propto P(\mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}| \mathcal{Z}, c_k=c, \mathcal{C}_{\backslash k}, \mathcal{B}, \sigma^2,  \delta)\\&=\prod_{d=1}^D\Bigg(\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \frac{(\delta\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \delta\lambda^{(d)}_{iJ_i}\Big) \times \Big(e^{-\delta(t^{(d)}-t^{(d-1)})\big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}\big)}\Big)\bigg),
  \end{aligned}
  \end{equation} 
  with $c_k=c$ throughout. (Note that in the product over $d$, I think we need only consider those emails that actually use topic $k$; the others will have no terms involving $c_k$.) 
@@ -461,10 +477,10 @@ Second, we are going to resample the topic assignments, one words in a document 
  \begin{equation}
 \begin{aligned}
 &P( \mathcal{N}|\mathcal{Z}, C_k=c, \mathcal{C}_{\backslash k}, \mathcal{X},  \mathcal{B},  \delta)\\
-&=\prod_{d=1}^{D} \Big(\lambda^{(d)}_{i^{(d)}{J^{(d)}}}(t_+^{(d-1)})e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})}\Big) \times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1)^{I(j \in J_i)}e^{-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\Big),
+&=\prod_{d=1}^{D} \Big(\lambda^{(d)}_{i^{(d)}{J^{(d)}}}e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}}\lambda^{(d)}_{i{J_i}}}\Big) \times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (e^{\delta\lambda^{(d)}_{ij}}-1)^{I(j \in J_i)}e^{-\delta\lambda^{(d)}_{ij}}\Big),
 \end{aligned}
 \end{equation}
-where $\lambda^{(d)}_{ij}(t_+^{(d-1)})$ equals to $\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$.
+where $\lambda^{(d)}_{ij}$ equals to $\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{*(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$.
 After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x}$ and then taking the log of Equation (19) to avoid numerical issue from exponentiation and increase the speed of computation, the sampling equation used for the update of interaction pattern assignment is:
  \begin{equation}
  \begin{split}
@@ -492,8 +508,8 @@ After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x
  where $P(\mathcal{B}|\mathcal{C}, \sigma^2)$ is calculated from the product of $\boldsymbol{b}^{(c)}\sim \mbox{Normal}(0, \sigma^2 I_P$) (as defined in Section \ref{sec: Generative Process}), $ \delta \sim \mbox{Beta}(1, 10$) and $P(\mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}},\mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}^\prime, \sigma^2, \delta)$ is Equation (25). Again, we take the log and obtain the log of acceptance ratio:
  \begin{equation}
  \begin{aligned} 
- &\sum_{c=1}^C\mbox{log}\Big(\mbox{dmvnorm}(\boldsymbol{b}^{\prime(c)};\mathbf{0}, \sigma^2I_{P})\Big)-\sum_{c=1}^C\mbox{log}\Big(\mbox{dmvnorm}(\boldsymbol{b}^{(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&+\mbox{log}\Big(\mbox{dbeta}(\delta^\prime ;1, 10)\Big)-\mbox{log}\Big(\mbox{dbeta}(\delta;1, 10)\Big)\\&+  \sum_{d=1}^D\Big\{\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}\Big(e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1\Big) {-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\\&\quad\quad\quad\quad + \sum_{i\in \mathcal{A}} \mbox{log}\lambda^{(d)}_{iJ_i}(t_+^{(d-1)}){-(t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in \mathcal{A}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\Big)} \mbox{ given } \delta^\prime \Big\}
- \\& -\sum_{d=1}^D\Big\{\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}\Big(e^{\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}-1\Big) {-\delta\lambda^{(d)}_{ij}(t_+^{(d-1)})}\\&\quad\quad\quad\quad + \sum_{i\in \mathcal{A}} \mbox{log}\lambda^{(d)}_{iJ_i}(t_+^{(d-1)}){-(t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in \mathcal{A}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})+\sum\limits_{i \in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}(t_+^{(d-1)})\Big)}\mbox{ given } \delta \Big\},
+ &\sum_{c=1}^C\mbox{log}\Big(\mbox{dmvnorm}(\boldsymbol{b}^{\prime(c)};\mathbf{0}, \sigma^2I_{P})\Big)-\sum_{c=1}^C\mbox{log}\Big(\mbox{dmvnorm}(\boldsymbol{b}^{(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&+\mbox{log}\Big(\mbox{dbeta}(\delta^\prime ;1, 10)\Big)-\mbox{log}\Big(\mbox{dbeta}(\delta;1, 10)\Big)\\&+  \sum_{d=1}^D\Big\{\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)\\&\quad\quad\quad\quad + \sum_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \mbox{log}(\delta\lambda^{(d)}_{iJ_i}){-\delta(t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}\Big)} \mbox{ given } \boldsymbol{b}^{\prime} \mbox{ and }\delta^\prime \Big\}
+ \\& -\sum_{d=1}^D\Big\{\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)\\&\quad\quad\quad\quad + \sum_{i\in \mathcal{A}_{\backslash J_i=\emptyset}} \mbox{log}(\delta\lambda^{(d)}_{iJ_i}){-\delta(t^{(d)}-t^{(d-1)})\Big(\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}+\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset, i_o^{(d)}}}\lambda^{(d)}_{i{J_i}}\Big)}\mbox{ given } \boldsymbol{b} \mbox{ and }\delta \Big\},
  \end{aligned}
  \end{equation}
  where $\mbox{dmvnorm}$ is the multivariate normal density and $\mbox{dbeta}$ is the beta density. Then the log of acceptance ratio we have is:
@@ -555,7 +571,7 @@ After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x
  	fix $\mathcal{C}=\mathcal{C}^{(i)}$, $\mathcal{Z}=\mathcal{Z}^{(i)}$, and $\mathcal{B}^{(0)}=$ last value ($n_3^{th}$) of $\mathcal{B}^{(i-1)}$\\
  		\For{n=1 to $n_3$}{
  			sample $\mathcal{B}$ and $\delta$ from proposal distribution\\
- 			accept-reject using Equation (26)\\
+ 			accept-reject using Equation (26)
  		}
  	}	summarize the results using:\\ the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $(\mathcal{B}, \delta)$
  \end{algorithm}
