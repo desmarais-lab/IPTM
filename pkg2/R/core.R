@@ -254,34 +254,7 @@ TopicInEqZ = function(K, currentZ, alpha, mvec, document) {
 #' @return 
 #'
 #' @export
-DataAug = function(iJi_d, lambda_d, delta, timeinc_d) {
-  deltaexp = exp(-delta * lambda_d) 
-  deltaexp[deltaexp < 0.0000001] = 0.0000001
-  deltaexp2 = 1 / deltaexp - 1
-  deltaexp2[deltaexp2 < 0.0000001] = 0.0000001
-  prenum = (deltaexp2^iJi_d) * deltaexp 
-  num = t(vapply(1L:nrow(lambda_d), function(i){
-    prod(prenum[i, -i]) / prenum[i,]
-  }, rep(0, ncol(lambda_d))))
-  lambdadiff = matrix(0, nrow = nrow(lambda_d), ncol = ncol(lambda_d))
-  for (i in 1:nrow(lambda_d)){
-    Ji = iJi_d[i,]
-    for (j in (1:ncol(lambda_d))[-i]){
-      lambdaplus = Ji
-      lambdaplus[j] = 1
-      lambdaminus = Ji
-      lambdaminus[j] = 0
-      lambdadiff[i, j] = mean(lambda_d[i, lambdaplus > 0]) - 
-      					ifelse(sum(lambdaminus > 0) > 0, mean(lambda_d[i, lambdaminus > 0]), 0) 
-    }
-  }
-  predenom = exp(-delta * lambda_d + timeinc_d * lambdadiff)
-  denom = 1 + predenom / (1 - deltaexp)
-  prob = num / denom
-  return(prob)
-}
-
-DataAug2 = function(iJi_d, lambda_d, delta, timeinc_d, observedi) {
+DataAug = function(iJi_d, lambda_d, delta, timeinc_d, observedi) {
   prenum = iJi_d * log(delta * lambda_d) - log(delta * lambda_d + 1)
   lambdadiff = matrix(0, nrow = nrow(lambda_d), ncol = ncol(lambda_d))
   num = matrix(0, nrow = nrow(lambda_d), ncol = ncol(lambda_d))
@@ -415,7 +388,8 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 		rdirichlet(1, betas * nvec)
 	})
 		
-	delta = rbeta(1, 1, 1)
+	delta = rbeta(1, 1, 10)
+	deltamat = delta
 	
 	# initialize C, theta and Z
 	currentC = sample(1:nIP, K, replace = TRUE)
@@ -460,9 +434,9 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
   for (o in 1L:outer) {
     cat("outer iteration = ", o, "\n")
     
-    Beta.old = lapply(1L:nIP, function(IP) {
-      rowMeans(bmat[[IP]])
-          })  
+    Beta.old = lapply(bmat, function(b) {
+      			rowMeans(b)
+         		})  
     # Update the hyperparameter alpha and mvec
     vec = AlphamvecOpt(K, currentZ, alpha, mvec)
     alpha = sum(vec)
@@ -477,30 +451,27 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
     for (d in seq(along = edge)) {
    	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
    	 	X = lapply(node, function(i) {
-  	            Netstats(history.t, node, i, netstat)
+  	        Netstats(history.t, node, i, netstat)
             })
-   	 	XB = lapply(1L:nIP, function(IP) {
-    	  	 t(vapply(node, function(i) {
-    	     MultiplyXB(X[[i]][[IP]], Beta.old[[IP]])
-    	     }, rep(0, length(node))))
-    	     })	
+   	 	XB = MultiplyXBList(X, Beta.old)     
 		lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
 		   			 p.d[d, IP] * exp(XB[[IP]])
 		  				}))
 		diag(lambda[[d]]) = 0
+		
 		#calculate the resampling probability
-		probij = DataAug2(iJi[[d]], lambda[[d]], delta, timeinc[d], as.numeric(edge[[d]][1]))
+		probij = DataAug(iJi[[d]], lambda[[d]], delta, timeinc[d], as.numeric(edge[[d]][1]))
 		iJi[[d]] = matrix(vapply(exp(probij), function(x){
-				   rbinom(1, 1, x)
-		   			}, c(1)), nrow = length(node))
+				  rbinom(1, 1, x)
+		   		  }, c(1)), nrow = length(node))
 		observedi = as.numeric(edge[[d]][1])
 		observedj = as.numeric(unlist(edge[[d]][2]))
 		iJi[[d]][observedi,] = tabulateC(observedj, length(node))
 		LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
-			p.d[d, IP] * exp(delta * rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
-			}, rep(0, length(node))))
+						p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+						}, rep(0, length(node))))
 		nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
-        nonemptyiJi2[[d]] = (LambdaiJi[[d]][-as.numeric(edge[[d]][1])])[!is.na(LambdaiJi[[d]][-as.numeric(edge[[d]][1])])]
+         nonemptyiJi2[[d]] = (LambdaiJi[[d]][-as.numeric(edge[[d]][1])])[!is.na(LambdaiJi[[d]][-as.numeric(edge[[d]][1])])]
 		}	 
     
     cat("inner iteration 1", "\n")
@@ -514,14 +485,13 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         textlist.d = textlist[[d]]
         if (length(textlist.d) > 0) {
         	topicpart.d = TopicInEqZ(K, currentZ, alpha, mvec, d)
-       		wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
+       	wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
         } else {
-        	topicpart.d = 0
-        	wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
+        topicpart.d = 0
+        wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
         }
         edgepart.d = EdgeInEqZ2(iJi[[d]], lambda[[d]], delta)
-        timepart.d = TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d], delta)
-        print(timepart.d)
+        timepart.d = TimeInEqZ(nonemptyiJi[[d]]) + ObservedInEqZ(sum(nonemptyiJi[[d]]) + sum(nonemptyiJi2[[d]]), timeinc[d], delta) 
         for (w in 1L:length(currentZ[[d]])) {
           const.Z = topicpart.d + edgepart.d + timepart.d + wordpart.d[w, ]
           while (sum(exp(const.Z)) == 0) {
@@ -539,14 +509,17 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
             wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
             }
             table.W = lapply(1L:K, function(k) {
-      			tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
-      			})
+      				tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+      				})
       		p.d[d, ] = vapply(1L:nIP, function(IP) {
 	 			sum(currentZ[[d]] %in% which(currentC == IP))
 	 			}, c(1)) / length(currentZ[[d]])
       		LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
-			p.d[d, IP] * exp(delta * rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
-			}, rep(0, length(node))))
+							p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+							}, rep(0, length(node))))
+			nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+         	nonemptyiJi2[[d]] = (LambdaiJi[[d]][-as.numeric(edge[[d]][1])])[!is.na(LambdaiJi[[d]][-as.numeric(edge[[d]][1])])]
+				
           }
         }
        }
@@ -567,24 +540,26 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
             }, c(1)) / length(currentZ[[d]])
           }
           for (d in seq(along = edge)) {
-           history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
-    	   X = lapply(node, function(i) {
-              Netstats(history.t, node, i, netstat)
-            })
-    	   XB = lapply(1L:nIP, function(IP) {
-    	  	 t(vapply(node, function(i) {
-    	     MultiplyXB(X[[i]][[IP]], Beta.old[[IP]])
-    	     }, rep(0, length(node))))
-    	     })  
-            lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
-		   			 p.d[d, IP] * exp(XB[[IP]])
+            history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    	   	   X = lapply(node, function(i) {
+               Netstats(history.t, node, i, netstat)
+               })
+    	       XB = MultiplyXBList(X, Beta.old)    
+           lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
+		   			    p.d[d, IP] * exp(XB[[IP]])
 		  				}))
-		  	diag(lambda[[d]]) = 0
-          	}
+		  diag(lambda[[d]]) = 0
+		  LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
+						p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+						}, rep(0, length(node))))
+		  nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+           nonemptyiJi2[[d]] = (LambdaiJi[[d]][-as.numeric(edge[[d]][1])])[!is.na(LambdaiJi[[d]][-as.numeric(edge[[d]][1])])]
+          }
           }
           const.C[IP] = sum(vapply(document.k, function(d) {
-              EdgeInEqZ2(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d], delta)
-          }, c(1)))
+              EdgeInEqZ2(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]]) + 
+    			 ObservedInEqZ(sum(nonemptyiJi[[d]]) + sum(nonemptyiJi2[[d]]), timeinc[d], delta)
+          }, c(1))) / length(document.k)
           }
           while (sum(exp(const.C)) == 0) {
             const.C = const.C + 1000
@@ -602,171 +577,91 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
       logWZ.mat = c(logWZ.mat, 
                     logWZ(K, currentZ, textlist, table.W, alpha, mvec, betas, nvec))
       }
-    
-    # Let's try slice sampling - replace delta.B as the w.B (step size)
-
-    cat("inner iteration 3", "\n")
-    Beta.new = list()
-    lambda.new = list()
-      for (d in seq(along = edge)) {
-       history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
-    	   X = lapply(node, function(i) {
+      
+     cat("inner iteration 3", "\n")
+     Beta.new = list()
+     for (d in seq(along = edge)) {
+     	 p.d[d, ] =  vapply(1L:nIP, function(IP) {
+              sum(currentZ[[d]] %in% which(currentC == IP))
+            }, c(1)) / length(currentZ[[d]])
+     	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    	     X = lapply(node, function(i) {
               Netstats(history.t, node, i, netstat)
-            })
-    	   XB = lapply(1L:nIP, function(IP) {
-    	  	 t(vapply(node, function(i) {
-    	     MultiplyXB(X[[i]][[IP]], Beta.old[[IP]])
-    	     }, rep(0, length(node))))
-    	     })  
-           lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
+             })
+    	     XB = MultiplyXBList(X, Beta.old)   
+    	    lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
 		   			 p.d[d, IP] * exp(XB[[IP]])
-		  				}))
-		   diag(lambda[[d]]) = 0
-	}
-	delta.B2 = 0.01
-	# below is the f(x0)
-    post.old = sum(vapply(seq(along = edge), function(d) {
-    			   EdgeInEqZ2(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d], delta)
-    			   }, c(1))) 
-      while (exp(post.old) == 0) {
-            post.old = post.old + 1000
-          }
-			   
-    y = runif(1, 0, exp(post.old))
-    	Beta.L = lapply(1L:nIP, function(IP) {
-    	Beta.old[[IP]] - delta.B * runif(P, 0, 1)
-    		}) 
-    	Beta.R = lapply(1L:nIP, function(IP) {
-    	Beta.L[[IP]] + delta.B
-    		})
-		delta.L = delta - delta.B2 * runif(1, 0, 1)
-    	delta.R = delta.L + delta.B2	   
-
-    for (i3 in 1L:n3) {
-    	Beta.new = lapply(1L:nIP, function(IP) {
-        	Beta.L[[IP]] + runif(P, 0, 1) * (Beta.R[[IP]] - Beta.L[[IP]])
-        }) 
-        for (d in seq(along = edge)) {
-           XB = lapply(1L:nIP, function(IP) {
-    	  	 t(vapply(node, function(i) {
-    	     MultiplyXB(X[[i]][[IP]], Beta.new[[IP]])
-    	     }, rep(0, length(node))))
-    	     })  
-           lambda.new[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
-		   			 p.d[d, IP] * exp(XB[[IP]])
-		  				}))
-		   diag(lambda.new[[d]]) = 0
-        }
-
-        delta.new = delta.L + runif(1, 0, 1) * (delta.R - delta.L)
-        while (delta.new < 0) {
-        		delta.new = delta.L + runif(1, 0, 1) * (delta.R - delta.L)
-        }
-	 	post.new = sum(vapply(seq(along = edge), function(d) {
-        	 EdgeInEqZ2(iJi[[d]], lambda.new[[d]], delta.new) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d], delta.new)
-      }, c(1))) 
-           while (exp(post.new) == 0) {
-            post.new = post.new + 1000
-          }
-        if (y >= exp(post.new)) {
-      	for (IP in 1L:nIP) {
-        	Beta.old[[IP]]  = Beta.new[[IP]]
-        	}
-        delta = delta.new
-        post.old = post.new
-		if (i3 > burn && i3 %% (thin) == 0) {
-        for (IP in 1L:nIP) {
-          bmat[[IP]][ , (i3 - burn) / thin] = Beta.old[[IP]]
-          }
-        }
-        y = runif(1, 0, exp(post.old))
-    	Beta.L = lapply(1L:nIP, function(IP) {
-    	Beta.old[[IP]] - delta.B * runif(P, 0, 1)
-    		}) 
-    	Beta.R = lapply(1L:nIP, function(IP) {
-    	Beta.L[[IP]] + delta.B
-    		})
-		delta.L = delta - delta.B2 * runif(1, 0, 1)
-    	delta.R = delta.L + delta.B2	   
-        } else {
-        	for (IP in 1L:nIP) {
-        		for (p in 1L:P) {
-        			if (Beta.new[[IP]][p] < Beta.old[[IP]][p]) {
-        				Beta.L[[IP]][p] = Beta.new[[IP]][p]
-        			} else {
-        				Beta.R[[IP]][p] = Beta.new[[IP]][p]
-        			}
-        		}
-        	}
-        }
-
-# #     cat("inner iteration 3", "\n")
-    # Beta.new = list()
-      # for (d in seq(along = edge)) {
-       # history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
-    	   # X = lapply(node, function(i) {
-              # Netstats(history.t, node, i, netstat)
-            # })
-    	   # XB = lapply(1L:nIP, function(IP) {
-    	  	 # t(vapply(node, function(i) {
-    	     # MultiplyXB(X[[i]][[IP]], Beta.old[[IP]])
-    	     # }, rep(0, length(node))))
-    	     # })  
-           # lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
-		   			 # p.d[d, IP] * exp(XB[[IP]])
-		  				# }))
-		   # diag(lambda[[d]]) = 0
-	# }
-	# prior.old = sum(vapply(1L:nIP, function(IP) {
-		  		# dmvnorm(Beta.old[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
-		  		# }, c(1))) + dbeta(delta, 1, 1) 
-    # post.old = sum(vapply(seq(along = edge), function(d) {
-    			   # EdgeInEqZ2(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d])
-    			   # }, c(1)))
-    # for (i3 in 1L:n3) {
-        # Beta.new = lapply(1L:nIP, function(IP) {
-          # rmvnorm(1, Beta.old[[IP]], (delta.B)^2 * diag(P))
-        # }) 
-        # for (d in seq(along = edge)) {
-           # XB = lapply(1L:nIP, function(IP) {
-    	  	 # t(vapply(node, function(i) {
-    	     # MultiplyXB(X[[i]][[IP]], Beta.new[[IP]])
-    	     # }, rep(0, length(node))))
-    	     # })  
-           # lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
-		   			 # p.d[d, IP] * exp(XB[[IP]])
-		  				# }))
-		   # diag(lambda[[d]]) = 0
-        # }
-      # delta.new = rnorm(1, delta, (delta.B)^2)
-      # prior.new = sum(vapply(1L:nIP, function(IP) {
-        # dmvnorm(Beta.new[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
-        # }, c(1))) + dbeta(delta.new, 1, 1) 
-      # post.new = sum(vapply(seq(along = edge), function(d) {
-        	 # EdgeInEqZ2(iJi[[d]], lambda[[d]], delta.new) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d])
-      # }, c(1))) 
-      # loglike.diff = prior.new - prior.old + post.new - post.old
+		  			 }))
+		diag(lambda[[d]]) = 0
+		LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
+						p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+						}, rep(0, length(node))))
+		nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+         nonemptyiJi2[[d]] = (LambdaiJi[[d]][-as.numeric(edge[[d]][1])])[!is.na(LambdaiJi[[d]][-as.numeric(edge[[d]][1])])]
+	 }
+	 prior.old1 = dbeta(delta, 1, 10) 
+	 prior.old2 = sum(vapply(1L:nIP, function(IP) {
+		  		 dmvnorm(Beta.old[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
+		  		 }, c(1))) 
+	 post.old1 = sum(vapply(seq(along = edge), function(d) {
+    			    EdgeInEqZ2(iJi[[d]], lambda[[d]], delta) + ObservedInEqZ(sum(nonemptyiJi[[d]]) + sum(nonemptyiJi2[[d]]), timeinc[d], delta)
+    			    }, c(1))) / length(edge)	  		 
+     post.old2 = post.old1 + sum(vapply(seq(along = edge), function(d) {
+    			    TimeInEqZ(nonemptyiJi[[d]])
+    			    }, c(1))) / length(edge)
+    	    			    
+     for (i3 in 1L:n3) {
+     	delta.new = rnorm(1, delta, (delta.B)^2)
+       	while (delta.new < 0) {
+       	delta.new = rnorm(1, delta, (delta.B)^2)
+       	}
+		prior.new1 = dbeta(delta.new, 1, 10)
+		post.new1 = sum(vapply(seq(along = edge), function(d) {
+    			    EdgeInEqZ2(iJi[[d]], lambda[[d]], delta.new) + ObservedInEqZ(sum(nonemptyiJi[[d]]) + sum(nonemptyiJi2[[d]]), timeinc[d], delta.new)
+    			    }, c(1))) / length(edge)
+    		loglike.diff1 = prior.new1 - prior.old1 + post.new1 - post.old1
+		if (log(runif(1)) < loglike.diff1) {
+			delta = delta.new
+			prior.old1 = prior.new1
+			post.old1 = post.new1
+			}
+		
+         Beta.new = lapply(1L:nIP, function(IP) {
+           rmvnorm(1, Beta.old[[IP]], (delta.B)^2 * diag(P))
+         }) 
+         for (d in seq(along = edge)) {
+           XB = MultiplyXBList(X, Beta.new)    
+           LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
+						p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+						}, rep(0, length(node))))
+		  nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+         }
+         prior.new2 = sum(vapply(1L:nIP, function(IP) {
+        		dmvnorm(Beta.new[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
+         }, c(1))) 
+        post.new2 = post.old1 + sum(vapply(seq(along = edge), function(d) {
+    			    TimeInEqZ(nonemptyiJi[[d]])
+    			    }, c(1))) / length(edge)
+    		loglike.diff2 = prior.new2 - prior.old2 + post.new2 - post.old2
       
-      # u = log(runif(1, 0, 1))
-      # if (u < loglike.diff) {
-        # for (IP in 1L:nIP) {
-        	# Beta.old[[IP]]  = Beta.new[[IP]]
-        	# }
-        # delta = delta.new
-        # prior.old = prior.new
-        # post.old = post.new
-        # }
+        if (log(runif(1, 0, 1)) < loglike.diff2) {
+         for (IP in 1L:nIP) {
+         Beta.old[[IP]]  = Beta.new[[IP]]
+         }
+         prior.old2 = prior.new2
+         post.old2 = post.new2
+         }
       
-      # if (i3 > burn && i3 %% (thin) == 0) {
-        # for (IP in 1L:nIP) {
-          # bmat[[IP]][ , (i3 - burn) / thin] = Beta.old[[IP]]
-          # }
-        # }
-      # }
-      
+       if (i3 > burn && i3 %% (thin) == 0) {
+       	deltamat = c(deltamat, delta)
+         for (IP in 1L:nIP) {
+           bmat[[IP]][ , (i3 - burn) / thin] = Beta.old[[IP]]
+           }
+         }
+       }
     }
-  
-  if (plot) {
+    
+    if (plot) {
     burnin = round(outer / 10)
     par(mfrow = c(2, 2))
   	plot(entropy.mat[-1L:-burnin], type = "l", 
@@ -785,9 +680,365 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 	          main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
 	  abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
 	  }
-   }	
      
-  chain.final = list(C = currentC, Z = currentZ, B = bmat)
+  chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat)
+
+  return(chain.final)
+}
+
+
+# replace M-H with slice sampling
+MCMC1 = function(edge, node, textlist, vocabulary, nIP, K, delta.B, 
+                outer = 1000, n1 = 3, n2 = 3, n3 = 3300, burn = 300, thin = 10, 
+                netstat = c("dyadic", "triadic", "degree"), seed = 1, plot = TRUE) {
+  # Iterate MCMC algorithm to sequentially update the assignments of C, Z, and B
+  #
+  # Args 
+  #  edge list of document information with 3 elements (sender, receiver, time)
+  #  node nodelist containing the ID of nodes (ID starting from 1)
+  #  textlist list of text containing the words in each document
+  #  vocabulary all vocabularies used over the corpus
+  #  nIP total number of interaction patterns specified by the user
+  #  K total number of topics specified by the user
+  #  delta.B proposal distribution variance parameter for beta 
+  #  outer size of outer iteration
+  #  n1 size of first inner iteration for updates of interaction patterns C
+  #  n2 size of second inner iteration for updates of topics K
+  #  n3 size of third inner iteration for updates of beta B
+  #  burn iterations to be discarded at the beginning of beta chain
+  #  thin the thinning interval of beta chain
+  #  netstat which type of network statistics to use ("dyadic", "triadic", "degree")
+  #  seed an integer value which controls random number generation
+  #  plot to plot the convergence diagnostics or not (TRUE/FALSE)
+  #
+  # Returns 
+  #  MCMC output containing IP assignment, topic assignment, and (beta, mu, delta) chain
+  
+  set.seed(seed)
+
+  # initialize alpha, mvec, delta, nvec, eta, lvec, and gammas
+	alpha = 50 / K
+  	mvec = rep(1 / K, K)
+  	betas = 10
+ 	W = length(vocabulary)
+  	nvec = rep(1, W) / W
+  	phi = lapply(1L:K, function(k) {
+		rdirichlet(1, betas * nvec)
+	})
+		
+	delta = rbeta(1, 1, 10)
+	deltamat = delta
+	
+	# initialize C, theta and Z
+	currentC = sample(1:nIP, K, replace = TRUE)
+	theta = rdirichlet(length(edge), alpha * mvec)
+	currentZ = lapply(seq(along = edge), function(d) {
+    if (length(textlist[[d]]) > 0) {
+    	Selected(length(textlist[[d]]), theta[d, ])
+    	} else {
+    		Selected(1, theta[d, ])
+    	}
+    })
+	p.d = t(vapply(seq(along = edge), function(d) {
+	  vapply(1L:nIP, function(IP) {
+	    sum(currentZ[[d]] %in% which(currentC == IP))
+	  }, c(1)) / length(currentZ[[d]])
+	}, rep(1, nIP)))
+
+    # initialize beta
+    sigma = 1
+    L = 3
+    P = 1 + (2 * L + 2) * ("dyadic" %in% netstat) + (4 * L^2 + 4) * ("triadic" %in% netstat) + (2 * L + 2) *("degree" %in% netstat)
+    bmat = list()
+	for (IP in 1L:nIP) {
+		bmat[[IP]] = matrix(0, nrow = P, ncol = (n3 - burn) / thin)
+  	}
+
+  # to check the convergence  
+  if (plot) {
+  	logWZ.mat = c()							  
+  	alpha.mat = c()
+  	entropy.mat = c()
+  }
+  	
+  iJi = lapply(seq(along = edge), function(d) {
+  	  matrix(0, nrow = length(node), ncol = length(node))
+  	})
+  timeinc = c(0, vapply(seq(along = edge)[-1], function(d) {
+  	as.numeric(edge[[d]][3]) - as.numeric(edge[[d-1]][3])
+  }, c(1)))
+    
+   #start outer iteration
+  for (o in 1L:outer) {
+    cat("outer iteration = ", o, "\n")
+    
+    Beta.old = lapply(bmat, function(b) {
+      			rowMeans(b)
+         		})  
+    # Update the hyperparameter alpha and mvec
+    vec = AlphamvecOpt(K, currentZ, alpha, mvec)
+    alpha = sum(vec)
+    mvec = vec / alpha
+    
+    # Data augmentation
+    lambda = list()
+    LambdaiJi = list()
+    nonemptyiJi = list()
+    nonemptyiJi2 = list()
+
+    for (d in seq(along = edge)) {
+   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	X = lapply(node, function(i) {
+  	        Netstats(history.t, node, i, netstat)
+            })
+   	 	XB = MultiplyXBList(X, Beta.old)     
+		lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
+		   			 p.d[d, IP] * exp(XB[[IP]])
+		  				}))
+		diag(lambda[[d]]) = 0
+		
+		#calculate the resampling probability
+		probij = DataAug(iJi[[d]], lambda[[d]], delta, timeinc[d], as.numeric(edge[[d]][1]))
+		iJi[[d]] = matrix(vapply(exp(probij), function(x){
+				  rbinom(1, 1, x)
+		   		  }, c(1)), nrow = length(node))
+		observedi = as.numeric(edge[[d]][1])
+		observedj = as.numeric(unlist(edge[[d]][2]))
+		iJi[[d]][observedi,] = tabulateC(observedj, length(node))
+		LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
+						p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+						}, rep(0, length(node))))
+		nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+         nonemptyiJi2[[d]] = (LambdaiJi[[d]][-as.numeric(edge[[d]][1])])[!is.na(LambdaiJi[[d]][-as.numeric(edge[[d]][1])])]
+		}	 
+    
+    cat("inner iteration 1", "\n")
+    textlist.raw = unlist(textlist)
+    table.W = lapply(1L:K, function(k) {
+      tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+      })
+    
+    for (i1 in 1L:n1) {
+      for (d in seq(along = edge)) {
+        textlist.d = textlist[[d]]
+        if (length(textlist.d) > 0) {
+        	topicpart.d = TopicInEqZ(K, currentZ, alpha, mvec, d)
+       	wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
+        } else {
+        topicpart.d = 0
+        wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
+        }
+        edgepart.d = EdgeInEqZ2(iJi[[d]], lambda[[d]], delta)
+        timepart.d = TimeInEqZ(nonemptyiJi[[d]]) + ObservedInEqZ(sum(nonemptyiJi[[d]]) + sum(nonemptyiJi2[[d]]), timeinc[d], delta) 
+        for (w in 1L:length(currentZ[[d]])) {
+          const.Z = topicpart.d + edgepart.d + timepart.d + wordpart.d[w, ]
+          while (sum(exp(const.Z)) == 0) {
+          	const.Z = const.Z + 1000
+          }
+           while (sum(exp(const.Z)) == Inf) {
+          	const.Z = const.Z - 1000
+          }
+          zw.old = currentZ[[d]][w]
+          zw.new = Selected(1, exp(const.Z))
+          if (zw.new != zw.old) {
+            currentZ[[d]][w] = zw.new
+            topicpart.d = TopicInEqZ(K, currentZ, alpha, mvec, d)
+            if (length(textlist.d) > 0) {	
+            wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
+            }
+            table.W = lapply(1L:K, function(k) {
+      				tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+      				})
+      		p.d[d, ] = vapply(1L:nIP, function(IP) {
+	 			sum(currentZ[[d]] %in% which(currentC == IP))
+	 			}, c(1)) / length(currentZ[[d]])
+      		LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
+							p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+							}, rep(0, length(node))))
+			nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+         	nonemptyiJi2[[d]] = (LambdaiJi[[d]][-as.numeric(edge[[d]][1])])[!is.na(LambdaiJi[[d]][-as.numeric(edge[[d]][1])])]
+				
+          }
+        }
+       }
+      }
+
+    cat("inner iteration 2", "\n")
+    for (i2 in 1L:n2) {
+      # C update given Z and B - within each document d
+      for (k in 1L:K) {
+        document.k = which(vapply(currentZ, function(d){k %in% d}, c(1)) ==1)
+        const.C = rep(NA, nIP)
+        for (IP in 1L:nIP) {
+          if (!currentC[k] == IP) {
+          currentC[k] = IP
+          for (d in document.k) {
+            p.d[d, ] =  vapply(1L:nIP, function(IP) {
+              sum(currentZ[[d]] %in% which(currentC == IP))
+            }, c(1)) / length(currentZ[[d]])
+          }
+          for (d in seq(along = edge)) {
+            history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    	   	   X = lapply(node, function(i) {
+               Netstats(history.t, node, i, netstat)
+               })
+    	       XB = MultiplyXBList(X, Beta.old)    
+           lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
+		   			    p.d[d, IP] * exp(XB[[IP]])
+		  				}))
+		  diag(lambda[[d]]) = 0
+		  LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
+						p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+						}, rep(0, length(node))))
+		  nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+           nonemptyiJi2[[d]] = (LambdaiJi[[d]][-as.numeric(edge[[d]][1])])[!is.na(LambdaiJi[[d]][-as.numeric(edge[[d]][1])])]
+          }
+          }
+          const.C[IP] = sum(vapply(document.k, function(d) {
+              EdgeInEqZ2(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]]) + 
+    			 ObservedInEqZ(sum(nonemptyiJi[[d]]) + sum(nonemptyiJi2[[d]]), timeinc[d], delta)
+          }, c(1))) / length(document.k)
+          }
+          while (sum(exp(const.C)) == 0) {
+            const.C = const.C + 1000
+          }
+          while (sum(exp(const.Z)) == Inf) {
+          	const.Z = const.Z - 1000
+          }
+          currentC[k] = Selected(1, exp(const.C))
+      }
+    }
+      
+    if (plot) {
+      entropy.mat = c(entropy.mat, entropy.empirical(currentC))
+      alpha.mat = rbind(alpha.mat, alpha)
+      logWZ.mat = c(logWZ.mat, 
+                    logWZ(K, currentZ, textlist, table.W, alpha, mvec, betas, nvec))
+      }
+      
+    cat("inner iteration 3", "\n")
+    Beta.new = list()
+    for (d in seq(along = edge)) {
+     	 p.d[d, ] =  vapply(1L:nIP, function(IP) {
+              sum(currentZ[[d]] %in% which(currentC == IP))
+            }, c(1)) / length(currentZ[[d]])
+     	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    	     X = lapply(node, function(i) {
+              Netstats(history.t, node, i, netstat)
+             })
+    	     XB = MultiplyXBList(X, Beta.old)   
+    	    lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
+		   			 p.d[d, IP] * exp(XB[[IP]])
+		  			 }))
+		diag(lambda[[d]]) = 0
+		LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
+						p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+						}, rep(0, length(node))))
+		nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+         nonemptyiJi2[[d]] = (LambdaiJi[[d]][-as.numeric(edge[[d]][1])])[!is.na(LambdaiJi[[d]][-as.numeric(edge[[d]][1])])]
+	 }
+	delta.B2 = 0.01
+	# below is the f(x0)
+    	 post.old1 = sum(vapply(seq(along = edge), function(d) {
+    			    EdgeInEqZ2(iJi[[d]], lambda[[d]], delta) + ObservedInEqZ(sum(nonemptyiJi[[d]]) + sum(nonemptyiJi2[[d]]), timeinc[d], delta)
+    			    }, c(1))) / length(edge)	  		 
+     post.old2 = post.old1 + sum(vapply(seq(along = edge), function(d) {
+    			    TimeInEqZ(nonemptyiJi[[d]])
+    			    }, c(1))) / length(edge)
+   	    
+    y1 = runif(1, 0, exp(post.old1))
+    y2 = runif(1, 0, exp(post.old2))
+    	Beta.L = lapply(1L:nIP, function(IP) {
+    	Beta.old[[IP]] - delta.B * runif(P, 0, 1)
+    		}) 
+    	Beta.R = lapply(1L:nIP, function(IP) {
+    	Beta.L[[IP]] + delta.B
+    		})
+	delta.L = delta - delta.B2 * runif(1, 0, 1)
+    	delta.R = delta.L + delta.B2	   
+
+    for (i3 in 1L:n3) {
+    	 delta.new = delta.L + runif(1, 0, 1) * (delta.R - delta.L)
+        while (delta.new < 0) {
+        		delta.new = delta.L + runif(1, 0, 1) * (delta.R - delta.L)
+        }
+     post.new1 = sum(vapply(seq(along = edge), function(d) {
+    			    EdgeInEqZ2(iJi[[d]], lambda[[d]], delta.new) + ObservedInEqZ(sum(nonemptyiJi[[d]]) + sum(nonemptyiJi2[[d]]), timeinc[d], delta.new)
+    			    }, c(1))) / length(edge)	  	   
+     if (y1 >= exp(post.new1)) {
+        delta = delta.new
+        post.old1 = post.new1
+        y1 = runif(1, 0, exp(post.old1))
+        delta.L = delta - delta.B2 * runif(1, 0, 1)
+    	    delta.R = delta.L + delta.B2	
+		} else {
+			if (delta.new < delta) {
+				delta.L = delta.new
+				} else {
+					delta.R = delta.new
+				}	
+		}
+             
+    	Beta.new = lapply(1L:nIP, function(IP) {
+        	Beta.L[[IP]] + runif(P, 0, 1) * (Beta.R[[IP]] - Beta.L[[IP]])
+        }) 
+         for (d in seq(along = edge)) {
+           XB = MultiplyXBList(X, Beta.new)    
+           LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
+						p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+						}, rep(0, length(node))))
+		  nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+         }
+         post.new2 = post.old1 + sum(vapply(seq(along = edge), function(d) {
+    			    TimeInEqZ(nonemptyiJi[[d]])
+    			    }, c(1))) / length(edge)
+		if (y2 >= exp(post.new2)) {
+      	for (IP in 1L:nIP) {
+        	Beta.old[[IP]]  = Beta.new[[IP]]
+        	}
+        post.old2 = post.new2
+         y2 = runif(1, 0, exp(post.old2))
+    		Beta.L = lapply(1L:nIP, function(IP) {
+    		Beta.old[[IP]] - delta.B * runif(P, 0, 1)
+    		}) 
+    		Beta.R = lapply(1L:nIP, function(IP) {
+    		Beta.L[[IP]] + delta.B
+    		})
+		} else {
+        	for (IP in 1L:nIP) {
+        		for (p in 1L:P) {
+        			if (Beta.new[[IP]][p] < Beta.old[[IP]][p]) {
+        				Beta.L[[IP]][p] = Beta.new[[IP]][p]
+        			} else {
+        				Beta.R[[IP]][p] = Beta.new[[IP]][p]
+        			}
+        		}
+        	}
+        }      
+        }	
+     }
+    
+    if (plot) {
+    burnin = round(outer / 10)
+    par(mfrow = c(2, 2))
+  	plot(entropy.mat[-1L:-burnin], type = "l", 
+  	     xlab = "(Outer) Iterations", ylab = "Entropy of IP")
+  	abline(h = mean(entropy.mat[-1L:-burnin]), lty = 1)
+  	title("Convergence of Entropy")
+  	matplot(alpha.mat[-1L:-burnin,], lty = 1, type = "l", col = 1L:nIP, 
+  	        xlab = "(Outer) Iterations", ylab = "alpha")
+  	abline(h = mean(alpha.mat[-1L:-burnin,]), lty = 1, col = 1L:nIP)
+	  title("Convergence of Optimized alpha")
+	  plot(logWZ.mat[-1L:-burnin], type = "l", 
+	       xlab = "(Outer) Iterations", ylab = "logWZ")
+	  abline(h = mean(logWZ.mat[-1L:-burnin]), lty = 1)
+	  title("Convergence of logWZ")
+	  matplot(bmat[[1]][1,], lty = 1, col = 1L:P, type = "l", 
+	          main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
+	  abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
+	  }
+     
+  chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat)
 
   return(chain.final)
 }
@@ -915,7 +1166,7 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 		observedj = as.numeric(unlist(edge[[d]][2]))
 		iJi[[d]][observedi,] = tabulateC(observedj, length(node))
 		LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
-			p.d[d, IP] * exp(delta * rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+			p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
 			}, rep(0, length(node))))
 		nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
         nonemptyiJi2[[d]] = (LambdaiJi[[d]][-as.numeric(edge[[d]][1])])[!is.na(LambdaiJi[[d]][-as.numeric(edge[[d]][1])])]
@@ -962,7 +1213,7 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 	 			sum(currentZ[[d]] %in% which(currentC == IP))
 	 			}, c(1)) / length(currentZ[[d]])
       		LambdaiJi[[d]] = rowSums(vapply(1L:nIP, function(IP) {
-			p.d[d, IP] * exp(delta * rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
+			p.d[d, IP] * exp(rowSums(XB[[IP]] * iJi[[d]]) / rowSums(iJi[[d]] > 0))
 			}, rep(0, length(node))))
           }
         }
@@ -1082,7 +1333,8 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         		delta.new = delta.L + runif(1, 0, 1) * (delta.R - delta.L)
         }
 	 	post.new = sum(vapply(seq(along = edge), function(d) {
-        	 EdgeInEqZ2(iJi[[d]], lambda.new[[d]], delta.new) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d], delta.new)
+        	 EdgeInEqZ2(iJi[[d]], lambda.new[[d]], delta.new) + TimeInEqZ(nonemptyiJi[[d]]) + 
+    			    ObservedInEqZ(sum(nonemptyiJi[[d]]) + sum(nonemptyiJi2[[d]]), timeinc[d], delta)
       }, c(1))) + adds * 1000 
         if (y >= exp(post.new)) {
       	for (IP in 1L:nIP) {
@@ -1116,70 +1368,7 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         	}
         }
         }	
-     
-# #     cat("inner iteration 3", "\n")
-    # Beta.new = list()
-      # for (d in seq(along = edge)) {
-       # history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
-    	   # X = lapply(node, function(i) {
-              # Netstats2(history.t, node, i, netstat)
-            # })
-    	   # XB = lapply(1L:nIP, function(IP) {
-    	  	 # t(vapply(node, function(i) {
-    	     # MultiplyXB(X[[i]][[IP]], Beta.old[[IP]])
-    	     # }, rep(0, length(node))))
-    	     # })  
-           # lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
-		   			 # p.d[d, IP] * exp(XB[[IP]])
-		  				# }))
-		   # diag(lambda[[d]]) = 0
-	# }
-	# prior.old = sum(vapply(1L:nIP, function(IP) {
-		  		# dmvnorm(Beta.old[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
-		  		# }, c(1))) + dbeta(delta, 1, 1) 
-    # post.old = sum(vapply(seq(along = edge), function(d) {
-    			   # EdgeInEqZ2(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d])
-    			   # }, c(1)))
-    # for (i3 in 1L:n3) {
-        # Beta.new = lapply(1L:nIP, function(IP) {
-          # rmvnorm(1, Beta.old[[IP]], (delta.B)^2 * diag(P))
-        # }) 
-        # for (d in seq(along = edge)) {
-           # XB = lapply(1L:nIP, function(IP) {
-    	  	 # t(vapply(node, function(i) {
-    	     # MultiplyXB(X[[i]][[IP]], Beta.new[[IP]])
-    	     # }, rep(0, length(node))))
-    	     # })  
-           # lambda[[d]] = Reduce('+', lapply(1L:nIP, function(IP) {
-		   			 # p.d[d, IP] * exp(XB[[IP]])
-		  				# }))
-		   # diag(lambda[[d]]) = 0
-        # }
-      # delta.new = rnorm(1, delta, (delta.B)^2)
-      # prior.new = sum(vapply(1L:nIP, function(IP) {
-        # dmvnorm(Beta.new[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
-        # }, c(1))) + dbeta(delta.new, 1, 1) 
-      # post.new = sum(vapply(seq(along = edge), function(d) {
-        	 # EdgeInEqZ2(iJi[[d]], lambda[[d]], delta.new) + TimeInEqZ(nonemptyiJi[[d]], nonemptyiJi2[[d]], timeinc[d])
-      # }, c(1))) 
-      # loglike.diff = prior.new - prior.old + post.new - post.old
-      
-      # u = log(runif(1, 0, 1))
-      # if (u < loglike.diff) {
-        # for (IP in 1L:nIP) {
-        	# Beta.old[[IP]]  = Beta.new[[IP]]
-        	# }
-        # delta = delta.new
-        # prior.old = prior.new
-        # post.old = post.new
-        # }
-      
-      # if (i3 > burn && i3 %% (thin) == 0) {
-        # for (IP in 1L:nIP) {
-          # bmat[[IP]][ , (i3 - burn) / thin] = Beta.old[[IP]]
-          # }
-        # }
-      # }
+     }
 
   
   if (plot) {
@@ -1201,7 +1390,6 @@ MCMC2 = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 	          main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
 	  abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
 	  }
-   }
   chain.final = list(C = currentC, Z = currentZ, B = bmat)
 
   return(chain.final)

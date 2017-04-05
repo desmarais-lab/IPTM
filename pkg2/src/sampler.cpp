@@ -72,6 +72,70 @@ List History(List edge, NumericMatrix pd, IntegerVector node, double when) {
 	return IPmat;
 }
 
+
+// [[Rcpp::export]]
+List History2(List edge, IntegerVector node, double when) {
+  // Calculate the weighted time difference from previous interactions to certain time 'when'
+  //
+  // Args:
+  //  edge: list of document information with 3 elements (sender, receiver, time)
+  //  node: nodelist containing the ID of nodes
+  //  when: specific timepoint that we are calculating the time difference from
+  //
+  // Returns:
+  //  Matrix of time differences between all nodes
+  	List IPlist_IP(4);
+  	for (int l = 0; l < 4; l++){
+  		NumericMatrix IP_l(node.size(), node.size());
+  		IPlist_IP[l] = IP_l;
+  	}
+  		
+	int iter = 0;
+	for (int d = 0; d < edge.size(); d++) {
+		List document = edge[d];
+		double time = document[2];
+		if (time < when) {
+		  iter = iter + 1;
+		}
+	}
+	if (iter > 0) {
+	  for (int i = 0; i < iter; i++) {
+	    List document2 = edge[i];
+	    int sender = document2[0];
+	    IntegerVector receiver = document2[1];
+	    double time = document2[2];
+	    double time1 = when - 384;
+		double time2 = when - 96;
+		double time3 = when - 24; 
+	    for (int r = 0; r < receiver.size(); r++){
+  			if (time < time1) {
+  				NumericMatrix IP_l = IPlist_IP[0];
+  				IP_l(sender - 1, receiver[r] -1) += 1;	
+  				IPlist_IP[0] = IP_l;
+			}
+  			if (time >= time1 && time < time2) {
+  				NumericMatrix IP_l = IPlist_IP[1];
+				IP_l(sender - 1, receiver[r] -1) += 1;
+				IPlist_IP[1] = IP_l;
+			} 
+  			if (time >= time2 && time < time3) {
+  				NumericMatrix IP_l = IPlist_IP[2];
+				IP_l(sender - 1, receiver[r] -1) += 1;
+				IPlist_IP[2] = IP_l;
+			}  				
+			if (time >= time3) {
+				NumericMatrix IP_l = IPlist_IP[3];
+				IP_l(sender - 1, receiver[r] -1) += 1;
+				IPlist_IP[3] = IP_l;
+			}		
+		}
+	 }
+  }
+	return IPlist_IP;
+}
+
+
+
 // [[Rcpp::export]]
 List Degree(List history, IntegerVector node, int sender) {
   // Calculate degree statistics (indegree and outdegree) given the history of interactions
@@ -230,29 +294,34 @@ NumericVector MultiplyXB(NumericMatrix X, NumericVector beta){
 }
 
 // [[Rcpp::export]]
-NumericMatrix MultiplyXBList(List X, NumericVector beta){
-  // Multiply the (D by N by P) list X and vector beta (of length P)
+List MultiplyXBList(List X, List B){
+  // Multiply the list X and list B
   //
   // Args:
-  //  X: (D by N by P) list 
-  //  beta: vector of length P
+  //  X: list 
+  //  beta: list
   //
   // Returns:
   //  The matrix (D by N) with (i,j)th element correspond to X[i,j, ] %*% beta
-  NumericMatrix example = X[0];	
-	NumericMatrix XB(X.size(), example.nrow());
-	for (int d = 0; d < X.size(); d++) {
-		NumericVector XB_d(example.nrow());
-		NumericMatrix X_d = X[d];
-		 for (int i = 0; i < example.nrow(); i++) {
-  		  double sum = 0;
-    	for (int j = 0; j < beta.size(); j++) {
-     	 sum = sum + X_d(i, j) * beta[j];
-    	  }
-    	XB_d[i] = sum;
-  		}
-		XB(d, _) = XB_d;
-	}
+	List XB(B.size());
+	for (int IP = 0; IP < B.size(); IP++) {
+		NumericMatrix XB_IP(X.size(), X.size());
+		NumericVector B_IP = B[IP];
+		for (int n = 0; n < X.size(); n++) {
+			List X_n = X[n];
+			NumericMatrix X_n_IP = X_n[IP];
+			NumericVector XB_i(X_n_IP.nrow());
+			 for (int i = 0; i < X_n_IP.nrow(); i++) {
+  		 	 double sum = 0;
+    			for (int j = 0; j < X_n_IP.ncol(); j++) {
+     			 sum = sum + X_n_IP(i, j) * B_IP[j];
+    			  }
+    			 XB_i[i] = sum; 		
+    			  }
+    			  XB_IP(n, _) = XB_i;
+			}
+		XB[IP] = XB_IP;
+		}	
   return XB;
 }
 
@@ -358,10 +427,14 @@ double EdgeInEqZ2(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 }
 
 // [[Rcpp::export]]
-double TimeInEqZ(NumericVector LambdaiJi, NumericVector LambdaiJi2, double tdiff, double delta) {
-	double times = sum(log(delta * LambdaiJi));
-	double obs = tdiff * delta * (sum(LambdaiJi) + sum(LambdaiJi2));
-	double consts = times - obs;
+double TimeInEqZ(NumericVector LambdaiJi) {
+	double times = sum(log(LambdaiJi));
+	return times;
+}
+
+// [[Rcpp::export]]
+double ObservedInEqZ(double LambdaiJi3, double tdiff, double delta) {
+	double consts = - tdiff * delta * LambdaiJi3;
 	return consts;
 }
 
