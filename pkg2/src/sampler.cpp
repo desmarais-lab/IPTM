@@ -17,8 +17,8 @@ List History(List edge, NumericMatrix pd, IntegerVector node, double when) {
   int nIP = pd.ncol();
   List IPmat(nIP);
   for (int IP = 1; IP < (nIP + 1); IP++) {
-  	List IPlist_IP(4);
-  	for (int l = 0; l < 4; l++){
+  	List IPlist_IP(3);
+  	for (int l = 0; l < 3; l++){
   		NumericMatrix IP_l(node.size(), node.size());
   		IPlist_IP[l] = IP_l;
   	}
@@ -44,26 +44,21 @@ List History(List edge, NumericMatrix pd, IntegerVector node, double when) {
 	    for (int r = 0; r < receiver.size(); r++){
 	       for (int IP = 1; IP < (nIP + 1); IP++) {
   			List IPlist_IP = IPmat[IP - 1];
-  			if (time < time1) {
-  				NumericMatrix IP_l = IPlist_IP[0];
-  				IP_l(sender - 1, receiver[r] -1) += pd(i, IP -1);	
-  				IPlist_IP[0] = IP_l;
+  			if (time >= time3) {
+				NumericMatrix IP_l = IPlist_IP[0];
+				IP_l(sender - 1, receiver[r] -1) += pd(i, IP -1);
+				IPlist_IP[0] = IP_l;
 			}
-  			if (time >= time1 && time < time2) {
+  			if (time >= time2 && time < time3) {
   				NumericMatrix IP_l = IPlist_IP[1];
 				IP_l(sender - 1, receiver[r] -1) += pd(i, IP -1);
 				IPlist_IP[1] = IP_l;
-			} 
-  			if (time >= time2 && time < time3) {
+			}  				
+			if (time >= time1 && time < time2) {
   				NumericMatrix IP_l = IPlist_IP[2];
 				IP_l(sender - 1, receiver[r] -1) += pd(i, IP -1);
 				IPlist_IP[2] = IP_l;
-			}  				
-			if (time >= time3) {
-				NumericMatrix IP_l = IPlist_IP[3];
-				IP_l(sender - 1, receiver[r] -1) += pd(i, IP -1);
-				IPlist_IP[3] = IP_l;
-			}		
+			} 		
 			IPmat[IP - 1] = IPlist_IP;
   			}
 	   }
@@ -71,69 +66,6 @@ List History(List edge, NumericMatrix pd, IntegerVector node, double when) {
   }
 	return IPmat;
 }
-
-
-// [[Rcpp::export]]
-List History2(List edge, IntegerVector node, double when) {
-  // Calculate the weighted time difference from previous interactions to certain time 'when'
-  //
-  // Args:
-  //  edge: list of document information with 3 elements (sender, receiver, time)
-  //  node: nodelist containing the ID of nodes
-  //  when: specific timepoint that we are calculating the time difference from
-  //
-  // Returns:
-  //  Matrix of time differences between all nodes
-  	List IPlist_IP(4);
-  	for (int l = 0; l < 4; l++){
-  		NumericMatrix IP_l(node.size(), node.size());
-  		IPlist_IP[l] = IP_l;
-  	}
-  		
-	int iter = 0;
-	for (int d = 0; d < edge.size(); d++) {
-		List document = edge[d];
-		double time = document[2];
-		if (time < when) {
-		  iter = iter + 1;
-		}
-	}
-	if (iter > 0) {
-	  for (int i = 0; i < iter; i++) {
-	    List document2 = edge[i];
-	    int sender = document2[0];
-	    IntegerVector receiver = document2[1];
-	    double time = document2[2];
-	    double time1 = when - 384;
-		double time2 = when - 96;
-		double time3 = when - 24; 
-	    for (int r = 0; r < receiver.size(); r++){
-  			if (time < time1) {
-  				NumericMatrix IP_l = IPlist_IP[0];
-  				IP_l(sender - 1, receiver[r] -1) += 1;	
-  				IPlist_IP[0] = IP_l;
-			}
-  			if (time >= time1 && time < time2) {
-  				NumericMatrix IP_l = IPlist_IP[1];
-				IP_l(sender - 1, receiver[r] -1) += 1;
-				IPlist_IP[1] = IP_l;
-			} 
-  			if (time >= time2 && time < time3) {
-  				NumericMatrix IP_l = IPlist_IP[2];
-				IP_l(sender - 1, receiver[r] -1) += 1;
-				IPlist_IP[2] = IP_l;
-			}  				
-			if (time >= time3) {
-				NumericMatrix IP_l = IPlist_IP[3];
-				IP_l(sender - 1, receiver[r] -1) += 1;
-				IPlist_IP[3] = IP_l;
-			}		
-		}
-	 }
-  }
-	return IPlist_IP;
-}
-
 
 
 // [[Rcpp::export]]
@@ -152,13 +84,13 @@ List Degree(List history, IntegerVector node, int sender) {
  
  
   for (int IP = 1; IP < (nIP + 1); IP++) {
-  	 NumericMatrix degreemat_IP(node.size(), 8);
+  	 NumericMatrix degreemat_IP(node.size(), 6);
   	 List historyIP = history[IP - 1];
-     NumericVector degree(8); 
+     NumericVector degree(6); 
 	 
    for (int b = 0; b < node.size(); b++) {
     int receiver = node[b];
-    for (int l = 0; l < 4; l++) {
+    for (int l = 0; l < 3; l++) {
     	NumericMatrix historyIP_l = historyIP[l];
     	double send = historyIP_l(sender - 1, receiver - 1);
     	
@@ -168,12 +100,12 @@ List Degree(List history, IntegerVector node, int sender) {
      	 double htor = historyIP_l(third - 1, receiver - 1);
     	  indegree[h] = htor;
      	 }
-    	 degree[l + 4] = sum(indegree);			
+    	 degree[l + 3] = sum(indegree);			
     	 degree[l] = degree[l] + send;
       }
       degreemat_IP(b,_) = degree;
       }
-      for (int l = 0; l < 4; l++) {
+      for (int l = 0; l < 3; l++) {
       degreemat_IP(_, l) = rep(max(degreemat_IP(_,l)), node.size());
       }
     IPmat[IP - 1] = degreemat_IP;
@@ -196,15 +128,15 @@ List Dyadic(List history, IntegerVector node, int sender) {
   List IPmat(nIP);  
   
   for (int IP = 1; IP < (nIP + 1); IP++) {
-  	 NumericMatrix dyadicmat_IP(node.size(), 8);
+  	 NumericMatrix dyadicmat_IP(node.size(), 6);
   	 List historyIP = history[IP - 1];
-     NumericVector dyadic(8); 
+     NumericVector dyadic(6); 
      for (int b = 0; b < node.size(); b++) {
     	int receiver = node[b];
-        for (int l = 0; l < 4; l++) {
+        for (int l = 0; l < 3; l++) {
     		NumericMatrix historyIP_l = historyIP[l];
     		dyadic[l] = historyIP_l(sender - 1, receiver - 1);
-    		dyadic[l + 4] = historyIP_l(receiver - 1, sender - 1);
+    		dyadic[l + 3] = historyIP_l(receiver - 1, sender - 1);
     	}
       dyadicmat_IP(b, _) = dyadic;
       }
@@ -227,9 +159,9 @@ List Triadic(List history, IntegerVector node, int sender) {
    int nIP = history.size();
    List IPmat(nIP);
    for (int IP = 1; IP < (nIP+1); IP++) {
-      NumericMatrix triadmat_IP(node.size(), 64);
+      NumericMatrix triadmat_IP(node.size(), 36);
   	  List historyIP = history[IP - 1];
-  	  NumericVector triadic(64); 
+  	  NumericVector triadic(36); 
        
         for (int b = 0; b < node.size(); b++) {
         int receiver = node[b];
@@ -239,8 +171,8 @@ List Triadic(List history, IntegerVector node, int sender) {
         NumericVector sibling(node.size());
         NumericVector cosibling(node.size()); 
         int iter1 = 0;
-        for (int l = 0; l < 4; l++) {
-        for (int m = 0; m < 4; m++){
+        for (int l = 0; l < 3; l++) {
+        for (int m = 0; m < 3; m++){
        
          NumericMatrix historyIP_l = historyIP[l];
          NumericMatrix historyIP_m = historyIP[m];
@@ -257,9 +189,9 @@ List Triadic(List history, IntegerVector node, int sender) {
       	   cosibling[h] = stoh * rtoh;
        	}
        	triadic[iter1] = sum(twosend);
-       	triadic[iter1 + 16] = sum(tworeceive);
-       	triadic[iter1 + 32] = sum(sibling);
-       	triadic[iter1 + 48] = sum(cosibling);
+       	triadic[iter1 + 9] = sum(tworeceive);
+       	triadic[iter1 + 18] = sum(sibling);
+       	triadic[iter1 + 27] = sum(cosibling);
         iter1 = iter1 + 1;
        }
      }
@@ -401,21 +333,6 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 	double edges = 0;
 	for (int i = 0; i < iJi.nrow(); i++) {
 		for (int j = 0; j < iJi.ncol(); j++) {
-		  double deltalambda = exp(-delta * lambda(i, j));
-		  if (deltalambda < 0.0000001) { deltalambda += 0.0000001;}
-		  double deltalambda2 = 1 / deltalambda - 1;
-		  if (deltalambda2 < 0.0000001) { deltalambda2 += 0.0000001;}
-			edges = edges + iJi(i, j) * log(deltalambda2) - delta * lambda(i, j);
-		}
-	}
-	return edges;
-}
-
-// [[Rcpp::export]]
-double EdgeInEqZ2(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
-	double edges = 0;
-	for (int i = 0; i < iJi.nrow(); i++) {
-		for (int j = 0; j < iJi.ncol(); j++) {
 			if (i != j) {
 		  double deltalambda = delta * lambda(i, j);
 		  if (deltalambda < 0.0000001) { deltalambda += 0.0000001;}
@@ -427,15 +344,17 @@ double EdgeInEqZ2(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 }
 
 // [[Rcpp::export]]
-double TimeInEqZ(NumericVector LambdaiJi) {
-	double times = sum(log(LambdaiJi));
-	return times;
+double TimeInEqZ(NumericVector LambdaiJi, double tdiff) {
+	double part1 = sum(log(LambdaiJi));
+	double part2 = - tdiff * sum(LambdaiJi);
+	return part1 + part2;
 }
 
 // [[Rcpp::export]]
-double ObservedInEqZ(double LambdaiJi3, double tdiff, double delta) {
-	double consts = - tdiff * delta * LambdaiJi3;
-	return consts;
+double ObservedInEqZ(NumericVector LambdaiJi, double observediJi) {
+	double part1 = log(observediJi);
+	double part2 = log(sum(LambdaiJi));
+	return part1 - part2;
 }
 
 
