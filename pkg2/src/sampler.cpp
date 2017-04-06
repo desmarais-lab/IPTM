@@ -212,46 +212,25 @@ List Triadic2(List triadic) {
   //
   // Returns:
   //  Triadic network statistic for specific sender and all possible receivers
-   List IPmat(triadic.size());
+   int nIP = triadic.size();
+   List IPmat(nIP);
    for (int IP = 1; IP < (nIP + 1); IP++) {
-      NumericMatrix triadmat_IP(node.size(), 36);
-  	  List historyIP = history[IP - 1];
-  	  NumericVector triadic(36); 
-       
-        for (int b = 0; b < node.size(); b++) {
-        int receiver = node[b];
- 
-        NumericVector twosend(node.size());
-        NumericVector tworeceive(node.size());
-        NumericVector sibling(node.size());
-        NumericVector cosibling(node.size()); 
-        int iter1 = 0;
-        for (int l = 0; l < 3; l++) {
-        for (int m = 0; m < 3; m++){
-       
-         NumericMatrix historyIP_l = historyIP[l];
-         NumericMatrix historyIP_m = historyIP[m];
-       
-       	 for (int h = 0; h < node.size(); h++) {
-     	   int third = node[h];	
-     	   double stoh = historyIP_l(sender - 1, third - 1);
-      	   double htos = historyIP_l(third - 1, sender - 1); 
-     	   double rtoh = historyIP_m(receiver - 1, third - 1);
-      	   double htor = historyIP_m(third - 1, receiver - 1); 
-      	   twosend[h] = stoh * htor;
-      	   tworeceive[h] = htos * rtoh;
-      	   sibling[h] = htos * htor;
-      	   cosibling[h] = stoh * rtoh;
-       	}
-       	triadic[iter1] = sum(twosend);
-       	triadic[iter1 + 9] = sum(tworeceive);
-       	triadic[iter1 + 18] = sum(sibling);
-       	triadic[iter1 + 27] = sum(cosibling);
-        iter1 = iter1 + 1;
-       }
-     }
-        triadmat_IP(b,_) = triadic;
-        }
+   	NumericMatrix historyIP = triadic[IP - 1];
+   	NumericMatrix triadmat_IP(historyIP.nrow(), 12);
+   	for (int i = 0; i < historyIP.nrow(); i++) {
+   	 triadmat_IP(i, 0) = historyIP(i, 0)+historyIP(i, 1)+historyIP(i, 2)+historyIP(i, 3)+historyIP(i, 6) ;
+	 triadmat_IP(i, 1) = historyIP(i, 4)+historyIP(i, 5)+historyIP(i, 7);
+	 triadmat_IP(i, 2) = historyIP(i, 8);
+   	 triadmat_IP(i, 3) = historyIP(i, 9)+historyIP(i, 10)+historyIP(i, 11)+historyIP(i, 12)+historyIP(i, 15) ;
+	 triadmat_IP(i, 4) = historyIP(i, 13)+historyIP(i, 14)+historyIP(i, 16);
+	 triadmat_IP(i, 5) = historyIP(i, 17);
+   	 triadmat_IP(i, 6) = historyIP(i, 18)+historyIP(i, 19)+historyIP(i, 20)+historyIP(i, 21)+historyIP(i, 24) ;
+	 triadmat_IP(i, 7) = historyIP(i, 22)+historyIP(i, 23)+historyIP(i, 25);
+	 triadmat_IP(i, 8) = historyIP(i, 26);
+   	 triadmat_IP(i, 9) = historyIP(i, 27)+historyIP(i, 28)+historyIP(i, 29)+historyIP(i, 30)+historyIP(i, 33) ;
+	 triadmat_IP(i, 10) = historyIP(i, 31)+historyIP(i, 32)+historyIP(i, 34);
+	 triadmat_IP(i, 11) = historyIP(i, 35);
+   	}
     IPmat[IP - 1] = triadmat_IP;
   }
   return IPmat;
