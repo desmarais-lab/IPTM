@@ -420,8 +420,9 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         edgepart.d = EdgeInEqZ(iJi[[d]], lambda[[d]], delta)
         timepart.d = sum(dexp(timeinc[d], nonemptyiJi[[d]], log = TRUE))
         observed.d = ObservedInEqZ(nonemptyiJi[[d]], observediJi[[d]]) 
+        fixedpart = topicpart.d + edgepart.d + timepart.d + observed.d 
         for (w in 1L:length(currentZ[[d]])) {
-          const.Z = topicpart.d + edgepart.d + timepart.d + observed.d + wordpart.d[w, ]
+          const.Z = fixedpart + wordpart.d[w, ]
           while (sum(exp(const.Z)) == 0) {
           	const.Z = const.Z + 1000
           }
@@ -460,7 +461,6 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         document.k = document.k[document.k %in% edge2]
         const.C = rep(NA, nIP)
         for (IP in 1L:nIP) {
-          if (!currentC[k] == IP) {
           currentC[k] = IP
           for (d in document.k) {
             p.d[d, ] =  vapply(1L:nIP, function(IP) {
@@ -483,7 +483,6 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 		  nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
           observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
           }
-          }
           const.C[IP] = sum(vapply(document.k, function(d) {
             EdgeInEqZ(iJi[[d]], lambda[[d]], delta) + sum(dexp(timeinc[d], nonemptyiJi[[d]], log = TRUE)) + 
     			ObservedInEqZ(nonemptyiJi[[d]], observediJi[[d]]) 
@@ -498,7 +497,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
           currentC[k] = Selected(1, exp(const.C))
       }
     }
-      
+    
     if (plot) {
       entropy.mat = c(entropy.mat, entropy.empirical(currentC))
       alpha.mat = rbind(alpha.mat, alpha)
@@ -572,6 +571,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
           }
          }
          
+         #update delta for every outer iteration
          prior.old2 = dbeta(delta, 1, 10) 
          post.old2 = sum(vapply(edge2, function(d) {
     			    EdgeInEqZ(iJi[[d]], lambda[[d]], delta)
@@ -596,7 +596,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 
     
     if (plot) {
-    burnin = round(outer / 10)
+    burnin = round(out / 10)
     par(mfrow = c(2, 2))
   	plot(entropy.mat[-1L:-burnin], type = "l", 
   	     xlab = "(Outer) Iterations", ylab = "Entropy of IP")
@@ -916,13 +916,12 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, xi = 10,
 		rdirichlet(1, betas * nvec)
 	})
 	L = 3
-	P = 1 + (2 * L + 2) * ("dyadic" %in% netstat) + (4 * L^2 + 4) * ("triadic" %in% netstat) + (2 * L + 2) *("degree" %in% netstat)
+    P = 1 + L * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
 	b = lapply(1L:nIP, function(IP) {
 		rmvnorm(1, rep(0, P), diag(P))
 	})
 	
 	delta = rbeta(1, 1, 10)
-	
 	currentC = sample(1L:nIP, K, replace = TRUE)
 
 	t.d = 0
@@ -947,25 +946,21 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, xi = 10,
 			sum(topic.d %in% which(currentC == IP))
 			}, c(1)) / max(1, N.d)
 		history.t = History(edge, p.d, node, t.d + 10^(-10))
-		X= lapply(node, function(i) {
-				Netstats(history.t, node, i, netstat)
-				})
-		XB = lapply(1L:nIP, function(IP) {
-    	  	 t(vapply(node, function(i) {
-    	     MultiplyXB(X[[i]][[IP]], Beta.old[[IP]])
-    	     }, rep(0, length(node))))
-    	     }) 
+		X = lapply(node, function(i) {
+  	        Netstats(history.t, node, i, netstat)
+            })
+   	 	XB = MultiplyXBList(X, Beta.old)     
 		lambda = Reduce('+', lapply(1L:nIP, function(IP) {
 		   			 p.d[d, IP] * exp(XB[[IP]])
-		  		 }))
+		  				}))
 		diag(lambda) = 0
 		
 		iJi = matrix(vapply(lambda, function(x){
-				   rbinom(1, 1, 1 - exp(-delta * x))
-		   			}, c(1)), nrow = length(node))
+				  rbinom(1, 1, (delta * x) / (delta * x + 1))
+		   		  }, c(1)), nrow = length(node))
 		while (sum(iJi) == 0) {
 			iJi = matrix(vapply(lambda, function(x){
-				   rbinom(1, 1, 1 - exp(-delta * x))
+				   rbinom(1, 1, (delta * x) / (delta * x + 1))
 		   			}, c(1)), nrow = length(node))
 		}
 		LambdaiJi = rowSums(vapply(1L:nIP, function(IP) {
