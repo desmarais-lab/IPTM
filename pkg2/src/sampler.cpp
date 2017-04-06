@@ -158,7 +158,62 @@ List Triadic(List history, IntegerVector node, int sender) {
   //  Triadic network statistic for specific sender and all possible receivers
    int nIP = history.size();
    List IPmat(nIP);
-   for (int IP = 1; IP < (nIP+1); IP++) {
+   for (int IP = 1; IP < (nIP + 1); IP++) {
+      NumericMatrix triadmat_IP(node.size(), 36);
+  	  List historyIP = history[IP - 1];
+  	  NumericVector triadic(36); 
+       
+        for (int b = 0; b < node.size(); b++) {
+        int receiver = node[b];
+ 
+        NumericVector twosend(node.size());
+        NumericVector tworeceive(node.size());
+        NumericVector sibling(node.size());
+        NumericVector cosibling(node.size()); 
+        int iter1 = 0;
+        for (int l = 0; l < 3; l++) {
+        for (int m = 0; m < 3; m++){
+       
+         NumericMatrix historyIP_l = historyIP[l];
+         NumericMatrix historyIP_m = historyIP[m];
+       
+       	 for (int h = 0; h < node.size(); h++) {
+     	   int third = node[h];	
+     	   double stoh = historyIP_l(sender - 1, third - 1);
+      	   double htos = historyIP_l(third - 1, sender - 1); 
+     	   double rtoh = historyIP_m(receiver - 1, third - 1);
+      	   double htor = historyIP_m(third - 1, receiver - 1); 
+      	   twosend[h] = stoh * htor;
+      	   tworeceive[h] = htos * rtoh;
+      	   sibling[h] = htos * htor;
+      	   cosibling[h] = stoh * rtoh;
+       	}
+       	triadic[iter1] = sum(twosend);
+       	triadic[iter1 + 9] = sum(tworeceive);
+       	triadic[iter1 + 18] = sum(sibling);
+       	triadic[iter1 + 27] = sum(cosibling);
+        iter1 = iter1 + 1;
+       }
+     }
+        triadmat_IP(b,_) = triadic;
+        }
+    IPmat[IP - 1] = triadmat_IP;
+  }
+  return IPmat;
+}
+
+
+// [[Rcpp::export]]
+List Triadic2(List triadic) {
+  // Reduce Triadic network statistics (2-send, 2-receive, sibling, cosibling)
+  //
+  // Args:
+  //  triadic: full triadic network statistics
+  //
+  // Returns:
+  //  Triadic network statistic for specific sender and all possible receivers
+   List IPmat(triadic.size());
+   for (int IP = 1; IP < (nIP + 1); IP++) {
       NumericMatrix triadmat_IP(node.size(), 36);
   	  List historyIP = history[IP - 1];
   	  NumericVector triadic(36); 
