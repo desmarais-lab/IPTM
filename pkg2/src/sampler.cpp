@@ -1,7 +1,8 @@
-#include <Rcpp.h>
-
+#include <RcppArmadillo.h>
+#include <cmath>
+//[[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp; 
-
+using std::exp;
 // [[Rcpp::export]]
 List History(List edge, NumericMatrix pd, IntegerVector node, double when) {
   // Calculate the weighted time difference from previous interactions to certain time 'when'
@@ -259,6 +260,7 @@ NumericVector MultiplyXB(NumericMatrix X, NumericVector beta){
   return XB;
 }
 
+
 // [[Rcpp::export]]
 List MultiplyXBList(List X, List B){
   // Multiply the list X and list B
@@ -271,25 +273,19 @@ List MultiplyXBList(List X, List B){
   //  The matrix (D by N) with (i,j)th element correspond to X[i,j, ] %*% beta
 	List XB(B.size());
 	for (int IP = 0; IP < B.size(); IP++) {
-		NumericMatrix XB_IP(X.size(), X.size());
-		NumericVector B_IP = B[IP];
+		arma::mat XB_IP(X.size(), X.size());
+		arma::vec B_IP = B[IP];
 		for (int n = 0; n < X.size(); n++) {
 			List X_n = X[n];
-			NumericMatrix X_n_IP = X_n[IP];
-			NumericVector XB_i(X_n_IP.nrow());
-			 for (int i = 0; i < X_n_IP.nrow(); i++) {
-  		 	 double sum = 0;
-    			for (int j = 0; j < X_n_IP.ncol(); j++) {
-     			 sum = sum + X_n_IP(i, j) * B_IP[j];
-    			  }
-    			 XB_i[i] = sum; 		
-    			  }
-    			  XB_IP(n, _) = XB_i;
+			arma::mat X_n_IP = X_n[IP];
+			arma::vec rows = X_n_IP * B_IP;
+			XB_IP.row(n) = rows.t();
 			}
 		XB[IP] = XB_IP;
 		}	
   return XB;
 }
+
 
 // [[Rcpp::export]]
 double UpdateDenom(double alpha, IntegerVector nwordtable){
@@ -369,7 +365,6 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 		for (int j = 0; j < iJi.ncol(); j++) {
 			if (i != j) {
 		  double deltalambda = delta * lambda(i, j);
-		  if (deltalambda < 0.0000001) { deltalambda += 0.0000001;}
 			edges = edges + iJi(i, j) * log(deltalambda) - log(deltalambda + 1);
 			}
 		}
@@ -412,3 +407,39 @@ IntegerVector tabulateC(const IntegerVector& x, const unsigned max) {
 }
 
 
+// [[Rcpp::export]]
+NumericVector lambdaiJi(NumericVector pd, List XB, IntegerMatrix iJi) {
+	int nIP = pd.size();
+	int node = iJi.nrow();
+	NumericVector out(node);
+	for (int IP = 0; IP < nIP; IP++) {
+		NumericMatrix XB_IP = XB[IP];
+		for (int i = 0; i < node; i++) {
+			double rowsums = 0;
+			for (int j = 0; j < node; j++) {
+				rowsums += XB_IP(i, j) * iJi(i, j);
+			}
+			out[i] += pd[IP] * exp(rowsums / sum(iJi(i, _)));
+		}		
+	}
+	return out;
+}
+
+// [[Rcpp::export]]
+arma::mat rdirichlet_cpp(int num_samples, arma::vec alpha_m) {
+	int distribution_size = alpha_m.n_elem;
+	arma::mat distribution = arma::zeros(num_samples, distribution_size);
+	
+	for (int i = 0; i < num_samples; ++i) {
+		double sum_term = 0;
+		for (int j = 0; j < distribution_size; ++j) {
+			double cur = R::rgamma(alpha_m[j], 1.0);
+			distribution(i, j) = cur;
+			sum_term += cur;
+		}
+		for (int j = 0; j < distribution_size; ++j) {
+			distribution(i, j) = distribution(i, j) / sum_term;
+		}
+	}
+	return(distribution);
+}
