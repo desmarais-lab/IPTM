@@ -13,3 +13,13 @@ plot_topic(Daretest, 10)
 table_wordIP(Daretest, 10, text, vocab)
 
 
+
+
+
+load('/Users/bomin8319/Desktop/IPTMpaper/data/Darenew.RData')
+attach(Dare)
+Dare$node = 1:nrow(Dare$node)
+for (n in 1:length(Dare$edge)){
+  Dare$edge[[n]][3] = Dare$edge[[n]][[3]] / 3600
+}
+Dare$edge = lapply(Dare$edge, function(x){x[1:3]})

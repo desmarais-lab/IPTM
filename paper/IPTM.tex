@@ -354,23 +354,23 @@ and the corresponding dimension of  $\boldsymbol{b}^{(c)}$ becomes $P =  1 + 8 \
 	  \end{figure}
 	  \fi
 	\section{Inference} \label{sec: Inference}
-	  The joint generative process implies a particular factorization of the joint distribution over the variables $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D},\mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D},  \mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{b}^{(c)} \}_{c=1}^{C}, \mathcal{J}=\{\{J^{(d)}_i\}_{i=1}^{A}\}_{d=1}^D,\mathcal{T}=\{  \{t_{iJ_i}^{(d)}\}_{i=1}^{A}\}_{d=1}^D$, and $\mathcal{O}=\{(i, J, t)^{(d)}\}_{d=1}^D$ given the observed $\mathcal{O}^{\prime}=\{\{(i, J, t)^{(d^\prime)}\}_{d^\prime=1}^d\}_{d=1}^D$ and the hyperparameters $(\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2,  \delta)$:
+	  The joint generative process implies a particular factorization of the joint distribution over the variables $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D},\mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D},  \mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{b}^{(c)} \}_{c=1}^{C}, \mathcal{J}=\{\{J^{(d)}_i\}_{i=1}^{A}\}_{d=1}^D,\mathcal{T}=\{  \{t_{iJ_i}^{(d)}\}_{i=1}^{A}\}_{d=1}^D$, and $\mathcal{P}=\{(i, J, t)^{(d)}\}_{d=1}^D$ given the observed $\mathcal{P}^{\prime}=\{\{(i, J, t)^{(d^\prime)}\}_{d^\prime=1}^d\}_{d=1}^D$ and the hyperparameters $(\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2,  \delta)$:
 	  \begin{equation}
 	  \begin{aligned}
-	  &P(\Phi, \Theta, \mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B},\mathcal{J}, \mathcal{T}, \mathcal{O}|\mathcal{O}^{\prime}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta) \\& 
+	  &P(\Phi, \Theta, \mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B},\mathcal{J}, \mathcal{T}, \mathcal{P}|\mathcal{P}^{\prime}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta) \\& 
 	  = P(\Phi|\beta, \boldsymbol{u})P(\Theta|\alpha, \boldsymbol{m})P(\mathcal{Z}|\Theta)P(\mathcal{W}|\mathcal{Z}, \Phi) P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \sigma^2)\\&\quad \quad \times
-	  P(\mathcal{J}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{O}^{\prime}, \delta)P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{J},  \mathcal{O}^{\prime})P(\mathcal{O}|\mathcal{J},\mathcal{T}, \mathcal{O}^{\prime}).
+	  P(\mathcal{J}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{P}^{\prime}, \delta)P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{J},  \mathcal{P}^{\prime})P(\mathcal{P}|\mathcal{J},\mathcal{T}, \mathcal{P}^{\prime}).
 	  \end{aligned}
 	  \end{equation}
 	  We can simplify this further by integreting out $\Phi$ and $\Theta$ using Dirichlet-multinomial conjugacy:
 	  \begin{equation}
 	  \begin{aligned}
-	  &P(\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B},\mathcal{J}, \mathcal{T}, \mathcal{O}|\mathcal{O}^{\prime}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta) \\& 
-	  = P(\mathcal{Z}|\alpha, \boldsymbol{m})P(\mathcal{W}|\mathcal{Z}, \beta, \boldsymbol{u} ) P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \sigma^2)  P(\mathcal{J}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{O}^{\prime}, \delta)P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{J},\mathcal{O}^{\prime})P(\mathcal{O}|\mathcal{J}, \mathcal{T}, \mathcal{O}^{\prime}).
+	  &P(\mathcal{Z}, \mathcal{W}, \mathcal{C}, \mathcal{B},\mathcal{J}, \mathcal{T}, \mathcal{P}|\mathcal{P}^{\prime}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta) \\& 
+	  = P(\mathcal{Z}|\alpha, \boldsymbol{m})P(\mathcal{W}|\mathcal{Z}, \beta, \boldsymbol{u} ) P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \sigma^2)  P(\mathcal{J}| \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{P}^{\prime}, \delta)P(\mathcal{T}|\mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{J},\mathcal{P}^{\prime})P(\mathcal{P}|\mathcal{J}, \mathcal{T}, \mathcal{P}^{\prime}).
 	  \end{aligned}
 	  \end{equation}
-	  Note that since $p_c^{(d)}$ is a deterministic function of $(\mathcal{Z}, \mathcal{C})$, $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}$ is a deterministic function of $(p_c^{(d)}, \mathcal{O}^{\prime})$  and $\boldsymbol{\lambda}^{(d)}$ is a deterministic function of $(p_c^{(d)}, \boldsymbol{x}_{t_+^{(d-1)}}^{(c)}, \mathcal{B})$, we do not include them as variables in the joint distribution. \\ \newline
-	 What we observe in the data is $\mathcal{W}$ and $\mathcal{O}$. We want to infer the values of all the latent variables ($\mathcal{Z}, \mathcal{C}, \mathcal{B}$) that most likely would have generated the data we observe, if we believe the generative process. Currently the variables ($\mathcal{I},\mathcal{J}, \mathcal{T}, \mathcal{O}, \mathcal{H}$) are redundant, thus we re-define the variables considering the data augmentation:  $\mathcal{I}_{\mbox{a}}=\{\{i^{(d)}\}_{i\neq i_o^{(d)}}\}_{d=1}^D,$  $\mathcal{J}_{\mbox{a}}=\{\{J_i^{(d)}\}_{i\neq i_o^{(d)}}\}_{d=1}^D$, and $\mathcal{T}_{\mbox{a}}=\{\{t_{iJ_i}^{(d)}\}_{i\neq i_o^{(d)}}\}_{d=1}^D$ of the augmented data and $\mathcal{I}_{\mbox{o}}=\{i^{(d)}\}_{d=1}^D$,  $\mathcal{J}_{\mbox{o}}=\{J^{(d)}\}_{d=1}^D$, and $\mathcal{T}_{\mbox{o}}= \{t^{(d)}\}_{d=1}^D$ from the observed data.\\ \newline
+	  Note that since $p_c^{(d)}$ is a deterministic function of $(\mathcal{Z}, \mathcal{C})$, $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}$ is a deterministic function of $(p_c^{(d)}, \mathcal{P}^{\prime})$  and $\boldsymbol{\lambda}^{(d)}$ is a deterministic function of $(p_c^{(d)}, \boldsymbol{x}_{t_+^{(d-1)}}^{(c)}, \mathcal{B})$, we do not include them as variables in the joint distribution. \\ \newline
+	 What we observe in the data is $\mathcal{W}$ and $\mathcal{P}$. We want to infer the values of all the latent variables ($\mathcal{Z}, \mathcal{C}, \mathcal{B}$) that most likely would have generated the data we observe, if we believe the generative process. Currently the variables ($\mathcal{I},\mathcal{J}, \mathcal{T}, \mathcal{P}, \mathcal{P^\prime}$) are redundant, thus we re-define the variables considering the data augmentation:  $\mathcal{I}_{\mbox{a}}=\{\{i^{(d)}\}_{i\neq i_o^{(d)}}\}_{d=1}^D,$  $\mathcal{J}_{\mbox{a}}=\{\{J_i^{(d)}\}_{i\neq i_o^{(d)}}\}_{d=1}^D$, and $\mathcal{T}_{\mbox{a}}=\{\{t_{iJ_i}^{(d)}\}_{i\neq i_o^{(d)}}\}_{d=1}^D$ of the augmented data and $\mathcal{I}_{\mbox{o}}=\{i^{(d)}\}_{d=1}^D$,  $\mathcal{J}_{\mbox{o}}=\{J^{(d)}\}_{d=1}^D$, and $\mathcal{T}_{\mbox{o}}= \{t^{(d)}\}_{d=1}^D$ from the observed data.\\ \newline
 	  Now, our inference goal is to draw samples from the posterior distribution
 	  \begin{equation}
 	  \begin{aligned}
@@ -599,61 +599,57 @@ and the rest of parts in (28) and (29) stays the same.
  \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
  \subsection{Vance county email data} \label{subsec: Vance county email data}
-Vance county data contains $D=185$ emails sent between $A=18$ actors, including $W=620$ vocabulary in total. We used $K=10$ topics and $C=2$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We set the outer iteration number as $I=1000$, the inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. First 100 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $10^{th}$ sample was taken as a thinning process of third inner iteration. In addition, after some experimentation, $\delta_B$ was set as 0.5, to ensure sufficient acceptance rate. MCMC diagnostic plots are attached in APPENDIX D, as well as the geweke test statistics. \\\newline
- Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, (b) the top 3 topics most likely to be generated conditioned on the interaction pattern, and (c) the top 10 most likely words to have generated conditioned on the topic and interaction pattern.
- \begin{table}[ht]
- 	\centering
- 	\begin{tabular}{|c|c|c|c|} 
- 		\hline
- 		& \textbf{IP1} (54 emails) & \textbf{IP2} (107 emails) &\textbf{IP3} (108 emails) \\
- 		\hline
- 		\textbf{intercept} & 0.515 [-0.523, 1.546]& -0.364 [-2.108, 1.934]& -1.230 [-1.948, 0.194]\\
- 		\textbf{send}&  1.916* [1.130, 2.937]& 2.843* [1.969, 3.885]& 2.531* [1.595, 3.568]\\
- 		\textbf{receive}& 0.158 [-1.126, 1.098]& 3.068* [2.427, 4.509]& 1.067* [0.488, 1.781]\\
- 		\textbf{triangles} & 1.483 [-0.507, 2.558]& -1.478* [-2.038, -0.918]& -1.787* [-3.062, -0.958]\\
- 		\textbf{outdegree} & 0.514 [-0.570, 1.377]& 0.492 [-0.804, 1.665]& 0.771 [-1.152, 2.544]\\
- 		\textbf{indegree} & 2.166* [1.534, 2.895]& 1.397* [0.720, 2.187]& 2.464* [1.840, 3.327]\\
- 		\hline
- 	\end{tabular}
- 	\caption {Summary of posterior estimates of $\boldsymbol{b}^{(c)}$ for Vance county emails}
- 	\label{table:Vancebeta}
- \end{table}
+Vance county data contains $D=185$ emails sent between $A=18$ actors, including $W=620$ vocabulary in total. We used $K=5$ topics and $C=2$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We set the outer iteration number as $I=500$, the inner iteration numbers as $n_1=1, n_2=1,$ and $n_3=3300$. First 50 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $20^{th}$ sample was taken as a thinning process of third inner iteration. In addition, after some experimentation, $\delta_B$ was set as 0.2, to ensure sufficient acceptance rate. MCMC diagnostic plots are attached in APPENDIX D, as well as the geweke test statistics. \\\newline
+ Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) the top 10 most likely words to be generated conditioned on the topic and their corresponding interaction pattern.
  \begin{figure}[ht]
  	\centering
+ 	 	\includegraphics[width=1\textwidth]{betaplot.pdf} 
  	\caption{Posterior distribution of  $\boldsymbol{b}^{(c)}$ for Vance county emails}
  	\label{fig:Vanceboxplot}
  \end{figure}
- By examining the estimates in Table 2 and their corresponding interpretaiton, it seems that there exist strong effects of dynamic network covariates. That is, whether the sender and receiver previously had dyadic or triangle interaction strongly increase the rate of their interactions. Moreover, to see the differences across the interaction patterns more clearly, we compared the posterior distribution using the boxplots in Figure 2 and it seems that there exists notable differences in dynmic network covariates across the interaction patterns. For example, IP2 has the highest send and receive effect and IP3 has the highest outdegree and indegree effect, while its baseline intensity (i.e. intercept) or triangle effect are not as high as other interaction patterns. Later, multiple hypothesis testing could be applied in order to test the significance of the differences in  $\boldsymbol{b}^{(c)}$ across the $C$ number of interaction patterns.\\\newline
- Next, we scrutinize the topic distributions corresponding to each interaction patterns in Figure 3. There is some distinctive differences in the topic distributions $\mathcal{Z}$, given the assignment of interaction patterns to the documents $\mathcal{C}$. Specifically, each interaction pattern has different topics as the topic with highest probability.
+ \begin{table}[ht]
+ 	\centering
+ 	\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|}
+ 		\hline
+ 		covariate & 1&2 - 4&5 - 7& 8 - 10 & 11 - 13 & 14 - 16& 17 - 19 & 20 - 22&23 - 25\\
+ 	\hline	name & intercept & outdegree & indegree & send & receive & 2-send & 2-receive & sibling & cosibling\\
+ 	 		\hline
+ 	\end{tabular}
+ 	\caption {Network statistics}
+ \end{table}
+ \normalsize
+By examining the estimates in Figure 2 and their corresponding interpretation, it seems that there exist strong effects of dynamic network covariates. That is, whether the sender and receiver previously had dyadic or triangle interaction strongly increase the rate of their interactions. \textcolor{red}{What are the findings here?}\newpage
  \begin{figure}[ht]
  	\centering
- 	\caption{Posterior distribution of  $\mathcal{Z}$ for Vance county emails, with (upper) and without (lower) considering IP}
+ 		\includegraphics[width=0.7\textwidth]{topicplot.pdf} 
+ 	\caption{Posterior distribution of $\mathcal{Z}$ for Vance county emails}
  	\label{fig:Vancebarplot}
- \end{figure}
+ \end{figure} 
+\noindent Next, we scrutinize the topic distributions in Figure 3. There is some distinctive differences in the topic distributions $\mathcal{Z}$, given the assignment of interaction patterns to the documents $\mathcal{C}$. Specifically, each interaction pattern has different topics as the topic with highest probability.
  \normalsize
  \newline
  Furthermore, we look at the distribution of words given the topics, which corresponds to Algorithm 4 in the generative process. Since the topic-word distribution $\phi$ does not depend on the interaction patterns as previous cases, Table 3 lists top 10 topics with top 10 words that have the highest probability conditioned on the topic. In addition, this time we try to check the interaction pattern-word distribution by listing top 10 words that have the highest probability conditioned on the interaction pattern. It seems that the words are not significantly different, having several words like `director', `phones', `department', `description', or `henderson' (county seat of Vance county) appeared repetitively across the most of the topics or interaction patterns. The word 'will' was ranked the top in most of the lists, probably because it was not deleted during the text mining process while other similar type of words like `am', `is', `are', or `can' are all removed. \\
  \begin{table}[ht]
  	\centering
- 	\begin{tabular}{|l||l||l|}
+ 	\begin{tabular}{|l||l||}
  		\hline
- 		{\textbf{IP1} (54 emails)}&{\textbf{IP2} (107 emails)}&{\textbf{IP3} (108 emails)}\\
+ 		{\textbf{IP1} }&{\textbf{IP2} }\\
  		\hline\hline
- 		K=2 (0.40), K=4 (0.17), K=9 (0.15) & K=8 (0.38), K=5 (0.24)& K=1 (0.31), K=3 (0.17), K=6 (0.15)\\
+ 		K=5, K=2 & K=3, K=4, K=1\\
  		\hline
- 		message, electronic, records&phones, phone& henderson, street, description\\
- 		time, response, ncgs & week, department& latest, fax, church\\
- 		department, hereto, attachments& system, rest& planning, suite, emergency\\
- 		heads, finance, director& october, advised& attached, director, center\\
- 		request, financial, operations& training, jail& extension, goldvancesealimprovedjordan, phone\\
- 		manager, system, work& cutting, send& development, phase, morning\\
- 		pursuant, additional, office & cutover, center& e-mail, board, email\\
- 		chapter, class, helped& folks, tuesday& good, rural, excel\\ 
- 		public, local, internal& instructions, monday& young, funds, lease\\
- 		subject, communications, reporting& dss, thursday& list, turn, form\\
+ 	operations, description&emergency, electronic, will\\
+ 	emergency, phase & operations, message, meeting\\
+ 	henderson, planning& fax, request, director\\
+ 	director, development & henderson, review, phone\\
+ 	street, director & street, response, october\\
+ 	church, henderson& center, records, extension\\
+ 	suite, fax & director, manager, phones\\
+ 	office, church & church, pursuant, latest\\ 
+ 	center, phone & office, ncgs, directory\\
+ 	communications, email & communications, chapter, attached\\
  		\hline
  	\end{tabular}
- 	\caption {Summary of top 5 topics with top 10 words that have the highest probability conditioned on the topic (Symmetric)}
+ 	\caption {Summary of top 10 words that have the highest probability conditioned on the topic}
  	\label{table:VancewordsMCMC}
  \end{table}
  \subsection{Dare county email data} \label{subsec: Dare county email data}
@@ -804,6 +800,71 @@ Vance county data contains $D=185$ emails sent between $A=18$ actors, including 
   \mbox{log}\Big(N_{w^{(d)}_mz^{(d)}_m, \backslash d, n}^{WK}+\frac{\beta}{W}\Big)-\mbox{log}\Big(\sum_{w=1}^WN_{wz^{(d)}_m,  \backslash d, n}^{WK}+\beta\Big)\\&+\mbox{log}\Big(N_{k|d, \backslash d, n}+\alpha m_{z^{(d)}_m}\Big)-\mbox{log}\Big(N^{(d)}-1+\alpha\Big)
   \end{aligned}
   \end{equation}
+  \subsection*{APPENDIX D: More results on Vance county}
+ \begin{figure}[ht]
+ 	\centering
+ 	\includegraphics[width=0.7\textwidth]{convergence500.pdf} 
+ 	\caption{Convergence plot}
+ 	\label{fig:Convergence plot}
+ \end{figure}
+  \footnotesize
+  \begin{verbatim}
+  [[1]]
+  50%       2.5%       97.5%
+  var1  -1.03378450 -1.8215756 -0.27360626
+  var2   0.07545065 -0.8996829  0.79065972
+  var3  -0.11607476 -1.2193967  0.70646981
+  var4   0.05563571 -0.8765592  0.75073152
+  var5   0.03845565 -0.9855465  1.23489853
+  var6  -0.38346633 -1.3703228  0.54557131
+  var7  -0.04908167 -1.3250197  0.85160613
+  var8   1.14128905  0.3701645  2.20711215
+  var9   0.17012889 -0.8799425  1.09344745
+  var10 -0.12336368 -1.0119155  0.94126545
+  var11  0.10568563 -1.3718464  1.44540142
+  var12 -0.24333550 -1.4403266  1.01460880
+  var13 -0.35394301 -1.6615484  0.52818602
+  var14  0.40711976 -0.7074704  1.54601587
+  var15 -0.01514472 -1.0178118  0.74269156
+  var16 -0.27635579 -1.6625823  1.38416775
+  var17 -0.30552609 -1.9752458  1.01011777
+  var18 -0.02075701 -0.8538314  0.73049741
+  var19 -0.86349099 -1.7091822 -0.08109229
+  var20 -0.51326858 -1.9100411  0.12688107
+  var21 -0.22545968 -0.9057803  0.49239789
+  var22 -0.30225076 -1.2096609  0.51380061
+  var23 -0.09608704 -0.8835800  0.25930099
+  var24 -0.31958504 -1.1718194  0.22856694
+  var25  0.53372698 -0.5038779  1.57291047
+
+  [[2]]
+  50%       2.5%     97.5%
+  var1  -0.34658403 -1.4952124 0.3967916
+  var2  -0.03066019 -1.2702390 0.9976132
+  var3  -0.22646524 -0.9413038 0.4339006
+  var4   0.40797025 -0.9141791 1.6952831
+  var5   0.50071541 -0.6188152 1.8624466
+  var6  -0.57766757 -1.5847266 0.1215623
+  var7   0.23455525 -1.0955153 1.3087351
+  var8   0.36544726 -0.6390447 1.5083066
+  var9   0.40817764 -0.7341571 1.6391713
+  var10  0.38989821 -0.5944415 1.1929786
+  var11 -0.20124838 -1.4100655 1.2953397
+  var12 -0.17875307 -1.5888454 0.7581926
+  var13 -0.08070925 -0.9036766 0.8052618
+  var14  0.32533810 -0.4274098 1.4456158
+  var15  1.65913216 -0.1471588 3.0529633
+  var16 -0.27765762 -1.5604557 0.8609888
+  var17 -0.06613950 -1.6199064 1.1385778
+  var18 -0.16420552 -1.2774442 1.0554348
+  var19 -0.36922871 -1.6708024 0.5563989
+  var20  0.51703631 -0.8284648 1.4561670
+  var21 -0.15972848 -1.1826805 1.3795938
+  var22  0.49641145 -0.6764489 1.6458448
+  var23 -0.09404249 -1.0792736 0.9836529
+  var24 -0.21678873 -1.4105245 0.6475629
+  var25  0.68614287 -0.4792060 1.7023143
+  \end{verbatim}
  \bibliographystyle{apalike}
 \bibliography{IPTM}
 \end{document}

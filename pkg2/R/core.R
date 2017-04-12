@@ -529,7 +529,7 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
      options(warn = 0)
      for (i3 in 1L:n3) {
      	Beta.new = lapply(1L:nIP, function(IP) {
-           rmvnorm(1, Beta.old[[IP]], (delta.B)^2 * proposal.var[[IP]])
+           rmvnorm(1, Beta.old[[IP]], (delta.B)^2 * proposal.var[[IP]], method  ="svd")
          }) 
         for (d in edge2) {
            XB = MultiplyXBList(X, Beta.new)    
@@ -1029,7 +1029,7 @@ PlotBetaIP = function(MCMCchain) {
   axis(side = 1, line = 0.5, lwd = 0, 
        at = c(sapply(1L:P, function(x){
          median(((nIP + 1) * x - nIP):((nIP + 1) * x - 1))
-       })))
+       })), labels = 1:25)
   legend(locator(1), c(paste("IP", 1L:nIP)), col = gray.colors(nIP), pch = 15)
 }
 
@@ -1042,7 +1042,7 @@ PlotBetaIP = function(MCMCchain) {
 #' @return Barplot of the topic distribution
 #'
 #' @export	
-PlotTopic = function(MCMCchain, K) {
+PlotTopic = function(Zchain, K) {
   # Draw a barplot of the topic distributions without considering IPs
   #
   # Args 
@@ -1052,13 +1052,13 @@ PlotTopic = function(MCMCchain, K) {
   # Returns
   #  Barplot of the topic distribution
   Zsummary = list()
-  for (d in seq(along = MCMCchain$Z)) {
-    Zsummary[[d]] = MCMCchain$Z[[d]]
+  for (d in seq(along = Zchain)) {
+    Zsummary[[d]] = Zchain[[d]]
   }
   topic.dist = t(tabulateC(unlist(Zsummary), K) / length(unlist(Zsummary)))
   colnames(topic.dist) = c(1L:K)
-  barplot(topic.dist, beside = TRUE, xlab = "Topic", ylab = "Proportion", 
-          main = "Topic Distritubitions without IPs")
+  barplot(topic.dist, col = gray.colors(K), beside = TRUE, xlab = "Topic", ylab = "Proportion", 
+          main = "Topic Distritubitions")
 }
 
 #' @title TableWordIP
@@ -1072,7 +1072,7 @@ PlotTopic = function(MCMCchain, K) {
 #' @return List of table that summarize token-topic assignments with high probabilities (topic proportion > 0.1) for each IP
 #'
 #' @export
-TableWord = function(MCMCchain, K, textlist, vocabulary) {
+TableWord = function(Zchain, K, textlist, vocabulary) {
   # Generate a table of token-topic assignments with high probabilities for each IP
   #
   # Args 
@@ -1089,8 +1089,8 @@ TableWord = function(MCMCchain, K, textlist, vocabulary) {
     colnames(topic.word) = vocabulary
     iter = 1
     for (d in seq(along = textlist)) {
-      if (length(MCMCchain$Z[[d]])>0){
-        Zsummary[[iter]] = MCMCchain$Z[[d]]
+      if (length(Zchain[[d]]) > 0){
+        Zsummary[[iter]] = Zchain[[d]]
         names(Zsummary[[iter]])<- vocabulary[textlist[[d]]]
         iter = iter+1
       }
