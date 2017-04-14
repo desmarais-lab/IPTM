@@ -219,14 +219,14 @@ where $\Delta_0 = 0$ and $I_{t}^{(l)} $ is the half-open interval $[t-\Delta_l, 
  \end{itemize}
 for $l=1,...,L-1$ and for $c = 1,...,C$. \\ \newline For the triadic effects involve pairs of messages, we calculate $3 \times 3$ time windows but define the interval specific statistics based on the interval where the triads are closed. (Refer to Figure 1. below) Therefore, $c=1,...,C$ we define the triadic effects (NOTE: $l_1 = 1,...,3$ and $l_2 = 1,...,3$)
 \begin{itemize}
-	 	\item [6.] $\mbox{\textbf{2-send}}^{(c)}_{t, l}(i, j)=\sum\limits_{\substack{(l_1= l, l_2 \geq l)\\\cup (l_1\geq l, l_2 = l)} }\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)} \in I_{t}^{(l_1)}}p_c^{(d)}\cdot I\{i\rightarrow h\}\Big)\cdot \Big(\sum\limits_{d': t^{(d')} \in I_{t}^{( l_2)}}p_c^{(d')}\cdot I\{h\rightarrow j\}\Big)$
- 	\item [7.] $\mbox{\textbf{2-receive}}^{(c)}_{t, l}(i, j)=\sum\limits_{\substack{(l_1= l, l_2 \geq l)\\\cup (l_1\geq l, l_2 = l)} }\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)} \in I_t^{(l_1)}}p_c^{(d)}\cdot I\{h\rightarrow i\}\Big)\cdot \Big(\sum\limits_{d': t^{(d')} \in I_t^{(l_2)}}p_c^{(d')}\cdot I\{j\rightarrow h\}\Big)$
- 	\item [8.] $\mbox{\textbf{sibling}}^{(c)}_{t, l}(i, j)=\sum\limits_{\substack{(l_1= l, l_2 \geq l)\\\cup (l_1\geq l, l_2 = l)} }\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)} \in I_t^{(l_1)}}p_c^{(d)}\cdot I\{h\rightarrow i\}\Big)\cdot \Big(\sum\limits_{d': t^{(d')} \in I_t^{(l_2)}}p_c^{(d')}\cdot I\{h\rightarrow j\}\Big)$
- 	\item [9.] $\mbox{\textbf{cosibling}}^{(c)}_{t, l}(i, j)=\sum\limits_{\substack{(l_1= l, l_2 \geq l)\\\cup (l_1\geq l, l_2 = l)} }\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)} \in I_t^{(l_1)}}p_c^{(d)}\cdot I\{i\rightarrow h\}\Big)\cdot \Big(\sum\limits_{d': t^{(d')} \in I_t^{(l_2)}}p_c^{(d')}\cdot I\{j\rightarrow h\}\Big)$
+	 	\item [6.] $\mbox{\textbf{2-send}}^{(c)}_{t, l}(i, j)=\sum\limits_{\substack{(l_1= l \mbox { or }  l_2 = l)} }\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)} \in I_{t}^{(l_1)}}p_c^{(d)}\cdot I\{i\rightarrow h\}\Big)\cdot \Big(\sum\limits_{d': t^{(d')} \in I_{t}^{( l_2)}}p_c^{(d')}\cdot I\{h\rightarrow j\}\Big)$
+ 	\item [7.] $\mbox{\textbf{2-receive}}^{(c)}_{t, l}(i, j)=\sum\limits_{\substack{(l_1= l \mbox { or }  l_2 = l)} }\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)} \in I_t^{(l_1)}}p_c^{(d)}\cdot I\{h\rightarrow i\}\Big)\cdot \Big(\sum\limits_{d': t^{(d')} \in I_t^{(l_2)}}p_c^{(d')}\cdot I\{j\rightarrow h\}\Big)$
+ 	\item [8.] $\mbox{\textbf{sibling}}^{(c)}_{t, l}(i, j)=\sum\limits_{\substack{(l_1= l \mbox { or }  l_2 = l)} }\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)} \in I_t^{(l_1)}}p_c^{(d)}\cdot I\{h\rightarrow i\}\Big)\cdot \Big(\sum\limits_{d': t^{(d')} \in I_t^{(l_2)}}p_c^{(d')}\cdot I\{h\rightarrow j\}\Big)$
+ 	\item [9.] $\mbox{\textbf{cosibling}}^{(c)}_{t, l}(i, j)=\sum\limits_{\substack{(l_1= l \mbox { or }  l_2 = l)} }\sum\limits_{h \neq i, j}\Big(\sum\limits_{d: t^{(d)} \in I_t^{(l_1)}}p_c^{(d)}\cdot I\{i\rightarrow h\}\Big)\cdot \Big(\sum\limits_{d': t^{(d')} \in I_t^{(l_2)}}p_c^{(d')}\cdot I\{j\rightarrow h\}\Big)$
  \end{itemize}
  \begin{figure}[ht]
  	\centering
- 	\includegraphics[width=0.51\textwidth]{triadtable.jpg} 
+ 	\includegraphics[width=0.6\textwidth]{triadtable.jpg} 
  	\label{fig:sim1diag}
  	\caption{Example of 2-send statistic defined for each interval $l=1,...,3$. Cells with same shades sum up to one statistic, based on when the triads are ``closed".}
  \end{figure}
@@ -288,6 +288,56 @@ and the corresponding dimension of  $\boldsymbol{b}^{(c)}$ becomes $P =  1 + 8 \
                     }
                     set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
 	}
+	\end{algorithm}
+	\subsection{Joint Generative Process of Document} \label{subsec: Joint Generative Process of Document}
+	Below are the joint generative process for each document in a corpus $D$, integrating \ref{subsec: Content Generating Process}, \ref{subsec: Stochastic Intensity}, \ref{subsec: Tie Generating Process}, and \ref{subsec: Dynamic covariates2}.  Figure 1 is the corresponding plate notation of IPTM.
+	\begin{algorithm}[H]
+		\SetAlgoLined
+		\caption{Topic Word Distributions}
+		\For{k=1 to K}{
+			draw $\boldsymbol{\phi}^{(k)}$ $\sim$ Dir($\beta, \bf u$)
+		}
+	\end{algorithm}
+	\begin{algorithm}[H]
+		\SetAlgoLined
+		\caption{Interaction Pattern Parameters}
+		\For{c=1 to C}{
+			draw $\boldsymbol{b}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$
+		}
+	\end{algorithm}
+	\begin{algorithm}[H]
+		\SetAlgoLined
+		\caption{Topic Interaction Pattern Assginments}
+		\For{k=1 to K}{
+			draw $C_k$ $\sim$ Unif(1, C)
+		}
+	\end{algorithm}
+	\begin{algorithm}[H]
+		\SetAlgoLined
+		\caption{Document Generating Process}
+		\For{d=1 to D}{
+			draw $N^{(d)}= \mbox{max}(1, \bar N^{(d)})$, where $\bar N^{(d)}\sim \mbox{Poisson}(\zeta) $\\
+			draw $\boldsymbol{\theta}^{(d)}\sim \mbox{Dir}(\alpha, \boldsymbol{m})$\\
+			\For{n=1 to ${N}^{(d)}$}{
+				draw $z_n^{(d)} \sim \mbox{Multinom}(\boldsymbol{\theta}^{(d)})$\\
+				\If {$\bar N^{(d)}>0$} {
+					draw $w_n^{(d)} \sim\mbox{Multinom} (\boldsymbol{\phi}^{(z_n^{(d)})})$
+				}
+			}
+			\For{c=1 to $C$}{
+				set $p_c^{(d)} = \frac{\sum\limits_{k: c_k=c} N^{(k|d)}}{N^{(d)}}$
+			}
+			
+			\For{i=1 to $A$}{
+				\For{j=1 to $A$}{
+					\If {j $\neq$ i} {
+						calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
+						set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
+						draw I($i \rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})$}  }
+				draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)})$
+			}
+			set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
+		}
 	\end{algorithm}
 	\iffalse
 	  \begin{figure}[ht]
@@ -384,11 +434,11 @@ and the corresponding dimension of  $\boldsymbol{b}^{(c)}$ becomes $P =  1 + 8 \
 &P(\mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}},\mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\& = \prod_{d=1}^D P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}},\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta).
 \end{aligned}
  \end{equation}
-Note that on the right hand side we have dropped the conditional dependence on ($\mathcal{I}^{(-d)}_{\mbox{a}}, \mathcal{J}^{(-d)}_{\mbox{a}}, \mathcal{T}^{(-d)}_{\mbox{a}}$) and ($\mathcal{I}^{(>d)}_{\mbox{o}}, \mathcal{J}^{(>d)}_{\mbox{o}}, \mathcal{T}^{(>d)}_{\mbox{o}}$) as the tie generating process implies independence ($\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}$) $\perp$ ($\mathcal{I}^{(-d)}_{\mbox{a}}, \mathcal{J}^{(-d)}_{\mbox{a}}, \mathcal{T}^{(-d)}_{\mbox{a}}$) and  ($\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}$) $\perp$($\mathcal{I}^{(>d)}_{\mbox{o}}, \mathcal{J}^{(>d)}_{\mbox{o}}, \mathcal{T}^{(>d)}_{\mbox{o}}$), respectively. \\\newline  Now we tackle the problem by deriving $P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)$ for $d^{th}$ document. There are three steps involved. First is the generation of the latent receivers $J_i$ for each $i$, which corresponds to the Bernoulli part of tie generation, Equation (5); second is the generation of time increments $\Delta T_{iJ_i}$ for each $i$, which corresponds to the Exponential part of tie generation, Equation (6); and the last part is the simultaneous selection process of the observed sender, receivers, and timestamp in Equation (7), which we can use the property of the minimum of Exponential random variables. Reflecting the three steps, the joint distribution is:\\
+Now we tackle the problem by deriving $P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)$ for $d^{th}$ document. There are three steps involved. First is the generation of the latent receivers $J_i$ for each $i$, which corresponds to the Bernoulli part of tie generation, Equation (5); second is the generation of time increments $\Delta T_{iJ_i}$ for each $i$, which corresponds to the Exponential part of tie generation, Equation (6); and the last part is the simultaneous selection process of the observed sender, receivers, and timestamp in Equation (7), which we can use the property of the minimum of Exponential random variables. Reflecting the three steps, the joint distribution is:\\
   \begin{equation}
   \begin{aligned}
 &P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=P\Big(\mbox{latent receivers generation}\Big) \times P\Big(\mbox{latent time generation}\Big)\times P\Big(\mbox{choose the observed}\Big) \\&=P\Big(\mbox{from Equation (5)}\Big) \times P\Big(\mbox{from Equation (6)}\Big)\times P\Big(\mbox{from Equation (7)}\Big) \\&
-=\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}}\Big(I(i \rightarrow j)\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})\Big) \times \prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}}\Big(\Delta T_{iJ_i}\sim\mbox{Exp}(\delta\lambda^{(d)}_{iJ_i})\Big) \times P\Big(\mbox{min}_i (\Delta T_{i{J_i}}) = \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&
+=\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}}\Big(I(i \rightarrow j)\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})\Big) \times \prod_{i\in \mathcal{A}_{\backslash J_i=\emptyset}}\Big(\Delta T_{iJ_i}\sim\mbox{Exp}(\lambda^{(d)}_{iJ_i})\Big) \times P\Big(\mbox{min}_i (\Delta T_{i{J_i}}) = \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&
 =\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \big(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1}\big)^{I(j \in J_i)}\big(\frac{1}{\delta\lambda^{(d)}_{ij}+1}\big)^{1-I(j \in J_i)}\Big)\times \Big(\prod_{i \in\mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{iJ_i}e^{-(t^{(d)}-t^{(d-1)})\lambda^{(d)}_{iJ_i}}\Big)\times \Big(\frac{\lambda^{(d)}_{i_o^{(d)}J_{i^{(d)}_o}}}{\sum\limits_{i \in \mathcal{A}_{\backslash J_i=\emptyset}}\lambda^{(d)}_{i{J_i}}}\Big),
   \end{aligned}
   \end{equation}
@@ -654,7 +704,9 @@ By examining the estimates in Figure 2 and their corresponding interpretation, i
  \end{table}
  \subsection{Dare county email data} \label{subsec: Dare county email data}
  Dare county data contains $D=2247$ emails between $A=27$ actors, including $W=2907$ vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=1000$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. In addition, after some experimentation, $\delta_B$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{b}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every $10^{th}$ samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics. 
- \clearpage
+\bibliographystyle{apalike}
+\bibliography{IPTM}
+\clearpage
  \section*{APPENDIX}
  \subsection*{APPENDIX A: Notations in IPTM}
   \begin{table}[ht]
@@ -807,65 +859,39 @@ By examining the estimates in Figure 2 and their corresponding interpretation, i
  	\caption{Convergence plot}
  	\label{fig:Convergence plot}
  \end{figure}
-  \footnotesize
-  \begin{verbatim}
-  [[1]]
-  50%       2.5%       97.5%
-  var1  -1.03378450 -1.8215756 -0.27360626
-  var2   0.07545065 -0.8996829  0.79065972
-  var3  -0.11607476 -1.2193967  0.70646981
-  var4   0.05563571 -0.8765592  0.75073152
-  var5   0.03845565 -0.9855465  1.23489853
-  var6  -0.38346633 -1.3703228  0.54557131
-  var7  -0.04908167 -1.3250197  0.85160613
-  var8   1.14128905  0.3701645  2.20711215
-  var9   0.17012889 -0.8799425  1.09344745
-  var10 -0.12336368 -1.0119155  0.94126545
-  var11  0.10568563 -1.3718464  1.44540142
-  var12 -0.24333550 -1.4403266  1.01460880
-  var13 -0.35394301 -1.6615484  0.52818602
-  var14  0.40711976 -0.7074704  1.54601587
-  var15 -0.01514472 -1.0178118  0.74269156
-  var16 -0.27635579 -1.6625823  1.38416775
-  var17 -0.30552609 -1.9752458  1.01011777
-  var18 -0.02075701 -0.8538314  0.73049741
-  var19 -0.86349099 -1.7091822 -0.08109229
-  var20 -0.51326858 -1.9100411  0.12688107
-  var21 -0.22545968 -0.9057803  0.49239789
-  var22 -0.30225076 -1.2096609  0.51380061
-  var23 -0.09608704 -0.8835800  0.25930099
-  var24 -0.31958504 -1.1718194  0.22856694
-  var25  0.53372698 -0.5038779  1.57291047
-
-  [[2]]
-  50%       2.5%     97.5%
-  var1  -0.34658403 -1.4952124 0.3967916
-  var2  -0.03066019 -1.2702390 0.9976132
-  var3  -0.22646524 -0.9413038 0.4339006
-  var4   0.40797025 -0.9141791 1.6952831
-  var5   0.50071541 -0.6188152 1.8624466
-  var6  -0.57766757 -1.5847266 0.1215623
-  var7   0.23455525 -1.0955153 1.3087351
-  var8   0.36544726 -0.6390447 1.5083066
-  var9   0.40817764 -0.7341571 1.6391713
-  var10  0.38989821 -0.5944415 1.1929786
-  var11 -0.20124838 -1.4100655 1.2953397
-  var12 -0.17875307 -1.5888454 0.7581926
-  var13 -0.08070925 -0.9036766 0.8052618
-  var14  0.32533810 -0.4274098 1.4456158
-  var15  1.65913216 -0.1471588 3.0529633
-  var16 -0.27765762 -1.5604557 0.8609888
-  var17 -0.06613950 -1.6199064 1.1385778
-  var18 -0.16420552 -1.2774442 1.0554348
-  var19 -0.36922871 -1.6708024 0.5563989
-  var20  0.51703631 -0.8284648 1.4561670
-  var21 -0.15972848 -1.1826805 1.3795938
-  var22  0.49641145 -0.6764489 1.6458448
-  var23 -0.09404249 -1.0792736 0.9836529
-  var24 -0.21678873 -1.4105245 0.6475629
-  var25  0.68614287 -0.4792060 1.7023143
-  \end{verbatim}
- \bibliographystyle{apalike}
-\bibliography{IPTM}
+  \subsection*{APPENDIX E: Getting It Right}
+\subsubsection*{Backward Generative Process} \label{subsubsec: Backward Generative Process}
+We need to define a “backward” generative process in order to perform Geweke’s “Getting it Right” test because when we are generating our “backwards” samples, we only want to resample the token word types and (sender, recipients, timestamp) pairs, and not any of
+our latent variables. This means we will take as input the latent variables we got by running our inference procedure (token topic assignments, topic interaction pattern assignments, and interaction pattern parameters), and simply condition on these to draw new data.
+This “backward” version of the generative process is detailed below.\\ \newline
+Let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. These
+data structures, along with the latent variables we got by running our inference procedure (token topic assignments, topic interaction pattern assignments, interaction pattern parameters, and tuning parameter $\delta$) are passed in to the backward generative process, which then outputs new documents with the generated token word types and (sender, recipients, timestamp) pairs.
+\begin{algorithm}[H]
+	\SetAlgoLined
+	\caption{Generate data with backward sampling}
+	\For{d=1 to D}{
+		set $N^{(d)}= \mbox{max}(1, \bar N^{(d)})$, where $\bar N^{(d)}$ is known\\
+		\For{n=1 to ${N}^{(d)}$}{
+			\If {$\bar N^{(d)}>0$} {
+				$NKV_{v_n, k_n} -=1$\\
+				\For{v=1 to $V$}{
+				 $\phi_n^{(d)}[v] = \frac{NKV_{v, z_n^{(d)}}+\beta\boldsymbol{u}}{NK_k + \beta}$
+					}
+				draw $w_n^{(d)} \sim \phi_n^{(d)}$\\
+				$NKV_{w_n^{(d)}, z_n^{(d)}} += 1$
+			}
+	}
+	              \For{i=1 to $A$}{
+	              	\For{j=1 to $A$}{
+	              		\If {j $\neq$ i} {
+	              			calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
+	              			set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
+	              			draw I($i \rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})$}  }
+	              	draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)})$
+	              }
+	              set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
+	              
+		}
+\end{algorithm}
 \end{document}
 
