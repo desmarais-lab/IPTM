@@ -2,6 +2,7 @@
 #' @import stats
 #' @import grDevices
 #' @import graphics
+#' @import RcppArmadillo
 #' @importFrom Rcpp sourceCpp
 #' @importFrom mvtnorm rmvnorm dmvnorm
 #' @importFrom entropy entropy.empirical
