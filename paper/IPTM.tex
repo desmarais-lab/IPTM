@@ -478,7 +478,24 @@ For implementation, we need to compute these equations in log space to prevent u
        \propto P(J_{ij}^{(d)}=0|i^{(d)}_{\mbox{o}},\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&\times P(\Delta T^{(d)}_{iJ_i^{(d)}} >\Delta T^{(d)}|J_{ij}^{(d)} =0,  J_{i_{\backslash j}}^{(d)}=\boldsymbol{r}^{(d)}_{i_{\backslash j}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B})\\& =\frac{1}{\delta\lambda^{(d)}_{ij}+1}\times e^{-(t^{(d)}-t^{(d-1)})\lambda^{(d)}_{iJ^{(d)}_{i[-j]}}},
        \end{aligned}
        \end{equation}
-       where $\lambda^{(d)}_{iJ^{(d)}_{i[-j]}}$ meaning similarly as above that $\lambda^{(d)}_{iJ^{(d)}_{i}}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\frac{1}{|J_i|}\sum\limits_{j \in{J_i}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\} $ is calculated with $j^{th}$ element of $J_i^{(d)}$ fixed as 0. Now we can use Gibbs sampling using the two probabilities, Equation (16) and Equation (17). Note that we would calculate the equations in the log space to prevent from numerical underflow.
+       where $\lambda^{(d)}_{iJ^{(d)}_{i[-j]}}$ meaning similarly as above that $\lambda^{(d)}_{iJ^{(d)}_{i}}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\frac{1}{|J_i|}\sum\limits_{j \in{J_i}}\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot \prod\limits_{j \in J_i}1\{j \in \mathcal{A}_{\backslash i}\} $ is calculated with $j^{th}$ element of $J_i^{(d)}$ fixed as 0. Now we can use Gibbs sampling using the two probabilities, Equation (16) and Equation (17). Note that we would calculate the probabilities in the log space to prevent from numerical underflow. Equivalently, for each $i$ and $j$, we can apply a random sampling from the Bernoulli probability
+              \begin{equation}
+              \begin{aligned}
+              &\frac{P(J_{ij}^{(d)}=1|\cdot)}{P(J_{ij}^{(d)}=1|\cdot) + P(J_{ij}^{(d)}=0|\cdot)},
+              \end{aligned}
+              \end{equation}
+              where $P(J_{ij}^{(d)}=1|\cdot)$ is Equation (16) and $P(J_{ij}^{(d)}=0|\cdot)$ is Equation (17).
+             \iffalse
+         Moreover, to further protect from numerical underflow and overflow, we use the numerical approximation of $f(y) = \mbox{log}(1+ e^y)$ as below: 
+         \begin{equation*}
+         f(y) = \begin{cases}
+         y &y >35\\
+         e^y & y<-10\\
+         \mbox{log}(1+e^y) & \mbox{otherwise},
+         \end{cases}
+         \end{equation*}
+         where $y = (t^{(d)}-t^{(d-1)})\big(\frac{1}{|J_i^{(+j)}|}\sum\limits_{j \in J_i^{(+j)}}\lambda^{(d)}_{ij} -\frac{1}{|J_i^{(-j)}|}\sum\limits_{j \in J_i^{(-j)}}\lambda^{(d)}_{ij} \big) - \mbox{log}(\delta\lambda^{(d)}_{ij})$ in this case.
+         \fi
    \iffalse
    \subsection{Resampling the augmented data $\mathcal{J}_a$} \label{subsec: Data augmentation}
    First of all, for each document $d$, we update the latent sender and the corresponding receiver set,  $\mathcal{I}^{(d)}_{\mbox{a}}=\{i^{(d)}\}_{i\neq i^{(d)}}$ and  $\mathcal{J}^{(d)}_{\mbox{a}}=\{J_i^{(d)}\}_{i\neq i^{(d)}}$, by accounting for the conditional probability $P(\mbox{latent receivers}| \mbox{latent time} < \mbox{observed time})$. To derive this, let $\Delta T_{i_o^{(d)}{J_o^{(d)}}}$ be the observed time increment, and $\Delta T_{i_a{J_{i_a}}}$ be the latent time increment associated with the document sent by $i_a$. We also define $(i \rightarrow j)$ be an indicator of whether sender $i$ added $j$ to the latent receivers (i.e. $j \in J_i$), and $J_i^{(-j)}$ denote the vector of recipient indicators other than $j$. Then the conditional probability is:\\
@@ -610,11 +627,15 @@ After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x
  \mbox{log(Acceptance Probability) = min(Equation (28), 0). }
  \end{equation}
  To determine whether to accept the proposed update or not, we use the log of acceptance ratio; if the log of a sample from uniform(0,1) (i.e. log(runif(1, 0, 1))) is less than the log-acceptance probability (29), we accept the proposal. Otherwise, we reject. Since M-H requires some tuning of the samples, we use both burn-ins and thinnings.\\ \newline
- After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$ using the same procedure. This time we use the prior $ \delta \sim \mbox{Beta}(1, 10)$, which requires the proposal distribution truncated at zero and one. Using the truncated Normal distribution, now we have the normalizing constants (since $f(\mathcal{B}^\prime|\mathcal{B})=\frac{\phi(\mathcal{B}^\prime-\mathcal{B})}{\Phi(\mathcal{B})}, 0 < \forall \mathcal{B}^\prime < 1 $) which do not cancel out and the acceptance probability becomes:
- \begin{equation}
+ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$ using the same procedure. Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, this time we use the prior $ \delta \sim \mbox{Beta}(1, 10)$, which requires the proposal distribution truncated at zero and one.  Using the truncated Normal distribution, we have the normalizing constants and now the proposal density is
+  \begin{equation}
+N_{(0, 1)}(\delta^\prime | \delta, \sigma^2_\delta) = \frac{\frac{1}{\sigma_\delta}\phi(\frac{\delta^\prime - \delta}{\sigma_\delta})}{\Phi(\frac{1 - \delta}{\sigma_\delta})- \Phi(\frac{0 - \delta}{\sigma_\delta})}\boldsymbol{I}_{(0,1)}(\delta^\prime),
+ 	\end{equation}
+ 	where $\phi$ is the standard Gaussian density, and $\Phi$ is the standard Gaussian cumulative distribution function. While the numerator is symmetric in $(\delta^\prime, \delta)$, the denominator is not. It follows that the correct acceptance ratio is 
+ 	\begin{equation}
  	\begin{split}
  		& \mbox{Acceptance Probability}=
- 		\begin{cases}  \frac{P(\mathcal{B}^\prime|\mathcal{Z},   \mathcal{C},  \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta)\Phi(\mathcal{B})}{P(\mathcal{B}|\mathcal{Z},   \mathcal{C},  \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2,   \delta)\Phi(\mathcal{B}^\prime)}\quad\text{if}  <1\\
+ 		\begin{cases}  \frac{P(\delta^\prime|\mathcal{Z},   \mathcal{C},  \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)(\Phi(\frac{1 - \delta}{\sigma_\delta})- \Phi(\frac{0 - \delta}{\sigma_\delta}))}{P(\delta|\mathcal{Z},   \mathcal{C},   \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)(\Phi(\frac{1 - \delta^\prime}{\sigma_\delta})- \Phi(\frac{0 - \delta^\prime}{\sigma_\delta}))}\quad\text{if}  <1\\
  			1 \quad \text{else}
  		\end{cases}
  	\end{split}
@@ -623,12 +644,12 @@ After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x
  \begin{equation}
  \begin{aligned} 
  &\mbox{log}\Big(\mbox{dbeta}(\delta^\prime ;1, 10)\Big)-\mbox{log}\Big(\mbox{dbeta}(\delta;1, 10)\Big)\\&+ \sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}^{\prime} \Big\}
- \\& -\sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}\Big\}\\& +\sum_{c=1}^C\mbox{log}\Big(\mbox{pmvnorm}(\boldsymbol{b}^{(c)};\mathbf{0}, \sigma^2I_{P})\Big)-\sum_{c=1}^C\mbox{log}\Big(\mbox{pmvnorm}(\boldsymbol{b}^{\prime(c)};\mathbf{0}, \sigma^2I_P)\Big),
+ \\& -\sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}\Big\}\\& +\mbox{log}\Big(\mbox{pmvnorm}(\frac{1 - \delta}{\sigma_\delta};{0}, 1) - \mbox{pmvnorm}(\frac{0 - \delta}{\sigma_\delta};{0}, 1)\Big)-\mbox{log}\Big(\mbox{pmvnorm}(\frac{1 - \delta^\prime}{\sigma_\delta};{0}, 1) - \mbox{pmvnorm}(\frac{0 - \delta^\prime}{\sigma_\delta};{0}, 1)\Big),
  \end{aligned}
  \end{equation}
  where $\mbox{pmvnorm}$ is the distribution function of the multivariate normal distribution. Then the log of acceptance ratio we have is:
  \begin{equation}
- \mbox{log(Acceptance Probability) = min(Equation(31), 0). }
+ \mbox{log(Acceptance Probability) = min(Equation (33), 0). }
  \end{equation}
 \begin{comment}
 \subsection{Asymmetric Dirichlet prior over $\Theta$}  \label{subsec: Asymmetric Dirichlet prior over theta}
@@ -687,7 +708,7 @@ After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x
  			accept-reject using Equation (28) and (29)\\
   		}
   					sample $\delta$ from proposal distribution\\
-  					accept-reject using Equation (28) and (29)
+  					accept-reject using Equation (33) and (34)
   					
  	}	summarize the results using:\\ the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$
  \end{algorithm}

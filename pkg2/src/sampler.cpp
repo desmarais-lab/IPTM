@@ -492,12 +492,12 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 
 // [[Rcpp::export]]
 double TimeInEqZ(NumericVector LambdaiJi, double tdiff) {
-	return sum(log(LambdaiJi))- tdiff * sum(LambdaiJi);
+	return - tdiff * sum(LambdaiJi);
 }
 
 // [[Rcpp::export]]
-double ObservedInEqZ(NumericVector LambdaiJi, double observediJi) {
-	return log(observediJi) - log(sum(LambdaiJi));
+double ObservedInEqZ(double observediJi) {
+	return log(observediJi);
 }
 
 // [[Rcpp::export]]
@@ -520,7 +520,7 @@ NumericVector lambdaiJi(NumericVector p_d, List XB, IntegerMatrix iJi) {
 
 
 // [[Rcpp::export]]
-arma::mat DataAug_cpp(arma::mat iJi_d, arma::mat lambda_d, double delta, double timeinc_d) {
+arma::mat DataAug_cpp2(arma::mat iJi_d, arma::mat lambda_d, double delta, double timeinc_d) {
 	int node = iJi_d.n_rows;
 	arma::mat prob = arma::zeros(node, node);
 	arma::mat prenum = iJi_d % log(delta * lambda_d) - log(delta * lambda_d + 1);
@@ -557,6 +557,37 @@ arma::mat DataAug_cpp(arma::mat iJi_d, arma::mat lambda_d, double delta, double 
 		}
 			
 	return exp(num - denom);
+}
+
+// [[Rcpp::export]]
+arma::mat DataAug_cpp(arma::mat iJi_d, arma::mat lambda_d, double delta, double timeinc_d) {
+	int node = iJi_d.n_rows;
+	arma::mat prob = arma::zeros(node, node);
+	arma::mat prenum1 = log(delta * lambda_d) - log(delta * lambda_d + 1);
+	arma::mat prenum0 = - log(delta * lambda_d + 1);
+	prenum1.diag().zeros();
+	arma::mat lambda1 = arma::zeros(node, node);
+	arma::mat lambda0 = arma::zeros(node, node);
+	for (int i = 0; i < node; i++) {
+		arma::mat Ji = iJi_d.row(i);
+		for (int j = 0; j < node; j++) {
+			arma::mat lambdaplus = Ji;
+			arma::mat lambdaminus = Ji;
+			lambdaplus(0, j) = 1;
+			lambdaminus(0, j) = 0;
+			int summinus = sum(lambdaminus.row(0));
+			if (summinus == 0) {
+				summinus = 1;
+			}	
+			lambda1(i,j) = sum(lambda_d.row(i) % lambdaplus.row(0)) / sum(lambdaplus.row(0));
+			lambda0(i,j) = sum(lambda_d.row(i) % lambdaminus.row(0)) / summinus;		
+		}
+	}
+	arma::mat y1 = -timeinc_d * lambda1;
+	arma::mat y0 = -timeinc_d * lambda0;
+	arma::mat out = exp(prenum1 + y1) / (exp(prenum1 + y1) + exp(prenum0 + y0));
+	out.diag().zeros();
+	return out;
 }
 
 // [[Rcpp::export]]

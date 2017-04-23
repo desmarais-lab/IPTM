@@ -321,8 +321,8 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
         }
         edgepart.d = EdgeInEqZ(iJi[[d]], lambda[[d]], delta)
-        timepart.d = sum(dexp(timeinc[d], nonemptyiJi[[d]], log = TRUE))
-        observed.d = ObservedInEqZ(nonemptyiJi[[d]], observediJi[[d]]) 
+        timepart.d = TimeInEqZ(nonemptyiJi[[d]], timeinc[d])
+        observed.d = ObservedInEqZ(observediJi[[d]]) 
         fixedpart = topicpart.d + edgepart.d + timepart.d + observed.d 
         for (w in 1L:length(currentZ[[d]])) {
           const.Z = fixedpart + wordpart.d[w, ]
@@ -377,8 +377,8 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
           }
           }
           const.C[IP] = sum(vapply(document.k, function(d) {
-            EdgeInEqZ(iJi[[d]], lambda[[d]], delta) + sum(dexp(timeinc[d], nonemptyiJi[[d]], log = TRUE)) + 
-    			ObservedInEqZ(nonemptyiJi[[d]], observediJi[[d]]) 
+            EdgeInEqZ(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]], timeinc[d]) + 
+    			ObservedInEqZ(observediJi[[d]]) 
           }, c(1))) / length(document.k)
           }
           const.C = const.C - max(const.C)
@@ -413,8 +413,8 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 		  		 dmvnorm(Beta.old[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
 		  		 }, c(1))) 
 	 post.old1 = sum(vapply(edge2, function(d) {
-	     	     EdgeInEqZ(iJi[[d]], lambda[[d]], delta) + sum(dexp(timeinc[d], nonemptyiJi[[d]], log = TRUE)) +
-    			 ObservedInEqZ(nonemptyiJi[[d]], observediJi[[d]])
+	     	     EdgeInEqZ(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]], timeinc[d]) +
+    			 	 ObservedInEqZ(observediJi[[d]])
     			 }, c(1))) / length(edge2)
     	 
 	 options(warn = -1)
@@ -441,8 +441,8 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
         		dmvnorm(Beta.new[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
          }, c(1))) 
          post.new1 = sum(vapply(edge2, function(d) {
-    			    EdgeInEqZ(iJi[[d]], lambda[[d]], delta) + sum(dexp(timeinc[d], nonemptyiJi[[d]], log = TRUE))+ 
-    			    ObservedInEqZ(nonemptyiJi[[d]], observediJi[[d]])
+    			    EdgeInEqZ(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]], timeinc[d]) + 
+    			    ObservedInEqZ(observediJi[[d]])
     			    }, c(1))) / length(edge2)
     		 loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
       
@@ -475,7 +475,11 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 		 post.new2 = sum(vapply(edge2, function(d) {
     			    EdgeInEqZ(iJi[[d]], lambda[[d]], delta.new)
     			    }, c(1))) / length(edge2)
-    	 loglike.diff1 = prior.new2 + post.new2 - prior.old2 - post.old2
+    	 loglike.diff1 = prior.new2 + post.new2 - prior.old2 - post.old2 + sum(vapply(1L:nIP, function(IP) {
+		  		 dmvnorm(Beta.old[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
+		  		 }, c(1))) - sum(vapply(1L:nIP, function(IP) {
+		  		 dmvnorm(Beta.old[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
+		  		 }, c(1))) 
 		if (log(runif(1, 0, 1)) < loglike.diff1) {
 			delta = delta.new
 			prior.old1 = prior.new1
