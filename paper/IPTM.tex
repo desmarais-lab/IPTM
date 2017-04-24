@@ -644,10 +644,10 @@ N_{(0, 1)}(\delta^\prime | \delta, \sigma^2_\delta) = \frac{\frac{1}{\sigma_\del
  \begin{equation}
  \begin{aligned} 
  &\mbox{log}\Big(\mbox{dbeta}(\delta^\prime ;1, 10)\Big)-\mbox{log}\Big(\mbox{dbeta}(\delta;1, 10)\Big)\\&+ \sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}^{\prime} \Big\}
- \\& -\sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}\Big\}\\& +\mbox{log}\Big(\mbox{pmvnorm}(\frac{1 - \delta}{\sigma_\delta};{0}, 1) - \mbox{pmvnorm}(\frac{0 - \delta}{\sigma_\delta};{0}, 1)\Big)-\mbox{log}\Big(\mbox{pmvnorm}(\frac{1 - \delta^\prime}{\sigma_\delta};{0}, 1) - \mbox{pmvnorm}(\frac{0 - \delta^\prime}{\sigma_\delta};{0}, 1)\Big),
+ \\& -\sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}\Big\}\\& +\mbox{log}\Big(\mbox{pnorm}(\frac{1 - \delta}{\sigma_\delta};{0}, 1) - \mbox{pnorm}(\frac{0 - \delta}{\sigma_\delta};{0}, 1)\Big)-\mbox{log}\Big(\mbox{pnorm}(\frac{1 - \delta^\prime}{\sigma_\delta};{0}, 1) - \mbox{pnorm}(\frac{0 - \delta^\prime}{\sigma_\delta};{0}, 1)\Big),
  \end{aligned}
  \end{equation}
- where $\mbox{pmvnorm}$ is the distribution function of the multivariate normal distribution. Then the log of acceptance ratio we have is:
+ where $\mbox{pnorm}$ is the distribution function of the normal distribution. Then the log of acceptance ratio we have is:
  \begin{equation}
  \mbox{log(Acceptance Probability) = min(Equation (33), 0). }
  \end{equation}

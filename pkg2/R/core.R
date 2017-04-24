@@ -475,12 +475,10 @@ MCMC = function(edge, node, textlist, vocabulary, nIP, K, delta.B,
 		 post.new2 = sum(vapply(edge2, function(d) {
     			    EdgeInEqZ(iJi[[d]], lambda[[d]], delta.new)
     			    }, c(1))) / length(edge2)
-    	 loglike.diff1 = prior.new2 + post.new2 - prior.old2 - post.old2 + sum(vapply(1L:nIP, function(IP) {
-		  		 dmvnorm(Beta.old[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
-		  		 }, c(1))) - sum(vapply(1L:nIP, function(IP) {
-		  		 dmvnorm(Beta.old[[IP]], rep(0, P), sigma^2 * diag(P), log = TRUE)
-		  		 }, c(1))) 
-		if (log(runif(1, 0, 1)) < loglike.diff1) {
+    	 loglike.diff1 = prior.new2 + post.new2 - prior.old2 - post.old2 + 
+    	 		   log(pnorm((1-delta)/delta.B, 0, 1) - pnorm((0-delta)/delta.B, 0, 1)) - 
+    	 		   log(pnorm((1-delta.new)/delta.B, 0, 1) - pnorm((0-delta.new)/delta.B, 0, 1))
+    		if (log(runif(1, 0, 1)) < loglike.diff1) {
 			delta = delta.new
 			prior.old1 = prior.new1
 			post.old1 = post.new1
