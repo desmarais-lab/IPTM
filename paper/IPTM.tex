@@ -627,7 +627,7 @@ After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x
  \mbox{log(Acceptance Probability) = min(Equation (28), 0). }
  \end{equation}
  To determine whether to accept the proposed update or not, we use the log of acceptance ratio; if the log of a sample from uniform(0,1) (i.e. log(runif(1, 0, 1))) is less than the log-acceptance probability (29), we accept the proposal. Otherwise, we reject. Since M-H requires some tuning of the samples, we use both burn-ins and thinnings.\\ \newline
- After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$ using the same procedure. Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, this time we use the prior $ \delta \sim \mbox{Beta}(1, 10)$, which requires the proposal distribution truncated at zero and one.  Using the truncated Normal distribution, we have the normalizing constants and now the proposal density is
+ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$. Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the Normal distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, this time we use the prior $ \delta \sim \mbox{Beta}(1, 10)$, which requires the proposal distribution truncated at zero and one.  Using the truncated Normal distribution, we have the normalizing constants and now the proposal density is
   \begin{equation}
 N_{(0, 1)}(\delta^\prime | \delta, \sigma^2_\delta) = \frac{\frac{1}{\sigma_\delta}\phi(\frac{\delta^\prime - \delta}{\sigma_\delta})}{\Phi(\frac{1 - \delta}{\sigma_\delta})- \Phi(\frac{0 - \delta}{\sigma_\delta})}\boldsymbol{I}_{(0,1)}(\delta^\prime),
  	\end{equation}
@@ -640,18 +640,43 @@ N_{(0, 1)}(\delta^\prime | \delta, \sigma^2_\delta) = \frac{\frac{1}{\sigma_\del
  		\end{cases}
  	\end{split}
  \end{equation}
- where $\Phi(\cdot)$ is the normal CDF of original (untruncated) Normal distribution. By multiplying the normal CDF part to Equation (27) and take the log, we obtain the log of acceptance ratio:
+By multiplying the normal CDF part to Equation (27) and take the log, we obtain the log of acceptance ratio:
  \begin{equation}
  \begin{aligned} 
- &\mbox{log}\Big(\mbox{dbeta}(\delta^\prime ;1, 10)\Big)-\mbox{log}\Big(\mbox{dbeta}(\delta;1, 10)\Big)\\&+ \sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}^{\prime} \Big\}
- \\& -\sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}\Big\}\\& +\mbox{log}\Big(\mbox{pnorm}(\frac{1 - \delta}{\sigma_\delta};{0}, 1) - \mbox{pnorm}(\frac{0 - \delta}{\sigma_\delta};{0}, 1)\Big)-\mbox{log}\Big(\mbox{pnorm}(\frac{1 - \delta^\prime}{\sigma_\delta};{0}, 1) - \mbox{pnorm}(\frac{0 - \delta^\prime}{\sigma_\delta};{0}, 1)\Big),
+ &\mbox{log}\Big(\mbox{dbeta}(\delta^\prime ;1, 10)\Big)-\mbox{log}\Big(\mbox{dbeta}(\delta;1, 10)\Big)\\&+ \sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \delta^{\prime} \Big\}
+ \\& -\sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \delta\Big\}\\& +\mbox{log}\Big(\mbox{pnorm}(\frac{1 - \delta}{\sigma_\delta};{0}, 1) - \mbox{pnorm}(\frac{0 - \delta}{\sigma_\delta};{0}, 1)\Big)-\mbox{log}\Big(\mbox{pnorm}(\frac{1 - \delta^\prime}{\sigma_\delta};{0}, 1) - \mbox{pnorm}(\frac{0 - \delta^\prime}{\sigma_\delta};{0}, 1)\Big),
  \end{aligned}
  \end{equation}
  where $\mbox{pnorm}$ is the distribution function of the normal distribution. Then the log of acceptance ratio we have is:
  \begin{equation}
  \mbox{log(Acceptance Probability) = min(Equation (33), 0). }
  \end{equation}
+ \newpage
+ \noindent
+ \textcolor{red}{ALTERNATVELY,}\\ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$. Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the Normal distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, this time we need a proposal distribution with support on the unit interval, since $ \delta \sim \mbox{Beta}(1, 10)$.  Now we define an auxiliary variable $\eta$ which come from the proposal distribution (in the real line) and take the transformation:
+ $$\delta = \Phi(\eta),$$
+ where $\Phi$ is the standard Gaussian cumulative distribution function. Given that still we cancel out the symmetric part $\phi(\eta^\prime-\eta) =\phi(\eta-\eta^\prime)$ (where $\phi(\cdot)$ is Normal pdf), it follows that the correct acceptance ratio is 
+ \begin{equation} 
+ 	\begin{split}
+ 		& \mbox{Acceptance Probability}=
+ 		\begin{cases}  \frac{P(\delta^\prime|\mathcal{Z},   \mathcal{C},  \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)}{P(\delta|\mathcal{Z},   \mathcal{C},   \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)}\quad\text{if}  <1\\
+ 			1 \quad \text{else}
+ 		\end{cases}
+ 	\end{split}
+ \end{equation}
+ By taking the log, we obtain the log of acceptance ratio:
+ \begin{equation}
+ 	\begin{aligned} 
+ 		&\mbox{log}\Big(\mbox{dbeta}(\delta^\prime ;1, 10)\Big)-\mbox{log}\Big(\mbox{dbeta}(\delta;1, 10)\Big)\\&+ \sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \delta^{\prime} \Big\}
+ 		\\& -\sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \delta\Big\}.
+ 	\end{aligned}
+ \end{equation}
+  Then the log of acceptance ratio we have is:
+ \begin{equation}
+ 	\mbox{log(Acceptance Probability) = min(Equation (33), 0). }
+ \end{equation}
 \begin{comment}
+
 \subsection{Asymmetric Dirichlet prior over $\Theta$}  \label{subsec: Asymmetric Dirichlet prior over theta}
  \cite{wallach2009rethinking} demonstrated that the typical implementations of topic models using symmetric Dirichlet priors with fixed concentration parameters often result in less practical results, and the model fitting can be improved by applying an asymmetric Dirichlet prior over the document–topic distributions (i.e. $\Theta$). Therefore, we assign an asymmetric Dirichlet prior over the interaction pattern-topic distributions, $\Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}$, where $\boldsymbol{\theta}^{(d)}$ is drawn from Dir($\alpha^{(c^{(d)})}, \boldsymbol{m}^{(c^{(d)})}$). While \cite{wallach2009rethinking} illustrates two different methods, adding a hierarchy to $\Theta$ and optimizing the hyperparameters ($\alpha$ and $\boldsymbol{m}$), we choose to use hyperparameter
  optimization steps since it is computationally efficient and also sufficient to achieve the desired performance gains. Now, we assume $\boldsymbol{m}^{(c)}$ to be non-uniform base measures (while $\alpha^{(c)}$ is still a fixed concentration parameter), and implement the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured} based on Minka’s fixed-point iteration \citep{minka2000estimating}.\\ \newline
