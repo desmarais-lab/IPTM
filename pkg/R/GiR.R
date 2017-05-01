@@ -579,10 +579,10 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 
 
 # Getting_It_Right
-GiR = function(Nsamp = 100, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello","bye", "mine", "what"), 
+GiR = function(Nsamp = 5000, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello","bye", "mine", "what"), 
 			   nIP = 2, K = 4, nwords = 4, alpha = 2, mvec = rep(1/4, 4), betas = 2, nvec = rep(1/5, 5), 
 			   prior.b.mean = c(-3, rep(0, 6)), prior.b.var = diag(7), prior.delta = c(1, 1), sigma_Q = 0.5, 
-			   niters = c(10, 1, 1, 1100, 100, 10), netstat = "dyadic", generate_PP_plots = TRUE, seed = 123) {
+			   niters = c(1, 1, 1, 1100, 100, 10), netstat = "dyadic", generate_PP_plots = TRUE, seed = 123) {
 	
 	set.seed(seed)
 	base.data = GenerateDocs_base(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
@@ -606,13 +606,18 @@ GiR = function(Nsamp = 100, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello
 		Forward_sample = GenerateDocs_forward(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 						 b, delta, currentC, netstat, base.edge, seed) 
 		Forward_stats[i, 1:P] = Reduce('+', b) / nIP
-		Forward_stats[i, P+1] = mean(vapply(1L:nDocs, function(d) {length(Forward_sample$edge[[d]][[2]])}, c(1)))
-		Forward_stats[i, P+2] = mean(vapply(2:nDocs, function(d) {Forward_sample$edge[[d]][[3]]-Forward_sample$edge[[d-1]][[3]]}, c(1))) 			
+		Forward_stats[i, P+1] = mean(vapply(1L:nDocs, function(d) {
+								length(Forward_sample$edge[[d]][[2]])}, c(1)))
+		Forward_stats[i, P+2] = mean(vapply(2:nDocs, function(d) {
+								Forward_sample$edge[[d]][[3]] - Forward_sample$edge[[d-1]][[3]]}, c(1))) 			
 		Forward_stats[i, P+3] = mean(currentC)
-		Tokens_in_Topic = tabulate(vapply(1:nDocs, function(d){as.numeric(names(Forward_sample$text[[d]]))}, rep(0, nwords)), K)
-		Forward_stats[i, (P+4):(P+3+nIP)] = vapply(1:nIP, function(IP) {Tokens_in_Topic %*% (currentC == IP)}, c(1))
+		Tokens_in_Topic = tabulate(vapply(1:nDocs, function(d){
+						  as.numeric(names(Forward_sample$text[[d]]))}, rep(0, nwords)), K)
+		Forward_stats[i, (P+4):(P+3+nIP)] = vapply(1:nIP, function(IP) {
+											Tokens_in_Topic %*% (currentC == IP)}, c(1))
 		Forward_stats[i, (P+4+nIP):(P+3+nIP+K)] = Tokens_in_Topic
-		Tokens_in_Word = tabulate(vapply(1:nDocs, function(d){Forward_sample$text[[d]]}, rep(0, nwords)), W)
+		Tokens_in_Word = tabulate(vapply(1:nDocs, function(d){
+						 Forward_sample$text[[d]]}, rep(0, nwords)), W)
 		Forward_stats[i, (P+4+nIP+K):21] = Tokens_in_Word
 		colnames(Forward_stats) = c(paste0("B_",1:P), "Mean_receipients", "Mean_timediff", "Mean_TopicIP", 
 									paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), paste0("Tokens_in_Word", 1:W))
@@ -622,7 +627,8 @@ GiR = function(Nsamp = 100, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello
 	Backward_stats = matrix(NA, nrow = Nsamp, ncol = 21)
 	Backward_sample = GenerateDocs_backward_init(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					  b, delta, currentC, netstat, base.edge, base.text, seed) 
-	for (i in 1L:Nsamp) { print(i)
+	for (i in 1L:Nsamp) {
+		if (i %% 10 == 0) {print(i)}
 		seed = seed + 100
 		Inference_samp = Inference(Backward_sample$edge, node, Backward_sample$text, vocabulary, nIP, K, sigma_Q, 
 						  alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
@@ -648,13 +654,18 @@ GiR = function(Nsamp = 100, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello
 						 b, delta, currentC, netstat, topic_token_assignments, topic_token_counts, word_type_topic_counts,
 						 base.edge, base.text, seed)
 		Backward_stats[i, 1:P] = Reduce('+', b) / nIP
-		Backward_stats[i, P+1] = mean(vapply(1L:nDocs + length(base.text), function(d) {length(Backward_sample$edge[[d]][[2]])}, c(1)))
-		Backward_stats[i, P+2] = mean(vapply(2:nDocs + length(base.text), function(d) {Backward_sample$edge[[d]][[3]]-Backward_sample$edge[[d-1]][[3]]}, c(1))) 			
+		Backward_stats[i, P+1] = mean(vapply(1L:nDocs + length(base.text), function(d) {
+								 length(Backward_sample$edge[[d]][[2]])}, c(1)))
+		Backward_stats[i, P+2] = mean(vapply(2:nDocs + length(base.text), function(d) {
+								 Backward_sample$edge[[d]][[3]] - Backward_sample$edge[[d-1]][[3]]}, c(1))) 			
 		Backward_stats[i, P+3] = mean(currentC)
-		Tokens_in_Topic = tabulate(vapply(1:nDocs + length(base.text), function(d){as.numeric(names(Backward_sample$text[[d]]))}, rep(0, nwords)), K)
-		Backward_stats[i, (P+4):(P+3+nIP)] = vapply(1:nIP, function(IP) {Tokens_in_Topic %*% (currentC == IP)}, c(1))
+		Tokens_in_Topic = tabulate(vapply(1:nDocs + length(base.text), function(d){
+								   as.numeric(names(Backward_sample$text[[d]]))}, rep(0, nwords)), K)
+		Backward_stats[i, (P+4):(P+3+nIP)] = vapply(1:nIP, function(IP) {
+											Tokens_in_Topic %*% (currentC == IP)}, c(1))
 		Backward_stats[i, (P+4+nIP):(P+3+nIP+K)] = Tokens_in_Topic
-		Tokens_in_Word = tabulate(vapply(1:nDocs + length(base.text), function(d){Backward_sample$text[[d]]}, rep(0, nwords)), W)
+		Tokens_in_Word = tabulate(vapply(1:nDocs + length(base.text), function(d){
+						  Backward_sample$text[[d]]}, rep(0, nwords)), W)
 		Backward_stats[i, (P+4+nIP+K):21] = Tokens_in_Word				 
 	}
 	
