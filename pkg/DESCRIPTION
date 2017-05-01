@@ -16,6 +16,7 @@ Imports:
     MCMCpack,
     entropy,
     Rcpp,
+    RcppArmadillo,
     lda,
     reshape,
     coda

@@ -8,6 +8,7 @@
 	top=30mm,
 	bottom= 30mm
 }
+\usepackage{lipsum}
 \usepackage{tabu}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
@@ -102,12 +103,12 @@ There are $K$ topics. Each topic $k$ is a discrete distribution over $V$ word ty
 \end{itemize}
 \noindent Then, we generate the local variables. We assume the following generative process for each document $d$ in a corpus $D$ \textbf{[See Algorithm 4]}:
 \begin{itemize}
-	\item[4-1.] Choose the number of words $N^{(d)} = \mbox{max}(1, \bar N^{(d)})$, where $\bar N^{(d)}\sim \mbox{Poisson}(\zeta)$
+	\item[4-1.] Choose the number of words $\bar N^{(d)} = \mbox{max}(1,  N^{(d)})$, where $N^{(d)}$ is known.
 	\item[4-2.] Choose document-topic distribution $\boldsymbol{\theta}^{(d)}\sim \mbox{Dir}(\alpha, \boldsymbol{m})$
-	\item[4-3.] For $n=1$ to $N^{(d)}$:
+	\item[4-3.] For $n=1$ to $\bar N^{(d)}$:
 	\begin{itemize}
 		\item[(a)] Choose a topic $z_n^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(d)})$
-		\item[(b)] if $\bar N^{(d)}>0$, choose a word $w_n^{(d)} \sim\mbox{Multinomial} (\phi^{(z_n^{(d)})})$
+		\item[(b)] if $N^{(d)}>0$, choose a word $w_n^{(d)} \sim\mbox{Multinomial} (\phi^{(z_n^{(d)})})$
 	\end{itemize}
 \end{itemize}
 \subsection{Stochastic Intensity} \label{subsec: Stochastic Intensity}
@@ -266,11 +267,11 @@ and the corresponding dimension of  $\boldsymbol{b}^{(c)}$ becomes $P =  1 + 8 \
 		\SetAlgoLined
 		\caption{Document Generating Process}
 		\For{d=1 to D}{
-			draw $N^{(d)}= \mbox{max}(1, \bar N^{(d)})$, where $\bar N^{(d)}\sim \mbox{Poisson}(\zeta) $\\
+			draw $\bar N^{(d)}= \mbox{max}(1, N^{(d)})$\\
 			draw $\boldsymbol{\theta}^{(d)}\sim \mbox{Dir}(\alpha, \boldsymbol{m})$\\
-				\For{n=1 to ${N}^{(d)}$}{
+				\For{n=1 to $\bar{N}^{(d)}$}{
 					draw $z_n^{(d)} \sim \mbox{Multinom}(\boldsymbol{\theta}^{(d)})$\\
-					\If {$\bar N^{(d)}>0$} {
+					\If {$N^{(d)}>0$} {
 							draw $w_n^{(d)} \sim\mbox{Multinom} (\boldsymbol{\phi}^{(z_n^{(d)})})$
 				}
 			}
@@ -316,11 +317,11 @@ and the corresponding dimension of  $\boldsymbol{b}^{(c)}$ becomes $P =  1 + 8 \
 		\SetAlgoLined
 		\caption{Document Generating Process}
 		\For{d=1 to D}{
-			draw $N^{(d)}= \mbox{max}(1, \bar N^{(d)})$, where $\bar N^{(d)}\sim \mbox{Poisson}(\zeta) $\\
+			draw $\bar N^{(d)}= \mbox{max}(1, N^{(d)})$\\
 			draw $\boldsymbol{\theta}^{(d)}\sim \mbox{Dir}(\alpha, \boldsymbol{m})$\\
-			\For{n=1 to ${N}^{(d)}$}{
+			\For{n=1 to $\bar {N}^{(d)}$}{
 				draw $z_n^{(d)} \sim \mbox{Multinom}(\boldsymbol{\theta}^{(d)})$\\
-				\If {$\bar N^{(d)}>0$} {
+				\If {$N^{(d)}>0$} {
 					draw $w_n^{(d)} \sim\mbox{Multinom} (\boldsymbol{\phi}^{(z_n^{(d)})})$
 				}
 			}
@@ -555,13 +556,13 @@ Second, we are going to resample the topic assignments, one words in a document 
 & P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, \mathcal{I}^{(d)}_{\mbox{o}}, \mathcal{J}^{(d)}_{\mbox{o}}, \mathcal{T}^{(d)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \sigma^2, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \frac{(\delta\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i\in \mathcal{A}_{\backslash J^{(d)}_i = \emptyset}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big).
  \end{aligned}
  \end{equation}
- Therefore, if $\bar N^{(d)} > 0$, then
+ Therefore, if $N^{(d)} > 0$, then
  \begin{equation}
  \begin{aligned}
   &P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B},\mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta)\\&\propto (N^{(k|d)}_{\backslash d, n}+\alpha \boldsymbol{m}_k)\times \frac{N^{(w_n^{(d)}|k)}_{\backslash d, n}+\frac{\beta}{W} }{N^{(k)}_{\backslash d, n}+\beta}\times\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \frac{(\delta\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i\in \mathcal{A}_{\backslash J^{(d)}_i = \emptyset}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big), 
  \end{aligned}
  \end{equation}
- and if $\bar N^{(d)} = 0$, then the first term becomes $\alpha\boldsymbol{m_k}$ and disappears because it is a constant. The second term disappears since there are no tokens, thus we just have the last three terms, $P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, \mathcal{I}^{(d)}_{\mbox{o}}, \mathcal{J}^{(d)}_{\mbox{o}}, \mathcal{T}^{(d)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \sigma^2, \delta)$, remaining.
+ and if $N^{(d)} = 0$, then the first term becomes $\alpha\boldsymbol{m_k}$ and disappears because it is a constant. The second term disappears since there are no tokens, thus we just have the last three terms, $P(\mathcal{I}^{(d)}_{\mbox{a}}, \mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, \mathcal{I}^{(d)}_{\mbox{o}}, \mathcal{J}^{(d)}_{\mbox{o}}, \mathcal{T}^{(d)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \sigma^2, \delta)$, remaining.
   \begin{equation}
   \begin{aligned}
   &P(z^{(d)}_1=k|\mathcal{Z}_{\backslash d, 1}=\emptyset,   \mathcal{C},   \mathcal{B},\mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2,  \delta)\\&\propto\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \frac{(\delta\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-(t^{(d)}-t^{(d-1)})\sum\limits_{i\in \mathcal{A}_{\backslash J^{(d)}_i = \emptyset}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big).
@@ -626,7 +627,8 @@ After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x
  \begin{equation}
  \mbox{log(Acceptance Probability) = min(Equation (28), 0). }
  \end{equation}
- To determine whether to accept the proposed update or not, we use the log of acceptance ratio; if the log of a sample from uniform(0,1) (i.e. log(runif(1, 0, 1))) is less than the log-acceptance probability (29), we accept the proposal. Otherwise, we reject. Since M-H requires some tuning of the samples, we use both burn-ins and thinnings.\\ \newline
+ To determine whether to accept the proposed update or not, we use the log of acceptance ratio; if the log of a sample from uniform(0,1) (i.e. log(runif(1, 0, 1))) is less than the log-acceptance probability (29), we accept the proposal. Otherwise, we reject. \\ \newline
+ \begin{comment}
  After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$. Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the Normal distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, this time we use the prior $ \delta \sim \mbox{Beta}(1, 10)$, which requires the proposal distribution truncated at zero and one.  Using the truncated Normal distribution, we have the normalizing constants and now the proposal density is
   \begin{equation}
 N_{(0, 1)}(\delta^\prime | \delta, \sigma^2_\delta) = \frac{\frac{1}{\sigma_\delta}\phi(\frac{\delta^\prime - \delta}{\sigma_\delta})}{\Phi(\frac{1 - \delta}{\sigma_\delta})- \Phi(\frac{0 - \delta}{\sigma_\delta})}\boldsymbol{I}_{(0,1)}(\delta^\prime),
@@ -651,11 +653,10 @@ By multiplying the normal CDF part to Equation (27) and take the log, we obtain 
  \begin{equation}
  \mbox{log(Acceptance Probability) = min(Equation (33), 0). }
  \end{equation}
- \newpage
- \noindent
- \textcolor{red}{ALTERNATVELY,}\\ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$. Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the Normal distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, this time we need a proposal distribution with support on the unit interval, since $ \delta \sim \mbox{Beta}(1, 10)$.  Now we define an auxiliary variable $\eta$ which come from the proposal distribution (in the real line) and take the transformation:
+\end{comment}
+After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$. Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the Normal distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, this time we need a proposal distribution with support on the unit interval, since $ \delta \sim \mbox{Beta}(1, 10)$.  Now we define an auxiliary variable $\eta$ which come from the proposal distribution (in the real line) and take the transformation:
  $$\delta = \Phi(\eta),$$
- where $\Phi$ is the standard Gaussian cumulative distribution function. Given that still we cancel out the symmetric part $\phi(\eta^\prime-\eta) =\phi(\eta-\eta^\prime)$ (where $\phi(\cdot)$ is Normal pdf), it follows that the correct acceptance ratio is 
+ where $\Phi$ is any link function that maps a value in the real line to the value in the unit length $[0, 1]$. Here, for simplicity, we choose standard Gaussian cumulative distribution function. Given that still we cancel out the symmetric part $\phi(\eta^\prime-\eta) =\phi(\eta-\eta^\prime)$ (where $\phi(\cdot)$ is Normal pdf), it follows that the correct acceptance ratio is 
  \begin{equation} 
  	\begin{split}
  		& \mbox{Acceptance Probability}=
@@ -676,7 +677,6 @@ By multiplying the normal CDF part to Equation (27) and take the log, we obtain 
  	\mbox{log(Acceptance Probability) = min(Equation (33), 0). }
  \end{equation}
 \begin{comment}
-
 \subsection{Asymmetric Dirichlet prior over $\Theta$}  \label{subsec: Asymmetric Dirichlet prior over theta}
  \cite{wallach2009rethinking} demonstrated that the typical implementations of topic models using symmetric Dirichlet priors with fixed concentration parameters often result in less practical results, and the model fitting can be improved by applying an asymmetric Dirichlet prior over the document–topic distributions (i.e. $\Theta$). Therefore, we assign an asymmetric Dirichlet prior over the interaction pattern-topic distributions, $\Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}$, where $\boldsymbol{\theta}^{(d)}$ is drawn from Dir($\alpha^{(c^{(d)})}, \boldsymbol{m}^{(c^{(d)})}$). While \cite{wallach2009rethinking} illustrates two different methods, adding a hierarchy to $\Theta$ and optimizing the hyperparameters ($\alpha$ and $\boldsymbol{m}$), we choose to use hyperparameter
  optimization steps since it is computationally efficient and also sufficient to achieve the desired performance gains. Now, we assume $\boldsymbol{m}^{(c)}$ to be non-uniform base measures (while $\alpha^{(c)}$ is still a fixed concentration parameter), and implement the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured} based on Minka’s fixed-point iteration \citep{minka2000estimating}.\\ \newline
@@ -735,12 +735,105 @@ By multiplying the normal CDF part to Equation (27) and take the log, we obtain 
   					sample $\delta$ from proposal distribution\\
   					accept-reject using Equation (33) and (34)
   					
- 	}	summarize the results using:\\ the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$
+ 	}	summarize the results using the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$
  \end{algorithm}
+   \section{Getting It Right (GiR)}
+   \subsection{Backward generative process} \label{subsubsec: Backward Generative Process}
+   We need to define a “backward” generative process in order to perform Geweke’s “Getting it Right” test \citep{geweke2004getting} because when we are generating our “backwards” samples, we only want to resample the token word types and (sender, recipients, timestamp) pairs, and not any of
+   our latent variables. This means we will take as input the latent variables we got by running our inference procedure (token topic assignments, topic interaction pattern assignments, and interaction pattern parameters), and simply condition on these to draw new data.
+   This “backward” version of the generative process is detailed below.\\ \newline
+   Let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. These
+   data structures, along with the latent variables we got by running our inference procedure (token topic assignments, topic interaction pattern assignments, interaction pattern parameters, and tuning parameter $\delta$) are passed in to the backward generative process, which then outputs new documents with the generated token word types and (sender, recipients, timestamp) pairs.
+   \begin{algorithm}[H]
+   	\SetAlgoLined
+   	\caption{Generate data with backward sampling}
+   	\For{d=1 to D}{
+   		set $\bar N^{(d)}= \mbox{max}(1, N^{(d)})$, where $N^{(d)}$ is known\\
+   		\For{n=1 to $\bar {N}^{(d)}$}{
+   			\If {$N^{(d)}>0$} {
+   				$NKV_{w_n^{(d)}, z_n^{(d)}} -=1$\\
+   				\For{v=1 to $V$}{
+   					$\phi_n^{(d)}[v] = \frac{NKV_{v, z_n^{(d)}}+\beta\boldsymbol{u}}{NK_k + \beta}$
+   				}
+   				draw $w_n^{(d)} \sim \phi_n^{(d)}$\\
+   				$NKV_{w_n^{(d)}, z_n^{(d)}} += 1$
+   			}
+   		}
+   		\For{i=1 to $A$}{
+   			\For{j=1 to $A$}{
+   				\If {j $\neq$ i} {
+   					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
+   					set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
+   					draw I($i \rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})$}  }
+   			draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)})$
+   		}
+   		set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
+   		
+   	}
+   \end{algorithm}
+   \noindent The generative process for backward sampling and the corresponding implementation is built upon those of CPME. Further details on the process of Getting It Right test and how we compare the forward and backward samples can be found in the CPME document. 
+      \subsection{Issue of intitial state of $\boldsymbol{x}_t^{(c)}$} \label{subsubsec: Initial history issue}
+      Considering that our network statistics $\boldsymbol{x}_t^{(c)}$ are generated by the network itself, it is necessary to use the same initial value of $\boldsymbol{x}_t^{(c)}$ across the forward and backward samples. If not, when we generate fixed number of documents (e.g. nDocs = 10), we cannot guarantee the same number of documents used for the inference, since only the documents with its timestamp greater than 384 hours (=16 days) are used in the inference. In the extreme cases, we may end up with two types of failure:
+      \begin{itemize}
+      	\item[1.] Zero document generated after 384 hours (i.e. $t^{(10)} < 384$), making no documents to be used for inference,
+      	\item[2.] Zero document generated before 384 hours (i.e. $t^{(1)} > 384$), making the estimate of $\mathcal{B}$ totally biased since $\forall  \boldsymbol{x}_t^{(c)}(i, j) = 0$. 
+      \end{itemize}
+      Therefore, we fix the initial state of $\boldsymbol{x}_t^{(c)}$ over the entire GiR process. Specifically, we fix 10 (for example) baseline documents where the timestamps are all smaller than 384 and use as an input for forward sampling, backward sampling, and the inference. Then, in the forward and backward generative process, we set the starting point of the timestamp as $t^{(0)} = 384$ and generate nDocs = 10 documents given the initial $\boldsymbol{x}_{t^{(0)} = 384}^{(c)}$ so that we can acheive consistency in the generated number of documents with $t^{(d)} > 384$.
+   \subsection{GiR implementaion details} \label{subsubsec: GiR implementation}
+   While we tried a number of different parameter combinations in the course of testing, we outline our standard setup below.\\ \newline
+   We selected the following parameter values:
+   \begin{itemize}
+   	\begin{minipage}{0.5\textwidth}
+   		\item[-] nDocs (number of documents) = 10
+   		\item[-] nwords (tokens per document) = 4
+   		\item[-] node (number of actors)= 4
+   		\item[-] W (unique word types) = 5
+   		\item[-] nIP (number of interaction patterns) = 2
+   		\item[-] K (number of topics) = 4
+   		\item[-] $\alpha$ (Dirichlet concentration prior) = 2
+   		\item[-] $\boldsymbol{m}$ (Dirichlet base prior) = $\boldsymbol{u}$ 
+   		\item[-] $\beta$ (Dirichlet concentration prior)= 2
+   		\item[-] $\boldsymbol{n}$ (Dirichlet base prior) = $\boldsymbol{u}$
+   		\item[-] netstat (network statistics) = ``dyadic"
+   	\end{minipage}
+   	\begin{minipage}{0.5\textwidth}
+   		\item[-] prior for $\boldsymbol{b}^{(c)}\sim \mbox{MVN}_P(\boldsymbol{0}, I_P)$
+   		\item[-] prior for $\delta\sim \mbox{Beta}(1, 1)$
+   		\item[-] $I$ (outer iteration) = 10
+   		\item[-] $n_1$ (Gibbs sampling iteration of $\mathcal{Z}$) =1 
+   		\item[-] $n_2$ (Gibbs sampling iteration of $\mathcal{C}$) =1 
+   		\item[-] $n_3$ (M-H sampling iteration of $\mathcal{B}$) = 1100
+   		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 100
+   		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 10
+   		\item[-] $\sigma_Q^2$ (proposal variance for $\mathcal{B}$) = 0.5
+   		\item[-] $n_4$ (M-H sampling iteration of $\delta$) = $I$ = 10
+   		\item[-] $\sigma_Q^2$ (proposal variance for $\delta$) = 0.5   		
+   	\end{minipage}
+   \end{itemize}
+   Next, we list the selection of statistics we save for each forward and backward sample. Note that these statistics are not sensitive to the label swithches across the updates. Therefore, at each iteration, we calculate and save the statistics below:
+      \begin{itemize}
+      	\item[1.] Mean of interaction pattern parameters $(\boldsymbol{b}_p^{(1)},...,\boldsymbol{b}_p^{(C)})$ for every $p = 1,...,P$,
+      	\item[2.] Mean number of recipients (indirect measure of $\delta$),
+      	\item[3.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ for every $d=2,...,\mbox{nDocs}$,
+      	\item[4.] Mean topic-interaction pattern assignment (for interaction patterns indexed by 1 and 2), \textcolor{red}{ ? }
+      	\item[5.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$, \textcolor{red}{?}
+      	\item[6.] Number of tokens assigned to each topic $k=1,...,K$, \textcolor{red}{ ? }
+       \item[7.] Number of tokens assigned to each unique word type $w=1,...,W$.
+      	      \end{itemize}
+\subsection{GiR Results}
+Having saved a set of samples (collected $10^6$ forward and backward samples), we compare them. To do so, we generated PP (Probability-Probability)  plots for each of the 21 statistics we saved. We calculated 1,000 quantiles for each of the interaction pattern statistics (1.), and 50 quantiles for the rest of the statistics. The reason
+we calculate a greater number of quantiles for the interaction pattern statistics is because they take on continuous values, while the other
+statistics can only take on a relatively small number of distinct values. \\ \newline
+Exactly follwoing CPME, we also calculated a t-test p-value for the equivalence
+of statistic means between forward and backward samples, and a Mann-Whitney test p-value for the equivalence of statistic
+distributions between forward and backward samples. Before we calculated these statistics, we first thinned our sample of
+statistics by taking every 90th sample starting at the 100,000th sample for a resulting sample size of 10,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us
+evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each plot that we
+expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure below.
  \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
  \subsection{Vance county email data} \label{subsec: Vance county email data}
-Vance county data contains $D=185$ emails sent between $A=18$ actors, including $W=620$ vocabulary in total. We used $K=5$ topics and $C=2$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We set the outer iteration number as $I=500$, the inner iteration numbers as $n_1=1, n_2=1,$ and $n_3=3300$. First 50 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $20^{th}$ sample was taken as a thinning process of third inner iteration. In addition, after some experimentation, $\delta_B$ was set as 0.2, to ensure sufficient acceptance rate. MCMC diagnostic plots are attached in APPENDIX D, as well as the geweke test statistics. \\\newline
+Vance county data contains $D=185$ emails sent between $A=18$ actors, including $W=620$ vocabulary in total. We used $K=5$ topics and $C=2$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We set the outer iteration number as $I=500$, the inner iteration numbers as $n_1=1, n_2=1,$ and $n_3=3300$. First 50 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $20^{th}$ sample was taken as a thinning process of third inner iteration. In addition, after some experimentation, $\sigma_Q^2$ was set as 0.2, to ensure sufficient acceptance rate. MCMC diagnostic plots are attached in APPENDIX D, as well as the geweke test statistics. \\\newline
  Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) the top 10 most likely words to be generated conditioned on the topic and their corresponding interaction pattern.
  \begin{figure}[ht]
  	\centering
@@ -794,12 +887,14 @@ By examining the estimates in Figure 2 and their corresponding interpretation, i
  	\label{table:VancewordsMCMC}
  \end{table}
  \subsection{Dare county email data} \label{subsec: Dare county email data}
- Dare county data contains $D=2247$ emails between $A=27$ actors, including $W=2907$ vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=1000$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. In addition, after some experimentation, $\delta_B$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{b}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every $10^{th}$ samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics. 
+ Dare county data contains $D=2247$ emails between $A=27$ actors, including $W=2907$ vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=1000$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. In addition, after some experimentation, $\sigma^2_Q$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{b}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every $10^{th}$ samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics. 
 \bibliographystyle{apalike}
 \bibliography{IPTM}
-\clearpage
+\newpage
+\appendix
  \section*{APPENDIX}
- \subsection*{APPENDIX A: Notations in IPTM}
+ \renewcommand{\thesubsection}{\Alph{subsection}}
+ \subsection{Notations in IPTM}
   \begin{table}[ht]
   	\centering
   	\scalebox{0.9}{ 	\begin{tabular}{ |c|c|c|} 
@@ -874,7 +969,7 @@ By examining the estimates in Figure 2 and their corresponding interpretation, i
   		\label{table:SymbolsIPTM}
   	\end{table}
   	\normalsize
-  \subsection*{APPENDIX B: Integrating out $\Phi$ and $\Theta$ in latent Dirichlet allocation}
+  \subsection{Integrating out $\Phi$ and $\Theta$ in latent Dirichlet allocation}
   \begin{equation}
   \begin{aligned}
    &  P(\Phi, \Theta, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}| \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2, \delta) \\& 
@@ -901,7 +996,7 @@ By examining the estimates in Figure 2 and their corresponding interpretation, i
   \\&=\mbox{Const.}\Big[\prod_{k=1}^{K}\frac{\prod_{w=1}^W\Gamma(N_{wk}^{WK}+\frac{\beta}{W})}{\Gamma(\sum_{w=1}^WN_{wk}^{WK}+\beta )}\Big]\times\Big[\prod_{d=1}^{D}\frac{\prod_{k=1}^K\Gamma(N_{k|d}+\alpha m_k)}{\Gamma(N_{\cdot|d}+\alpha)}\Big].
   \end{aligned}
   \end{equation}
-  \subsection*{APPENDIX C: Conditional probability of $\mathcal{Z}$}
+  \subsection{Conditional probability of $\mathcal{Z}$}
   \begin{equation}
   \begin{aligned}
   & P(\boldsymbol{w}^{(d)}, \boldsymbol{z}^{(d)}|\mathcal{W}_{\backslash d}, \mathcal{Z}_{\backslash d}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}) \\& \propto \prod_{n=1}^{N^{(d)}}P(z^{(d)}_n=k, w^{(d)}_n=w| \mathcal{W}_{\backslash d, n}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m})
@@ -943,46 +1038,12 @@ By examining the estimates in Figure 2 and their corresponding interpretation, i
   \mbox{log}\Big(N_{w^{(d)}_mz^{(d)}_m, \backslash d, n}^{WK}+\frac{\beta}{W}\Big)-\mbox{log}\Big(\sum_{w=1}^WN_{wz^{(d)}_m,  \backslash d, n}^{WK}+\beta\Big)\\&+\mbox{log}\Big(N_{k|d, \backslash d, n}+\alpha m_{z^{(d)}_m}\Big)-\mbox{log}\Big(N^{(d)}-1+\alpha\Big)
   \end{aligned}
   \end{equation}
-  \subsection*{APPENDIX D: More results on Vance county}
+  \subsection{More results on Vance county}
  \begin{figure}[ht]
  	\centering
  	\includegraphics[width=0.7\textwidth]{convergence500.pdf} 
  	\caption{Convergence plot}
  	\label{fig:Convergence plot}
  \end{figure}
-  \subsection*{APPENDIX E: Getting It Right}
-\subsubsection*{Backward Generative Process} \label{subsubsec: Backward Generative Process}
-We need to define a “backward” generative process in order to perform Geweke’s “Getting it Right” test because when we are generating our “backwards” samples, we only want to resample the token word types and (sender, recipients, timestamp) pairs, and not any of
-our latent variables. This means we will take as input the latent variables we got by running our inference procedure (token topic assignments, topic interaction pattern assignments, and interaction pattern parameters), and simply condition on these to draw new data.
-This “backward” version of the generative process is detailed below.\\ \newline
-Let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. These
-data structures, along with the latent variables we got by running our inference procedure (token topic assignments, topic interaction pattern assignments, interaction pattern parameters, and tuning parameter $\delta$) are passed in to the backward generative process, which then outputs new documents with the generated token word types and (sender, recipients, timestamp) pairs.
-\begin{algorithm}[H]
-	\SetAlgoLined
-	\caption{Generate data with backward sampling}
-	\For{d=1 to D}{
-		set $N^{(d)}= \mbox{max}(1, \bar N^{(d)})$, where $\bar N^{(d)}$ is known\\
-		\For{n=1 to ${N}^{(d)}$}{
-			\If {$\bar N^{(d)}>0$} {
-				$NKV_{v_n, k_n} -=1$\\
-				\For{v=1 to $V$}{
-				 $\phi_n^{(d)}[v] = \frac{NKV_{v, z_n^{(d)}}+\beta\boldsymbol{u}}{NK_k + \beta}$
-					}
-				draw $w_n^{(d)} \sim \phi_n^{(d)}$\\
-				$NKV_{w_n^{(d)}, z_n^{(d)}} += 1$
-			}
-	}
-	              \For{i=1 to $A$}{
-	              	\For{j=1 to $A$}{
-	              		\If {j $\neq$ i} {
-	              			calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
-	              			set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
-	              			draw I($i \rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})$}  }
-	              	draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)})$
-	              }
-	              set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
-	              
-		}
-\end{algorithm}
 \end{document}
 
