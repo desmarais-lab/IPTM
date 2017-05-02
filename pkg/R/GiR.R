@@ -94,10 +94,11 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
 		edge = edge[-(1:length(base.edge))]
 		text = text[-(1:length(base.text))]
 	}
-	#if (base) {
-	#	edge = edge[1: which_int(384, cumsum(timeinc))]
-	#	text = 
-	#}
+	if (base == TRUE & t.d > 384) {
+		cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
+		edge = edge[1:cutoff]
+		text = text[1:cutoff]
+	}
 	return(list(edge = edge, text = text, b = b, base = length(base.edge)))							
 } 
 
@@ -185,7 +186,7 @@ Inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, m
     bmat = list()
 	for (IP in 1L:nIP) {
 		bmat[[IP]] = matrix(0, nrow = P, ncol = (n3 - burn) / thin)
-		bmat[[IP]][, 1:(n3 - burn) / thin] = prior.b.mean
+		bmat[[IP]][, 1:(n3 - burn) / thin] = c(rmvnorm(1, prior.b.mean, prior.b.var))
   	}
 
     # to check the convergence  
@@ -336,7 +337,11 @@ Inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, m
 	     	     EdgeInEqZ(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(nonemptyiJi[[d]], timeinc[d]) +
     			 	 ObservedInEqZ(observediJi[[d]])
     			 }, c(1))) / length(edge2)
-    	 
+    	 prior.old2 = dbeta(delta, prior.delta[1], prior.delta[2], log = TRUE) 
+     post.old2 = sum(vapply(edge2, function(d) {
+    			    EdgeInEqZ(iJi[[d]], lambda[[d]], delta)
+    			    }, c(1))) / length(edge2)
+ 
 	 options(warn = -1)
 	 proposal.var = list()
      for (IP in 1L:nIP) {
@@ -374,32 +379,28 @@ Inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, m
          prior.old1 = prior.new1
          post.old1 = post.new1
          }
-      
+        
+        	 eta.new = rnorm(1, eta, sigma_Q)
+    	 	 delta.new = pnorm(eta.new)
+		 prior.new2 = dbeta(delta.new, prior.delta[1], prior.delta[2], log = TRUE)
+		 post.new2 = sum(vapply(edge2, function(d) {
+    			    EdgeInEqZ(iJi[[d]], lambda[[d]], delta.new)
+    			    }, c(1))) / length(edge2)
+    	 	 loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2
+		  if (log(runif(1, 0, 1)) < loglike.diff2) {
+			delta = delta.new
+			eta = eta.new
+			prior.old2 = prior.new2
+			post.old2 = post.new2
+			}
+
          if (i3 > burn & i3 %% (thin) == 0) {
           for (IP in 1L:nIP) {
            bmat[[IP]][ , (i3 - burn) / thin] = Beta.old[[IP]]
            }
+           deltamat = c(deltamat, delta)
           }
          }
-         
-        #update delta for every outer iteration
-        prior.old2 = dbeta(delta, prior.delta[1], prior.delta[2]) 
-        post.old2 = sum(vapply(edge2, function(d) {
-    			    EdgeInEqZ(iJi[[d]], lambda[[d]], delta)
-    			    }, c(1))) / length(edge2)
-    			    
-    	eta.new = rnorm(1, eta, sigma_Q)
-    	delta.new = pnorm(eta.new)
-		prior.new2 = dbeta(delta.new, prior.delta[1], prior.delta[2])
-		post.new2 = sum(vapply(edge2, function(d) {
-    			    EdgeInEqZ(iJi[[d]], lambda[[d]], delta.new)
-    			    }, c(1))) / length(edge2)
-    	 	loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2
-    	     	if (log(runif(1, 0, 1)) < loglike.diff2) {
-			delta = delta.new
-			eta = eta.new
-			}
-			deltamat = c(deltamat, delta)
 	 }
     
     if (plot) {
@@ -437,8 +438,8 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 			Forward_test = Forward_stats[thin, i]
 			Backward_test = Backward_stats[thin, i]
 		} else {
-			Forward_test = Forward_stats
-			Backward_test = Backward_stats
+			Forward_test = Forward_stats[, i]
+			Backward_test = Backward_stats[, i]
 		}
 		
 		all = c(Backward_stats[, i], Forward_stats[, i])
@@ -459,17 +460,69 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 			   col = "blue",
 			   pch = 19,
 			   main = nms[i],
-			   cex.lab = 2,
-			   cex.axis = 1.4,
-			   cex.main = 2)
+			   cex.lab = 1,
+			   cex.axis = 1,
+			   cex.main = 1)
 		lines(x = xlims, y = ylims, col = "red", lwd = 3)
 		text(paste("Backward Mean:", round(mean(Backward_stats[,i]), 4),
 				   "\nForward Mean:", round(mean(Forward_stats[,i]), 4),
 				   "\nt-test p-value:", round(t.test(Backward_test, Forward_test)$p.value, 4),
 				   "\nMann-Whitney p-value:", round(wilcox.test(Backward_test, Forward_test)$p.value,4)),
-				   x = xlims[2] - 0.3 * abs(xlims[2] - xlims[1]),
-				   y = ylims[1] + 0.2 * abs(ylims[2] - ylims[1]),
-				   cex = 0.25)
+				   x = xlims[2] - 0.35 * abs(xlims[2] - xlims[1]),
+				   y = ylims[1] + 0.15 * abs(ylims[2] - ylims[1]),
+				   cex = 0.3)
+	}
+}      
+
+
+#PP_Plots
+GiR_PP_Plots2 = function(Forward_stats, Backward_stats) {
+	nms = colnames(Forward_stats)
+	
+	for (i in 1L:ncol(Forward_stats)) {
+		if (nrow(Forward_stats) > 20000) {
+			thin = seq(from = floor(nrow(Forward_stats)/10), to = nrow(Forward_stats), length.out = 10000)
+			Forward_test = Forward_stats[thin, i]
+			Backward_test = Backward_stats[thin, i]
+		} else {
+			Forward_test = Forward_stats[, i]
+			Backward_test = Backward_stats[, i]
+		}
+		
+		all = c(Backward_stats[, i], Forward_stats[, i])
+		ylims = c(min(all) - 0.1 * max(abs(all)), max(all) + 0.1 * max(abs(all)))
+		xlims = ylims
+		
+		quantiles = 50
+		if (grepl("B_", nms[i]) ) {
+			quantiles = 1000
+		}
+		
+		normalmean = mean(c(quantile(Forward_stats[, i], seq(0, 1, length = quantiles)), 
+							quantile(Backward_stats[, i], seq(0, 1, length = quantiles))))
+		normalvar = sd(c(quantile(Forward_stats[, i], seq(0, 1, length = quantiles)), 
+							quantile(Backward_stats[, i], seq(0, 1, length = quantiles))))
+
+		qqplot(x = pnorm(sort(quantile(Forward_stats[, i], seq(0, 1, length = quantiles))), normalmean, normalvar),
+			   y = pnorm(sort(quantile(Backward_stats[, i], seq(0, 1, length = quantiles))), normalmean, normalvar),
+			   ylim = pnorm(ylims, normalmean, normalvar),
+			   xlim = pnorm(xlims, normalmean, normalvar),
+			   ylab = "Backward",
+			   xlab = "Forward",
+			   col = "blue",
+			   pch = 19,
+			   main = nms[i],
+			   cex.lab = 1,
+			   cex.axis = 1,
+			   cex.main = 1)
+		lines(x = pnorm(xlims, normalmean, normalvar), y = pnorm(ylims, normalmean, normalvar), col = "red", lwd = 3)
+		text(paste("Backward Mean:", round(mean(Backward_stats[,i]), 4),
+				   "\nForward Mean:", round(mean(Forward_stats[,i]), 4),
+				   "\nt-test p-value:", round(t.test(Backward_test, Forward_test)$p.value, 4),
+				   "\nMann-Whitney p-value:", round(wilcox.test(Backward_test, Forward_test)$p.value,4)),
+				   x = pnorm(xlims[2], normalmean, normalvar) - 0.35 * abs(pnorm(xlims[2], normalmean, normalvar) - pnorm(xlims[1], normalmean, normalvar)),
+				   y = pnorm(ylims[1], normalmean, normalvar) + 0.15 * abs(pnorm(ylims[2], normalmean, normalvar) - pnorm(ylims[1], normalmean, normalvar)),
+				   cex = 0.3)
 	}
 }      
 
@@ -477,8 +530,8 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 # Getting_It_Right
 GiR = function(Nsamp = 5000, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello","bye", "mine", "what"), 
 			   nIP = 2, K = 4, nwords = 4, alpha = 2, mvec = rep(1/4, 4), betas = 2, nvec = rep(1/5, 5), 
-			   prior.b.mean = c(-3, rep(0, 6)), prior.b.var = diag(7), prior.delta = c(1, 1), sigma_Q = 0.5, 
-			   niters = c(1, 1, 1, 1100, 100, 10), netstat = "dyadic", generate_PP_plots = TRUE, seed = 25) {
+			   prior.b.mean = c(-3, rep(0, 6)), prior.b.var = diag(7), prior.delta = c(2, 2), sigma_Q = 0.25, 
+			   niters = c(1, 1, 1, 50, 0, 1), netstat = "dyadic", generate_PP_plots = TRUE, seed = 1) {
 	
 	set.seed(seed)
 	b = lapply(1L:nIP, function(IP) {
@@ -497,7 +550,7 @@ GiR = function(Nsamp = 5000, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hell
 						  paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
 						  paste0("Tokens_in_Word", 1:length(vocabulary)))
 	for (i in 1:Nsamp) { 
-		if (i %% 1000 == 0) {cat("Forward sampling", i, "\n")}
+		if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
 		set.seed(i)
 		b = lapply(1:nIP, function(IP) {
 			c(rmvnorm(1, prior.b.mean, prior.b.var))
@@ -514,7 +567,7 @@ GiR = function(Nsamp = 5000, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hell
 	Backward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
 								   base.edge = base.edge, base.text = base.text, seed, backward_init = TRUE) 
 	for (i in 1:Nsamp) { 
-		if (i %% 100 == 0) {cat("Backward sampling", i, "\n")}
+		if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
 		seed = seed + 100
 		set.seed(seed)
 		Inference_samp = Inference(Backward_sample$edge, node, Backward_sample$text, vocabulary, nIP, K, sigma_Q, 
@@ -556,9 +609,9 @@ GiR = function(Nsamp = 5000, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hell
 	names(tstats) = names(wstats) = colnames(Forward_stats)						
 	if (generate_PP_plots) {
 		par(mfrow=c(3,7), oma = c(3,3,3,3), mar = c(5,5,4,1))
-		GiR_PP_Plots(Forward_stats, Backward_stats)
+		GiR_PP_Plots2(Forward_stats, Backward_stats)
 	}			
 	return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats))	
 }
 
-TryGiR = GiR(100)
+unix.time(TryGiR <- GiR(10^5, seed = 15))

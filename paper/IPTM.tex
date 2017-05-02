@@ -668,8 +668,8 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
  By taking the log, we obtain the log of acceptance ratio:
  \begin{equation}
  	\begin{aligned} 
- 		&\mbox{log}\Big(\mbox{dbeta}(\delta^\prime ;1, 10)\Big)-\mbox{log}\Big(\mbox{dbeta}(\delta;1, 10)\Big)\\&+ \sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \delta^{\prime} \Big\}
- 		\\& -\sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \delta\Big\}.
+ 		&\mbox{log}\Big(\mbox{dbeta}(\delta^\prime ;1, 10)\Big)-\mbox{log}\Big(\mbox{dbeta}(\delta;1, 10)\Big)\\&+ \sum_{d=1}^D\Big\{\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\Big(\mbox{log}(\delta^{\prime} \lambda^{(d)}_{iJ_i}) - \mbox{log}(\delta \lambda^{(d)}_{iJ_i})\Big)  {-\Big(\mbox{log}(\delta^{\prime} \lambda^{(d)}_{ij}}+1)
+ 		-\mbox{log}(\delta\lambda^{(d)}_{ij}+1)\Big) \Big\}.
  	\end{aligned}
  \end{equation}
   Then the log of acceptance ratio we have is:
@@ -799,15 +799,15 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
    	\begin{minipage}{0.5\textwidth}
    		\item[-] prior for $\boldsymbol{b}^{(c)}\sim \mbox{MVN}_P(\boldsymbol{0}, I_P)$
    		\item[-] prior for $\delta\sim \mbox{Beta}(1, 1)$
-   		\item[-] $I$ (outer iteration) = 10
+   		\item[-] $I$ (outer iteration) = 1
    		\item[-] $n_1$ (Gibbs sampling iteration of $\mathcal{Z}$) =1 
    		\item[-] $n_2$ (Gibbs sampling iteration of $\mathcal{C}$) =1 
-   		\item[-] $n_3$ (M-H sampling iteration of $\mathcal{B}$) = 1100
-   		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 100
-   		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 10
-   		\item[-] $\sigma_Q^2$ (proposal variance for $\mathcal{B}$) = 0.5
-   		\item[-] $n_4$ (M-H sampling iteration of $\delta$) = $I$ = 10
-   		\item[-] $\sigma_Q^2$ (proposal variance for $\delta$) = 0.5   		
+   		\item[-] $n_3$ (M-H sampling iteration of $\mathcal{B}$) = 50
+   		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 0
+   		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 1
+   		\item[-] $\sigma_Q^2$ (proposal variance for $\mathcal{B}$) = 0.25
+   		\item[-] $n_4$ (M-H sampling iteration of $\delta$) = 50
+   		\item[-] $\sigma_Q^2$ (proposal variance for $\delta$) = 0.25   		
    	\end{minipage}
    \end{itemize}
    Next, we list the selection of statistics we save for each forward and backward sample. Note that these statistics are not sensitive to the label swithches across the updates. Therefore, at each iteration, we calculate and save the statistics below:
@@ -821,7 +821,7 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
        \item[7.] Number of tokens assigned to each unique word type $w=1,...,W$.
       	      \end{itemize}
 \subsection{GiR Results}
-Having saved a set of samples (collected $10^6$ forward and backward samples), we compare them. To do so, we generated PP (Probability-Probability)  plots for each of the 21 statistics we saved. We calculated 1,000 quantiles for each of the interaction pattern statistics (1.), and 50 quantiles for the rest of the statistics. The reason
+Having saved a set of samples (collected $10^5$ forward and backward samples), we compare them. To do so, we generated PP (Probability-Probability)  plots for each of the 21 statistics we saved. We calculated 1,000 quantiles for each of the interaction pattern statistics (1.), and 50 quantiles for the rest of the statistics. The reason
 we calculate a greater number of quantiles for the interaction pattern statistics is because they take on continuous values, while the other
 statistics can only take on a relatively small number of distinct values. \\ \newline
 Exactly follwoing CPME, we also calculated a t-test p-value for the equivalence
@@ -830,6 +830,7 @@ distributions between forward and backward samples. Before we calculated these s
 statistics by taking every 90th sample starting at the 100,000th sample for a resulting sample size of 10,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us
 evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each plot that we
 expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure below.
+
  \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
  \subsection{Vance county email data} \label{subsec: Vance county email data}
