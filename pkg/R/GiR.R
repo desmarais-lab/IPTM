@@ -549,6 +549,7 @@ GiR = function(Nsamp = 5000, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello
 	colnames(Forward_stats) = c(paste0("B_",1:length(b[[1]])), "Mean_receipients", "Mean_timediff", "Mean_TopicIP", 
 						  paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
 						  paste0("Tokens_in_Word", 1:length(vocabulary)))
+	deltamat1 = c()
 	for (i in 1:Nsamp) { 
 		if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
 		set.seed(i)
@@ -556,6 +557,7 @@ GiR = function(Nsamp = 5000, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello
 			c(rmvnorm(1, prior.b.mean, prior.b.var))
 			})
 		delta = rbeta(1, prior.delta[1], prior.delta[2])
+		deltamat1 = c(deltamat1, delta)
 		currentC = sample(1L:nIP, K, replace = TRUE)
 		Forward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
 									  base.edge = base.edge, base.text = base.text, seed, forward = TRUE) 
@@ -566,6 +568,7 @@ GiR = function(Nsamp = 5000, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello
 	Backward_stats = matrix(NA, nrow = Nsamp, ncol = 21)
 	Backward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
 								   base.edge = base.edge, base.text = base.text, seed, backward_init = TRUE) 
+	deltamat2 = c()							   
 	for (i in 1:Nsamp) { 
 		if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
 		seed = seed + 100
@@ -578,6 +581,7 @@ GiR = function(Nsamp = 5000, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello
 			rowMeans(Inference_samp$B[[IP]])
 		})
 		delta = mean(Inference_samp$D)
+		deltamat2 = c(deltamat2, delta)
 		currentC = Inference_samp$C
 		topic_token_assignments = Inference_samp$Z
 		for (d in 1:length(topic_token_assignments)) {
@@ -608,10 +612,12 @@ GiR = function(Nsamp = 5000, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello
 	}
 	names(tstats) = names(wstats) = colnames(Forward_stats)						
 	if (generate_PP_plots) {
-		par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(1,1,1,1))
+		par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
 		GiR_PP_Plots2(Forward_stats, Backward_stats)
 	}			
-	return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats))	
+	return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats, delta1 = deltamat1, delta2 = deltamat2))	
 }
 
-unix.time(TryGiR <- GiR(5*10^5, seed = 12))
+unix.time(TryGiR <- GiR(5*10^3, seed = 123))
+
+matplot(cbind(TryGiR$delta1, TryGiR$delta2),type = 'l', col = 1:2)

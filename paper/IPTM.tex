@@ -619,7 +619,7 @@ After replacing $\lambda$ to the function of $\boldsymbol{b}$ and $\boldsymbol{x
  where $P(\mathcal{B}|\mathcal{C}, \sigma^2)$ is calculated from the product of $\boldsymbol{b}^{(c)}\sim \mbox{Normal}(0, \sigma^2 I_P$) (as defined in Section \ref{sec: Generative Process}) and $P(\mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}},\mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}^\prime, \sigma^2, \delta)$ is Equation (25). Again, we take the log and obtain the log of acceptance ratio:
  \begin{equation}
  \begin{aligned} 
- &\sum_{c=1}^C\mbox{log}\Big(\mbox{dmvnorm}(\boldsymbol{b}^{\prime(c)};\mathbf{0}, \sigma^2I_{P})\Big)-\sum_{c=1}^C\mbox{log}\Big(\mbox{dmvnorm}(\boldsymbol{b}^{(c)};\mathbf{0}, \sigma^2I_P)\Big)\\&+ \sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}^{\prime} \Big\}
+ &\sum_{c=1}^C\mbox{log}\Big(\mbox{dmvnorm}(\boldsymbol{b}^{\prime(c)};\mathbf{0}, \sigma_{\boldsymbol{b}}^2I_{P})\Big)-\sum_{c=1}^C\mbox{log}\Big(\mbox{dmvnorm}(\boldsymbol{b}^{(c)};\mathbf{0}, \sigma_{\boldsymbol{b}}^2I_P)\Big)\\&+ \sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}^{\prime} \Big\}
  \\& -\sum_{d=1}^D\Big\{\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)+ \mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}){-(t^{(d)}-t^{(d-1)})\sum\limits_{i \in \mathcal{A}_{\backslash J_i^{(d)}=\emptyset}}\lambda^{(d)}_{i{J_i^{(d)}}}\Big)} \mbox{ given } \boldsymbol{b}\Big\},
  \end{aligned}
  \end{equation}
@@ -654,13 +654,13 @@ By multiplying the normal CDF part to Equation (27) and take the log, we obtain 
  \mbox{log(Acceptance Probability) = min(Equation (33), 0). }
  \end{equation}
 \end{comment}
-After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$. Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the Normal distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, this time we need a proposal distribution with support on the unit interval, since $ \delta \sim \mbox{Beta}(1, 10)$.  Now we define an auxiliary variable $\eta$ which come from the proposal distribution (in the real line) and take the transformation:
+After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$. Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the Normal distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, this time we need a proposal distribution with support on the unit interval, since $ \delta \sim \mbox{Beta}(a, b)$.  Now we define an auxiliary variable $\eta$ which come from the proposal distribution (in the real line) and take the transformation:
  $$\delta = \Phi(\eta),$$
  where $\Phi$ is any link function that maps a value in the real line to the value in the unit length $[0, 1]$. Here, for simplicity, we choose standard Gaussian cumulative distribution function. Given that still we cancel out the symmetric part $\phi(\eta^\prime-\eta) =\phi(\eta-\eta^\prime)$ (where $\phi(\cdot)$ is Normal pdf), it follows that the correct acceptance ratio is 
  \begin{equation} 
  	\begin{split}
  		& \mbox{Acceptance Probability}=
- 		\begin{cases}  \frac{P(\delta^\prime|\mathcal{Z},   \mathcal{C},  \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)}{P(\delta|\mathcal{Z},   \mathcal{C},   \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)}\quad\text{if}  <1\\
+ 		\begin{cases}  \frac{P(\eta^\prime|\mathcal{Z},   \mathcal{C},  \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)}{P(\eta|\mathcal{Z},   \mathcal{C},   \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)}\quad\text{if}  <1\\
  			1 \quad \text{else}
  		\end{cases}
  	\end{split}
@@ -668,7 +668,7 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
  By taking the log, we obtain the log of acceptance ratio:
  \begin{equation}
  	\begin{aligned} 
- 		&\mbox{log}\Big(\mbox{dbeta}(\delta^\prime ;1, 10)\Big)-\mbox{log}\Big(\mbox{dbeta}(\delta;1, 10)\Big)\\&+ \sum_{d=1}^D\Big\{\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\Big(\mbox{log}(\delta^{\prime} \lambda^{(d)}_{iJ_i}) - \mbox{log}(\delta \lambda^{(d)}_{iJ_i})\Big)  {-\Big(\mbox{log}(\delta^{\prime} \lambda^{(d)}_{ij}}+1)
+ 		&\mbox{log}\Big(\mbox{dnorm}(\eta^\prime ;0, \sigma_\eta^2)\Big)-\mbox{log}\Big(\mbox{dnorm}(\eta; 0, \sigma_\eta^2)\Big)\\&+ \sum_{d=1}^D\Big\{\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\Big(\mbox{log}(\delta^{\prime} \lambda^{(d)}_{iJ_i}) - \mbox{log}(\delta \lambda^{(d)}_{iJ_i})\Big)  {-\Big(\mbox{log}(\delta^{\prime} \lambda^{(d)}_{ij}}+1)
  		-\mbox{log}(\delta\lambda^{(d)}_{ij}+1)\Big) \Big\}.
  	\end{aligned}
  \end{equation}
@@ -815,10 +815,10 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
       	\item[1.] Mean of interaction pattern parameters $(\boldsymbol{b}_p^{(1)},...,\boldsymbol{b}_p^{(C)})$ for every $p = 1,...,P$,
       	\item[2.] Mean number of recipients (indirect measure of $\delta$),
       	\item[3.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ for every $d=2,...,\mbox{nDocs}$,
-      	\item[4.] Mean topic-interaction pattern assignment (for interaction patterns indexed by 1 and 2), \textcolor{red}{ ? }
+      	\item[4.] Mean topic-interaction pattern assignment (for interaction patterns indexed by 1 and 2), 
       	\item[5.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$, \textcolor{red}{?}
-      	\item[6.] Number of tokens assigned to each topic $k=1,...,K$, \textcolor{red}{ ? }
-       \item[7.] Number of tokens assigned to each unique word type $w=1,...,W$. \textcolor{red}{ ? }
+      	\item[6.] Number of tokens assigned to each topic $k=1,...,K$, 
+       \item[7.] Number of tokens assigned to each unique word type $w=1,...,W$.
       	      \end{itemize}
 \subsection{GiR Results}
 Having saved a set of samples (collected $10^5$ forward and backward samples), we compare them. To do so, we generated PP (Probability-Probability)  plots for each of the 21 statistics we saved. We calculated 1,000 quantiles for each of the interaction pattern statistics (1.), and 50 quantiles for the rest of the statistics. The reason
@@ -836,12 +836,10 @@ expect these PP dots to line up on if we are passing GiR. The PP-plots are depic
 	\label{fig:GiR}
 	\caption{Getting it Right test result}
 \end{figure}
-\noindent\textcolor{red}{\textbf{Possible failure reasons}:
+\newpage\textcolor{red}{\textbf{Possible failure reasons}:
 	\begin{itemize}
 		\item  Baseline intensity ($B_1$) not identifiable when every pair of nodes havee some sort of history (this is for sure when we have small number of nodes as in GiR case) and it may have affected all other $B$ values.
-		\item Prior structure (Beta distribution) of $\delta$ seems to be inappropriate. Currently the inference results of $\delta$ do not converge and it always accepts smaller value of $\delta^\prime$. This can lead bias in $B$, ``mean-recipients", and ``mean-timediff"
 		\item Tokens in word esitmate seems to be all failure. No idea at all. Need to double check for possible coding errors.
-		\item Are the statistics free of label switching issue? Those with ? mark are suspicious.
 	\end{itemize}
 	}
  \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
