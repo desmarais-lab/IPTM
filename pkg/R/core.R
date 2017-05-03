@@ -194,7 +194,7 @@ Inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, m
   
   set.seed(seed)
   # trim the edge so that we only model edges after 16 days
-	timeinc = c(as.numeric(edge[[1]][3]), vapply(seq(along = edge)[-1], function(d) {
+	timeinc = c(0, vapply(seq(along = edge)[-1], function(d) {
   	as.numeric(edge[[d]][3]) - as.numeric(edge[[d-1]][3])
  	}, c(1)))
 

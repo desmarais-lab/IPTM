@@ -515,7 +515,7 @@ GiR_PP_Plots2 = function(Forward_stats, Backward_stats) {
 			   cex.lab = 1,
 			   cex.axis = 1,
 			   cex.main = 1)
-		lines(x = pnorm(xlims, normalmean, normalvar), y = pnorm(ylims, normalmean, normalvar), col = "red", lwd = 3)
+		lines(x = pnorm(xlims, normalmean, normalvar), y = pnorm(ylims, normalmean, normalvar), col = "red", lwd = 1)
 		text(paste("Backward Mean:", round(mean(Backward_stats[,i]), 4),
 				   "\nForward Mean:", round(mean(Forward_stats[,i]), 4),
 				   "\nt-test p-value:", round(t.test(Backward_test, Forward_test)$p.value, 4),
@@ -528,7 +528,7 @@ GiR_PP_Plots2 = function(Forward_stats, Backward_stats) {
 
 
 # Getting_It_Right
-GiR = function(Nsamp = 5000, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello","bye", "mine", "what"), 
+GiR = function(Nsamp = 5000, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye", "mine", "what"), 
 			   nIP = 2, K = 4, nwords = 4, alpha = 2, mvec = rep(1/4, 4), betas = 2, nvec = rep(1/5, 5), 
 			   prior.b.mean = c(-3, rep(0, 6)), prior.b.var = diag(7), prior.delta = c(2, 2), sigma_Q = 0.25, 
 			   niters = c(1, 1, 1, 50, 0, 1), netstat = "dyadic", generate_PP_plots = TRUE, seed = 1) {
@@ -608,10 +608,10 @@ GiR = function(Nsamp = 5000, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hell
 	}
 	names(tstats) = names(wstats) = colnames(Forward_stats)						
 	if (generate_PP_plots) {
-		par(mfrow=c(3,7), oma = c(3,3,3,3), mar = c(5,5,4,1))
+		par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(5,5,4,1))
 		GiR_PP_Plots2(Forward_stats, Backward_stats)
 	}			
 	return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats))	
 }
 
-unix.time(TryGiR <- GiR(10^5, seed = 15))
+unix.time(TryGiR <- GiR(5*10^5, seed = 12))

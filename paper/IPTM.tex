@@ -818,7 +818,7 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
       	\item[4.] Mean topic-interaction pattern assignment (for interaction patterns indexed by 1 and 2), \textcolor{red}{ ? }
       	\item[5.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$, \textcolor{red}{?}
       	\item[6.] Number of tokens assigned to each topic $k=1,...,K$, \textcolor{red}{ ? }
-       \item[7.] Number of tokens assigned to each unique word type $w=1,...,W$.
+       \item[7.] Number of tokens assigned to each unique word type $w=1,...,W$. \textcolor{red}{ ? }
       	      \end{itemize}
 \subsection{GiR Results}
 Having saved a set of samples (collected $10^5$ forward and backward samples), we compare them. To do so, we generated PP (Probability-Probability)  plots for each of the 21 statistics we saved. We calculated 1,000 quantiles for each of the interaction pattern statistics (1.), and 50 quantiles for the rest of the statistics. The reason
@@ -830,7 +830,20 @@ distributions between forward and backward samples. Before we calculated these s
 statistics by taking every 90th sample starting at the 100,000th sample for a resulting sample size of 10,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us
 evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each plot that we
 expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure below.
-
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.05\textwidth]{GiR100000.pdf} 
+	\label{fig:GiR}
+	\caption{Getting it Right test result}
+\end{figure}
+\newpage\noindent\textcolor{red}{\textbf{Possible failure reasons}:
+	\begin{itemize}
+		\item  Baseline intensity ($B_1$) not identifiable when every pair of nodes havee some sort of history (this is for sure when we have small number of nodes as in GiR case) and it may have affected all other $B$ values.
+		\item Prior structure (Beta distribution) of $\delta$ seems to be inappropriate. Currently the inference results of $\delta$ do not converge and it always accepts smaller value of $\delta^\prime$. This can lead bias in $B$, ``mean-recipients", and ``mean-timediff"
+		\item Tokens in word esitmate seems to be all failure. No idea at all. Need to double check for possible coding errors.
+		\item Are the statistics free of label switching issue? Those with ? mark are suspicious.
+	\end{itemize}
+	}
  \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
  \subsection{Vance county email data} \label{subsec: Vance county email data}
