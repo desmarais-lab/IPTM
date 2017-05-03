@@ -263,14 +263,14 @@ Inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, m
       lambda = list()
       LambdaiJi = list()
       nonemptyiJi = list()
-	  observediJi = list()
+	    observediJi = list()
       for (d in edge2) {
    	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
    	 	X = lapply(node, function(i) {
   	        Netstats(history.t, node, i, netstat)
             })
    	 	XB = MultiplyXBList(X, Beta.old)     
-		lambda[[d]] = lambda_cpp(p.d[d,], XB)
+		  lambda[[d]] = lambda_cpp(p.d[d,], XB)
 		
 		#calculate the resampling probability
 		probij = DataAug_cpp(iJi[[d]], lambda[[d]], delta, timeinc[d])
@@ -318,7 +318,7 @@ Inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, m
 	 			sum(currentZ[[d]] %in% which(currentC == IP))
 	 			}, c(1)) / length(currentZ[[d]])
       		LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-			nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+		    	nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
          	observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
           }
         }
@@ -346,8 +346,8 @@ Inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, m
                })
     	       XB = MultiplyXBList(X, Beta.old)    
            lambda[[d]] = lambda_cpp(p.d[d,], XB)
-		   LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-		   nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+		       LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+		       nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
            observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
           }
           }

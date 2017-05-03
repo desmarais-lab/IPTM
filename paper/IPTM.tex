@@ -784,7 +784,7 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
    We selected the following parameter values:
    \begin{itemize}
    	\begin{minipage}{0.5\textwidth}
-   		\item[-] nDocs (number of documents) = 10
+   		\item[-] nDocs (number of documents) = 5
    		\item[-] nwords (tokens per document) = 4
    		\item[-] node (number of actors)= 4
    		\item[-] W (unique word types) = 5
@@ -832,11 +832,11 @@ evidence that the statistics have the same mean and distribution respectively. W
 expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure below.
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.05\textwidth]{GiR100000.pdf} 
+	\includegraphics[width=1\textwidth]{GiR500000.pdf} 
 	\label{fig:GiR}
 	\caption{Getting it Right test result}
 \end{figure}
-\newpage\noindent\textcolor{red}{\textbf{Possible failure reasons}:
+\noindent\textcolor{red}{\textbf{Possible failure reasons}:
 	\begin{itemize}
 		\item  Baseline intensity ($B_1$) not identifiable when every pair of nodes havee some sort of history (this is for sure when we have small number of nodes as in GiR case) and it may have affected all other $B$ values.
 		\item Prior structure (Beta distribution) of $\delta$ seems to be inappropriate. Currently the inference results of $\delta$ do not converge and it always accepts smaller value of $\delta^\prime$. This can lead bias in $B$, ``mean-recipients", and ``mean-timediff"

@@ -497,6 +497,9 @@ double TimeInEqZ(NumericVector LambdaiJi, double tdiff) {
 
 // [[Rcpp::export]]
 double ObservedInEqZ(double observediJi) {
+  if (observediJi < 0.0000001) {
+    observediJi += 0.0000001;
+  }
 	return log(observediJi);
 }
 

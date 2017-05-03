@@ -515,14 +515,14 @@ GiR_PP_Plots2 = function(Forward_stats, Backward_stats) {
 			   cex.lab = 1,
 			   cex.axis = 1,
 			   cex.main = 1)
-		lines(x = pnorm(xlims, normalmean, normalvar), y = pnorm(ylims, normalmean, normalvar), col = "red", lwd = 1)
+		lines(x = pnorm(xlims, normalmean, normalvar), y = pnorm(ylims, normalmean, normalvar), col = "red", lwd = 2)
 		text(paste("Backward Mean:", round(mean(Backward_stats[,i]), 4),
 				   "\nForward Mean:", round(mean(Forward_stats[,i]), 4),
 				   "\nt-test p-value:", round(t.test(Backward_test, Forward_test)$p.value, 4),
 				   "\nMann-Whitney p-value:", round(wilcox.test(Backward_test, Forward_test)$p.value,4)),
 				   x = pnorm(xlims[2], normalmean, normalvar) - 0.35 * abs(pnorm(xlims[2], normalmean, normalvar) - pnorm(xlims[1], normalmean, normalvar)),
 				   y = pnorm(ylims[1], normalmean, normalvar) + 0.15 * abs(pnorm(ylims[2], normalmean, normalvar) - pnorm(ylims[1], normalmean, normalvar)),
-				   cex = 0.3)
+				   cex = 0.4)
 	}
 }      
 
@@ -608,7 +608,7 @@ GiR = function(Nsamp = 5000, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello
 	}
 	names(tstats) = names(wstats) = colnames(Forward_stats)						
 	if (generate_PP_plots) {
-		par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(5,5,4,1))
+		par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(1,1,1,1))
 		GiR_PP_Plots2(Forward_stats, Backward_stats)
 	}			
 	return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats))	
