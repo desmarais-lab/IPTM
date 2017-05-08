@@ -29,4 +29,3 @@ The log value of unnormalized constant
 \description{
 Calculate the log of unnormalized constant to check the convergence
 }
-

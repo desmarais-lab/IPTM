@@ -1,5 +1,7 @@
 #include <RcppArmadillo.h>
 #include <cmath>
+#include <Rinternals.h>
+#include <R_ext/Rdynload.h>
 //[[Rcpp::depends(RcppArmadillo)]]
 
 using std::log;
@@ -10,6 +12,11 @@ using std::sqrt;
 using std::pow;
 
 using namespace Rcpp; 
+
+void R_init_markovchain(DllInfo* info) {
+	R_registerRoutines(info, NULL, NULL, NULL, NULL);
+	R_useDynamicSymbols(info, TRUE);	
+}
 
 // **********************************************************//
 //                    Call rmultinom from R                  //

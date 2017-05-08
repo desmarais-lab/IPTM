@@ -4,10 +4,10 @@
 \alias{PlotBetaIP}
 \title{PlotBetaIP}
 \usage{
-PlotBetaIP(MCMCchain)
+PlotBetaIP(Bchain)
 }
 \arguments{
-\item{MCMCchain}{a chain obtained using MCMC function}
+\item{Bchain}{a chain of B obtained using MCMC function}
 }
 \value{
 Joint boxplot of the posterior summary of beta (should click for the locator)
@@ -15,4 +15,3 @@ Joint boxplot of the posterior summary of beta (should click for the locator)
 \description{
 Draw a boxplot of the MCMC chain of network statistics (beta) for each interaction pattern
 }
-

@@ -2,23 +2,22 @@
 % Please edit documentation in R/core.R
 \name{TableWord}
 \alias{TableWord}
-\title{TableWordIP}
+\title{TableWord}
 \usage{
 TableWord(Zchain, K, textlist, vocabulary)
 }
 \arguments{
+\item{Zchain}{summary of Z obtained using MCMC function}
+
 \item{K}{total number of topics specified by the user}
 
 \item{textlist}{list of text (length=number of documents in total) containing the words in each document}
 
 \item{vocabulary}{all vocabularies used over the corpus}
-
-\item{MCMCchain}{MCMCchain a chain obtained using MCMC function}
 }
 \value{
 List of table that summarize token-topic assignments with high probabilities (topic proportion > 0.1) for each IP
 }
 \description{
-Generate a table that summarizes token-topic assignments with high probabilities for each interaaction pattern
+Generate a table that summarizes token-topic assignments with high probabilities
 }
-

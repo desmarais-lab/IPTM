@@ -14,8 +14,6 @@ Netstats(historyIP, node, sender, netstat)
 \item{sender}{specific timepoint that we are calculating the time difference from}
 
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
-
-\item{nIP}{total number of interaction patterns specified by the user}
 }
 \value{
 list of network statistics for specific sender and all possible receivers for each IP
@@ -23,4 +21,3 @@ list of network statistics for specific sender and all possible receivers for ea
 \description{
 Calculate the network statistics (dydadic, triadic, or degree) given the history of interactions
 }
-

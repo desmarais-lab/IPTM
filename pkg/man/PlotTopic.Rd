@@ -7,9 +7,9 @@
 PlotTopic(Zchain, K)
 }
 \arguments{
-\item{K}{total number of topics specified by the user}
+\item{Zchain}{summary of Z obtained using MCMC function}
 
-\item{MCMCchain}{MCMCchain a chain obtained using MCMC function}
+\item{K}{total number of topics specified by the user}
 }
 \value{
 Barplot of the topic distribution
@@ -17,4 +17,3 @@ Barplot of the topic distribution
 \description{
 Draw a barplot of the topic distributions without considering interaction patterns
 }
-

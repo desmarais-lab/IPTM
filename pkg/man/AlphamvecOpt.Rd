@@ -21,4 +21,3 @@ The optimized value of the vector (= alpha * mvec)
 \description{
 Optimize the hyperparmeter vector (= alpha * mvec) given the current assignment of C and Z
 }
-
