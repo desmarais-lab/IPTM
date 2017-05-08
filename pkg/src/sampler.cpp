@@ -143,7 +143,7 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
 	    double time = document2[2];
 	    double time1 = when - 384;
 	  	double time2 = when - 96;
-		  double time3 = when - 24; 
+		double time3 = when - 24; 
 	    for (int r = 0; r < receiver.size(); r++){
 	       for (int IP = 0; IP < nIP; IP++) {
   			  List IPlist_IP = IPmat[IP];

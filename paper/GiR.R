@@ -1,12 +1,5 @@
-library(mvtnorm)
-library(MCMCpack)
-library(entropy)
-library(Rcpp)
-library(RcppArmadillo)
-sourceCpp('~/Desktop/IPTM-master/pkg/src/sampler.cpp')
-source('~/Desktop/IPTM-master/pkg/R/core.R')
-
-unix.time(TryGiR <- GiR(10^4, seed = 20))
+library(IPTM)
+TryGiR <- GiR(10^5, niters = c(1, 1, 1, 330, 30, 3), seed = 123)
 
 Nsamp = nrow(TryGiR$Forward)
 thin = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 500)

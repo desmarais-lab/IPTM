@@ -201,11 +201,12 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
   set.seed(seed)
   
   # trim the edge so that we only model edges after 384 hours
-	timeinc = c(0, vapply(seq(along = edge)[-1], function(d) {
-  	as.numeric(edge[[d]][3]) - as.numeric(edge[[d-1]][3])
- 	}, c(1)))
+	timestamps = vapply(edge, function(d) {
+  			  d[[3]]
+ 			  }, c(1))
 
-    edge2 = which_int(384, cumsum(timeinc)) : length(edge)
+    edge2 = which_int(384, timestamps) : length(edge)
+    timeinc = c(timestamps[1], timestamps[-1] - timestamps[-length(timestamps)])
    
   # initialize alpha, mvec, delta, nvec, eta, lvec, and gammas
  	W = length(vocabulary)
@@ -459,7 +460,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
         		for (IP in 1L:nIP) {
            		bmat[[IP]][ , (i3 - burn) / thin] = Beta.old[[IP]]
            	}
-           	deltamat[(n3 - burn) / thin] = delta
+           	deltamat[(i3 - burn) / thin] = delta
         }
     	}
   }
@@ -676,8 +677,14 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
   }
   edge = base.edge
   text = base.text
-  p.d = matrix(NA, nrow = nDocs, ncol = nIP)
-  
+  if (!base) {
+  p.d = matrix(NA, nrow = nDocs + length(edge), ncol = nIP)
+  for (d in 1:length(edge)) {
+  	 p.d[d, ] = vapply(1L:nIP, function(IP) {
+      sum(names(text[[d]]) %in% which(currentC == IP))
+    }, c(1)) / max(1, N.d)
+  }
+  }
   options(warn = -1)
   for (d in 1:nDocs) {
     N.d = nwords
@@ -709,29 +716,29 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
       }
     }
     
-    p.d[d, ] = vapply(1L:nIP, function(IP) {
+    p.d[length(base.text) + d, ] = vapply(1L:nIP, function(IP) {
       sum(topic.d %in% which(currentC == IP))
     }, c(1)) / max(1, N.d)
     if (base & t.d < 384) {
       history.t = lapply(1:nIP, function(IP) {
-        lapply(1:3, function(l){
-          matrix(0, length(node), length(node))
-        })
-      })
+        			  lapply(1:3, function(l){
+         		  matrix(0, length(node), length(node))
+       			  })
+     			  })
     } else {	
       history.t = History(edge, p.d, node, t.d + 10^(-10))
     }
     X = lapply(node, function(i) {
-      Netstats(history.t, node, i, netstat)
-    })
+      	Netstats(history.t, node, i, netstat)
+   		})
     XB = MultiplyXBList(X, b)     
-    lambda = lambda_cpp(p.d[d,], XB)
+    lambda = lambda_cpp(p.d[length(base.text) + d,], XB)
     
     iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
     while (sum(iJi) == 0) {
       iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
     }
-    LambdaiJi = lambdaiJi(p.d[d,], XB, iJi)
+    LambdaiJi = lambdaiJi(p.d[length(base.text) + d,], XB, iJi)
     Time.inc = vapply(LambdaiJi, function(lambda) {
       rexp(1, lambda)
     }, c(1))
@@ -990,7 +997,7 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
   #Backward sampling
   Backward_stats = matrix(NA, nrow = Nsamp, ncol = 21)
   Backward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
-                                 base.edge = base.edge, base.text = base.text, seed, backward_init = TRUE) 
+                                 base.edge = base.edge, base.text = base.text, seed, backward_init = TRUE, forward = FALSE, backward = FALSE) 
   deltamat2 = rep(NA, Nsamp)
   bmat2 = matrix(NA, nrow = Nsamp, ncol = nIP * P)		
   entropy2 = matrix(NA, Nsamp, 2)		   
