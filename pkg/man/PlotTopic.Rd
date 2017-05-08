@@ -4,12 +4,12 @@
 \alias{PlotTopic}
 \title{PlotTopic}
 \usage{
-PlotTopic(MCMCchain, K)
+PlotTopic(Zchain, K)
 }
 \arguments{
-\item{MCMCchain}{MCMCchain a chain obtained using MCMC function}
-
 \item{K}{total number of topics specified by the user}
+
+\item{MCMCchain}{MCMCchain a chain obtained using MCMC function}
 }
 \value{
 Barplot of the topic distribution

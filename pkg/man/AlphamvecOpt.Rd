@@ -4,14 +4,10 @@
 \alias{AlphamvecOpt}
 \title{AlphamvecOpt}
 \usage{
-AlphamvecOpt(nIP, K, currentC, currentZ, alpha, mvec)
+AlphamvecOpt(K, currentZ, alpha, mvec)
 }
 \arguments{
-\item{nIP}{total number of interaction patterns specified by the user}
-
 \item{K}{total number of topics specified by the user}
-
-\item{currentC}{current state of the assignment of interaction patterns}
 
 \item{currentZ}{current state of the assignment of topics}
 

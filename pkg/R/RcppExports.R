@@ -21,8 +21,8 @@ rdirichlet_cpp <- function(num_samples, alpha_m) {
     .Call('IPTM_rdirichlet_cpp', PACKAGE = 'IPTM', num_samples, alpha_m)
 }
 
-rbinom_mat <- function(probij) {
-    .Call('IPTM_rbinom_mat', PACKAGE = 'IPTM', probij)
+rbinom_mat <- function(probmat) {
+    .Call('IPTM_rbinom_mat', PACKAGE = 'IPTM', probmat)
 }
 
 History <- function(edge, p_d, node, when) {
@@ -41,12 +41,12 @@ Triadic <- function(history, node, sender) {
     .Call('IPTM_Triadic', PACKAGE = 'IPTM', history, node, sender)
 }
 
-Triadic2 <- function(triadic) {
-    .Call('IPTM_Triadic2', PACKAGE = 'IPTM', triadic)
+Triadic_reduced <- function(triadic) {
+    .Call('IPTM_Triadic_reduced', PACKAGE = 'IPTM', triadic)
 }
 
-MultiplyXB <- function(X, beta) {
-    .Call('IPTM_MultiplyXB', PACKAGE = 'IPTM', X, beta)
+MultiplyXB <- function(X, B) {
+    .Call('IPTM_MultiplyXB', PACKAGE = 'IPTM', X, B)
 }
 
 MultiplyXBList <- function(X, B) {
@@ -65,6 +65,10 @@ tabulateC <- function(x, max) {
     .Call('IPTM_tabulateC', PACKAGE = 'IPTM', x, max)
 }
 
+lambda_cpp <- function(p_d, XB) {
+    .Call('IPTM_lambda_cpp', PACKAGE = 'IPTM', p_d, XB)
+}
+
 TopicInEqZ <- function(K, currentZ_d, alpha, mvec, doc) {
     .Call('IPTM_TopicInEqZ', PACKAGE = 'IPTM', K, currentZ_d, alpha, mvec, doc)
 }
@@ -77,12 +81,12 @@ EdgeInEqZ <- function(iJi, lambda, delta) {
     .Call('IPTM_EdgeInEqZ', PACKAGE = 'IPTM', iJi, lambda, delta)
 }
 
-TimeInEqZ <- function(LambdaiJi, tdiff) {
-    .Call('IPTM_TimeInEqZ', PACKAGE = 'IPTM', LambdaiJi, tdiff)
+TimeInEqZ <- function(LambdaiJi, observedtdiff) {
+    .Call('IPTM_TimeInEqZ', PACKAGE = 'IPTM', LambdaiJi, observedtdiff)
 }
 
-ObservedInEqZ <- function(LambdaiJi, observediJi) {
-    .Call('IPTM_ObservedInEqZ', PACKAGE = 'IPTM', LambdaiJi, observediJi)
+ObservedInEqZ <- function(observediJi) {
+    .Call('IPTM_ObservedInEqZ', PACKAGE = 'IPTM', observediJi)
 }
 
 lambdaiJi <- function(p_d, XB, iJi) {
@@ -91,9 +95,5 @@ lambdaiJi <- function(p_d, XB, iJi) {
 
 DataAug_cpp <- function(iJi_d, lambda_d, delta, timeinc_d) {
     .Call('IPTM_DataAug_cpp', PACKAGE = 'IPTM', iJi_d, lambda_d, delta, timeinc_d)
-}
-
-lambda_cpp <- function(p_d, XB) {
-    .Call('IPTM_lambda_cpp', PACKAGE = 'IPTM', p_d, XB)
 }
 

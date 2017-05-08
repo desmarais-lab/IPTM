@@ -4,19 +4,21 @@
 \alias{Netstats}
 \title{Netstats}
 \usage{
-Netstats(history, node, sender, netstat)
+Netstats(historyIP, node, sender, netstat)
 }
 \arguments{
-\item{history}{list of document information with 3 elements (sender, receiver, time)}
+\item{historyIP}{list containing the weighted history of interactions for each IP}
 
 \item{node}{nodelist containing the ID of nodes}
 
 \item{sender}{specific timepoint that we are calculating the time difference from}
 
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
+
+\item{nIP}{total number of interaction patterns specified by the user}
 }
 \value{
-Matrix of network statistics for specific sender and all possible receivers
+list of network statistics for specific sender and all possible receivers for each IP
 }
 \description{
 Calculate the network statistics (dydadic, triadic, or degree) given the history of interactions
