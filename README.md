@@ -1,4 +1,5 @@
 ![](https://travis-ci.org/desmarais-lab/IPTM.svg)
+![](http://www.r-pkg.org/badges/version/IPTM)
 
 Functions jointly analyze the history of interaction (between the sender and receiver) and the contents or topic of text (e.g. email, online messages) using Markov chain Monte Carlo (MCMC).
 
