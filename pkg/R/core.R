@@ -241,7 +241,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
 		bmat[[IP]] = matrix(0, nrow = P, ncol = (n3 - burn) / thin)
 		bmat[[IP]][, 1:(n3 - burn) / thin] = c(rmvnorm(1, prior.b.mean, prior.b.var))
   	}
-  	deltamat = rep(NA, (n3 - burn) / thin)
+  	deltamat = rep(delta, (n3 - burn) / thin)
 
     # to check the convergence  
     if (plot) {
@@ -266,7 +266,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
       Beta.old = lapply(bmat, function(b) {
       			rowMeans(b)
          		})  
-    
+      delta = mean(deltamat)
      # Data augmentation
       lambda = list()
       LambdaiJi = list()
