@@ -677,18 +677,19 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
   }
   edge = base.edge
   text = base.text
+  base.length = length(edge)
+  p.d = matrix(NA, nrow = nDocs + base.length, ncol = nIP)
   if (!base) {
-  p.d = matrix(NA, nrow = nDocs + length(edge), ncol = nIP)
-  for (d in 1:length(edge)) {
+  for (d in 1:base.length) {
   	 p.d[d, ] = vapply(1L:nIP, function(IP) {
       sum(names(text[[d]]) %in% which(currentC == IP))
-    }, c(1)) / max(1, N.d)
+    }, c(1)) / max(1, length(text[[d]]))
   }
   }
   options(warn = -1)
   for (d in 1:nDocs) {
     N.d = nwords
-    text[[length(base.text) + d]] = rep(NA, N.d)
+    text[[base.length + d]] = rep(NA, N.d)
     
     if (!backward) {
       theta.d = rdirichlet_cpp(1, alpha * mvec)	
@@ -696,9 +697,9 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
       
       if (N.d > 0) {
         for (n in 1:N.d){
-          text[[length(base.text) + d]][n] = multinom_vec(1, phi[[topic.d[n]]])
+          text[[base.length + d]][n] = multinom_vec(1, phi[[topic.d[n]]])
         }
-        names(text[[length(base.text) + d]]) = topic.d
+        names(text[[base.length + d]]) = topic.d
       }
     } else {
       phi.k = rep(NA, K)
@@ -709,14 +710,14 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
           for (w in 1:W) {
             phi.k[w] = (word_type_topic_counts[w, topic.d[n]] + betas * nvec[w]) / (sum(word_type_topic_counts[,topic.d[n]]) + betas)
           } 
-          text[[length(base.text) + d]][n] = multinom_vec(1, phi.k)
-          word_type_topic_counts[text[[d]][n], topic.d[n]] = word_type_topic_counts[text[[d]][n], topic.d[n]] + 1
+          text[[base.length + d]][n] = multinom_vec(1, phi.k)
+          word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] = word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] + 1
         }
-        names(text[[length(base.text) + d]]) = topic.d
+        names(text[[base.length + d]]) = topic.d
       }
     }
     
-    p.d[length(base.text) + d, ] = vapply(1L:nIP, function(IP) {
+    p.d[base.length + d, ] = vapply(1L:nIP, function(IP) {
       sum(topic.d %in% which(currentC == IP))
     }, c(1)) / max(1, N.d)
     if (base & t.d < 384) {
@@ -732,32 +733,32 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
       	Netstats(history.t, node, i, netstat)
    		})
     XB = MultiplyXBList(X, b)     
-    lambda = lambda_cpp(p.d[length(base.text) + d,], XB)
+    lambda = lambda_cpp(p.d[base.length + d,], XB)
     
     iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
     while (sum(iJi) == 0) {
       iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
     }
-    LambdaiJi = lambdaiJi(p.d[length(base.text) + d,], XB, iJi)
+    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
     Time.inc = vapply(LambdaiJi, function(lambda) {
       rexp(1, lambda)
     }, c(1))
     i.d = which(Time.inc == min(Time.inc[!is.na(Time.inc)]))
     j.d = which(iJi[i.d,] == 1)
     t.d = t.d + Time.inc[i.d]
-    edge[[length(base.edge) + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
+    edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
   }
   options(warn = 0)
   if (forward) {
-    edge = edge[-(1:length(base.edge))]
-    text = text[-(1:length(base.text))]
+    edge = edge[-(1:base.length)]
+    text = text[-(1:base.length)]
   }
   if (base == TRUE & t.d > 384) {
     cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
     edge = edge[1:cutoff]
     text = text[1:cutoff]
   }
-  return(list(edge = edge, text = text, b = b, base = length(base.edge)))							
+  return(list(edge = edge, text = text, b = b, base = base.length))							
 } 
 
 #' @title GiR_stats
@@ -976,7 +977,8 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
                               paste0("Tokens_in_Word", 1:length(vocabulary)))
   deltamat1 = rep(NA, Nsamp)
   bmat1 = matrix(NA, nrow = Nsamp, ncol = nIP * P)
-  entropy1 = rep(NA, Nsamp)
+  entropyC1 = matrix(NA, Nsamp, 2)
+  entropyZ1 = rep(NA, Nsamp)
   for (i in 1:Nsamp) { 
     if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
     set.seed(i)
@@ -989,9 +991,11 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
                                   base.edge = base.edge, base.text = base.text, seed, forward = TRUE) 
     Forward_stats[i, ] = GiR_stats(Forward_sample, K, currentC, vocabulary, forward = TRUE, backward = FALSE)
     
+    topic_token_counts = tabulate(unlist(lapply(Forward_sample$text, function(d){as.numeric(names(d))})), K)
     bmat1[i, ] = unlist(b)
     deltamat1[i] = delta
-    entropy1[i] = entropy.empirical(currentC)
+    entropyC1[i,] = c(entropy.empirical(currentC), entropy.empirical(topic_token_counts))
+    entropyZ1[i] = entropy.empirical(tabulate(unlist(Forward_sample$text), length(vocabulary)))
   }
   
   #Backward sampling
@@ -1000,7 +1004,8 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
                                  base.edge = base.edge, base.text = base.text, seed, backward_init = TRUE, forward = FALSE, backward = FALSE) 
   deltamat2 = rep(NA, Nsamp)
   bmat2 = matrix(NA, nrow = Nsamp, ncol = nIP * P)		
-  entropy2 = matrix(NA, Nsamp, 2)		   
+  entropyC2 = matrix(NA, Nsamp, 2)
+  entropyZ2 = rep(NA, Nsamp)		   
   for (i in 1:Nsamp) { 
     if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
     seed = seed + 100
@@ -1032,7 +1037,8 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
     
     bmat2[i, ] = unlist(b)
     deltamat2[i] = delta
-    entropy2[i, ] = c(entropy.empirical(currentC), entropy.empirical(topic_token_counts))
+    entropyC2[i,] = c(entropy.empirical(currentC), entropy.empirical(topic_token_counts))
+    entropyZ2[i] = entropy.empirical(tabulate(unlist(Backward_sample$text[-1:-length(base.text)]), length(vocabulary)))
   }
   
   tstats = rep(0, ncol(Forward_stats))
@@ -1050,5 +1056,5 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats, delta = cbind(deltamat1, deltamat2),
-              b1 = bmat1, b2= bmat2, entropy1 = entropy1, entropy2 = entropy2))	
+              b1 = bmat1, b2= bmat2, entropyC1 = entropyC1, entropyC2 = entropyC2, entropyZ1 = entropyZ1, entropyZ2 = entropyZ2))	
 }

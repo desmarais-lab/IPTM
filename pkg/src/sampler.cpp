@@ -3,7 +3,6 @@
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
 //[[Rcpp::depends(RcppArmadillo)]]
-
 using std::log;
 using std::exp;
 using std::max;
