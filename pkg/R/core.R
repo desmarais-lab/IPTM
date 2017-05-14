@@ -259,7 +259,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
       
       if (optimize) {
       #update the hyperparameter alpha and mvec
-      vec = AlphamvecOpt(K, currentZ, alpha, mvec)
+      vec = AlphamvecOpt(K, currentZ[edge2], alpha, mvec)
       alpha = sum(vec)
       mvec = vec / alpha
       }
@@ -289,9 +289,9 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
 		observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
 		}	 
     
-    	  textlist.raw = unlist(textlist)
+    	  textlist.raw = unlist(textlist[edge2])
     	  table.W = lapply(1L:K, function(k) {
-      			tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+      			tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
       			})
     
     	  for (i1 in 1L:n1) {
@@ -320,7 +320,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
             				wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
             			}
             		table.W = lapply(1L:K, function(k) {
-      				  tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+      				  tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
       			})
       			p.d[d, ] = vapply(1L:nIP, function(IP) {
 	 				sum(currentZ[[d]] %in% which(currentC == IP))
@@ -373,7 +373,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
     if (plot) {
       entropy.mat = c(entropy.mat, entropy.empirical(currentC))
       alpha.mat = rbind(alpha.mat, alpha)
-      logWZ.mat = c(logWZ.mat, logWZ(K, currentZ, textlist, table.W, alpha, mvec, betas, nvec))
+      logWZ.mat = c(logWZ.mat, logWZ(K, currentZ[edge2], textlist[edge2], table.W, alpha, mvec, betas, nvec))
     }
       
     for (d in edge2) {
@@ -450,8 +450,8 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
         				}, c(1))) / length(edge2)
         loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2
         if (log(runif(1, 0, 1)) < loglike.diff2) {
-        	delta = delta.new
-        	eta = eta.new
+        		delta = delta.new
+        		eta = eta.new
          	prior.old2 = prior.new2
          	post.old2 = post.new2
         }
@@ -649,7 +649,6 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
 #' @param base.text texts corresponding to base.edge
 #' @param seed an integer value which controls random number generation
 #' @param topic_token_assignments matrix of topic-token assignments
-#' @param word_type_topic_counts matrix of word type - topic counts
 #' @param forward Logigal indicating whether we are generating forward samples
 #' @param backward_init Logigal indicating whether we are generating initial backward samples
 #' @param backward Logigal indicating whether we are generating backward samples
@@ -660,8 +659,7 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
 #' @export
 GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
                         b, delta, currentC, netstat, base.edge, base.text, seed,
-                        topic_token_assignments = NULL, word_type_topic_counts = NULL, 
-                        forward = FALSE, backward_init = FALSE, backward = FALSE, base = FALSE) {
+                        topic_token_assignments = NULL, forward = FALSE, backward_init = FALSE, backward = FALSE, base = FALSE) {
   set.seed(seed)
   W = length(vocabulary)
   phi = lapply(1L:K, function(k) {
@@ -686,6 +684,7 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
     }, c(1)) / max(1, length(text[[d]]))
   }
   }
+  word_type_topic_counts = matrix(0, W, K)
   options(warn = -1)
   for (d in 1:nDocs) {
     N.d = nwords
@@ -704,7 +703,6 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
     } else {
       phi.k = rep(NA, K)
       topic.d = topic_token_assignments[[d]]
-      word.d = as.numeric(names(topic_token_assignments[[d]]))
       if (N.d > 0) {
         for (n in 1:N.d){
           for (w in 1:W) {
@@ -794,9 +792,9 @@ GiR_stats = function(GiR_sample, K, currentC, vocabulary, forward = FALSE, backw
   GiR_stats[P + 1] = mean(vapply(1:nDocs, function(d) {
     length(edge[[d]][[2]])
   }, c(1)))
-  GiR_stats[P + 2] = mean(vapply(2:nDocs, function(d) {
+  GiR_stats[P + 2] = mean(c(edge[[1]][[3]] - 384, vapply(2:nDocs, function(d) {
     edge[[d]][[3]] - edge[[d-1]][[3]]
-  }, c(1))) 			
+  }, c(1)))) 			
   GiR_stats[P + 3] = mean(currentC)
   Tokens_in_Topic = tabulate(vapply(1:nDocs, function(d){
     as.numeric(names(text[[d]]))
@@ -805,9 +803,7 @@ GiR_stats = function(GiR_sample, K, currentC, vocabulary, forward = FALSE, backw
     Tokens_in_Topic %*% (currentC == IP)
   }, c(1))
   GiR_stats[(P + 4 + nIP):(P + 3 + nIP + K)] = Tokens_in_Topic
-  Tokens_in_Word = tabulate(vapply(1:nDocs, function(d){
-    text[[d]]
-  }, rep(0, nwords)), W)
+  Tokens_in_Word = tabulate(unlist(text), W)
   GiR_stats[(P + 4 + nIP + K):(P + 3 + nIP + K + W)] = Tokens_in_Word
   
   return(GiR_stats)
@@ -927,6 +923,37 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
   }
 }      
 
+#' @title PPPplot
+#' @description Alternative way of drawing pp-plot
+#'
+#' @param Forward_stats statistics obtained from forward sampling
+#' @param Backward_stats statistics obtained from backward sampling
+#' @param thin thinning of samples
+#'
+#' @return PP-plots for different GiR statistics of interest
+#'
+#' @export
+pppplot = function(Forward_stats, Backward_stats, thin = 1) {
+	nms = colnames(Forward_stats)
+  
+  	for (i in 1:ncol(Forward_stats)) {
+  		uniqueValues = sort(unique(c(Forward_stats[, i], Backward_stats[, i])))
+  		uniqueValues = uniqueValues[round(seq(1, length(uniqueValues), by = thin))]
+  		qx1 = numeric(length(uniqueValues))
+  		qx2 = numeric(length(uniqueValues))
+  		
+  		for (j in 1:length(uniqueValues)) {
+  			qx1[j] = mean(Forward_stats[, i] <= uniqueValues[j])
+  			qx2[j] = mean(Backward_stats[, i] <= uniqueValues[j])
+  		}
+  		
+  		plot(qx1, qx2, type = "n", ylim = c(0, 1), xlim = c(0, 1), ylab = "Backward", xlab = "Forward")
+  		abline(0, 1, lty = 2, col = "grey60")
+  		points(qx1, qx2, cex = 0.6, col = "blue", pch = 4)
+  		lines(qx1, qx2)
+}
+}
+
 #' @title GiR
 #' @description Getting it Right test for IPTM
 #'
@@ -979,6 +1006,7 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
   bmat1 = matrix(NA, nrow = Nsamp, ncol = nIP * P)
   entropyC1 = matrix(NA, Nsamp, 2)
   entropyZ1 = rep(NA, Nsamp)
+  Zstat1 = rep(NA, Nsamp)
   for (i in 1:Nsamp) { 
     if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
     set.seed(i)
@@ -996,6 +1024,7 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
     deltamat1[i] = delta
     entropyC1[i,] = c(entropy.empirical(currentC), entropy.empirical(topic_token_counts))
     entropyZ1[i] = entropy.empirical(tabulate(unlist(Forward_sample$text), length(vocabulary)))
+    Zstat1[i] = mean(sapply(Forward_sample$text, function(d){sd(as.numeric(names(d)))}))
   }
   
   #Backward sampling
@@ -1005,7 +1034,8 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
   deltamat2 = rep(NA, Nsamp)
   bmat2 = matrix(NA, nrow = Nsamp, ncol = nIP * P)		
   entropyC2 = matrix(NA, Nsamp, 2)
-  entropyZ2 = rep(NA, Nsamp)		   
+  entropyZ2 = rep(NA, Nsamp)	
+  Zstat2 = rep(NA, Nsamp)	   
   for (i in 1:Nsamp) { 
     if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
     seed = seed + 100
@@ -1024,21 +1054,17 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
       names(topic_token_assignments[[d]]) = Backward_sample$text[[d + length(base.text)]]
     }
     topic_token_counts = tabulate(unlist(Inference_samp$Z), K)
-    word_type_topic_counts = matrix(NA , length(vocabulary), K)
-    for (w in 1:length(vocabulary)) {
-      word_type_w = which(unlist(Backward_sample$text[-(1:length(base.text))]) == w)
-      word_type_topic_counts[w, ] = tabulate(unlist(Inference_samp$Z)[word_type_w], K)
-    }
     
     Backward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
                                    base.edge = base.edge, base.text = base.text, seed, topic_token_assignments = topic_token_assignments, 
-                                   word_type_topic_counts = word_type_topic_counts, forward = FALSE, backward = TRUE)
+                                   forward = FALSE, backward = TRUE)
     Backward_stats[i, ] = GiR_stats(Backward_sample, K, currentC, vocabulary, forward = FALSE, backward = TRUE)
     
     bmat2[i, ] = unlist(b)
     deltamat2[i] = delta
     entropyC2[i,] = c(entropy.empirical(currentC), entropy.empirical(topic_token_counts))
     entropyZ2[i] = entropy.empirical(tabulate(unlist(Backward_sample$text[-1:-length(base.text)]), length(vocabulary)))
+    Zstat2[i] = mean(sapply(topic_token_assignments, function(d){sd(d)}))
   }
   
   tstats = rep(0, ncol(Forward_stats))
@@ -1056,5 +1082,5 @@ GiR = function(Nsamp, nDocs = 5, node = 1:4, vocabulary =  c("hi", "hello","bye"
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats, delta = cbind(deltamat1, deltamat2),
-              b1 = bmat1, b2= bmat2, entropyC1 = entropyC1, entropyC2 = entropyC2, entropyZ1 = entropyZ1, entropyZ2 = entropyZ2))	
-}
+              b1 = bmat1, b2= bmat2, entropyC1 = entropyC1, entropyC2 = entropyC2, entropyZ1 = entropyZ1, entropyZ2 = entropyZ2, Zstat1 = Zstat1, Zstat2 = Zstat2))
+}                         	

@@ -6,9 +6,8 @@
 \usage{
 GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
   b, delta, currentC, netstat, base.edge, base.text, seed,
-  topic_token_assignments = NULL, word_type_topic_counts = NULL,
-  forward = FALSE, backward_init = FALSE, backward = FALSE,
-  base = FALSE)
+  topic_token_assignments = NULL, forward = FALSE, backward_init = FALSE,
+  backward = FALSE, base = FALSE)
 }
 \arguments{
 \item{nDocs}{number of documents to be generated}
@@ -46,8 +45,6 @@ GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
 \item{seed}{an integer value which controls random number generation}
 
 \item{topic_token_assignments}{matrix of topic-token assignments}
-
-\item{word_type_topic_counts}{matrix of word type - topic counts}
 
 \item{forward}{Logigal indicating whether we are generating forward samples}
 
