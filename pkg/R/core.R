@@ -278,7 +278,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
   	        Netstats(history.t, node, i, netstat)
             })
    	 	XB = MultiplyXBList(X, Beta.old)     
-		  lambda[[d]] = lambda_cpp(p.d[d,], XB)
+		lambda[[d]] = lambda_cpp(p.d[d,], XB)
 		
 		#calculate the resampling probability
 		probij = DataAug_cpp(iJi[[d]], lambda[[d]], delta, timeinc[d])
@@ -734,9 +734,10 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
     lambda = lambda_cpp(p.d[base.length + d,], XB)
     
     iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
-    while (sum(iJi) == 0) {
-      iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
-    }
+    diag(iJi)[which(rowSums(iJi) == 0)] = 1
+    # if (sum(iJi) == 0) {
+      # iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
+    # }
     LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
     Time.inc = vapply(LambdaiJi, function(lambda) {
       rexp(1, lambda)
@@ -744,6 +745,110 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
     i.d = which(Time.inc == min(Time.inc[!is.na(Time.inc)]))
     j.d = which(iJi[i.d,] == 1)
     t.d = t.d + Time.inc[i.d]
+    edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
+  }
+  options(warn = 0)
+  if (forward) {
+    edge = edge[-(1:base.length)]
+    text = text[-(1:base.length)]
+  }
+  if (base == TRUE & t.d > 384) {
+    cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
+    edge = edge[1:cutoff]
+    text = text[1:cutoff]
+  }
+  return(list(edge = edge, text = text, b = b, base = base.length))							
+} 
+
+GenerateDocs2 = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
+                        b, delta, currentC, netstat, base.edge, base.text, seed,
+                        topic_token_assignments = NULL, forward = FALSE, backward_init = FALSE, backward = FALSE, base = FALSE) {
+  set.seed(seed)
+  W = length(vocabulary)
+  phi = lapply(1L:K, function(k) {
+    rdirichlet_cpp(1, betas * nvec)
+  })
+  L = 3
+  P = 1 + L * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
+  
+  if (base) {
+    t.d = 0
+  } else {
+    t.d = 384
+  }
+  edge = base.edge
+  text = base.text
+  base.length = length(edge)
+  p.d = matrix(NA, nrow = nDocs + base.length, ncol = nIP)
+  if (!base) {
+  for (d in 1:base.length) {
+  	 p.d[d, ] = vapply(1L:nIP, function(IP) {
+      sum(names(text[[d]]) %in% which(currentC == IP))
+    }, c(1)) / max(1, length(text[[d]]))
+  }
+  }
+  word_type_topic_counts = matrix(0, W, K)
+  options(warn = -1)
+  for (d in 1:nDocs) {
+    N.d = nwords
+    text[[base.length + d]] = rep(NA, N.d)
+    
+    if (!backward) {
+      theta.d = rdirichlet_cpp(1, alpha * mvec)	
+      topic.d = multinom_vec(max(1, N.d), theta.d)
+      
+      if (N.d > 0) {
+        for (n in 1:N.d){
+          text[[base.length + d]][n] = multinom_vec(1, phi[[topic.d[n]]])
+        }
+        names(text[[base.length + d]]) = topic.d
+      }
+    } else {
+      phi.k = rep(NA, K)
+      topic.d = topic_token_assignments[[d]]
+      if (N.d > 0) {
+        for (n in 1:N.d){
+          for (w in 1:W) {
+            phi.k[w] = (word_type_topic_counts[w, topic.d[n]] + betas * nvec[w]) / (sum(word_type_topic_counts[,topic.d[n]]) + betas)
+          } 
+          text[[base.length + d]][n] = multinom_vec(1, phi.k)
+          word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] = word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] + 1
+        }
+        names(text[[base.length + d]]) = topic.d
+      }
+    }
+    
+    p.d[base.length + d, ] = vapply(1L:nIP, function(IP) {
+      sum(topic.d %in% which(currentC == IP))
+    }, c(1)) / max(1, N.d)
+    if (base & t.d < 384) {
+      history.t = lapply(1:nIP, function(IP) {
+        			  lapply(1:3, function(l){
+         		  matrix(0, length(node), length(node))
+       			  })
+     			  })
+    } else {	
+      history.t = History(edge, p.d, node, t.d + 10^(-10))
+    }
+    X = lapply(node, function(i) {
+      	Netstats(history.t, node, i, netstat)
+   		})
+    XB = MultiplyXBList(X, b)     
+    lambda = lambda_cpp(p.d[base.length + d,], XB)
+    
+    iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
+    
+    if (!base) {
+    	diag(iJi)[which(rowSums(iJi)==0)] = 1
+    }
+    while (base & sum(iJi) == 0) {
+       iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
+     }
+    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
+    LambdaiJi[is.na(LambdaiJi)] = 0
+    i.d = multinom_vec(1, LambdaiJi)
+    j.d = which(iJi[i.d,] == 1)
+    t.d = t.d + rexp(1, LambdaiJi[i.d])
     edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
   }
   options(warn = 0)
