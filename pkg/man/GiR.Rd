@@ -4,12 +4,13 @@
 \alias{GiR}
 \title{GiR}
 \usage{
-GiR(Nsamp, nDocs = 5, node = 1:4, vocabulary = c("hi", "hello", "bye",
+GiR(Nsamp, nDocs = 10, node = 1:4, vocabulary = c("hi", "hello", "bye",
   "mine", "what"), nIP = 2, K = 4, nwords = 4, alpha = 2,
   mvec = rep(1/4, 4), betas = 2, nvec = rep(1/5, 5),
-  prior.b.mean = c(-3, rep(0, 6)), prior.b.var = diag(7), prior.eta = c(0,
-  1), sigma_Q = 0.25, niters = c(1, 1, 1, 50, 0, 1), netstat = "dyadic",
-  generate_PP_plots = TRUE, seed = 1)
+  prior.b.mean = c(-2, rep(0, 6)), prior.b.var = diag(7),
+  prior.delta = c(4, 8), sigma_Q = c(0.25, 2), niters = c(1, 1, 1, 50, 0,
+  1), netstat = c("intercept", "dyadic"), generate_PP_plots = TRUE,
+  seed = 1)
 }
 \arguments{
 \item{Nsamp}{number of GiR samples to be generated}
@@ -38,9 +39,9 @@ GiR(Nsamp, nDocs = 5, node = 1:4, vocabulary = c("hi", "hello", "bye",
 
 \item{prior.b.var}{covairance matrix of b in multivariate normal distribution}
 
-\item{prior.eta}{mean and variance parameter of eta in normal distribution}
+\item{prior.delta}{parameter of delta in gamma prior}
 
-\item{sigma_Q}{proposal distribution variance parameter for beta}
+\item{sigma_Q}{proposal distribution variance parameter for beta and eta}
 
 \item{niters}{(out, n1, n2, n3, burn, thin) in the inference}
 

@@ -13,7 +13,7 @@ Netstats(historyIP, node, sender, netstat)
 
 \item{sender}{specific timepoint that we are calculating the time difference from}
 
-\item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
+\item{netstat}{which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")}
 }
 \value{
 list of network statistics for specific sender and all possible receivers for each IP

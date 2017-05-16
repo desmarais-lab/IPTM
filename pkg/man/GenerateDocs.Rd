@@ -5,7 +5,7 @@
 \title{GenerateDocs}
 \usage{
 GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
-  b, delta, currentC, netstat, base.edge, base.text, seed,
+  b, delta, currentC, netstat, base.edge, base.text,
   topic_token_assignments = NULL, forward = FALSE, backward_init = FALSE,
   backward = FALSE, base = FALSE)
 }
@@ -36,13 +36,11 @@ GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
 
 \item{currentC}{topic-IP assignment}
 
-\item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
+\item{netstat}{which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")}
 
 \item{base.edge}{edges before 384 hours that is used to calculate initial history of interactions}
 
 \item{base.text}{texts corresponding to base.edge}
-
-\item{seed}{an integer value which controls random number generation}
 
 \item{topic_token_assignments}{matrix of topic-token assignments}
 

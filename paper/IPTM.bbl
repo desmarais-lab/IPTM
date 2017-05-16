@@ -52,10 +52,6 @@ Kanungo, S. and Jain, V. (2008).
 \newblock Modeling email use: a case of email system transition.
 \newblock {\em System Dynamics Review}, 24(3):299--319.
 
-\bibitem[Minka, 2000]{minka2000estimating}
-Minka, T. (2000).
-\newblock Estimating a dirichlet distribution.
-
 \bibitem[Perry and Wolfe, 2013]{PerryWolfe2012}
 Perry, P.~O. and Wolfe, P.~J. (2013).
 \newblock Point process modelling for directed interaction networks.
@@ -82,11 +78,5 @@ Sz{\'o}stek, A.~M. (2011).
 Wallach, H.~M. (2008).
 \newblock {\em Structured topic models for language}.
 \newblock PhD thesis, University of Cambridge.
-
-\bibitem[Wallach et~al., 2009]{wallach2009rethinking}
-Wallach, H.~M., Mimno, D.~M., and McCallum, A. (2009).
-\newblock Rethinking lda: Why priors matter.
-\newblock In {\em Advances in neural information processing systems}, pages
-  1973--1981.
 
 \end{thebibliography}

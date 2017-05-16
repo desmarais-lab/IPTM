@@ -129,7 +129,7 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
   }
   NumericVector timestamps(edge.size());
   for (int d = 0; d < edge.size(); d++) {
- 		List document = edge[d];
+ 	  List document = edge[d];
  	  timestamps[d] = document[2];
   }
   int iter = which_num(when, timestamps);
@@ -188,7 +188,7 @@ List Degree(List history, IntegerVector node, int sender) {
     	NumericMatrix historyIP_l = historyIP[l];
     	double send = historyIP_l(sender - 1, receiver - 1);
     	
-   	  NumericVector indegree(node.size());
+   	NumericVector indegree(node.size());
     	for (int h = 0; h < node.size(); h++) {
      	 int third = node[h];
      	 double htor = historyIP_l(third - 1, receiver - 1);
@@ -259,13 +259,13 @@ List Triadic(List history, IntegerVector node, int sender) {
        	    for (int h = 0; h < node.size(); h++) {
      	        int third = node[h];	
      	        double stoh = historyIP_l(sender - 1, third - 1);
-      	      double htos = historyIP_l(third - 1, sender - 1); 
+      	        double htos = historyIP_l(third - 1, sender - 1); 
      	        double rtoh = historyIP_m(receiver - 1, third - 1);
-      	      double htor = historyIP_m(third - 1, receiver - 1); 
-      	      twosend[h] = stoh * htor;
-      	      tworeceive[h] = htos * rtoh;
-      	      sibling[h] = htos * htor;
-      	      cosibling[h] = stoh * rtoh;
+      	        double htor = historyIP_m(third - 1, receiver - 1); 
+      	        twosend[h] = stoh * htor;
+      	        tworeceive[h] = htos * rtoh;
+      	        sibling[h] = htos * htor;
+      	        cosibling[h] = stoh * rtoh;
        	    }
        	    triadic[iter] = sum(twosend);
        	    triadic[iter + 9] = sum(tworeceive);

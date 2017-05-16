@@ -131,9 +131,9 @@ receivers—are allowed for this model, we expand the rate of interaction betwee
 \lambda^{(d)}_{iJ}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\frac{1}{|J|}\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}\cdot \prod\limits_{j \in J}1\{j \in \mathcal{A}_{\backslash i}\}.
 \end{equation}
 In case of single receivers ($|J|=1$),  Equation (4) is reduced to Equation (3), thus in the following sections we use the Equation (4) of multicast cases as a general form of the stochastic intensity between the sender and receivers.\\ \newline
-In case of no receiver ($|J|=0$), the document still has stochastic intensity that consists of the contents $p^{(d)}_c$ and the baseline intensity $\lambda^{(c)}_0.$ When this type of null-receiver document is generated, we treat it as self-loop email (sender writes an email to himself) and the observed self-loop email in the observed dataset will be treated as this case.
+In case of no receiver ($|J|=0$), we assign stochastic intensity
 \begin{equation}
-\lambda^{(d)}_{i\emptyset}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0\Big\}.
+\lambda^{(d)}_{i\emptyset}(t)= 0.
 \end{equation}
 \begin{comment}
 Conditioned upon the existence of a unique document at some particular time $t$, the probability that the document is sent from $i$ to $j$ is
@@ -179,6 +179,7 @@ We assume the following generative process for each document $d$ in a corpus $D$
 	 	  \end{aligned}
 	 	 \end{equation}
 \end{itemize}
+\iffalse
 Note that considering the property of the minimum of independent Exponential random variables (the probability $\Delta T_{i{J_i}}$ being the minimum is $\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}$), we can rewrite 2 and 3 into the following:
 	 \begin{equation}
 	 \begin{aligned}
@@ -187,6 +188,7 @@ Note that considering the property of the minimum of independent Exponential ran
 	 &t^{(d)} = t^{(d-1)}+\mbox{rexp}(\lambda_{i^{(d)}J^{(d)}}^{(d)}).\\
 	 \end{aligned}
 	 \end{equation}
+	 \fi
  \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates2}
  For the network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), we use 9 different effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling) to measure popularity, centrality, reciprocity, and transitivity. First, we have intercept term to estimate the baseline intensity for each interaction pattern $c=1,...,C$:
  \begin{itemize}
@@ -216,7 +218,7 @@ for $l=1,...,L-1$ and for $c = 1,...,C$. \\ \newline For the triadic effects inv
  \end{itemize}
  \begin{figure}[ht]
  	\centering
- 	\includegraphics[width=0.55\textwidth]{triadtable.jpg} 
+ 	\includegraphics[width=0.76\textwidth]{triadtable.jpg} 
  	\label{fig:sim1diag}
  	\caption{Example of 2-send statistic defined for each interval $l=1,...,3$. Cells with same shades sum up to one statistic, based on when the triads are ``closed".}
  \end{figure}
@@ -540,29 +542,33 @@ By multiplying the normal CDF part to Equation (27) and take the log, we obtain 
  \mbox{log(Acceptance Probability) = min(Equation (33), 0). }
  \end{equation}
 \end{comment}
-After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$. Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the Normal distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, this time we need a proposal distribution with support on the unit interval, since $ \delta \sim \mbox{Beta}(a, b)$.  Now we define an auxiliary variable $\eta$ which come from the proposal distribution (in the real line) and take the transformation:
- $$\delta = \Phi(\eta),$$
- where $\Phi$ is any link function that maps a value in the real line to the value in the unit length $[0, 1]$. Here, for simplicity, we choose standard Gaussian cumulative distribution function. Given that still we cancel out the symmetric part $\phi(\eta^\prime-\eta) =\phi(\eta-\eta^\prime)$ (where $\phi(\cdot)$ is Normal pdf), it follows that the correct acceptance ratio is 
- \begin{equation} 
- 	\begin{split}
- 		& \mbox{Acceptance Probability}=
- 		\begin{cases}  \frac{P(\eta^\prime|\mathcal{Z},   \mathcal{C},  \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)}{P(\eta|\mathcal{Z},   \mathcal{C},   \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)}\quad\text{if}  <1\\
- 			1 \quad \text{else}
- 		\end{cases}
- 	\end{split}
- \end{equation}
- By taking the log, we obtain the log of acceptance ratio:
- \begin{equation}
- 	\begin{aligned} 
- 		&\mbox{log}\Big(\mbox{dnorm}(\eta^\prime ;0, \sigma_\eta^2)\Big)-\mbox{log}\Big(\mbox{dnorm}(\eta; 0, \sigma_\eta^2)\Big)\\&+ \sum_{d=1}^D\Big\{\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\Big(\mbox{log}(\delta^{\prime} \lambda^{(d)}_{iJ_i}) - \mbox{log}(\delta \lambda^{(d)}_{iJ_i})\Big)  {-\Big(\mbox{log}(\delta^{\prime} \lambda^{(d)}_{ij}}+1)
- 		-\mbox{log}(\delta\lambda^{(d)}_{ij}+1)\Big) \Big\}.
- 	\end{aligned}
- \end{equation}
-  Then the log of acceptance ratio we have is:
- \begin{equation}
- 	\mbox{log(Acceptance Probability) = min(Equation (33), 0). }
- \end{equation}
-\begin{comment}
+After finishing the updates of $\mathcal{B}$, we move on to the updates of $\delta$. This time we need a proposal distribution with support on the positive real line, since $ \delta \sim \mbox{Gamma}(a, b)$.  Again, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the Normal distribution, with variance equals to $\sigma^2_\delta$ (proposal distribution variance parameters set by the user). However, we will use the transformation in the proposal:
+\begin{equation*}
+\begin{aligned}
+& \eta = log(\delta)\\
+&\eta^\prime \sim \mbox{Normal}(\eta, \sigma^2_\delta)
+\end{aligned}
+\end{equation*}
+so that $\delta^\prime = \mbox{exp}(\eta^\prime)$ is always chosen to be in the real line. In this case we  still cancel out the symmetric part $\phi(\eta^\prime-\eta) =\phi(\eta-\eta^\prime)$ (where $\phi(\cdot)$ is Normal pdf), however, we should include the Jacobian $\frac{d\delta}{d\eta} = \mbox{exp}(\eta)$ in the acceptance ratio part. Then, it follows that the correct acceptance probability is 
+\begin{equation} 
+	\begin{split}
+		& \mbox{Acceptance Probability}=
+		\begin{cases}  \frac{P(\delta^\prime|\mathcal{Z},   \mathcal{C},  \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)\delta^\prime}{P(\delta|\mathcal{Z},   \mathcal{C},   \mathcal{B}, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2)\delta}\quad\text{if}  <1\\
+			1 \quad \text{else}
+		\end{cases}
+	\end{split}
+\end{equation}
+By taking the log, we obtain the log of acceptance ratio:
+\begin{equation}
+	\begin{aligned} 
+		&\mbox{log}\Big(\mbox{dgamma}(\delta^\prime ;a, b)\Big)-\mbox{log}\Big(\mbox{dgamma}(\delta; a, b)\Big)\\&+ \sum_{d=1}^D\Big\{\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\Big(\mbox{log}(\delta^{\prime} \lambda^{(d)}_{iJ_i}) - \mbox{log}(\delta \lambda^{(d)}_{iJ_i})\Big)  {-\Big(\mbox{log}(\delta^{\prime} \lambda^{(d)}_{ij}}+1)
+		-\mbox{log}(\delta\lambda^{(d)}_{ij}+1)\Big) \Big\}\\& +\mbox{log}(\delta^\prime) -  \mbox{log}(\delta) .
+	\end{aligned}
+\end{equation}
+Then the log of acceptance ratio we have is:
+\begin{equation}
+	\mbox{log(Acceptance Probability) = min(Equation (33), 0). }
+\end{equation}\begin{comment}
 \subsection{Asymmetric Dirichlet prior over $\Theta$}  \label{subsec: Asymmetric Dirichlet prior over theta}
  \cite{wallach2009rethinking} demonstrated that the typical implementations of topic models using symmetric Dirichlet priors with fixed concentration parameters often result in less practical results, and the model fitting can be improved by applying an asymmetric Dirichlet prior over the document–topic distributions (i.e. $\Theta$). Therefore, we assign an asymmetric Dirichlet prior over the interaction pattern-topic distributions, $\Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D}$, where $\boldsymbol{\theta}^{(d)}$ is drawn from Dir($\alpha^{(c^{(d)})}, \boldsymbol{m}^{(c^{(d)})}$). While \cite{wallach2009rethinking} illustrates two different methods, adding a hierarchy to $\Theta$ and optimizing the hyperparameters ($\alpha$ and $\boldsymbol{m}$), we choose to use hyperparameter
  optimization steps since it is computationally efficient and also sufficient to achieve the desired performance gains. Now, we assume $\boldsymbol{m}^{(c)}$ to be non-uniform base measures (while $\alpha^{(c)}$ is still a fixed concentration parameter), and implement the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured} based on Minka’s fixed-point iteration \citep{minka2000estimating}.\\ \newline
@@ -597,8 +603,8 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
  	\For{i=1 to I}{
  		optimize $\alpha$ and $\boldsymbol{m}$ using hyperparameter optimization in \cite{wallach2008structured}\\
  			\For{d=1 to D}{
- 				\For{i $\in \mathcal{A}_{\backslash i^{(d)}}$}{
- 				sample the augmented data $(i, J_i)$ 
+ 				\For{i $\in \mathcal{A}_{\backslash i_o^{(d)}}$}{
+ 				sample the augmented data $(i^{(d)}, J^{(d)}_i)$ 
  			}
  			}
  		fix $\mathcal{C}=\mathcal{C}^{(i-1)}$ and $\mathcal{B}=\mathcal{B}^{(i-1)}$ \\
@@ -615,12 +621,9 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
  				draw $C_k\sim \mbox{multinomial}(p^\mathcal{C})$}}
  	fix $\mathcal{C}=\mathcal{C}^{(i)}$, $\mathcal{Z}=\mathcal{Z}^{(i)}$, and $\mathcal{B}^{(0)}=$ last value ($n_3^{th}$) of $\mathcal{B}^{(i-1)}$\\
  		\For{n=1 to $n_3$}{
- 			sample $\mathcal{B}$ from proposal distribution\\
- 			accept-reject using Equation (28) and (29)\\
+ 			sample $\mathcal{B}$ using M-H\\
+ 				sample $\delta$ using M-H 
   		}
-  					sample $\delta$ from proposal distribution\\
-  					accept-reject using Equation (33) and (34)
-  					
  	}	summarize the results using the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$
  \end{algorithm}
    \section{Getting It Right (GiR)}
@@ -635,6 +638,7 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
    	\caption{Generate data with backward sampling}
    	\For{d=1 to D}{
    		set $\bar N^{(d)}= \mbox{max}(1, N^{(d)})$, where $N^{(d)}$ is known\\
+   		set $NKV = 0$ and $NK = 0$\\
    		\For{n=1 to $\bar {N}^{(d)}$}{
    			\If {$N^{(d)}>0$} {
    				\For{v=1 to $V$}{
@@ -669,7 +673,7 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
    We selected the following parameter values:
    \begin{itemize}
    	\begin{minipage}{0.5\textwidth}
-   		\item[-] nDocs (number of documents) = 5
+   		\item[-] nDocs (number of documents) = 10
    		\item[-] nwords (tokens per document) = 4
    		\item[-] node (number of actors)= 4
    		\item[-] W (unique word types) = 5
@@ -683,7 +687,7 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
    	\end{minipage}
    	\begin{minipage}{0.5\textwidth}
    		\item[-] prior for $\boldsymbol{b}^{(c)}\sim \mbox{MVN}_P(\boldsymbol{0}, I_P)$
-   		\item[-] prior for $\delta\sim \mbox{Beta}(1, 1)$
+   		\item[-] prior for $\delta\sim \mbox{Gamma}(4, 8)$
    		\item[-] $I$ (outer iteration) = 1
    		\item[-] $n_1$ (Gibbs sampling iteration of $\mathcal{Z}$) =1 
    		\item[-] $n_2$ (Gibbs sampling iteration of $\mathcal{C}$) =1 
@@ -692,7 +696,7 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
    		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 1
    		\item[-] $\sigma_Q^2$ (proposal variance for $\mathcal{B}$) = 0.25
    		\item[-] $n_4$ (M-H sampling iteration of $\delta$) = 50
-   		\item[-] $\sigma_Q^2$ (proposal variance for $\delta$) = 0.25   		
+   		\item[-] $\sigma_Q^2$ (proposal variance for $\delta$) = 2   		
    	\end{minipage}
    \end{itemize}
    Next, we list the selection of statistics we save for each forward and backward sample. Note that these statistics are not sensitive to the label swithches across the updates. Therefore, at each iteration, we calculate and save the statistics below:
@@ -701,7 +705,7 @@ After finishing the updates of $\mathcal{B}$, we move on to the updates of $\del
       	\item[2.] Mean number of recipients (indirect measure of $\delta$),
       	\item[3.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ for every $d=2,...,\mbox{nDocs}$,
       	\item[4.] Mean topic-interaction pattern assignment (for interaction patterns indexed by 1 and 2), 
-      	\item[5.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$, \textcolor{red}{?}
+      	\item[5.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$,
       	\item[6.] Number of tokens assigned to each topic $k=1,...,K$, 
        \item[7.] Number of tokens assigned to each unique word type $w=1,...,W$.
       	      \end{itemize}
@@ -717,16 +721,10 @@ evidence that the statistics have the same mean and distribution respectively. W
 expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure below.
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1\textwidth]{GiR500000.pdf} 
+	\includegraphics[width=1\textwidth]{GiRplot.pdf} 
 	\label{fig:GiR}
 	\caption{Getting it Right test result}
 \end{figure}
-\newpage\textcolor{red}{\textbf{Possible failure reasons}:
-	\begin{itemize}
-		\item  Baseline intensity ($B_1$) not identifiable when every pair of nodes havee some sort of history (this is for sure when we have small number of nodes as in GiR case) and it may have affected all other $B$ values.
-		\item Tokens in word esitmate seems to be all failure. No idea at all. Need to double check for possible coding errors.
-	\end{itemize}
-	}
  \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
  \subsection{Vance county email data} \label{subsec: Vance county email data}

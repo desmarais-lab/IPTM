@@ -5,8 +5,8 @@
 \title{IPTM_inference}
 \usage{
 IPTM_inference(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec,
-  betas, nvec, prior.b.mean, prior.b.var, prior.eta, out, n1, n2, n3, burn,
-  thin, netstat, seed, plot = FALSE, optimize = FALSE)
+  betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n1, n2, n3, burn,
+  thin, netstat, plot = FALSE, optimize = FALSE)
 }
 \arguments{
 \item{edge}{list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)}
@@ -21,7 +21,7 @@ IPTM_inference(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec,
 
 \item{K}{total number of topics specified by the user}
 
-\item{sigma_Q}{proposal distribution variance parameter for beta}
+\item{sigma_Q}{proposal distribution variance parameter for beta and eta}
 
 \item{alpha}{Dirichlet concentration prior for document-topic distribution}
 
@@ -35,7 +35,7 @@ IPTM_inference(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec,
 
 \item{prior.b.var}{covairance matrix of b in multivariate normal distribution}
 
-\item{prior.eta}{mean and variance parameter of eta in normal distribution}
+\item{prior.delta}{parameter of delta in gamma prior}
 
 \item{out}{size of outer iterations}
 
@@ -49,9 +49,7 @@ IPTM_inference(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec,
 
 \item{thin}{the thinning interval of beta chain}
 
-\item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
-
-\item{seed}{an integer value which controls random number generation}
+\item{netstat}{which type of network statistics to use ("intercept", dyadic", "triadic", "degree")}
 
 \item{plot}{to plot the convergence diagnostics or not (TRUE/FALSE)}
 
