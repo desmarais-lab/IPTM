@@ -179,7 +179,6 @@ We assume the following generative process for each document $d$ in a corpus $D$
 	 	  \end{aligned}
 	 	 \end{equation}
 \end{itemize}
-\iffalse
 Note that considering the property of the minimum of independent Exponential random variables (the probability $\Delta T_{i{J_i}}$ being the minimum is $\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}$), we can rewrite 2 and 3 into the following:
 	 \begin{equation}
 	 \begin{aligned}
@@ -188,7 +187,6 @@ Note that considering the property of the minimum of independent Exponential ran
 	 &t^{(d)} = t^{(d-1)}+\mbox{rexp}(\lambda_{i^{(d)}J^{(d)}}^{(d)}).\\
 	 \end{aligned}
 	 \end{equation}
-	 \fi
  \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates2}
  For the network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), we use 9 different effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling) to measure popularity, centrality, reciprocity, and transitivity. First, we have intercept term to estimate the baseline intensity for each interaction pattern $c=1,...,C$:
  \begin{itemize}

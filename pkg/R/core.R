@@ -405,16 +405,13 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
   
 	options(warn = -1)
 	proposal.var = list()
-	for (IP in 1:nIP) {
-		proposal.var[[IP]] = diag(P)
-	}
-    #for (IP in 1L:nIP) {
-    # 	proposal.var[[IP]] = cor(t(bmat[[IP]]))
-    #    proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
-    #    if (sum(eigen(proposal.var[[IP]])$values < 0 ) > 0) {
-    #     	proposal.var[[IP]] = diag(P)
-    #    }
-    #}
+    for (IP in 1L:nIP) {
+     	proposal.var[[IP]] = cor(t(bmat[[IP]]))
+        proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
+        if (sum(eigen(proposal.var[[IP]])$values < 0 ) > 0) {
+         	proposal.var[[IP]] = diag(P)
+        }
+    }
     proposal.var = lapply(1:nIP, function(IP){diag(P)})
     options(warn = 0)
     for (i3 in 1L:n3) {
@@ -1017,6 +1014,7 @@ GiR = function(Nsamp, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello","bye
   entropyZ2 = rep(NA, Nsamp)	
   Zstat2 = rep(NA, Nsamp)	   
   accept.rate = matrix(NA, nrow = Nsamp, ncol = 2)
+  auto.corr = matrix(NA, nrow = Nsamp, ncol = 1 + nIP * P)
   for (i in 1:Nsamp) { 
     if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
     Inference_samp = IPTM_inference(Backward_sample$edge, node, Backward_sample$text, vocabulary, nIP, K, sigma_Q, 
@@ -1024,9 +1022,9 @@ GiR = function(Nsamp, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello","bye
                                out = niters[1], n1 = niters[2], n2 = niters[3], n3 = niters[4], burn = niters[5], thin = niters[6], 
                                netstat)
     b = lapply(1:nIP, function(IP) {
-      rowMeans(Inference_samp$B[[IP]])
+        Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
     })
-    delta = mean(Inference_samp$D)
+    delta = Inference_samp$D[length(Inference_samp$D)]
     currentC = Inference_samp$C
     topic_token_assignments = Inference_samp$Z
     for (d in 1:length(topic_token_assignments)) {
@@ -1046,6 +1044,8 @@ GiR = function(Nsamp, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello","bye
     Zstat2[i] = mean(sapply(topic_token_assignments, function(d){entropy.empirical(d)}))
     accept.rate[i, 1] = length(unique(Inference_samp$B[[1]][1,])) / niters[4]
     accept.rate[i, 2] = length(unique(Inference_samp$D)) / niters[4]
+    auto.corr[i,1] = geweke.diag(Inference_samp$D)[[1]]
+    auto.corr[i,2:ncol(auto.corr)] = c(sapply(1:nIP, function(IP){ geweke.diag(t(Inference_samp$B[[IP]]))[[1]] }))
   }
   
   tstats = rep(0, ncol(Forward_stats))
@@ -1063,5 +1063,5 @@ GiR = function(Nsamp, nDocs = 10, node = 1:4, vocabulary =  c("hi", "hello","bye
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats, delta = cbind(deltamat1, deltamat2),
-              b1 = bmat1, b2= bmat2, entropyC1 = entropyC1, entropyC2 = entropyC2, entropyZ1 = entropyZ1, entropyZ2 = entropyZ2, Zstat1 = Zstat1, Zstat2 = Zstat2, accept.rate = accept.rate))
+              b1 = bmat1, b2= bmat2, entropyC1 = entropyC1, entropyC2 = entropyC2, entropyZ1 = entropyZ1, entropyZ2 = entropyZ2, Zstat1 = Zstat1, Zstat2 = Zstat2, accept.rate = accept.rate, auto.corr = auto.corr))
 }                         	

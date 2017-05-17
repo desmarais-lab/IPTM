@@ -1,5 +1,7 @@
 library(IPTM)
-TryGiR<- GiR(500, nDocs = 10, node = 1:4, prior.delta = c(4, 8), niters = c(1, 1, 1, 50, 0, 1), prior.b.mean = c(-2, rep(0, 6)), sigma_Q = c(0.1, 0.1), seed = 123)
+TryGiR<- GiR(500, nDocs = 10, node = 1:4, prior.delta = c(4, 8), niters = c(1, 1, 1, 50, 0, 1), prior.b.mean = c(-2, rep(0, 6)), sigma_Q = c(0.25, 2), seed = 12)
+par(mfrow=c(3,7))
+GiR_PP_Plots(TryGiR$Forward, TryGiR$Backward)
 
 Nsamp = nrow(TryGiR$Forward)
 thin = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 500)
