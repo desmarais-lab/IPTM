@@ -18,7 +18,7 @@ prior.b.mean = c(-2.5, rep(0, 6))
 prior.b.var =  diag(7)
 prior.delta = c(4, 8)
 sigma_Q = c(1, 2.5)
-niters = c(1, 100, 20, 0, 5)
+niters = c(2, 100, 20, 0, 5)
 netstat = c("intercept", "dyadic")
 P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
 b = lapply(1:nIP, function(IP) {
@@ -31,7 +31,7 @@ base.edge = base.data$edge
 base.text = base.data$text
   
   
-TryGiR<- GiR(10^5, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+TryGiR2<- GiR(10^5, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
                prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 12345)
 save(TryGiR, file = "TryGiR.RData")
 par(mfrow=c(3,7))

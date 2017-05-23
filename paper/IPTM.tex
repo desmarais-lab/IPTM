@@ -135,6 +135,7 @@ In case of no receiver ($|J|=0$), we assign stochastic intensity
 \begin{equation}
 \lambda^{(d)}_{i\emptyset}(t)= 0.
 \end{equation}
+In Section 2.3, this stochastic intensity implies that no time is generated for the senders of zero recipients. That is, if the sender has not included any receiver in the document yet, the sender is not ready thus not join the competition of `who will be the sender of the document'. If all sender has no recipient (no one to generate time), we do not move further and sample the receivers again until we see at least one receiver.  
 \begin{comment}
 Conditioned upon the existence of a unique document at some particular time $t$, the probability that the document is sent from $i$ to $j$ is
 	\begin{align*}
@@ -280,56 +281,6 @@ In this setting, the dimension of  $\boldsymbol{b}^{(c)}$ becomes $P =  1 + 8 \t
                     set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
 	}
 	\end{algorithm}
-	\subsection{Joint Generative Process of Document} \label{subsec: Joint Generative Process of Document}
-	Below are the joint generative process for each document in a corpus $D$, integrating \ref{subsec: Content Generating Process}, \ref{subsec: Stochastic Intensity}, \ref{subsec: Tie Generating Process}, and \ref{subsec: Dynamic covariates2}.  Figure 1 is the corresponding plate notation of IPTM.
-	\begin{algorithm}[H]
-		\SetAlgoLined
-		\caption{Topic Word Distributions}
-		\For{k=1 to K}{
-			draw $\boldsymbol{\phi}^{(k)}$ $\sim$ Dir($\beta, \bf u$)
-		}
-	\end{algorithm}
-	\begin{algorithm}[H]
-		\SetAlgoLined
-		\caption{Interaction Pattern Parameters}
-		\For{c=1 to C}{
-			draw $\boldsymbol{b}^{(c)}\sim \mbox{Normal}(\textbf{0}, \sigma^2I_P)$
-		}
-	\end{algorithm}
-	\begin{algorithm}[H]
-		\SetAlgoLined
-		\caption{Topic Interaction Pattern Assginments}
-		\For{k=1 to K}{
-			draw $C_k$ $\sim$ Unif(1, C)
-		}
-	\end{algorithm}
-	\begin{algorithm}[H]
-		\SetAlgoLined
-		\caption{Document Generating Process}
-		\For{d=1 to D}{
-			draw $\bar N^{(d)}= \mbox{max}(1, N^{(d)})$\\
-			draw $\boldsymbol{\theta}^{(d)}\sim \mbox{Dir}(\alpha, \boldsymbol{m})$\\
-			\For{n=1 to $\bar {N}^{(d)}$}{
-				draw $z_n^{(d)} \sim \mbox{Multinom}(\boldsymbol{\theta}^{(d)})$\\
-				\If {$N^{(d)}>0$} {
-					draw $w_n^{(d)} \sim\mbox{Multinom} (\boldsymbol{\phi}^{(z_n^{(d)})})$
-				}
-			}
-			\For{c=1 to $C$}{
-				set $p_c^{(d)} = \frac{\sum\limits_{k: c_k=c} N^{(k|d)}}{N^{(d)}}$
-			}
-			
-			\For{i=1 to $A$}{
-				\For{j=1 to $A$}{
-					\If {j $\neq$ i} {
-						calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
-						set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
-						draw I($i \rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})$}  }
-				draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)})$
-			}
-			set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
-		}
-	\end{algorithm}
 	\section{Inference} \label{sec: Inference}
 	  The joint generative process implies a particular factorization of the joint distribution over the variables $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D},\mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D},  \mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{b}^{(c)} \}_{c=1}^{C}, \mathcal{J}=\{\{J^{(d)}_i\}_{i=1}^{A}\}_{d=1}^D,\mathcal{T}=\{  \{t_{iJ_i}^{(d)}\}_{i=1}^{A}\}_{d=1}^D$, and $\mathcal{P}=\{(i, J, t)^{(d)}\}_{d=1}^D$ given the observed $\mathcal{P}^{\prime}=\{\{(i, J, t)^{(d^\prime)}\}_{d^\prime=1}^d\}_{d=1}^D$ and the hyperparameters $(\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \sigma^2,  \delta)$:
 	  \begin{equation}
@@ -387,26 +338,27 @@ where $\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}$ is the observed time difference betw
 Therefore, we can simplify Equation (12) as below:
   \begin{equation}
   \begin{aligned}
-  &P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} (\delta\lambda^{(d)}_{ij})^{I(j \in J_i)}\Big) \times \Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \frac{1}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big).
+  &P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j \in \mathcal{A}_{\backslash i }} \frac{(\delta\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
   \end{aligned}
   \end{equation}
+where this joint distribution can be interpreted as 'probability of latent and observed edges from Bernoulli distribution $\times$ probability of the observed time comes from Exponential distribution $\times$ probability of all latent time greater than the observed time, given that the latent time also come from Exponential distribution.'
 Finally for implementation, we need to compute these equations in log space to prevent underflow:
  \begin{equation}
  \begin{aligned}
  &\mbox{log}\Big(P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B},  \delta)\Big)\\&=\Big(\sum_{i\in \mathcal{A}}\sum_{j \in \mathcal{A}_{\backslash i }} {I(j \in J_i)}\cdot\mbox{log}(\delta\lambda^{(d)}_{iJ_i}) {-\mbox{log}(\delta\lambda^{(d)}_{ij}}+1)\Big)+ \Big(\mbox{log}(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}})\Big) {-\Big(\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}_{\backslash i_o^{(d)}} }\lambda^{(d)}_{i{J_i^{(d)}}}\Big)}.
  \end{aligned}
  \end{equation}
- To actually perform inference, we therefore want to use Gibbs sampling, where we will sequentially resample the values of each of our latent variables from their posterior distribution, conditional on all of our other variables.
+ To actually perform inference, we use Gibbs sampling where we sequentially resample the values of each of our latent variables from their posterior distribution, conditional on all of our other variables.
     \subsection{Resampling the augmented data $\mathcal{J}_{\mbox{a}}$} \label{subsec: Data augmentation}
       First of all, for each document $d$, we update the latent sender-receiver(s) pairs. That is, given the observed sender of the document $i_o^{(d)}$, we sample the latent receivers for each sender $i \in \mathcal{A}_{\backslash i_o^{(d)}}$. Here we illustrate how each sender-receiver pair in the document $d$ is updated.\\\newline
       Define ${J}^{(d)}_{\mbox{a}, i}$ be the $(A-1)$ length vector of indicators (0/1) representing the latent receivers corresponding to the sender $i$ in the docuemnt $d$. Here, for each sender $i$ and receiver  $j \in \mathcal{A}_{\backslash i}$, we are going to resample each element ${J}^{(d)}_{\mbox{a}, ij}$, one at a time. For a latent sender $i \in \mathcal{A}_{\backslash i_o^{(d)}}$ and a latent receiver $j \in \mathcal{A}_{\backslash i}$, we derive the conditional probability:\\
       \begin{equation}
       \begin{aligned}
-      &P(\mathcal{J}^{(d)}_{\mbox{a}, ij} = {J}^{(d)}_{\mbox{a}, ij}|\mathcal{J}^{(d)}_{\mbox{a}, \backslash ij},   i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&\propto P(\mathcal{J}^{(d)}_{\mbox{a}, ij} ={J}^{(d)}_{\mbox{a}, ij}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| \mathcal{J}^{(d)}_{\mbox{a}, \backslash ij}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)
-      \\&= P(\mathcal{J}^{(d)}_{\mbox{a}, ij} ={J}^{(d)}_{\mbox{a}, ij}| \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&\quad\quad\quad\times P(i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| \mathcal{J}^{(d)}_{\mbox{a}, ij} ={J}^{(d)}_{\mbox{a}, ij},\mathcal{J}^{(d)}_{\mbox{a}, \backslash ij},  \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&  \propto {(\delta\lambda^{(d)}_{ij})^{I(j \in J^{(d)}_{\mbox{a}, i})}}\times  e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i}}},
+      &P(\mathcal{J}^{(d)}_{\mbox{a}, ij} = {J}^{(d)}_{\mbox{a}, ij}|\mathcal{J}^{(d)}_{\mbox{a}, \backslash ij},   i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&\propto P(\mathcal{J}^{(d)}_{\mbox{a}, ij} ={J}^{(d)}_{\mbox{a}, ij},  \mathcal{J}^{(d)}_{\mbox{a}, \backslash ij},i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)
+      \\&\propto \Big(\prod_{j \in \mathcal{A}_{\backslash i }} \frac{(\delta\lambda^{(d)}_{ij})^{I(j \in J_{\mbox{a}, i})}}{\delta\lambda^{(d)}_{ij}+1}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i}}}\Big)\\&  \propto {(\delta\lambda^{(d)}_{ij})^{I(j \in J^{(d)}_{\mbox{a}, i})}}\times  e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i}}},
       \end{aligned}
       \end{equation}
-      where we replace typical use of $(-d)$ to $(<d)$ on the right hand side of the conditional probability, due to the fact that $d^{(th)}$ document only depends on the past documents, not on the future ones (see the note below Equation (11)).\\ \newline
+      where we replace typical use of $(-d)$ to $(<d)$ on the right hand side of the conditional probability, due to the fact that $d^{(th)}$ document only depends on the past documents, not on the future ones (see the note below Equation (11)). The last line of Equation (16) is obtained after dropping the terms independent of individual edge $\mathcal{J}^{(d)}_{\mbox{a}, ij}$.\\ \newline
 To be more specific, since ${J}^{(d)}_{\mbox{a}, ij}$ could be either 1 or 0, we divide into two cases as below:
       \begin{equation}
       \begin{aligned}
@@ -419,7 +371,8 @@ To be more specific, since ${J}^{(d)}_{\mbox{a}, ij}$ could be either 1 or 0, we
      &P(\mathcal{J}^{(d)}_{\mbox{a}, ij}=0| \mathcal{J}^{(d)}_{\mbox{a}, \backslash ij}  i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\& \propto e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[-j]}}},
      \end{aligned}
      \end{equation}
-       where $\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[-j]}}$ meaning similarly that $\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i}}$ is calculated with $j^{th}$ element of $J_{\mbox{a}, i}^{(d)}$ fixed as 0. \\\\ \newline Now we can use multinomial sampling using the two probabilities, Equation (17) and Equation (18). Again, we would calculate the probabilities in the log space to prevent from numerical underflow. Or, equivalently, we can apply a random sampling from the Bernoulli probability
+       where $\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[-j]}}$ meaning similarly that $\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i}}$ is calculated with $j^{th}$ element of $J_{\mbox{a}, i}^{(d)}$ fixed as 0. \\\\ \newline Now we can use multinomial sampling using the two probabilities, Equation (17) and Equation (18). Again, we would calculate the probabilities in the log space to prevent from numerical underflow. 
+       \iffalse Or, equivalently, we can apply a random sampling from the Bernoulli probability
               \begin{equation}
               \begin{aligned}
               \frac{P(\mathcal{J}^{(d)}_{\mbox{a}, ij}=1|\cdot)}{P(\mathcal{J}^{(d)}_{\mbox{a}, ij}=1|\cdot) + P(\mathcal{J}^{(d)}_{\mbox{a}, ij}=0|\cdot)} 
@@ -435,7 +388,7 @@ To be more specific, since ${J}^{(d)}_{\mbox{a}, ij}$ could be either 1 or 0, we
          \mbox{log}(1+e^y) & \mbox{otherwise},
          \end{cases}
          \end{equation*}
-         where $y = -\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\big(\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[-j]}} - \lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[+j]}}\big)- \mbox{log}(\delta\lambda^{(d)}_{ij})$ in this case.
+         where $y = -\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\big(\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[-j]}} - \lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[+j]}}\big)- \mbox{log}(\delta\lambda^{(d)}_{ij})$ in this case. \fi
   \subsection{Resampling $\mathcal{Z}$}  \label{subsec: Resampling Z}
 Second, we are going to resample the topic assignments, one words in a document at a time.  The new values of $z^{(d)}_n$ are sampled using the conditional posterior probability of being topic $k$ as we derived in APPENDIX C:
  \begin{equation}
@@ -596,7 +549,7 @@ Then the log of acceptance ratio we have is:
  for the complete fixed-point iteration is given in algorithm 2.2 of \cite{wallach2008structured}.
 \end{comment}
  \subsection{Pseudocode}  \label{subsec: Pseudocode}
- To implement the inference procedure outlined above, we provide a pseudocode for Markov Chain Monte Carlo (MCMC) sampling. Note that we use two loops, outer iteration and inner iteration, in order to avoid the label switching problem \citep{jasra2005markov}, which is an issue caused by the nonidentifiability of the components under symmetric priors in Bayesian mixture modeling. When summarizing model results, we will only use the values from the last $I^{th}$ outer loop because there is no label switching problem within the inner iteration.
+ To implement the inference procedure outlined above, we provide a pseudocode for Markov Chain Monte Carlo (MCMC) sampling. For better performance, we implement $n_1$ iteration of the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured} based on Minka’s fixed-point iteration \citep{minka2000estimating}, for every outer iteration $i$. Also, we specify larger number of inner iterations ($n_2$ and $n_3$) for the continuous variables $\mathcal{B}$ and $\delta$, which converge slowly than the discrete variables. When summarizing model results, we will only use the values from the last $I^{th}$ outer loop.
  \begin{algorithm}[H]
  	\SetAlgoLined
  	\caption{MCMC}
@@ -607,34 +560,36 @@ Then the log of acceptance ratio we have is:
  	}
  			\For{d=1 to D}{
  				\For{i $\in \mathcal{A}_{\backslash i_o^{(d)}}$}{
- 				sample the augmented data $(i^{(d)}, J^{(d)}_i)$ 
+ 				sample the augmented data $(i^{(d)}, J^{(d)}_i)$ using Equation (17) and Equation (18)
  			}
- 			}
- 				\For{d=1 to D}{
  					\For{n=1 to $N^{(d)}$}{
- 						calculate $p^\mathcal{Z}|\mbox{others} =(p_1,...,p_K)$ using Equation (20) or Equation (21)\\
+ 						calculate $p^\mathcal{Z}|\mbox{others} =(p_1,...,p_K)$ using Equation (23) or Equation (24)\\
  						draw of $z_n^{(d)}\sim\mbox{multinomial}(p^\mathcal{Z})$}}
  			\For{k=1 to K}{
- 				calculate $p^\mathcal{C}|\mbox{others}=(p_1,...,p_C)$ using Equation (23)\\
+ 				calculate $p^\mathcal{C}|\mbox{others}=(p_1,...,p_C)$ using Equation (26)\\
  				draw $C_k\sim \mbox{multinomial}(p^\mathcal{C})$}
 	\For{n=1 to $n_2$}{
- 			sample $\mathcal{B}$ using M-H
+ 			sample $\mathcal{B}$ using M-H following Section 3.4
  		}
  		\For{n=1 to $n_3$}{
- 			sample $\delta$ using M-H 
+ 			sample $\delta$ using M-H following Section 3.4
   		}
- 	}	summarize the results using the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$
+ 	}	summarize the results using the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_2$ length chain of $\mathcal{B}$ and $n_3$ length chain of $\delta$ 
  \end{algorithm}
    \section{Getting It Right (GiR)}
    \subsection{Backward generative process} \label{subsubsec: Backward Generative Process}
    We need to define a “backward” generative process in order to perform Geweke’s “Getting it Right” test \citep{geweke2004getting} because when we are generating our “backwards” samples, we only want to resample the token word types given the token-topic assignments (using Collapsed Gibbs sampling) and (sender, recipients, timestamp) pairs, and not any of
-   our latent variables. This means we take the latent variables we got by running our inference procedure (token topic assignments, topic interaction pattern assignments, and interaction pattern parameters) as input , and simply condition on these to draw new data.
-   This “backward” version of the generative process is detailed below in Algorithm 10.\\ \newline
+   our latent variables. This means we take the latent variables we got by running our inference procedure (latent edges from data augmentation, token topic assignments, topic interaction pattern assignments, interaction pattern parameters, and tuning parameter $\delta$) as inputs, and simply condition on these to draw new data. This “backward” version of the generative process is detailed below in Algorithm 10.\\ \newline
    Let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. These
-   data structures, along with the latent variables we got by running our inference procedure (token topic assignments, topic interaction pattern assignments, interaction pattern parameters, and tuning parameter $\delta$) are passed in to the backward generative process, which then outputs new documents with the generated token word types and (sender, recipients, timestamp) pairs.
+   data structures, along with the latent variables we got by running our inference procedure are passed in to the backward generative process, which then outputs new documents with the generated token word types and (sender, recipients, timestamp) pairs.
    \begin{algorithm}[H]
    	\SetAlgoLined
    	\caption{Generate data with backward sampling}
+   	Input:\\ 1) latent edges $\{\{iJ^{(d)}_i\}_{i \neq i_o^{(d)}}\}_{d=1}^D$ (where $\{i_o^{(d)}\}_{d=1}^D$ from previous backward sample),\\
+   	 2) token topic assignments $\{\{z_n^{(d)}\}_{n=1}^{N^{(d)}}\}_{d=1}^D$,\\
+   	 3) interaction pattern parameters, $\{C_k\}_{k=1}^K$,\\
+   	   4) interaction pattern parameters $\{\boldsymbol{b}^{(c)}\}_{c=1}^C$, \\
+   	   5) tuning parameter $\delta$.\\\\
    	\For{d=1 to D}{
    		set $\bar N^{(d)}= \mbox{max}(1, N^{(d)})$, where $N^{(d)}$ is known\\
    		set $NKV = 0$ and $NK = 0$\\
@@ -647,26 +602,23 @@ Then the log of acceptance ratio we have is:
    				$NKV_{w_n^{(d)}, z_n^{(d)}} += 1$
    			}
    		}
-   		\For{i=1 to $A$}{
-   			\For{j=1 to $A$}{
-   				\If {j $\neq$ i} {
-   					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
-   					set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
-   					draw I($i \rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})$}  }
-   			draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)})$
-   		}
-   		set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$
-   		
+   		Only sample the receivers for previously observed sender ($i_o^{(d)}$), which was not inferred.\\
+   				\For {j $\neq$ $i_o^{(d)}$} {
+   					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i_o^{(d)}, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
+   					set $\lambda^{(d)}_{i_o^{(d)}j}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i_o^{(d)}, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i_o^{(d)}}\}$\\
+   					draw I($i_o^{(d)}\rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{i_o^{(d)}j}}{\delta\lambda^{(d)}_{i_o^{(d)}j}+1})$
+   					}  
+   			draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)})$, given $\{iJ^{(d)}_i\}_{i=1}^A$\\
+   		set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$ 		
    	}
    \end{algorithm}
-   \noindent The generative process for backward sampling and the corresponding implementation is built upon those of CPME. Further details on the process of Getting It Right test and how we compare the forward and backward samples can be found in the CPME document. 
       \subsection{Issue of intitial state of $\boldsymbol{x}_t^{(c)}$} \label{subsubsec: Initial history issue}
       Considering that our network statistics $\boldsymbol{x}_t^{(c)}$ are generated by the network itself, it is necessary to use the same initial value of $\boldsymbol{x}_t^{(c)}$ across the forward and backward samples. If not, when we generate fixed number of documents (e.g. nDocs = 10), we cannot guarantee the same number of documents used for the inference, since only the documents with its timestamp greater than 384 hours (=16 days) are used in the inference. In the extreme cases, we may end up with two types of failure:
       \begin{itemize}
       	\item[1.] Zero document generated after 384 hours (i.e. $t^{(10)} < 384$), making no documents to be used for inference,
       	\item[2.] Zero document generated before 384 hours (i.e. $t^{(1)} > 384$), making the estimate of $\mathcal{B}$ totally biased since $\forall  \boldsymbol{x}_t^{(c)}(i, j) = 0$. 
       \end{itemize}
-      Therefore, we fix the initial state of $\boldsymbol{x}_t^{(c)}$ over the entire GiR process. Specifically, we fix 10 (for example) baseline documents where the timestamps are all smaller than 384 and use as an input for forward sampling, backward sampling, and the inference. Then, in the forward and backward generative process, we set the starting point of the timestamp as $t^{(0)} = 384$ and generate nDocs = 10 documents given the initial $\boldsymbol{x}_{t^{(0)} = 384}^{(c)}$ so that we can acheive consistency in the generated number of documents with $t^{(d)} > 384$.
+      Therefore, we fix the initial state of $\boldsymbol{x}_t^{(c)}$ over the entire GiR process. Specifically, we fix 30 (for example) baseline documents where the timestamps are all smaller than 384 and use as an input for forward sampling, backward sampling, and the inference. Then, in the forward and backward generative process, we set the starting point of the timestamp as $t^{(0)} = 384$ and generate nDocs = 10 documents given the initial $\boldsymbol{x}_{t^{(0)} = 384}^{(c)}$ so that we can acheive consistency in the generated number of documents with $t^{(d)} > 384$.
    \subsection{GiR implementaion details} \label{subsubsec: GiR implementation}
    While we tried a number of different parameter combinations in the course of testing, we outline our standard setup below.\\ \newline
    We selected the following parameter values:
@@ -682,26 +634,25 @@ Then the log of acceptance ratio we have is:
    		\item[-] $\boldsymbol{m}$ (Dirichlet base prior) = $\boldsymbol{u}$ 
    		\item[-] $\beta$ (Dirichlet concentration prior)= 2
    		\item[-] $\boldsymbol{n}$ (Dirichlet base prior) = $\boldsymbol{u}$
-   		\item[-] netstat (network statistics) = ``dyadic"
+   		\item[-] netstat = ``intercept" and ``dyadic"
    	\end{minipage}
    	\begin{minipage}{0.5\textwidth}
-   		\item[-] prior for $\boldsymbol{b}^{(c)}\sim \mbox{MVN}_P(\boldsymbol{0}, I_P)$
+   		\item[-] prior for $\boldsymbol{b}^{(c)}\sim \mbox{MVN}_7((-2.5,\boldsymbol{0}_6), I_7)$
    		\item[-] prior for $\delta\sim \mbox{Gamma}(4, 8)$
    		\item[-] $I$ (outer iteration) = 1
-   		\item[-] $n_1$ (Gibbs sampling iteration of $\mathcal{Z}$) =1 
-   		\item[-] $n_2$ (Gibbs sampling iteration of $\mathcal{C}$) =1 
-   		\item[-] $n_3$ (M-H sampling iteration of $\mathcal{B}$) = 50
+   		\item[-] $n_1$ (iteration for hyperparamter optimization) = 0
+   		\item[-] $n_2$ (M-H sampling iteration of $\mathcal{B}$) = 100
    		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 0
-   		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 1
-   		\item[-] $\sigma_Q^2$ (proposal variance for $\mathcal{B}$) = 0.25
-   		\item[-] $n_4$ (M-H sampling iteration of $\delta$) = 50
-   		\item[-] $\sigma_Q^2$ (proposal variance for $\delta$) = 2   		
+   		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 5
+   		\item[-] $\sigma_Q^2$ (proposal variance for $\mathcal{B}$) = 1
+   		\item[-] $n_3$ (M-H sampling iteration of $\delta$) = 20
+   		\item[-] $\sigma_Q^2$ (proposal variance for $\delta$) = 2.5
    	\end{minipage}
    \end{itemize}
    Next, we list the selection of statistics we save for each forward and backward sample. Note that these statistics are not sensitive to the label swithches across the updates. Therefore, at each iteration, we calculate and save the statistics below:
       \begin{itemize}
       	\item[1.] Mean of interaction pattern parameters $(\boldsymbol{b}_p^{(1)},...,\boldsymbol{b}_p^{(C)})$ for every $p = 1,...,P$,
-      	\item[2.] Mean number of recipients (indirect measure of $\delta$),
+      	\item[2.] Mean number of recipients,
       	\item[3.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ for every $d=2,...,\mbox{nDocs}$,
       	\item[4.] Mean topic-interaction pattern assignment (for interaction patterns indexed by 1 and 2), 
       	\item[5.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$,
@@ -709,21 +660,26 @@ Then the log of acceptance ratio we have is:
        \item[7.] Number of tokens assigned to each unique word type $w=1,...,W$.
       	      \end{itemize}
 \subsection{GiR Results}
-Having saved a set of samples (collected $10^5$ forward and backward samples), we compare them. To do so, we generated PP (Probability-Probability)  plots for each of the 21 statistics we saved. We calculated 1,000 quantiles for each of the interaction pattern statistics (1.), and 50 quantiles for the rest of the statistics. The reason
-we calculate a greater number of quantiles for the interaction pattern statistics is because they take on continuous values, while the other
-statistics can only take on a relatively small number of distinct values. \\ \newline
-Exactly follwoing CPME, we also calculated a t-test p-value for the equivalence
+Having saved a set of samples (collected $10^5$ forward and backward samples), we generated PP (Probability-Probability)  plots for each of the 21 statistics we saved. We calculated 1,000 quantiles for each of the interaction pattern statistics (1.), and 50 quantiles for the rest of the statistics. Exactly follwoing CPME, we also calculated a t-test p-value for the equivalence
 of statistic means between forward and backward samples, and a Mann-Whitney test p-value for the equivalence of statistic
 distributions between forward and backward samples. Before we calculated these statistics, we first thinned our sample of
-statistics by taking every 90th sample starting at the 100,000th sample for a resulting sample size of 10,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us
-evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each plot that we
-expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure below.
-\begin{figure}[ht]
+statistics by taking every 90th sample starting at the 100,000th sample for a resulting sample size of 10,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each plot that we expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure below.
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=1\textwidth]{GiRplot.pdf} 
+	\includegraphics[width=1.05\textwidth]{GiRplot.png} 
 	\label{fig:GiR}
 	\caption{Getting it Right test result}
 \end{figure}
+\noindent\textcolor{red}{Remaining issues:}\\
+Attached GiRplot is the result (with $10^5$ forward and backward samples) using the updated backward sampling, which seems to be much better than before except mean recipients and mean timediff. I have several thoughts on those two, which is again related to the degenerate issue of the model when all latent edges are 0.\\\\
+- In the forward sampling (and generative process in general), when all $iJ_i$ is 0, we simply do not move forward (no timestamp to generate) and resample $iJ_i$ until we have $sum(iJ_i) > 0$. By this, we actually generate the data which is ‘denser’ than what we could expect from the small Bernoulli probability ($delta*lambda / (delta*lambda + 1)$ - refer to p.4 of IPTM draft).\\
+- Above fact results in slightly large estimates of delta during the inference (shown in the attached ‘deltaplot.pdf’), to fit the denser-than-actual-parameter-network.\\
+- Backward sampling accepts the estimated delta as an input and thus generate even ‘denser’ network (making the exponential rate lambda larger), which is probably the reason for smaller values in the GiR variable ‘mean timediff’. 
+\\\\
+Regarding the mean recipients, there is a clear reasoning behind the failure of GiR.\\
+- In the inference, the initial values of $iJ_i$ were sampled the same way as forward sampling according to the generative process.\\
+- However, as we update the latent edges, they tend to become 0 (this is the issue we discussed few weeks ago, where the model tends to fit the time part better while pushing the edge part to become outliers). Apparently, the conditional probability of an edge being 1 is much smaller than being 0 (Sec 3.1 in IPTM draft), so as we update $iJ_i$ more and more, the edges are getting close to the expected outcome 0, i.e. the inferred part of $iJ_i$ just goes to zero matrix. \\
+- Current GiR updates $iJ_i$ only once (which gave the best results so far), so now backward sampling shows larger mean recipients than forward sampling.  But if I update $iJ_i$ twice, the backward mean recipients drops significantly, which I think will also affect the mean timediff to become much larger.
  \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
  \subsection{Vance county email data} \label{subsec: Vance county email data}

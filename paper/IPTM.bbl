@@ -41,16 +41,14 @@ Hunter, D.~R., Handcock, M.~S., Butts, C.~T., Goodreau, S.~M., and Morris, M.
   models for networks.
 \newblock {\em Journal of statistical software}, 24(3):nihpa54860.
 
-\bibitem[Jasra et~al., 2005]{jasra2005markov}
-Jasra, A., Holmes, C., and Stephens, D. (2005).
-\newblock Markov chain monte carlo methods and the label switching problem in
-  bayesian mixture modeling.
-\newblock {\em Statistical Science}, pages 50--67.
-
 \bibitem[Kanungo and Jain, 2008]{kanungo2008modeling}
 Kanungo, S. and Jain, V. (2008).
 \newblock Modeling email use: a case of email system transition.
 \newblock {\em System Dynamics Review}, 24(3):299--319.
+
+\bibitem[Minka, 2000]{minka2000estimating}
+Minka, T. (2000).
+\newblock Estimating a dirichlet distribution.
 
 \bibitem[Perry and Wolfe, 2013]{PerryWolfe2012}
 Perry, P.~O. and Wolfe, P.~J. (2013).
