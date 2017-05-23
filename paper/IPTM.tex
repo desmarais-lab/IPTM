@@ -179,6 +179,7 @@ We assume the following generative process for each document $d$ in a corpus $D$
 	 	  \end{aligned}
 	 	 \end{equation}
 \end{itemize}
+\begin{comment}
 Note that considering the property of the minimum of independent Exponential random variables (the probability $\Delta T_{i{J_i}}$ being the minimum is $\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}$), we can rewrite 2 and 3 into the following:
 	 \begin{equation}
 	 \begin{aligned}
@@ -187,6 +188,7 @@ Note that considering the property of the minimum of independent Exponential ran
 	 &t^{(d)} = t^{(d-1)}+\mbox{rexp}(\lambda_{i^{(d)}J^{(d)}}^{(d)}).\\
 	 \end{aligned}
 	 \end{equation}
+\end{comment}
  \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates2}
  For the network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), we use 9 different effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling) to measure popularity, centrality, reciprocity, and transitivity. First, we have intercept term to estimate the baseline intensity for each interaction pattern $c=1,...,C$:
  \begin{itemize}
@@ -401,9 +403,10 @@ Finally for implementation, we need to compute these equations in log space to p
       \begin{equation}
       \begin{aligned}
       &P(\mathcal{J}^{(d)}_{\mbox{a}, ij} = {J}^{(d)}_{\mbox{a}, ij}|\mathcal{J}^{(d)}_{\mbox{a}, \backslash ij},   i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&\propto P(\mathcal{J}^{(d)}_{\mbox{a}, ij} ={J}^{(d)}_{\mbox{a}, ij}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| \mathcal{J}^{(d)}_{\mbox{a}, \backslash ij}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)
-      \\&= P(\mathcal{J}^{(d)}_{\mbox{a}, ij} ={J}^{(d)}_{\mbox{a}, ij}| \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&\quad\quad\quad\times P(i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| \mathcal{J}^{(d)}_{\mbox{a}, ij} ={J}^{(d)}_{\mbox{a}, ij},\mathcal{J}^{(d)}_{\mbox{a}, \backslash ij},  \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&  \propto {(\delta\lambda^{(d)}_{ij})^{I(j \in J^{(d)}_{\mbox{a}, i})}}\times  e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i}}}.
+      \\&= P(\mathcal{J}^{(d)}_{\mbox{a}, ij} ={J}^{(d)}_{\mbox{a}, ij}| \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&\quad\quad\quad\times P(i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| \mathcal{J}^{(d)}_{\mbox{a}, ij} ={J}^{(d)}_{\mbox{a}, ij},\mathcal{J}^{(d)}_{\mbox{a}, \backslash ij},  \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&  \propto {(\delta\lambda^{(d)}_{ij})^{I(j \in J^{(d)}_{\mbox{a}, i})}}\times  e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i}}},
       \end{aligned}
       \end{equation}
+      where we replace typical use of $(-d)$ to $(<d)$ on the right hand side of the conditional probability, due to the fact that $d^{(th)}$ document only depends on the past documents, not on the future ones (see the note below Equation (11)).\\ \newline
 To be more specific, since ${J}^{(d)}_{\mbox{a}, ij}$ could be either 1 or 0, we divide into two cases as below:
       \begin{equation}
       \begin{aligned}
@@ -416,7 +419,7 @@ To be more specific, since ${J}^{(d)}_{\mbox{a}, ij}$ could be either 1 or 0, we
      &P(\mathcal{J}^{(d)}_{\mbox{a}, ij}=0| \mathcal{J}^{(d)}_{\mbox{a}, \backslash ij}  i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\& \propto e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[-j]}}},
      \end{aligned}
      \end{equation}
-       where $\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[-j]}}$ meaning similarly that $\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i}}$ is calculated with $j^{th}$ element of $J_{\mbox{a}, i}^{(d)}$ fixed as 0. \\\\ \newline Now we can use Gibbs sampling using the two probabilities, Equation (17) and Equation (18). Again, we would calculate the probabilities in the log space to prevent from numerical underflow. Other than Gibbs sampling, equivalently, we can apply a random sampling from the Bernoulli probability
+       where $\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[-j]}}$ meaning similarly that $\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i}}$ is calculated with $j^{th}$ element of $J_{\mbox{a}, i}^{(d)}$ fixed as 0. \\\\ \newline Now we can use multinomial sampling using the two probabilities, Equation (17) and Equation (18). Again, we would calculate the probabilities in the log space to prevent from numerical underflow. Or, equivalently, we can apply a random sampling from the Bernoulli probability
               \begin{equation}
               \begin{aligned}
               \frac{P(\mathcal{J}^{(d)}_{\mbox{a}, ij}=1|\cdot)}{P(\mathcal{J}^{(d)}_{\mbox{a}, ij}=1|\cdot) + P(\mathcal{J}^{(d)}_{\mbox{a}, ij}=0|\cdot)} 
@@ -424,7 +427,7 @@ To be more specific, since ${J}^{(d)}_{\mbox{a}, ij}$ could be either 1 or 0, we
               = \frac{1}{1+ \frac{1}{\delta\lambda^{(d)}_{ij}}e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\big(\lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[-j]}} - \lambda^{(d)}_{iJ^{(d)}_{\mbox{a}, i[+j]}} \big)}}.
               \end{aligned}
               \end{equation}
-         Moreover, to further protect from numerical underflow and overflow, we use the numerical approximation of $f(y) = \mbox{log}(1+ e^y)$ as below: 
+        Moreover, to further protect from numerical underflow and overflow, we use the numerical approximation of $f(y) = \mbox{log}(1+ e^y)$ as below: 
          \begin{equation*}
          f(y) = \begin{cases}
          y &y >35\\
@@ -599,28 +602,26 @@ Then the log of acceptance ratio we have is:
  	\caption{MCMC}
  	set initial values $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, $ and $(\mathcal{B}^{(0)}, \delta^{(0)})$\\
  	\For{i=1 to I}{
- 		optimize $\alpha$ and $\boldsymbol{m}$ using hyperparameter optimization in \cite{wallach2008structured}\\
+ 			\For{n=1 to $n_1$}{
+ 		optimize $\alpha$ and $\boldsymbol{m}$ using hyperparameter optimization in \cite{wallach2008structured}
+ 	}
  			\For{d=1 to D}{
  				\For{i $\in \mathcal{A}_{\backslash i_o^{(d)}}$}{
  				sample the augmented data $(i^{(d)}, J^{(d)}_i)$ 
  			}
  			}
- 		fix $\mathcal{C}=\mathcal{C}^{(i-1)}$ and $\mathcal{B}=\mathcal{B}^{(i-1)}$ \\
- 			\For{n=1 to $n_1$}{
  				\For{d=1 to D}{
  					\For{n=1 to $N^{(d)}$}{
  						calculate $p^\mathcal{Z}|\mbox{others} =(p_1,...,p_K)$ using Equation (20) or Equation (21)\\
  						draw of $z_n^{(d)}\sim\mbox{multinomial}(p^\mathcal{Z})$}}
- 			}
- 			 			fix $\mathcal{Z}=\mathcal{Z}^{(i)}$ and $\mathcal{B}=\mathcal{B}^{(i-1)}$ \\
- 		\For{n=1 to $n_2$}{
  			\For{k=1 to K}{
  				calculate $p^\mathcal{C}|\mbox{others}=(p_1,...,p_C)$ using Equation (23)\\
- 				draw $C_k\sim \mbox{multinomial}(p^\mathcal{C})$}}
- 	fix $\mathcal{C}=\mathcal{C}^{(i)}$, $\mathcal{Z}=\mathcal{Z}^{(i)}$, and $\mathcal{B}^{(0)}=$ last value ($n_3^{th}$) of $\mathcal{B}^{(i-1)}$\\
+ 				draw $C_k\sim \mbox{multinomial}(p^\mathcal{C})$}
+	\For{n=1 to $n_2$}{
+ 			sample $\mathcal{B}$ using M-H
+ 		}
  		\For{n=1 to $n_3$}{
- 			sample $\mathcal{B}$ using M-H\\
- 				sample $\delta$ using M-H 
+ 			sample $\delta$ using M-H 
   		}
  	}	summarize the results using the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$
  \end{algorithm}

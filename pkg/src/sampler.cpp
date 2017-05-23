@@ -512,36 +512,35 @@ NumericVector lambdaiJi(NumericVector p_d, List XB, IntegerMatrix iJi) {
 	return out;
 }
 
+
 // **********************************************************//
 //         Resampling the augmented data J_a (Sec 3.1)       //
 // **********************************************************//
 // [[Rcpp::export]]
-arma::mat DataAug_cpp(arma::mat iJi_d, arma::mat lambda_d, double delta, double timeinc_d) {
-	int node = iJi_d.n_rows;
-	arma::mat prob = arma::zeros(node, node);
-	arma::mat prenum1 = log(delta * lambda_d) - log(delta * lambda_d + 1);
-	arma::mat prenum0 = - log(delta * lambda_d + 1);
-	prenum1.diag().zeros();
-	arma::mat lambda1 = arma::zeros(node, node);
-	arma::mat lambda0 = arma::zeros(node, node);
-	for (int i = 0; i < node; i++) {
-		arma::mat Ji = iJi_d.row(i);
-		for (int j = 0; j < node; j++) {
-			arma::mat lambdaplus = Ji;
-			arma::mat lambdaminus = Ji;
-			lambdaplus(0, j) = 1;
-			lambdaminus(0, j) = 0;
-			int summinus = sum(lambdaminus.row(0));
-			if (summinus == 0) {
-				summinus = 1;
-			}	
-			lambda1(i,j) = sum(lambda_d.row(i) % lambdaplus.row(0)) / sum(lambdaplus.row(0));
-			lambda0(i,j) = sum(lambda_d.row(i) % lambdaminus.row(0)) / summinus;		
-		}
+arma::vec DataAug_cpp(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d, double delta, double timeinc_d, int i, int j) {
+	arma::vec prob = arma::zeros(2);
+	arma::vec iJi_di1 = iJi_di;
+	arma::vec iJi_di0 = iJi_di;
+	int nIP = p_d.size();
+	arma::vec out = arma::zeros(2);
+	iJi_di1[j - 1] = 1;
+	iJi_di0[j - 1] = 0;
+	int sumiJi0 =  sum(iJi_di0);
+	if (sumiJi0 == 0) {
+			out[0] = 0;
+			}
+	for (int IP = 0; IP < nIP; IP++) {
+		arma::vec XB_IP = XB[IP];
+			double rowsums1 = sum(XB_IP % iJi_di1) / sum(iJi_di1);
+			out[1] += p_d[IP] * exp(rowsums1);
+			if (sumiJi0 > 0) {
+			double rowsums0 = sum(XB_IP % iJi_di0) / sumiJi0;
+			out[0] += p_d[IP] * exp(rowsums0);
+			}
 	}
-	arma::mat y1 = -timeinc_d * lambda1;
-	arma::mat y0 = -timeinc_d * lambda0;
-	arma::mat out = exp(prenum1 + y1) / (exp(prenum1 + y1) + exp(prenum0 + y0));
-	out.diag().zeros();
-	return out;
+	prob[1] = log(delta) + log(lambda_di[j - 1]) - (timeinc_d * out[1]);
+	prob[0] = -timeinc_d * out[0];
+	prob = prob - max(prob);
+	return prob;
 }
+

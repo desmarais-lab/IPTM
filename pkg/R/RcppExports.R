@@ -93,7 +93,7 @@ lambdaiJi <- function(p_d, XB, iJi) {
     .Call('IPTM_lambdaiJi', PACKAGE = 'IPTM', p_d, XB, iJi)
 }
 
-DataAug_cpp <- function(iJi_d, lambda_d, delta, timeinc_d) {
-    .Call('IPTM_DataAug_cpp', PACKAGE = 'IPTM', iJi_d, lambda_d, delta, timeinc_d)
+DataAug_cpp <- function(iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j) {
+    .Call('IPTM_DataAug_cpp', PACKAGE = 'IPTM', iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j)
 }
 

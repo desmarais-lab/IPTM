@@ -6,8 +6,9 @@
 \usage{
 GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
   b, delta, currentC, netstat, base.edge, base.text,
-  topic_token_assignments = NULL, forward = FALSE, backward_init = FALSE,
-  backward = FALSE, base = FALSE)
+  topic_token_assignments = NULL, latentiJi = list(), forward = FALSE,
+  backward_init = FALSE, backward = FALSE, base = FALSE,
+  backward.edge = NULL)
 }
 \arguments{
 \item{nDocs}{number of documents to be generated}
@@ -44,6 +45,8 @@ GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
 
 \item{topic_token_assignments}{matrix of topic-token assignments}
 
+\item{latentiJi}{inferred latent sender-receiver matrix (only used for backward sampling)}
+
 \item{forward}{Logigal indicating whether we are generating forward samples}
 
 \item{backward_init}{Logigal indicating whether we are generating initial backward samples}
@@ -51,6 +54,8 @@ GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
 \item{backward}{Logigal indicating whether we are generating backward samples}
 
 \item{base}{Logical indicating whether or not we are generating base edges (< 384)}
+
+\item{backward.edge}{edge from previous backward sample}
 }
 \value{
 generated edge and text, parameter b used to generate those, and base (if base == TRUE)

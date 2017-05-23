@@ -4,12 +4,9 @@
 \alias{GiR}
 \title{GiR}
 \usage{
-GiR(Nsamp, nDocs = 10, node = 1:4, vocabulary = c("hi", "hello", "bye",
-  "mine", "what"), nIP = 2, K = 4, nwords = 4, alpha = 2,
-  mvec = rep(1/4, 4), betas = 2, nvec = rep(1/5, 5),
-  prior.b.mean = c(-2, rep(0, 6)), prior.b.var = diag(7),
-  prior.delta = c(4, 8), sigma_Q = c(0.25, 2), niters = c(1, 1, 1, 50, 0,
-  1), netstat = c("intercept", "dyadic"), generate_PP_plots = TRUE,
+GiR(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
+  prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters,
+  netstat = c("dyadic"), base.edge, base.text, generate_PP_plots = TRUE,
   seed = 1)
 }
 \arguments{
@@ -43,9 +40,13 @@ GiR(Nsamp, nDocs = 10, node = 1:4, vocabulary = c("hi", "hello", "bye",
 
 \item{sigma_Q}{proposal distribution variance parameter for beta and eta}
 
-\item{niters}{(out, n1, n2, n3, burn, thin) in the inference}
+\item{niters}{(out, n_B, n_d, burn, thin) in the inference}
 
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
+
+\item{base.edge}{artificial collection of documents to be used as initial state of history}
+
+\item{base.text}{artificial collection of documents to be used as initial state of history}
 
 \item{generate_PP_plots}{Logical indicating whether to draw PP plots}
 

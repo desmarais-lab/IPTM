@@ -5,7 +5,7 @@
 \title{IPTM_inference}
 \usage{
 IPTM_inference(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec,
-  betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n1, n2, n3, burn,
+  betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n_B, n_d, burn,
   thin, netstat, plot = FALSE, optimize = FALSE)
 }
 \arguments{
@@ -39,11 +39,9 @@ IPTM_inference(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec,
 
 \item{out}{size of outer iterations}
 
-\item{n1}{size of first inner iteration for updates of interaction patterns Z}
+\item{n_B}{size of third inner iteration for updates of B}
 
-\item{n2}{size of second inner iteration for updates of topics C}
-
-\item{n3}{size of third inner iteration for updates of beta B}
+\item{n_d}{size of third inner iteration for updates of delta}
 
 \item{burn}{iterations to be discarded at the beginning of beta chain}
 

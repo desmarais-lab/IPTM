@@ -292,16 +292,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // DataAug_cpp
-arma::mat DataAug_cpp(arma::mat iJi_d, arma::mat lambda_d, double delta, double timeinc_d);
-RcppExport SEXP IPTM_DataAug_cpp(SEXP iJi_dSEXP, SEXP lambda_dSEXP, SEXP deltaSEXP, SEXP timeinc_dSEXP) {
+arma::vec DataAug_cpp(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d, double delta, double timeinc_d, int i, int j);
+RcppExport SEXP IPTM_DataAug_cpp(SEXP iJi_diSEXP, SEXP lambda_diSEXP, SEXP XBSEXP, SEXP p_dSEXP, SEXP deltaSEXP, SEXP timeinc_dSEXP, SEXP iSEXP, SEXP jSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type iJi_d(iJi_dSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type lambda_d(lambda_dSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type iJi_di(iJi_diSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type lambda_di(lambda_diSEXP);
+    Rcpp::traits::input_parameter< List >::type XB(XBSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type p_d(p_dSEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< double >::type timeinc_d(timeinc_dSEXP);
-    rcpp_result_gen = Rcpp::wrap(DataAug_cpp(iJi_d, lambda_d, delta, timeinc_d));
+    Rcpp::traits::input_parameter< int >::type i(iSEXP);
+    Rcpp::traits::input_parameter< int >::type j(jSEXP);
+    rcpp_result_gen = Rcpp::wrap(DataAug_cpp(iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j));
     return rcpp_result_gen;
 END_RCPP
 }
