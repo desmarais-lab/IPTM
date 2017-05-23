@@ -979,7 +979,7 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
 
   #Forward sampling
   Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + 3 + nIP + K + length(vocabulary))
-  colnames(Forward_stats) = c(paste0("B_",1:P), "Mean_recipients", "Mean_timediff", "Mean_TopicIP", 
+  colnames(Forward_stats) = c(paste0("B_",1:P), "Mean_recipients", "Median_timediff", "Mean_TopicIP", 
                               paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
                               paste0("Tokens_in_Word", 1:length(vocabulary)))
   deltamat1 = rep(NA, Nsamp)

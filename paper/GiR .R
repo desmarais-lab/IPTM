@@ -1,3 +1,5 @@
+library(devtools)
+install_github('bomin8319/IPTM/pkg')
 library(IPTM)
 library(mvtnorm)
 library(MCMCpack)
@@ -29,14 +31,14 @@ base.edge = base.data$edge
 base.text = base.data$text
   
   
-TryGiR2<- GiR(5*10^4, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+TryGiR<- GiR(10^5, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
                prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 12345)
 save(TryGiR, file = "TryGiR.RData")
 par(mfrow=c(3,7))
 GiR_PP_Plots(TryGiR$Forward, TryGiR$Backward)
 
 Nsamp = nrow(TryGiR$Forward)
-thin = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 500)
+thin = seq(from = floor(Nsamp / 10), to = Nsamp, length.out = 1000)
 par(mfrow=c(2,2))
 matplot(TryGiR$delta[thin, ],type = 'l', col = 1:2, lty = 1, xlab = "iter", ylab = "delta")
 matplot(cbind(TryGiR$Zstat1[thin],TryGiR$Zstat2[thin]) ,type = 'l', col = 1:2, lty =1, xlab = "iter", ylab = "mean(entropy(topic-token[[d]]))")
@@ -47,7 +49,7 @@ matplot(cbind(TryGiR$Zstat2[thin],TryGiR$Zstat1[thin]) ,type = 'l', col = 2:1, l
 
 
 Nsamp = nrow(TryGiR$Forward)
-thin = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 500)
+thin = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 1000)
 par(mfrow = c(3, 7))
 for (p in 1:21){
 matplot(cbind(TryGiR$Forward[thin,p], TryGiR$Backward[thin,p]), type = 'l', col = 1:2, lty = 1, main = colnames(TryGiR$Forward)[p], xlab = 'iter', ylab ='')
