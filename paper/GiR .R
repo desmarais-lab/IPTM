@@ -1,9 +1,9 @@
-library(devtools)
-install_github('bomin8319/IPTM/pkg')
+#library(devtools)
+#install_github('bomin8319/IPTM/pkg')
 library(IPTM)
 library(mvtnorm)
 library(MCMCpack)
-set.seed(10)
+set.seed(100)
 nDocs = 10
 node = 1:4
 vocabulary = c("hi", "hello", "fine", "bye", "what")
@@ -16,26 +16,36 @@ betas = 2
 nvec = rep(1/5, 5)
 prior.b.mean = c(-2.5, rep(0, 6))
 prior.b.var =  diag(7)
-prior.delta = c(4, 8)
+prior.delta = c(4, 4)
 sigma_Q = c(1, 2.5)
-niters = c(2, 100, 20, 0, 5)
+niters = c(3, 100, 20, 0, 5)
 netstat = c("intercept", "dyadic")
 P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
 b = lapply(1:nIP, function(IP) {
     c(rmvnorm(1,  prior.b.mean, prior.b.var))
   })
-delta = rgamma(1, 4, 8)
+delta = rgamma(1, 4, 4)
 currentC = sample(1:nIP, K, replace = TRUE)	 
 base.data = GenerateDocs(30, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE) 
 base.edge = base.data$edge	   
 base.text = base.data$text
   
   
-TryGiR2<- GiR(10^5, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+TryGiR2<- GiR(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
                prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 12345)
-save(TryGiR, file = "TryGiR.RData")
+save(TryGiR2, file = "TryGiR2.RData")
+
+load("TryGiR.RData")
+load("TryGiR2.RData")
+par(mfrow = c(1,2))
+qqplot(TryGiR$delta[,1], TryGiR$delta[,2])
+abline(0, 1, col = 'red')
+qqplot(TryGiR2$delta[,1], TryGiR2$delta[,2])
+abline(0, 1, col = 'red')
+
 par(mfrow=c(3,7))
 GiR_PP_Plots(TryGiR$Forward, TryGiR$Backward)
+
 
 Nsamp = nrow(TryGiR$Forward)
 thin = seq(from = floor(Nsamp / 10), to = Nsamp, length.out = 1000)

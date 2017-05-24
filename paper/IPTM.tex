@@ -180,16 +180,6 @@ We assume the following generative process for each document $d$ in a corpus $D$
 	 	  \end{aligned}
 	 	 \end{equation}
 \end{itemize}
-\begin{comment}
-Note that considering the property of the minimum of independent Exponential random variables (the probability $\Delta T_{i{J_i}}$ being the minimum is $\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}$), we can rewrite 2 and 3 into the following:
-	 \begin{equation}
-	 \begin{aligned}
-	 &i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}, \\
-	 &J^{(d)} = J_{i^{(d)}},\\
-	 &t^{(d)} = t^{(d-1)}+\mbox{rexp}(\lambda_{i^{(d)}J^{(d)}}^{(d)}).\\
-	 \end{aligned}
-	 \end{equation}
-\end{comment}
  \subsection{Dynamic covariates to measure network effects} \label{subsec: Dynamic covariates2}
  For the network statistics $\boldsymbol{x}^{(c)}_t(i, j)$ of Equation (3), we use 9 different effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling) to measure popularity, centrality, reciprocity, and transitivity. First, we have intercept term to estimate the baseline intensity for each interaction pattern $c=1,...,C$:
  \begin{itemize}
@@ -232,7 +222,7 @@ In this setting, the dimension of  $\boldsymbol{b}^{(c)}$ becomes $P =  1 + 8 \t
 "sibling1"     "sibling2"     "sibling3"     "cosibling1"   "cosibling2"   "cosibling3"   
 \end{verbatim}
 \subsection{Joint Generative Process of Document} \label{subsec: Joint Generative Process of Document}
- Below are the joint generative process for each document in a corpus $D$, integrating \ref{subsec: Content Generating Process}, \ref{subsec: Stochastic Intensity}, \ref{subsec: Tie Generating Process}, and \ref{subsec: Dynamic covariates2}.  Figure 1 is the corresponding plate notation of IPTM.
+ Below are the joint generative process for each document in a corpus $D$, integrating \ref{subsec: Content Generating Process}, \ref{subsec: Stochastic Intensity}, \ref{subsec: Tie Generating Process}, and \ref{subsec: Dynamic covariates2}.  
 \begin{algorithm}[H]
 	\SetAlgoLined
 	\caption{Topic Word Distributions}
@@ -582,34 +572,54 @@ Then the log of acceptance ratio we have is:
    our latent variables. This means we take the latent variables we got by running our inference procedure (latent edges from data augmentation, token topic assignments, topic interaction pattern assignments, interaction pattern parameters, and tuning parameter $\delta$) as inputs, and simply condition on these to draw new data. This “backward” version of the generative process is detailed below in Algorithm 10.\\ \newline
    Let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. These
    data structures, along with the latent variables we got by running our inference procedure are passed in to the backward generative process, which then outputs new documents with the generated token word types and (sender, recipients, timestamp) pairs.
+\\ \newline 
+  Considering that we integrated out latent time $\mathcal{T}_{\mbox{a}}$ in the inference, we also use the new generative process for (sender, recipients, timestamp) parts for backward sampling with latent time integrated out, which we call `collapsed-time document generating process'. Note that this is built upon the property of the minimum of independent Exponential random variables (the probability $\Delta T_{i{J_i}}$ being the minimum is $\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}$). Details are illustrated in Algorithm 6.
+    \begin{algorithm}[H]
+    	\SetAlgoLined
+    	\caption{Collapsed-time Tie Generating Process}
+    	\For{d=1 to D}{
+    		\For{i=1 to $A$}{
+    			\For{j=1 to $A$}{
+    				\If {j $\neq$ i} {
+    					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
+    					set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
+    					draw I($i \rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})$}  
+    			}
+    				calculate $\lambda_{i{J_i}}^{(d)}$\\
+    		}
+    		choose $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$ \\
+    		set $J^{(d)} = J_{i^{(d)}}$\\
+    		draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{rexp}(\lambda_{i^{(d)}J^{(d)}}^{(d)})$ and set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
+    	}
+    \end{algorithm}
+   \noindent In the backward sampling, we do not generate latent edges, instead, we use inferred ones from the inference as an input. Only sample the receivers for previously observed sender ($i_o^{(d)}$), which was not inferred, will be sampled according to the generative process, same as forward sampling (with inferred parameter values). The generative process for backward sampling including the token updates and collapsed-time tie generating process are demonstrated in Algorithm 7.
    \begin{algorithm}[H]
    	\SetAlgoLined
    	\caption{Generate data with backward sampling}
    	Input:\\ 1) latent edges $\{\{iJ^{(d)}_i\}_{i \neq i_o^{(d)}}\}_{d=1}^D$ (where $\{i_o^{(d)}\}_{d=1}^D$ from previous backward sample),\\
    	 2) token topic assignments $\{\{z_n^{(d)}\}_{n=1}^{N^{(d)}}\}_{d=1}^D$,\\
-   	 3) interaction pattern parameters, $\{C_k\}_{k=1}^K$,\\
+   	 3) topic interaction pattern assignments, $\{C_k\}_{k=1}^K$,\\
    	   4) interaction pattern parameters $\{\boldsymbol{b}^{(c)}\}_{c=1}^C$, \\
    	   5) tuning parameter $\delta$.\\\\
    	\For{d=1 to D}{
-   		set $\bar N^{(d)}= \mbox{max}(1, N^{(d)})$, where $N^{(d)}$ is known\\
    		set $NKV = 0$ and $NK = 0$\\
    		\For{n=1 to $\bar {N}^{(d)}$}{
-   			\If {$N^{(d)}>0$} {
    				\For{v=1 to $V$}{
-   					$\phi_n^{(d)}[v] = \frac{NKV_{v, z_n^{(d)}}+\beta\boldsymbol{u}_v}{NK_k + \beta}$
+   					$\mbox{token-word-type-distribution}_n^{(d)}[v] = \frac{NKV_{v, z_n^{(d)}}+\beta\boldsymbol{u}_v}{NK_{z_n^{(d)}} + \beta}$
    				}
-   				draw $w_n^{(d)} \sim \phi_n^{(d)}$\\
-   				$NKV_{w_n^{(d)}, z_n^{(d)}} += 1$
-   			}
+   				draw $w_n^{(d)} \sim (\mbox{token-word-type-distribution}_n^{(d)})$\\
+   				$NKV_{w_n^{(d)}, z_n^{(d)}} += 1$\\
+   				$NK_{z_n^{(d)}} += 1$
    		}
-   		Only sample the receivers for previously observed sender ($i_o^{(d)}$), which was not inferred.\\
+   		only for the previously observed sender $i_o^{(d)}$,\\
    				\For {j $\neq$ $i_o^{(d)}$} {
    					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i_o^{(d)}, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
    					set $\lambda^{(d)}_{i_o^{(d)}j}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i_o^{(d)}, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i_o^{(d)}}\}$\\
    					draw I($i_o^{(d)}\rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{i_o^{(d)}j}}{\delta\lambda^{(d)}_{i_o^{(d)}j}+1})$
    					}  
-   			draw $\Delta T_{iJ_i} \sim \mbox{Exp}(\lambda_{iJ_i}^{(d)})$, given $\{iJ^{(d)}_i\}_{i=1}^A$\\
-   		set $t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$, $i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, and $J^{(d)} = J_{i^{(d)}}$ 		
+   		choose $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$ \\
+   		set $J^{(d)} = J_{i^{(d)}}$\\
+   		draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{rexp}(\lambda_{i^{(d)}J^{(d)}}^{(d)})$ and set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
    	}
    \end{algorithm}
       \subsection{Issue of intitial state of $\boldsymbol{x}_t^{(c)}$} \label{subsubsec: Initial history issue}
@@ -638,7 +648,7 @@ Then the log of acceptance ratio we have is:
    	\end{minipage}
    	\begin{minipage}{0.5\textwidth}
    		\item[-] prior for $\boldsymbol{b}^{(c)}\sim \mbox{MVN}_7((-2.5,\boldsymbol{0}_6), I_7)$
-   		\item[-] prior for $\delta\sim \mbox{Gamma}(4, 8)$
+   		\item[-] prior for $\delta\sim \mbox{Gamma}(4, 4)$
    		\item[-] $I$ (outer iteration) = 1
    		\item[-] $n_1$ (iteration for hyperparamter optimization) = 0
    		\item[-] $n_2$ (M-H sampling iteration of $\mathcal{B}$) = 100
@@ -670,16 +680,6 @@ statistics by taking every 90th sample starting at the 100,000th sample for a re
 	\label{fig:GiR}
 	\caption{Getting it Right test result}
 \end{figure}
-\noindent\textcolor{red}{Remaining issues:}\\
-Attached GiRplot is the result (with $10^5$ forward and backward samples) using the updated backward sampling, which seems to be much better than before except mean recipients and mean timediff. I have several thoughts on those two, which is again related to the degenerate issue of the model when all latent edges are 0.\\\\
-- In the forward sampling (and generative process in general), when all $iJ_i$ is 0, we simply do not move forward (no timestamp to generate) and resample $iJ_i$ until we have $sum(iJ_i) > 0$. By this, we actually generate the data which is ‘denser’ than what we could expect from the small Bernoulli probability ($delta*lambda / (delta*lambda + 1)$ - refer to p.4 of IPTM draft).\\
-- Above fact results in slightly large estimates of delta during the inference (shown in the attached ‘deltaplot.pdf’), to fit the denser-than-actual-parameter-network.\\
-- Backward sampling accepts the estimated delta as an input and thus generate even ‘denser’ network (making the exponential rate lambda larger), which is probably the reason for smaller values in the GiR variable ‘mean timediff’. 
-\\\\
-Regarding the mean recipients, there is a clear reasoning behind the failure of GiR.\\
-- In the inference, the initial values of $iJ_i$ were sampled the same way as forward sampling according to the generative process.\\
-- However, as we update the latent edges, they tend to become 0 (this is the issue we discussed few weeks ago, where the model tends to fit the time part better while pushing the edge part to become outliers). Apparently, the conditional probability of an edge being 1 is much smaller than being 0 (Sec 3.1 in IPTM draft), so as we update $iJ_i$ more and more, the edges are getting close to the expected outcome 0, i.e. the inferred part of $iJ_i$ just goes to zero matrix. \\
-- Current GiR updates $iJ_i$ only once (which gave the best results so far), so now backward sampling shows larger mean recipients than forward sampling.  But if I update $iJ_i$ twice, the backward mean recipients drops significantly, which I think will also affect the mean timediff to become much larger.
  \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
  \subsection{Vance county email data} \label{subsec: Vance county email data}

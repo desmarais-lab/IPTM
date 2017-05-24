@@ -703,16 +703,13 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
       theta.d = rdirichlet_cpp(1, alpha * mvec)	
       topic.d = multinom_vec(max(1, N.d), theta.d)
       
-      if (N.d > 0) {
         for (n in 1:N.d){
           text[[base.length + d]][n] = multinom_vec(1, phi[[topic.d[n]]])
         }
         names(text[[base.length + d]]) = topic.d
-      }
     } else {
       phi.k = rep(NA, K)
       topic.d = topic_token_assignments[[d]]
-      if (N.d > 0) {
         for (n in 1:N.d){
           for (w in 1:W) {
             phi.k[w] = (word_type_topic_counts[w, topic.d[n]] + betas * nvec[w]) / (sum(word_type_topic_counts[,topic.d[n]]) + betas)
@@ -721,7 +718,6 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
           word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] = word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] + 1
         }
         names(text[[base.length + d]]) = topic.d
-      }
     }
     
     p.d[base.length + d, ] = vapply(1L:nIP, function(IP) {
@@ -774,7 +770,7 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
     edge = edge[1:cutoff]
     text = text[1:cutoff]
   }
-  return(list(edge = edge, text = text, b = b, base = base.length))							
+  return(list(edge = edge, text = text, b = b, d = delta, base = base.length))							
 } 
 
 #' @title GiR_stats
@@ -807,22 +803,23 @@ GiR_stats = function(GiR_sample, K, currentC, vocabulary, forward = FALSE, backw
   W = length(vocabulary)
   
   GiR_stats[1:P] = Reduce('+', GiR_sample$b) / nIP
-  GiR_stats[P + 1] = mean(vapply(1:nDocs, function(d) {
+  GiR_stats[P + 1] = GiR_sample$d
+  GiR_stats[P + 2] = mean(vapply(1:nDocs, function(d) {
     length(edge[[d]][[2]])
   }, c(1)))
-  GiR_stats[P + 2] = median(c(edge[[1]][[3]] - 384, vapply(2:nDocs, function(d) {
+  GiR_stats[P + 3] = median(c(edge[[1]][[3]] - 384, vapply(2:nDocs, function(d) {
     edge[[d]][[3]] - edge[[d-1]][[3]]
   }, c(1)))) 			
-  GiR_stats[P + 3] = mean(currentC)
+  GiR_stats[P + 4] = mean(currentC)
   Tokens_in_Topic = tabulate(vapply(1:nDocs, function(d){
     as.numeric(names(text[[d]]))
   }, rep(0, nwords)), K)
-  GiR_stats[(P + 4):(P + 3 + nIP)] = vapply(1:nIP, function(IP) {
+  GiR_stats[(P + 5):(P + 4 + nIP)] = vapply(1:nIP, function(IP) {
     Tokens_in_Topic %*% (currentC == IP)
   }, c(1))
-  GiR_stats[(P + 4 + nIP):(P + 3 + nIP + K)] = Tokens_in_Topic
+  GiR_stats[(P + 5 + nIP):(P + 4 + nIP + K)] = Tokens_in_Topic
   Tokens_in_Word = tabulate(unlist(text), W)
-  GiR_stats[(P + 4 + nIP + K):(P + 3 + nIP + K + W)] = Tokens_in_Word
+  GiR_stats[(P + 5 + nIP + K):(P + 4 + nIP + K + W)] = Tokens_in_Word
   
   return(GiR_stats)
 }
@@ -978,8 +975,8 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
   P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
 
   #Forward sampling
-  Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + 3 + nIP + K + length(vocabulary))
-  colnames(Forward_stats) = c(paste0("B_",1:P), "Mean_recipients", "Median_timediff", "Mean_TopicIP", 
+  Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + 4 + nIP + K + length(vocabulary))
+  colnames(Forward_stats) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Median_timediff", "Mean_TopicIP", 
                               paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
                               paste0("Tokens_in_Word", 1:length(vocabulary)))
   deltamat1 = rep(NA, Nsamp)
@@ -1010,7 +1007,6 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
   bmat2 = matrix(NA, nrow = Nsamp, ncol = nIP * P)		
   Zstat2 = rep(NA, Nsamp)	   
   accept.rate = matrix(NA, nrow = Nsamp, ncol = 2)
-  auto.corr = matrix(NA, nrow = Nsamp, ncol = 1 + nIP * P)
   iJi = list()
   for (i in 1:Nsamp) { 
     if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
@@ -1040,8 +1036,6 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
     Zstat2[i] = mean(sapply(topic_token_assignments, function(d){entropy.empirical(d)}))
     accept.rate[i, 1] = length(unique(Inference_samp$B[[1]][1,])) / ((niters[2] - niters[4]) / niters[5])
     accept.rate[i, 2] = length(unique(Inference_samp$D)) / niters[3]
-    auto.corr[i,1] = geweke.diag(Inference_samp$D)[[1]]
-    auto.corr[i,2:ncol(auto.corr)] = c(sapply(1:nIP, function(IP){ geweke.diag(t(Inference_samp$B[[IP]]))[[1]] }))
     iJi[[i]] = latentiJi
   }
   
@@ -1060,5 +1054,5 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats, delta = cbind(deltamat1, deltamat2),
-              b1 = bmat1, b2= bmat2, Zstat1 = Zstat1, Zstat2 = Zstat2, accept.rate = accept.rate, auto.corr = auto.corr, iJi = iJi))
+              b1 = bmat1, b2= bmat2, Zstat1 = Zstat1, Zstat2 = Zstat2, accept.rate = accept.rate, iJi = iJi))
 }                         	

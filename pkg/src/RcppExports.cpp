@@ -309,3 +309,36 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"IPTM_callRMultinom", (DL_FUNC) &IPTM_callRMultinom, 1},
+    {"IPTM_multinom_vec", (DL_FUNC) &IPTM_multinom_vec, 2},
+    {"IPTM_which_int", (DL_FUNC) &IPTM_which_int, 2},
+    {"IPTM_which_num", (DL_FUNC) &IPTM_which_num, 2},
+    {"IPTM_rdirichlet_cpp", (DL_FUNC) &IPTM_rdirichlet_cpp, 2},
+    {"IPTM_rbinom_mat", (DL_FUNC) &IPTM_rbinom_mat, 1},
+    {"IPTM_History", (DL_FUNC) &IPTM_History, 4},
+    {"IPTM_Degree", (DL_FUNC) &IPTM_Degree, 3},
+    {"IPTM_Dyadic", (DL_FUNC) &IPTM_Dyadic, 3},
+    {"IPTM_Triadic", (DL_FUNC) &IPTM_Triadic, 3},
+    {"IPTM_Triadic_reduced", (DL_FUNC) &IPTM_Triadic_reduced, 1},
+    {"IPTM_MultiplyXB", (DL_FUNC) &IPTM_MultiplyXB, 2},
+    {"IPTM_MultiplyXBList", (DL_FUNC) &IPTM_MultiplyXBList, 2},
+    {"IPTM_UpdateDenom", (DL_FUNC) &IPTM_UpdateDenom, 2},
+    {"IPTM_UpdateNum", (DL_FUNC) &IPTM_UpdateNum, 2},
+    {"IPTM_tabulateC", (DL_FUNC) &IPTM_tabulateC, 2},
+    {"IPTM_lambda_cpp", (DL_FUNC) &IPTM_lambda_cpp, 2},
+    {"IPTM_TopicInEqZ", (DL_FUNC) &IPTM_TopicInEqZ, 5},
+    {"IPTM_WordInEqZ", (DL_FUNC) &IPTM_WordInEqZ, 5},
+    {"IPTM_EdgeInEqZ", (DL_FUNC) &IPTM_EdgeInEqZ, 3},
+    {"IPTM_TimeInEqZ", (DL_FUNC) &IPTM_TimeInEqZ, 2},
+    {"IPTM_ObservedInEqZ", (DL_FUNC) &IPTM_ObservedInEqZ, 1},
+    {"IPTM_lambdaiJi", (DL_FUNC) &IPTM_lambdaiJi, 3},
+    {"IPTM_DataAug_cpp", (DL_FUNC) &IPTM_DataAug_cpp, 8},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_IPTM(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}
