@@ -29,7 +29,7 @@ currentC = sample(1:nIP, K, replace = TRUE)
 base.data = GenerateDocs(30, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE) 
 base.edge = base.data$edge	   
 base.text = base.data$text
-TryGiR<- GiR(1000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+TryGiR<- GiR2(10^5, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
               prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 12345)
 
   

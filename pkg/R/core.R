@@ -773,6 +773,141 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
   return(list(edge = edge, text = text, b = b, d = delta, base = base.length))							
 } 
 
+
+#' @title CollapsedGenerateDocs
+#' @description Generate a collection of documents according to the generative process of IPTM
+#'
+#' @param nDocs number of documents to be generated
+#' @param node nodelist containing the ID of nodes (ID starting from 1)
+#' @param vocabulary all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns specified by the user
+#' @param K total number of topics specified by the user
+#' @param nwords number of words in a document (fixed constant for now)
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param betas Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
+#' @param b List of coefficients estimating the history effect for each IP 
+#' @param delta tuning parameter controlling the number of recipients
+#' @param currentC topic-IP assignment
+#' @param netstat which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")
+#' @param base.edge edges before 384 hours that is used to calculate initial history of interactions
+#' @param base.text texts corresponding to base.edge
+#' @param topic_token_assignments matrix of topic-token assignments
+#' @param latentiJi inferred latent sender-receiver matrix (only used for backward sampling)
+#' @param forward Logigal indicating whether we are generating forward samples
+#' @param backward_init Logigal indicating whether we are generating initial backward samples
+#' @param backward Logigal indicating whether we are generating backward samples
+#' @param base Logical indicating whether or not we are generating base edges (< 384)
+#' @param backward.edge edge from previous backward sample
+#'
+#' @return generated edge and text, parameter b used to generate those, and base (if base == TRUE)
+#'
+#' @export
+CollapsedGenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
+                        b, delta, currentC, netstat, base.edge, base.text, topic_token_assignments = NULL, latentiJi = list(),
+                        forward = FALSE, backward_init = FALSE, backward = FALSE, base = FALSE, backward.edge = NULL) {
+  W = length(vocabulary)
+  phi = lapply(1L:K, function(k) {
+    rdirichlet_cpp(1, betas * nvec)
+  })
+  L = 3
+  P = 1 * ("intercept" %in% netstat) + L * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
+  
+  if (base) {
+    t.d = 0
+  } else {
+    t.d = 384
+  }
+  edge = base.edge
+  text = base.text
+  base.length = length(edge)
+  p.d = matrix(NA, nrow = nDocs + base.length, ncol = nIP)
+  if (!base) {
+  for (d in 1:base.length) {
+  	 p.d[d, ] = vapply(1L:nIP, function(IP) {
+      sum(names(text[[d]]) %in% which(currentC == IP))
+    }, c(1)) / max(1, length(text[[d]]))
+  }
+  }
+  word_type_topic_counts = matrix(0, W, K)
+  options(warn = -1)
+  for (d in 1:nDocs) {
+    N.d = nwords
+    text[[base.length + d]] = rep(NA, N.d)
+    
+    if (!backward) {
+      theta.d = rdirichlet_cpp(1, alpha * mvec)	
+      topic.d = multinom_vec(max(1, N.d), theta.d)
+      
+        for (n in 1:N.d){
+          text[[base.length + d]][n] = multinom_vec(1, phi[[topic.d[n]]])
+        }
+        names(text[[base.length + d]]) = topic.d
+    } else {
+      phi.k = rep(NA, K)
+      topic.d = topic_token_assignments[[d]]
+        for (n in 1:N.d){
+          for (w in 1:W) {
+            phi.k[w] = (word_type_topic_counts[w, topic.d[n]] + betas * nvec[w]) / (sum(word_type_topic_counts[,topic.d[n]]) + betas)
+          } 
+          text[[base.length + d]][n] = multinom_vec(1, phi.k)
+          word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] = word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] + 1
+        }
+        names(text[[base.length + d]]) = topic.d
+    }
+    
+    p.d[base.length + d, ] = vapply(1L:nIP, function(IP) {
+      sum(topic.d %in% which(currentC == IP))
+    }, c(1)) / max(1, N.d)
+    if (base & t.d < 384) {
+      history.t = lapply(1:nIP, function(IP) {
+        			  lapply(1:3, function(l){
+         		  matrix(0, length(node), length(node))
+       			  })
+     			  })
+    } else {	
+      history.t = History(edge, p.d, node, t.d + 10^(-10))
+    }
+    X = lapply(node, function(i) {
+      	Netstats(history.t, node, i, netstat)
+   		})
+    XB = MultiplyXBList(X, b)     
+    lambda = lambda_cpp(p.d[base.length + d,], XB)
+    
+    if (!backward) {
+    iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
+    while (sum(iJi) == 0) {
+      iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
+    }
+    } else {
+    		iJi = latentiJi[[d]]
+    		observedi = backward.edge[[base.length + d]][[1]]
+    		iJi[observedi, ] = rbinom_mat((delta * lambda) / (delta * lambda + 1))[observedi,]
+    		while (sum(iJi[observedi, ]) == 0) {
+      		iJi[observedi, ] = rbinom_mat((delta * lambda) / (delta * lambda + 1))[observedi,]
+    		}
+    	}
+    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
+   	LambdaiJi[is.na(LambdaiJi)] = 0
+    i.d = multinom_vec(1, LambdaiJi)
+    j.d = which(iJi[i.d,] == 1)
+    t.d = t.d + rexp(1, LambdaiJi[i.d])
+    edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
+  }
+  options(warn = 0)
+  if (forward) {
+    edge = edge[-(1:base.length)]
+    text = text[-(1:base.length)]
+  }
+  if (base == TRUE & t.d > 384) {
+    cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
+    edge = edge[1:cutoff]
+    text = text[1:cutoff]
+  }
+  return(list(edge = edge, text = text, b = b, d = delta, base = base.length))							
+} 
+
 #' @title GiR_stats
 #' @description Calculate several statistics from samples generated from forward or backward sampling
 #'
@@ -1055,4 +1190,107 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats, delta = cbind(deltamat1, deltamat2),
               b1 = bmat1, b2= bmat2, Zstat1 = Zstat1, Zstat2 = Zstat2, accept.rate = accept.rate, iJi = iJi))
+}                         	
+
+
+#' @title GiR2
+#' @description Getting it Right test for IPTM
+#'
+#' @param Nsamp number of GiR samples to be generated 
+#' @param nDocs number of documents to be generated per each sample
+#' @param node nodelist containing the ID of nodes (ID starting from 1)
+#' @param vocabulary all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns specified by the user
+#' @param K total number of topics specified by the user
+#' @param nwords number of words in a document (fixed constant for now)
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param betas Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
+#' @param prior.b.mean mean vector of b in multivariate normal distribution
+#' @param prior.b.var covairance matrix of b in multivariate normal distribution
+#' @param prior.delta parameter of delta in gamma prior
+#' @param sigma_Q proposal distribution variance parameter for beta and eta
+#' @param niters (out, n_B, n_d, burn, thin) in the inference
+#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
+#' @param base.edge artificial collection of documents to be used as initial state of history
+#' @param base.text artificial collection of documents to be used as initial state of history
+#' @param generate_PP_plots Logical indicating whether to draw PP plots
+#' @param seed an integer value which controls random number generation
+#'
+#' @return Forward and Backward samples and corresponding test results
+#'
+#' @export
+GiR2 = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+               prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat = c("dyadic"), base.edge, base.text, 
+               generate_PP_plots = TRUE, seed = 1) {
+  
+  set.seed(seed)
+  P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
+
+  #Forward sampling
+  Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + 4 + nIP + K + length(vocabulary))
+  colnames(Forward_stats) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Median_timediff", "Mean_TopicIP", 
+                              paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
+                              paste0("Tokens_in_Word", 1:length(vocabulary)))
+  deltamat1 = rep(NA, Nsamp)
+  bmat1 = matrix(NA, nrow = Nsamp, ncol = nIP * P)
+  Zstat1 = rep(NA, Nsamp)
+  for (i in 1:Nsamp) { 
+    if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
+    b = lapply(1:nIP, function(IP) {
+      c(rmvnorm(1, prior.b.mean, prior.b.var))
+    })
+    delta = rgamma(1, prior.delta[1], prior.delta[2])
+    currentC = sample(1L:nIP, K, replace = TRUE)
+    Forward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
+                                  base.edge = base.edge, base.text = base.text, forward = TRUE) 
+    Forward_stats[i, ] = GiR_stats(Forward_sample, K, currentC, vocabulary, forward = TRUE, backward = FALSE)
+    
+    topic_token_counts = tabulate(unlist(lapply(Forward_sample$text, function(d){as.numeric(names(d))})), K)
+    bmat1[i, ] = unlist(b)
+    deltamat1[i] = delta
+    Zstat1[i] = mean(sapply(Forward_sample$text, function(d){entropy.empirical(as.numeric(names(d)))}))
+  }
+  
+  #Collapsed Forward sampling
+  Forward_stats2 = matrix(NA, nrow = Nsamp, ncol = P + 4 + nIP + K + length(vocabulary))
+  colnames(Forward_stats2) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Median_timediff", "Mean_TopicIP", 
+                              paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
+                              paste0("Tokens_in_Word", 1:length(vocabulary)))
+  deltamat2 = rep(NA, Nsamp)
+  bmat2 = matrix(NA, nrow = Nsamp, ncol = nIP * P)
+  Zstat2 = rep(NA, Nsamp)
+  for (i in 1:Nsamp) {
+    if (i %% 5000 == 0) {cat("Forward sampling2", i, "\n")}
+    b = lapply(1:nIP, function(IP) {
+      c(rmvnorm(1, prior.b.mean, prior.b.var))
+    })
+    delta = rgamma(1, prior.delta[1], prior.delta[2])
+    currentC = sample(1L:nIP, K, replace = TRUE)
+    Forward_sample2 = CollapsedGenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
+                                  base.edge = base.edge, base.text = base.text, forward = TRUE) 
+    Forward_stats2[i, ] = GiR_stats(Forward_sample2, K, currentC, vocabulary, forward = TRUE, backward = FALSE)
+    
+    topic_token_counts = tabulate(unlist(lapply(Forward_sample2$text, function(d){as.numeric(names(d))})), K)
+    bmat2[i, ] = unlist(b)
+    deltamat2[i] = delta
+    Zstat2[i] = mean(sapply(Forward_sample2$text, function(d){entropy.empirical(as.numeric(names(d)))}))
+  }
+  
+  tstats = rep(0, ncol(Forward_stats))
+  wstats = rep(0, ncol(Forward_stats2))
+  for (j in 1:ncol(Forward_stats)) {
+    thin = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
+    Forward_test = Forward_stats[thin, j]
+    Forward_test2 = Forward_stats2[thin, j]
+    tstats[j] = t.test(Forward_test2, Forward_test)$p.value
+    wstats[j] = wilcox.test(Forward_test2, Forward_test)$p.value
+  }
+  names(tstats) = names(wstats) = colnames(Forward_stats)						
+  if (generate_PP_plots) {
+    par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
+    GiR_PP_Plots(Forward_stats, Forward_stats2)
+  }			
+  return(list(Forward = Forward_stats, Forward2 = Forward_stats2, tstats = tstats, wstats = wstats, delta = cbind(deltamat1, deltamat2)))
 }                         	
