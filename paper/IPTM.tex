@@ -567,32 +567,39 @@ Then the log of acceptance ratio we have is:
  	}	summarize the results using the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_2$ length chain of $\mathcal{B}$ and $n_3$ length chain of $\delta$ 
  \end{algorithm}
    \section{Getting It Right (GiR)}
-   \subsection{Backward generative process} \label{subsubsec: Backward Generative Process}
+   \subsection{Collapsed-time tie generating process} \label{subsubsec: collapsed time Generative Process}
+   Considering that we integrated out latent time $\mathcal{T}_{\mbox{a}}$ in the inference, we develop the new generative process for (sender, recipients, timestamp) parts with latent time integrated out, which we call `collapsed-time document generating process'. Note that this is built upon the property of the minimum of independent Exponential random variables (the probability $\Delta T_{i{J_i}}$ being the minimum is $\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}$). Details are illustrated in Algorithm 6.
+   \begin{algorithm}[H]
+   	\SetAlgoLined
+   	\caption{Collapsed-time Tie Generating Process}
+   	\For{d=1 to D}{
+   		\For{i=1 to $A$}{
+   			\For{j=1 to $A$}{
+   				\If {j $\neq$ i} {
+   					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
+   					set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
+   					draw I($i \rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})$}  
+   			}
+   			calculate $\lambda_{i{J_i}}^{(d)}$\\
+   		}
+   		choose $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$ \\
+   		set $J^{(d)} = J_{i^{(d)}}$\\
+   		draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{rexp}(\lambda_{i^{(d)}J^{(d)}}^{(d)})$ and set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
+   	}
+   \end{algorithm}
+   \noindent Figure 2 shows the results from forward Getting it Right test, which compares the forward generative process in Section \ref{subsec: Joint Generative Process of Document} and the new collapsed-time version of generative process.  The new version follows the exactly same scheme for token generative part, while the tie generating part follows the steps in Algorithm 6. It seems that everything passes except the $10^{th}$ variable 'mean-timediff', which is the average over the generated time differences from Exponential distribution.
+   \begin{figure}[H]
+   	\centering
+   	\includegraphics[width=1.15\textwidth]{ForwardGiR.png}
+   	\label{fig:forwardGiR}
+   	\caption{Forwarad Getting it Right test result (x-axis: forward, y-axis: backward)}
+   \end{figure}
+       \subsection{Backward generative process} \label{subsubsec: Backward Generative Process}
    We need to define a “backward” generative process in order to perform Geweke’s “Getting it Right” test \citep{geweke2004getting} because when we are generating our “backwards” samples, we only want to resample the token word types given the token-topic assignments (using Collapsed Gibbs sampling) and (sender, recipients, timestamp) pairs, and not any of
    our latent variables. This means we take the latent variables we got by running our inference procedure (latent edges from data augmentation, token topic assignments, topic interaction pattern assignments, interaction pattern parameters, and tuning parameter $\delta$) as inputs, and simply condition on these to draw new data. This “backward” version of the generative process is detailed below in Algorithm 10.\\ \newline
    Let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. These
-   data structures, along with the latent variables we got by running our inference procedure are passed in to the backward generative process, which then outputs new documents with the generated token word types and (sender, recipients, timestamp) pairs.
-\\ \newline 
-  Considering that we integrated out latent time $\mathcal{T}_{\mbox{a}}$ in the inference, we also use the new generative process for (sender, recipients, timestamp) parts for backward sampling with latent time integrated out, which we call `collapsed-time document generating process'. Note that this is built upon the property of the minimum of independent Exponential random variables (the probability $\Delta T_{i{J_i}}$ being the minimum is $\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}$). Details are illustrated in Algorithm 6.
-    \begin{algorithm}[H]
-    	\SetAlgoLined
-    	\caption{Collapsed-time Tie Generating Process}
-    	\For{d=1 to D}{
-    		\For{i=1 to $A$}{
-    			\For{j=1 to $A$}{
-    				\If {j $\neq$ i} {
-    					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
-    					set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$\\
-    					draw I($i \rightarrow j$) $\sim \mbox{Ber}(\frac{\delta\lambda^{(d)}_{ij}}{\delta\lambda^{(d)}_{ij}+1})$}  
-    			}
-    				calculate $\lambda_{i{J_i}}^{(d)}$\\
-    		}
-    		choose $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$ \\
-    		set $J^{(d)} = J_{i^{(d)}}$\\
-    		draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{rexp}(\lambda_{i^{(d)}J^{(d)}}^{(d)})$ and set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
-    	}
-    \end{algorithm}
-   \noindent In the backward sampling, we do not generate latent edges, instead, we use inferred ones from the inference as an input. Only sample the receivers for previously observed sender ($i_o^{(d)}$), which was not inferred, will be sampled according to the generative process, same as forward sampling (with inferred parameter values). The generative process for backward sampling including the token updates and collapsed-time tie generating process are demonstrated in Algorithm 7.
+   data structures, along with the latent variables we got by running our inference procedure are passed in to the backward generative process, which then outputs new documents with the generated token word types and (sender, recipients, timestamp) pairs. \\\newline
+In the backward sampling, we do not generate latent edges, instead, we use inferred ones from the inference as an input. Only sample the receivers for previously observed sender ($i_o^{(d)}$), which was not inferred, will be sampled according to the generative process, same as forward sampling (with inferred parameter values). The generative process for backward sampling including the token updates and collapsed-time tie generating process are demonstrated in Algorithm 7.
    \begin{algorithm}[H]
    	\SetAlgoLined
    	\caption{Generate data with backward sampling}
