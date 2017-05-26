@@ -942,7 +942,7 @@ GiR_stats = function(GiR_sample, K, currentC, vocabulary, forward = FALSE, backw
   GiR_stats[P + 2] = mean(vapply(1:nDocs, function(d) {
     length(edge[[d]][[2]])
   }, c(1)))
-  GiR_stats[P + 3] = median(c(edge[[1]][[3]] - 384, vapply(2:nDocs, function(d) {
+  GiR_stats[P + 3] = mean(c(edge[[1]][[3]] - 384, vapply(2:nDocs, function(d) {
     edge[[d]][[3]] - edge[[d-1]][[3]]
   }, c(1)))) 			
   GiR_stats[P + 4] = mean(currentC)
@@ -1111,7 +1111,7 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
 
   #Forward sampling
   Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + 4 + nIP + K + length(vocabulary))
-  colnames(Forward_stats) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Median_timediff", "Mean_TopicIP", 
+  colnames(Forward_stats) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Mean_timediff", "Mean_TopicIP", 
                               paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
                               paste0("Tokens_in_Word", 1:length(vocabulary)))
   deltamat1 = rep(NA, Nsamp)
@@ -1230,7 +1230,7 @@ GiR2 = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, bet
 
   #Forward sampling
   Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + 4 + nIP + K + length(vocabulary))
-  colnames(Forward_stats) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Median_timediff", "Mean_TopicIP", 
+  colnames(Forward_stats) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Mean_timediff", "Mean_TopicIP", 
                               paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
                               paste0("Tokens_in_Word", 1:length(vocabulary)))
   deltamat1 = rep(NA, Nsamp)
@@ -1255,7 +1255,7 @@ GiR2 = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, bet
   
   #Collapsed Forward sampling
   Forward_stats2 = matrix(NA, nrow = Nsamp, ncol = P + 4 + nIP + K + length(vocabulary))
-  colnames(Forward_stats2) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Median_timediff", "Mean_TopicIP", 
+  colnames(Forward_stats2) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Mean_timediff", "Mean_TopicIP", 
                               paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
                               paste0("Tokens_in_Word", 1:length(vocabulary)))
   deltamat2 = rep(NA, Nsamp)
