@@ -2,6 +2,7 @@
 
 export(AlphamvecOpt)
 export(CollapsedGenerateDocs)
+export(ForwardGiR)
 export(GenerateDocs)
 export(GiR)
 export(GiR2)
