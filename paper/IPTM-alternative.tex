@@ -87,7 +87,7 @@ where $\lambda^{(d)}_{iJ_i}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\B
 \section{Inference}
 \begin{equation}
 \begin{aligned}
-&P(\mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\delta})\\&=P\Big(\mbox{Number of recipients}\Big) \times P\Big(\mbox{Edge generation}\Big)\times P\Big(\mbox{Time generation}\Big) \times P\Big(\mbox{choose the observed}\Big) \\&
+&P(\mathcal{R}^{(d)},\mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\delta})\\&=P\Big(\mbox{Number of recipients}\Big) \times P\Big(\mbox{Edge generation}\Big)\times P\Big(\mbox{Time generation}\Big) \times P\Big(\mbox{choose the observed}\Big) \\&
 =\prod_{i\in \mathcal{A}} \Big(R_i^{(d)} \sim \mbox{ztbinom}(A-1, \delta_i)\Big)\times
 \prod_{i\in \mathcal{A}}\Big(J_i^{(d)}\sim \mbox{MWNCHypergeo}\Big(\mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}} \Big)\Big) \\&\quad\quad\quad\times \prod_{i\in \mathcal{A}}\Big(\Delta T^{(d)}_{iJ_i}\sim\mbox{Exp}(\lambda^{(d)}_{iJ_i})\Big) \times \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} P\Big(\Delta T^{(d)}_{i{J_i}} > \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&=\Big(\prod_{i\in \mathcal{A}} {{A-1}\choose R_i^{(d)}} \frac{\delta_i^{ R_i^{(d)}} (1-\delta_i)^{A-1-R_i^{(d)}}}{1 - (1-\delta_i)^{A-1}}\Big) \times \Big(\prod_{i\in \mathcal{A}}\mbox{dMWNCHypergeo}\Big(J_i^{(d)}; \mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}}\Big)\Big)\\&\quad\quad\quad
 \times \Big(\prod_{i \in\mathcal{A}}\lambda^{(d)}_{iJ_i}e^{-\Delta T^{(d)}_{iJ_i}\lambda^{(d)}_{iJ_i}}\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
@@ -112,9 +112,28 @@ where $\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}$ is the observed time difference betw
 Therefore, we can simplify Equation (5) as below:
 \begin{equation}
 \begin{aligned}
-&P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\delta})\\&=\Big(\prod_{i\in \mathcal{A}} {{A-1}\choose R_i^{(d)}} \frac{\delta_i^{ R_i^{(d)}} (1-\delta_i)^{A-1-R_i^{(d)}}}{1 - (1-\delta_i)^{A-1}}\Big) \times \Big(\prod_{i\in \mathcal{A}}\int_0^1\prod_{i=1}^{A-1}(1-t^{\lambda_{ij}^{(d)} /  \sum_{i = 1}^{A-1} \lambda_{ij}^{(d)}(1-J_{ij}^{(d)})})^{J_{ij}^{(d)}}dt \Big)\\&\quad\quad\quad\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
+&P(\mathcal{R}^{(d)},\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\delta})\\&=\Big(\prod_{i\in \mathcal{A}} {{A-1}\choose R_i^{(d)}} \frac{\delta_i^{ R_i^{(d)}} (1-\delta_i)^{A-1-R_i^{(d)}}}{1 - (1-\delta_i)^{A-1}}\Big) \times \Big(\prod_{i\in \mathcal{A}}\int_0^1\prod_{j=1}^{A-1}(1-t^{\lambda_{ij}^{(d)} /  \sum_{j = 1}^{A-1} \lambda_{ij}^{(d)}(1-J_{ij}^{(d)})})^{J_{ij}^{(d)}}dt \Big)\\&\quad\quad\quad\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
 \end{aligned}
 \end{equation}
 where this joint distribution can be interpreted as 'probability of choosing the number of recipients from zero-truncated Binomial distribution $\times$ probability of choosing the latent receivers from Wallenius' noncenral hypergeometric distribution $\times$ probability of the observed time comes from Exponential distribution $\times$ probability of all latent time greater than the observed time, given that the latent time also come from Exponential distribution.'
+ \subsection{Inference on $\boldsymbol{\delta}$}
+ We can assign Beta prior on each $\delta_i$. Does Beta-Binomial conjucacy still hold for zero-truncated Binomial case? I don't think so... (due to the additional denominator) should we use M-H instead?
+  \subsection{Inference on the augmented data $\mathcal{J}_{\mbox{a}}$}
+     Given the observed sender of the document $i_o^{(d)}$, we sample the latent receivers for each sender $i \in \mathcal{A}_{\backslash i_o^{(d)}}$. Here we illustrate how each sender-receiver pair in the document $d$ is updated.\\\newline
+       Define ${J}^{(d)}_{i}$ be the $(A-1)$ length vector of indicators (0/1) representing the latent receivers corresponding to the sender $i$ in the document $d$. For each sender $i$, we are going to resample the receiver vector ${J}^{(d)}_{i}$, one at a time. For a latent sender $i \in \mathcal{A}_{\backslash i_o^{(d)}}$, we derive the conditional probability:\\
+       \begin{equation}
+       \begin{aligned}
+       &P(\mathcal{J}^{(d)}_{i} = {J}^{(d)}_{i}|\mathcal{R}^{(d)}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\delta})\\&\propto P(\mathcal{J}^{(d)}_{i} ={J}^{(d)}_{i}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}|\mathcal{R}^{(d)}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\delta})
+       \\&\propto  \Big(\int_0^1\prod_{j=1}^{A-1}(1-t^{\lambda_{ij}^{(d)} /  \sum_{j = 1}^{A-1} \lambda_{ij}^{(d)}(1-J_{ij}^{(d)})})^{J_{ij}^{(d)}}dt \Big)\times \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
+       \end{aligned}
+       \end{equation}
+       where we replace typical use of $(-d)$ to $(<d)$ on the right hand side of the conditional probability, due to the fact that $d^{(th)}$ document only depends on the past documents, not on the future ones.\\ \newline
+       No idea how to choose the proposal distribution for the indicator vector $J_i^{(d)}$. Possibly sample each element $J_{ij}^{(d)}$ as we did before, using M-H sampling with the choice of univariate Wallenius' distribution as the proposal density which relies on approximation (Fog, 2008).
+           \subsection{Inference on $\mathcal{Z}$}
+      same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{dMWNCHypergeo}\Big(J_i^{(d)}; \mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}}\Big)\Big)$
+          \subsection{Inference on $\mathcal{C}$}
+                same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{dMWNCHypergeo}\Big(J_i^{(d)}; \mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}}\Big)\Big)$
+    \subsection{Inference on $\mathcal{B}$}
+          same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{dMWNCHypergeo}\Big(J_i^{(d)}; \mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}}\Big)\Big)$
 \end{document}
 
