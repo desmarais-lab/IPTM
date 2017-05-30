@@ -1,0 +1,107 @@
+\documentclass[a4paper]{article}
+\usepackage{geometry}
+\geometry{
+	a4paper,
+	total={170mm,257mm},
+	left=27mm,
+	right=30mm,
+	top=30mm,
+	bottom= 30mm
+}
+\usepackage{lipsum}
+\usepackage{tabu}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{longtable}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+		\node[shape=circle,draw,inner sep=0.5pt] (char) {#1};}}
+\usetikzlibrary{fit,positioning}
+\usepackage{authblk}
+\usepackage{natbib}
+\usepackage[algo2e]{algorithm2e}
+\usepackage{algorithmic}  
+\usepackage{algorithm}
+\usepackage{comment}
+\usepackage{array}% http://ctan.org/pkg/array
+\makeatletter
+\g@addto@macro{\endtabular}{\rowfont{}}% Clear row font
+\makeatother
+\newcommand{\rowfonttype}{}% Current row font
+\newcommand{\rowfont}[1]{% Set current row font
+	\gdef\rowfonttype{#1}#1%
+}
+\newcolumntype{L}{>{\rowfonttype}l}
+\title{A Network Model for Dynamic Textual Communications \\with Application to
+	Government Email Corpora}
+%\author{Bomin Kim}
+
+\author[1]{Bomin Kim}
+\author[3]{Aaron Schein}
+\author[1]{Bruce Desmarais}
+\author[2,3]{Hanna Wallach}
+\affil[1]{Pennsylvania State University}
+\affil[2]{Microsoft Research NYC}
+\affil[3]{University of Massachusetts Amherst}
+
+\begin{document}
+\maketitle
+\section{Tie Generating Process}\label{subsec: Tie Generating Process}
+We assume the following generative process for each document $d$ in a corpus $D$:
+\begin{itemize}
+	\item[1.] (Data augmentation) For each sender $i \in \{1,...,A\}$, create a list of receivers $J_i$ by applying the Bernoulli probabilities to every $j \in \mathcal{A}_{\backslash i}$ with random order:
+	\begin{equation}J_{ij}|J_{i\backslash j} \sim \mbox{Ber}\Big(\frac{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}}{\frac{\delta}{|J^{(d)}_{i\backslash j}|}\lambda^{(d)}_{ij}+1}\Big),
+	\end{equation}
+	where $|J^{(d)}_{i\backslash j}|$ is the number of 1's currently in the receiver set $J_i$, excluding the $j^{th}$ element. We divide $\delta$ by this quantity to ensure at least one receiver is chosen for each sender. For example, if $|J^{(d)}_{i\backslash j}| = 0$, $J_{ij}$ becomes 1 with probability 1. We no longer have independent asumption across the edges, instead, every $j^{th}$ element is sampled conditioned on the rest of components in $J_{ij}$ vector, $ J_{i\backslash j}$.
+	\item[2.] For every sender $i \in \mathcal{A}$, generate the time increments \begin{equation}
+	\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}).
+	\end{equation}
+	\item[3.] Set timestamp, sender, and receivers simultaneously (NOTE: $t^{(0)}=0$):
+	\begin{equation}
+	\begin{aligned}
+	&t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}}),\\
+	&i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}, \\
+	&J^{(d)} = J_{i^{(d)}}.
+	\end{aligned}
+	\end{equation}
+\end{itemize}
+\section{Inference}
+\begin{equation}
+\begin{aligned}
+&P(\mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=P\Big(\mbox{latent receivers generation}\Big) \times P\Big(\mbox{latent time generation}\Big)\times P\Big(\mbox{choose the observed}\Big) \\&
+=\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}}\Big(J_{ij}\sim \mbox{Ber}\Big(\frac{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}}{\frac{\delta}{|J^{(d)}_{i\backslash j}|}\lambda^{(d)}_{ij}+1}\Big)\Big) \times \prod_{i\in \mathcal{A}}\Big(\Delta T^{(d)}_{iJ_i}\sim\mbox{Exp}(\lambda^{(d)}_{iJ_i})\Big) \times \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} P\Big(\Delta T^{(d)}_{i{J_i}} > \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&
+=\Big(\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}}\big(\frac{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}}{\frac{\delta}{|J^{(d)}_{i\backslash j}|}\lambda^{(d)}_{ij}+1}\big)^{I(j \in J_i^{(d)})}\big(\frac{1}{\frac{\delta}{|J^{(d)}_{i\backslash j}|}\lambda^{(d)}_{ij}+1}\Big)\times \Big(\prod_{i \in\mathcal{A}}\lambda^{(d)}_{iJ_i}e^{-\Delta T^{(d)}_{iJ_i}\lambda^{(d)}_{iJ_i}}\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big)
+\\&
+=\Big(\prod_{i\in \mathcal{A}} \prod_{j\in \mathcal{A}_{\backslash i}}\frac{(\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}+1}\Big)\times\Big(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}}\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} \lambda^{(d)}_{iJ_i}e^{-(\Delta T^{(d)}_{iJ_i} + \Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}})\lambda^{(d)}_{iJ_i}}\Big),
+\end{aligned}
+\end{equation}
+We can simplify this further by integreting out the latent time $\mathcal{T}^{(d)}_{\mbox{a}}=\{\Delta T^{(d)}_{iJ_i}\}_{i \in \mathcal{A}_{\backslash i_o^{(d)}}}$ in the last term as before, then we can simplify Equation (4) as below:
+\begin{equation}
+\begin{aligned}
+&P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}} \frac{(\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}+1}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
+\end{aligned}
+\end{equation}
+where this joint distribution can be interpreted as 'probability of latent and observed edges from Bernoulli distribution $\times$ probability of the observed time comes from Exponential distribution $\times$ probability of all latent time greater than the observed time, given that the latent time also come from Exponential distribution.'
+  \subsection{Inference on the augmented data $\mathcal{J}_{\mbox{a}}$}
+     Given the observed sender of the document $i_o^{(d)}$, we sample the latent receivers for each sender $i \in \mathcal{A}_{\backslash i_o^{(d)}}$. Here we illustrate how each sender-receiver pair in the document $d$ is updated.\\\newline
+       Define ${J}^{(d)}_{i}$ be the $(A-1)$ length vector of indicators (0/1) representing the latent receivers corresponding to the sender $i$ in the document $d$. For each sender $i$, we are going to resample the receiver vector ${J}^{(d)}_{i}$, one at a time. For a latent sender $i \in \mathcal{A}_{\backslash i_o^{(d)}}$, we derive the conditional probability:\\
+       \begin{equation}
+       \begin{aligned}
+       &P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\delta})\\&\propto P(\mathcal{J}^{(d)}_{i} ={J}^{(d)}_{i}, \mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\delta})
+       \\&\propto  \Big(\frac{(\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}+1}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
+       \end{aligned}
+       \end{equation}
+       where we replace typical use of $(-d)$ to $(<d)$ on the right hand side of the conditional probability, due to the fact that $d^{(th)}$ document only depends on the past documents, not on the future ones.\\ \newline
+       No idea how to choose the proposal distribution for the indicator vector $J_i^{(d)}$. Possibly sample each element $J_{ij}^{(d)}$ as we did before, using M-H sampling with the choice of univariate Wallenius' distribution as the proposal density which relies on approximation (Fog, 2008).
+           \subsection{Inference on $\mathcal{Z}$}
+      same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{dMWNCHypergeo}\Big(J_i^{(d)}; \mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}}\Big)\Big)$
+          \subsection{Inference on $\mathcal{C}$}
+                same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{dMWNCHypergeo}\Big(J_i^{(d)}; \mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}}\Big)\Big)$
+    \subsection{Inference on $\mathcal{B}$}
+          same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{dMWNCHypergeo}\Big(J_i^{(d)}; \mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}}\Big)\Big)$
+\end{document}
+

@@ -14,22 +14,22 @@ alpha = 2
 mvec = rep(1/4, 4)
 betas = 2
 nvec = rep(1/5, 5)
-prior.b.mean = c(-2.5, rep(0, 6))
-prior.b.var =  diag(7)
-prior.delta = c(4, 4)
-sigma_Q = c(1, 2.5)
-niters = c(5, 100, 20, 0, 5)
+prior.b.mean = c(-3, rep(0, 6))
+prior.b.var =  0.1 * diag(7)
+prior.delta = c(20, 2)
+sigma_Q = c(0.1, 1)
+niters = c(3, 100, 20, 0, 5)
 netstat = c("intercept", "dyadic")
 P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
 b = lapply(1:nIP, function(IP) {
     c(rmvnorm(1,  prior.b.mean, prior.b.var))
   })
-delta = rgamma(1, 4, 4)
+delta = rgamma(1, 20, 2)
 currentC = sample(1:nIP, K, replace = TRUE)	 
-base.data = GenerateDocs(30, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE) 
+base.data = GenerateDocs(100, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE) 
 base.edge = base.data$edge	   
 base.text = base.data$text
-TryGiR2<- GiR2(10^6, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+TryGiR3<- GiR2(10^4, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
               prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 123)
 
 save(TryGiR2, file = "TryGiR2.RData")

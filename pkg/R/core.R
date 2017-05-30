@@ -257,14 +257,14 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
   	lambda = list()
     LambdaiJi = list()
     nonemptyiJi = list()
-	observediJi = list()
+	  observediJi = list()
 	for (d in edge2) {
    	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
    	 	X = lapply(node, function(i) {
   	        Netstats(history.t, node, i, netstat)
             })
    	 	XB = MultiplyXBList(X, Beta.old)     
-		lambda[[d]] = lambda_cpp(p.d[d,], XB)
+		  lambda[[d]] = lambda_cpp(p.d[d,], XB)
     		iJi[[d]] = rbinom_mat((delta * lambda[[d]]) / (delta * lambda[[d]] + 1))
     		while (sum(iJi[[d]]) == 0) {
       	iJi[[d]] = rbinom_mat((delta * lambda[[d]]) / (delta * lambda[[d]] + 1))
@@ -362,15 +362,15 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
                		})
     	       		XB = MultiplyXBList(X, Beta.old)    
            		lambda[[d]] = lambda_cpp(p.d[d,], XB)
-		       	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-		       	nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+		       	  LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+		       	  nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
            		observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
           	}
           }
           const.C[IP] = sum(vapply(document.k, function(d) {
           				EdgeInEqZ(iJi[[d]], lambda[[d]], delta) + 
           				TimeInEqZ(nonemptyiJi[[d]], timeinc[d]) + 
-    						ObservedInEqZ(observediJi[[d]]) 
+    						  ObservedInEqZ(observediJi[[d]]) 
           				}, c(1))) / length(document.k)
       	}
         const.C = const.C - max(const.C)
@@ -393,9 +393,9 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
        		})
     	    XB = MultiplyXBList(X, Beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
-		LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-		nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
-        observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+	      	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+		      nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+          observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
 	}
 	 
 	# Beta and delta update
@@ -426,8 +426,8 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
            XB = MultiplyXBList(X, Beta.new)
            lambda[[d]] = lambda_cpp(p.d[d,], XB)    
            LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-		   nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
-		   observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+		       nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+		       observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
         }
         prior.new1 = sum(vapply(1L:nIP, function(IP) {
         				 dmvnorm(Beta.new[[IP]], prior.b.mean, prior.b.var, log = TRUE)
@@ -892,7 +892,7 @@ CollapsedGenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha,
    	LambdaiJi[is.na(LambdaiJi)] = 0
     i.d = multinom_vec(1, LambdaiJi)
     j.d = which(iJi[i.d,] == 1)
-    t.d = t.d + rexp(1, LambdaiJi[i.d])
+    t.d = t.d + rexp(1, sum(LambdaiJi))
     edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
   }
   options(warn = 0)
