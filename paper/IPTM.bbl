@@ -1,9 +1,21 @@
 \begin{thebibliography}{}
 
+\bibitem[Alem{\'a}n and Calvo, 2013]{aleman2013explaining}
+Alem{\'a}n, E. and Calvo, E. (2013).
+\newblock Explaining policy ties in presidential congresses: A network analysis
+  of bill initiation data.
+\newblock {\em Political Studies}, 61(2):356--377.
+
 \bibitem[Blei et~al., 2003]{Blei2003}
 Blei, D.~M., Ng, A.~Y., and Jordan, M.~I. (2003).
 \newblock Latent dirichlet allocation.
 \newblock {\em J. Mach. Learn. Res.}, 3:993--1022.
+
+\bibitem[Bratton and Rouse, 2011]{bratton2011networks}
+Bratton, K.~A. and Rouse, S.~M. (2011).
+\newblock Networks in the legislative arena: How group dynamics affect
+  cosponsorship.
+\newblock {\em Legislative Studies Quarterly}, 36(3):423--460.
 
 \bibitem[Burgess et~al., 2004]{burgess2004email}
 Burgess, A., Jackson, T., and Edwards, J. (2004).
@@ -17,10 +29,26 @@ Butts, C.~T. (2008).
 \newblock A relational event framework for social action.
 \newblock {\em Sociological Methodology}, 38(1):155--200.
 
+\bibitem[Camber~Warren, 2010]{camber2010geometry}
+Camber~Warren, T. (2010).
+\newblock The geometry of security: Modeling interstate alliances as evolving
+  networks.
+\newblock {\em Journal of Peace Research}, 47(6):697--709.
+
 \bibitem[Chatterjee et~al., 2013]{chatterjee2013estimating}
 Chatterjee, S., Diaconis, P., et~al. (2013).
 \newblock Estimating and understanding exponential random graph models.
 \newblock {\em The Annals of Statistics}, 41(5):2428--2461.
+
+\bibitem[Cranmer et~al., 2012a]{cranmer2012toward}
+Cranmer, S.~J., Desmarais, B.~A., and Kirkland, J.~H. (2012a).
+\newblock Toward a network theory of alliance formation.
+\newblock {\em International Interactions}, 38(3):295--324.
+
+\bibitem[Cranmer et~al., 2012b]{cranmer2012complex}
+Cranmer, S.~J., Desmarais, B.~A., and Menninga, E.~J. (2012b).
+\newblock Complex dependencies in the alliance network.
+\newblock {\em Conflict Management and Peace Science}, 29(3):279--313.
 
 \bibitem[Desmarais and Cranmer, 2017]{desmarais2017statistical}
 Desmarais, B.~A. and Cranmer, S.~J. (2017).
@@ -46,9 +74,39 @@ Kanungo, S. and Jain, V. (2008).
 \newblock Modeling email use: a case of email system transition.
 \newblock {\em System Dynamics Review}, 24(3):299--319.
 
+\bibitem[Kinne, 2016]{kinne2016agreeing}
+Kinne, B.~J. (2016).
+\newblock Agreeing to arm: Bilateral weapons agreements and the global arms
+  trade.
+\newblock {\em Journal of Peace Research}, 53(3):359--377.
+
+\bibitem[Kronegger et~al., 2011]{kronegger2011collaboration}
+Kronegger, L., Mali, F., Ferligoj, A., and Doreian, P. (2011).
+\newblock Collaboration structures in slovenian scientific communities.
+\newblock {\em Scientometrics}, 90(2):631--647.
+
+\bibitem[Lai et~al., 2017]{lai2017connecting}
+Lai, C.-H., She, B., and Tao, C.-C. (2017).
+\newblock Connecting the dots: A longitudinal observation of relief
+  organizations' representational networks on social media.
+\newblock {\em Computers in Human Behavior}, 74:224--234.
+
+\bibitem[Liang, 2015]{liang2015changing}
+Liang, X. (2015).
+\newblock The changing impact of geographic distance: A preliminary analysis on
+  the co-author networks in scientometrics (1983-2013).
+\newblock In {\em System Sciences (HICSS), 2015 48th Hawaii International
+  Conference on}, pages 722--731. IEEE.
+
 \bibitem[Minka, 2000]{minka2000estimating}
 Minka, T. (2000).
 \newblock Estimating a dirichlet distribution.
+
+\bibitem[Peng et~al., 2016]{peng2016follower}
+Peng, T.-Q., Liu, M., Wu, Y., and Liu, S. (2016).
+\newblock Follower-followee network, communication networks, and vote agreement
+  of the us members of congress.
+\newblock {\em Communication Research}, 43(7):996--1024.
 
 \bibitem[Perry and Wolfe, 2013]{PerryWolfe2012}
 Perry, P.~O. and Wolfe, P.~J. (2013).
@@ -76,5 +134,11 @@ Sz{\'o}stek, A.~M. (2011).
 Wallach, H.~M. (2008).
 \newblock {\em Structured topic models for language}.
 \newblock PhD thesis, University of Cambridge.
+
+\bibitem[Yoon and Park, 2014]{yoon2014strategies}
+Yoon, H.~Y. and Park, H.~W. (2014).
+\newblock Strategies affecting twitter-based networking pattern of south korean
+  politicians: social network analysis and exponential random graph model.
+\newblock {\em Quality \& Quantity}, pages 1--15.
 
 \end{thebibliography}
