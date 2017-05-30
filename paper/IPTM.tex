@@ -49,6 +49,7 @@
 \affil[3]{University of Massachusetts Amherst}
 
 \begin{document}
+\setlength{\parindent}{0pt}
 \maketitle
 \begin{abstract}
 	
@@ -72,7 +73,23 @@
 \end{abstract}
 \section{Introduction} \label{sec: Introduction}
 
-In recent decades, real-time digitized textual communication has developed into a ubiquitous form of social and professional interaction \citep[see, e.g.,][]{kanungo2008modeling, szostek2011dealing, burgess2004email, pew2016}. From the perspective of the computational social scientist, this has lead to a growing need for methods of modeling networks consisting of text-valued edges that arise in continuous time (e.g., e-mail messages). A number of models that build upon topic modeling through Latent Dirichlet Allocation \citep{Blei2003} to incorporate link data as well as textual content have been developed in response to this need {\bf [ASK HANNA FOR CITES]}.  The exponential random graph model (ERGM) \citep{robins2007introduction,chatterjee2013estimating,hunter2008ergm}, which is the canonical model for network structure as it is flexible enough to account for nearly any pattern of tie formation \citep{desmarais2017statistical}, has yet to be adapted to the setting of time-stamped text-valued edges. We build upon recent extensions of ERGM that model time-stamped ties \citep{PerryWolfe2012,Butts2008}, and develop the interaction-partitioned topic model (IPTM) to simultaneously model the network structural patterns that govern tie formation, and the content in the communications.\\ \newline
+\begin{itemize}
+\item Paragraph framing the problem and previewing solution: Social interactions are often, and are increasingly so, dominated by interpersonal textual communication. Methods for modeling the evolution of relationships have developed rapidly in recent decades---and are now capable of making predictions regarding tie formation in real time that are based on highly complex characterizations of network dynamics. 
+\end{itemize}
+
+In recent decades, real-time digitized textual communication has developed into a ubiquitous form of social and professional interaction \citep[see, e.g.,][]{kanungo2008modeling, szostek2011dealing, burgess2004email, pew2016}. From the perspective of the computational social scientist, this has lead to a growing need for methods of modeling networks consisting of text-valued edges that arise in continuous time (e.g., e-mail messages). A number of models that build upon topic modeling through Latent Dirichlet Allocation \citep{Blei2003} to incorporate link data as well as textual content have been developed in response to this need {\bf [ASK HANNA FOR CITES]}.  The exponential random graph model (ERGM) \citep{robins2007introduction,chatterjee2013estimating,hunter2008ergm}, which is the canonical model for network structure as it is flexible enough to account for nearly any pattern of tie formation \citep{desmarais2017statistical}, has yet to be adapted to the setting of time-stamped text-valued edges. We build upon recent extensions of ERGM that model time-stamped ties \citep{PerryWolfe2012,Butts2008}, and develop the interaction-partitioned topic model (IPTM) to simultaneously model the network structural patterns that govern tie formation, and the content in the communications.
+
+
+\begin{itemize}
+\item Add paragraph: Discussion of potential applications of our model
+\end{itemize}
+
+ERGM, and models based on ERGM, provide a framework for explaining or predicting ties between nodes using the network sub-structures in which the two nodes are embedded (e.g., an ERGM specification may predict ties between two nodes that have many shared partners). ERGM-style models have been used for many applications in which the ties between nodes are annotated with text. The text, despite providing rich information regarding the strength, scope, and character of the ties, has been largely excluded from these analyses, due to the inability of ERGM-style models to incorporate textual attributes of ties. These application domains include, among other applicaitons, the study of legislative networks in which networks reflect legislators' co-support of bills, but exclude bill text \citep{bratton2011networks,aleman2013explaining}; the study of alliance networks in which networks reflect countries' co-signing of treaties, but exclude treaty text \citep{camber2010geometry,cranmer2012complex,cranmer2012toward,kinne2016agreeing}; the study of scientific co-authorship networks that exclude the text of the co-authored papers \citep{kronegger2011collaboration,liang2015changing,ahmy2016gender}; and the study of text-based interaction on social media (e.g., users tied via `mentions' on twitter) \citep{yoon2014strategies,peng2016follower,lai2017connecting}.
+
+\begin{itemize}
+\item Provide an overview of what we do in this paper, summarize our results.
+\end{itemize}
+
 In defining and testing the IPTM we embed three core conceptual properties, in addition to modeling both text and network structure. First, we link the content component of the model, and network component of the model such that knowing who is communicating with whom at what time (i.e., the network component) provides information about the content of communication (i.e., the content component),  and vice versa. Second, we fully specify the network dynamic component of the model such that, given the content of the communication and the history of tie formation, we can draw an exact, continuous-time prediction of when and to whom the communication will be sent. Third, we formulate the network dynamic component of the model such that the model can represent, and be used to test hypotheses regarding, canonical processes relevant to network theory such as preferential attachment {\bf [popularity cites]}, reciprocity {\bf [reciprocity cites]}, and transitivity {\bf [transitivity cites]}. In what follows we (1) present the generative process for the IPTM, describing how it meets our theoretical criteria, (2) derive the sampling equations for Bayesian inference with the IPTM, and (3) illustrate the IPTM through application to email corpora of internal communications by county officials in North Carolina county governments. {\bf [What predictive comparisons should we run to other models]}?
 
 \begin{comment}
@@ -81,9 +98,22 @@ models that focus on the timestamps of documents. For example, Dynamic Topic Mod
 \end{comment}
 
 \section{Generative Process} \label{sec: Generative Process}
+
+
+\begin{itemize}
+\item Add paragraph: Provide overview of how we derive our model and conduct inference (i.e., specify a complete generative process, take a Bayesian approach, derive sampling equations to draw from the distributions of the parameters conditioned on the data). 
+\end{itemize}
+
+\begin{itemize}
+\item Overview of the data and generative process.
+\end{itemize}
+
 Assume we have a collection of documents, consisting of $D$ number of unique documents. A single email, indexed by $d \in \{1,...,D\}$, is represented by the four components ($i^{(d)}, J^{(d)}, t^{(d)},  \boldsymbol{w}^{(d)}$). The first two are the sender and receiver of the email: an integer $i^{(d)} \in \{1,...,A\}$ indicates the identity of the sender out of $A$ number of actors (or nodes) and an integer vector $J^{(d)} = \{j_r^{(d)}\}_{r=1}^{|J^{(d)}|} $ indicates the identity of the receiver (or receivers) out of $A-1$ number of actors (by excluding self-loop), where $|J^{(d)}|\in \{1,...,A-1\}$ denotes the total number of the receivers. Next, $t^{(d)}$ is the (unix time-based) timestamp of the email $d$, and $\boldsymbol{w}^{(d)} = \{w^{(d)}_m \}_{n=1}^{N^{(d)}}$ is a set of tokens that comprise the text of the email. In this section, we illustrate how the words $\boldsymbol{w}^{(d)}$ are generated according to the variant of latent Dirichlet allocation \citep{Blei2003}, and then how the rest three components, ($i^{(d)}, J^{(d)}, t^{(d)}$), are simulatneously generated from the stochastic intensity and topic assignments of the document. For simplicity, we assume that documents are ordered by time such that $t^{(d)} < t^{(d+1)}$ for all $d=1, ..., D$.
 \subsection{Content Generating Process} \label{subsec: Content Generating Process}
-The content generating process is a simple addition of the interaction pattern assignment to the existing generative process of Latent Dirichlet Allocation \cite{Blei2003}. This concept is also very similar to the content-partitioned multinetwork embeddings (CPME) model {\bf [ASK BRUCE FOR CITES]}, in a way that each topic $k$ is also associated with a cluster assignment $c_k$, where $c_k$ can take one of $c = \{1,...,C\}$ values. \\ \newline
+The content generating process is a simple addition of the interaction pattern assignment to the existing generative process of Latent Dirichlet Allocation \cite{Blei2003}. This concept is also very similar to the content-partitioned multinetwork embeddings (CPME) model {\bf [ASK BRUCE FOR CITES]}, in a way that each topic $k$ is also associated with a cluster assignment $c_k$, where $c_k$ can take one of $c = \{1,...,C\}$ values. 
+
+
+
 First we generate the global (corpus-wide) variables. There are two main sets of global variables:
 those that describe the topics people talk about and those that describe how people interact (interaction patterns). These variables are linked by a third set of variables that associate each topic with the pattern that best describes how people interact when talking about that topic.\\ \newline
 There are $K$ topics. Each topic $k$ is a discrete distribution over $V$ word types.
