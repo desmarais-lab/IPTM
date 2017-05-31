@@ -45,7 +45,7 @@ abline(0, 1, col = 'red')
 par(mfrow=c(3,7))
 GiR_PP_Plots(TryGiR$Forward, TryGiR$Backward)
 
-TryGiR = TryGiR2
+TryGiR = TryGiR3
 Nsamp = nrow(TryGiR$Forward)
 thin = seq(from = floor(Nsamp / 10), to = Nsamp, length.out = 1000)
 par(mfrow=c(2,2))
@@ -61,7 +61,7 @@ Nsamp = nrow(TryGiR$Forward)
 thin = seq(from = floor(Nsamp / 10), to = Nsamp, length.out = 500)
 par(mfrow = c(3, 7))
 for (p in 1:21){
-matplot(cbind(TryGiR$Forward[thin,p], TryGiR$Forward2[thin,p]), type = 'l', col = 1:2, lty = 1, main = colnames(TryGiR$Forward)[p], xlab = 'iter', ylab ='')
+matplot(cbind(TryGiR$Forward[thin,p], TryGiR$Backward[thin,p]), type = 'l', col = 1:2, lty = 1, main = colnames(TryGiR$Forward)[p], xlab = 'iter', ylab ='')
 }
 par(mfrow = c(3, 7))
 for (p in 1:21){

@@ -53,10 +53,10 @@
 \section{Tie Generating Process}\label{subsec: Tie Generating Process}
 We assume the following generative process for each document $d$ in a corpus $D$:
 \begin{itemize}
-	\item[1.] (Data augmentation) For each sender $i \in \{1,...,A\}$, create a list of receivers $J_i$ by applying the Bernoulli probabilities to every $j \in \mathcal{A}_{\backslash i}$ with random order:
-	\begin{equation}J_{ij}|J_{i\backslash j} \sim \mbox{Ber}\Big(\frac{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}}{\frac{\delta}{|J^{(d)}_{i\backslash j}|}\lambda^{(d)}_{ij}+1}\Big),
+	\item[1.] (Data augmentation) For each sender $i \in \{1,...,A\}$, create a list of receivers denoted by  an indicator vector $J_i$ according to the probability mass function of Gibbs measure:
+	\begin{equation}J^{(d)}_{i} = \frac{1}{Z(J^{(d)}_i)}\mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big), \quad\quad\quad J^{(d)}_{i} \in \mathcal{J}
 	\end{equation}
-	where $|J^{(d)}_{i\backslash j}|$ is the number of 1's currently in the receiver set $J_i$, excluding the $j^{th}$ element. We divide $\delta$ by this quantity to ensure at least one receiver is chosen for each sender. For example, if $|J^{(d)}_{i\backslash j}| = 0$, $J_{ij}$ becomes 1 with probability 1. We no longer have independent asumption across the edges, instead, every $j^{th}$ element is sampled conditioned on the rest of components in $J_{ij}$ vector, $ J_{i\backslash j}$.
+	where $Z(J^{(d)}_i) = \sum\limits_{\forall J^{(d)}_i \in \mathcal{J}}\mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big)$ is the partition function assuring that the probabilities sum to unity, and $\mathcal{J}$ be the sample space in which $J^{(d)}_i$ may exist (in this case, the sample space consists of all binary $(A-1)$ length vectors). $\delta$ is a tolerance parameter that is used to prevent form model degeneracy.
 	\item[2.] For every sender $i \in \mathcal{A}$, generate the time increments \begin{equation}
 	\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}).
 	\end{equation}
@@ -73,35 +73,48 @@ We assume the following generative process for each document $d$ in a corpus $D$
 \begin{equation}
 \begin{aligned}
 &P(\mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=P\Big(\mbox{latent receivers generation}\Big) \times P\Big(\mbox{latent time generation}\Big)\times P\Big(\mbox{choose the observed}\Big) \\&
-=\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}}\Big(J_{ij}\sim \mbox{Ber}\Big(\frac{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}}{\frac{\delta}{|J^{(d)}_{i\backslash j}|}\lambda^{(d)}_{ij}+1}\Big)\Big) \times \prod_{i\in \mathcal{A}}\Big(\Delta T^{(d)}_{iJ_i}\sim\mbox{Exp}(\lambda^{(d)}_{iJ_i})\Big) \times \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} P\Big(\Delta T^{(d)}_{i{J_i}} > \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&
-=\Big(\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}}\big(\frac{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}}{\frac{\delta}{|J^{(d)}_{i\backslash j}|}\lambda^{(d)}_{ij}+1}\big)^{I(j \in J_i^{(d)})}\big(\frac{1}{\frac{\delta}{|J^{(d)}_{i\backslash j}|}\lambda^{(d)}_{ij}+1}\Big)\times \Big(\prod_{i \in\mathcal{A}}\lambda^{(d)}_{iJ_i}e^{-\Delta T^{(d)}_{iJ_i}\lambda^{(d)}_{iJ_i}}\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big)
+=\prod_{i\in \mathcal{A}}\Big(J_{i}^{(d)}\propto \mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big)\Big) \times \prod_{i\in \mathcal{A}}\Big(\Delta T^{(d)}_{iJ_i}\sim\mbox{Exp}(\lambda^{(d)}_{iJ_i})\Big) \times \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} P\Big(\Delta T^{(d)}_{i{J_i}} > \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&
+=\Big(\prod_{i\in \mathcal{A}}\mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big)\Big)\times \Big(\prod_{i \in\mathcal{A}}\lambda^{(d)}_{iJ_i}e^{-\Delta T^{(d)}_{iJ_i}\lambda^{(d)}_{iJ_i}}\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big)
 \\&
-=\Big(\prod_{i\in \mathcal{A}} \prod_{j\in \mathcal{A}_{\backslash i}}\frac{(\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}+1}\Big)\times\Big(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}}\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} \lambda^{(d)}_{iJ_i}e^{-(\Delta T^{(d)}_{iJ_i} + \Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}})\lambda^{(d)}_{iJ_i}}\Big),
+=\Big(\prod_{i\in \mathcal{A}} \mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big)\Big)\times\Big(\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}}\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} \lambda^{(d)}_{iJ_i}e^{-(\Delta T^{(d)}_{iJ_i} + \Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}})\lambda^{(d)}_{iJ_i}}\Big),
 \end{aligned}
 \end{equation}
 We can simplify this further by integreting out the latent time $\mathcal{T}^{(d)}_{\mbox{a}}=\{\Delta T^{(d)}_{iJ_i}\}_{i \in \mathcal{A}_{\backslash i_o^{(d)}}}$ in the last term as before, then we can simplify Equation (4) as below:
 \begin{equation}
 \begin{aligned}
-&P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\prod_{j\in \mathcal{A}_{\backslash i}} \frac{(\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}+1}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
+&P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=\Big(\prod_{i\in \mathcal{A}}\mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big)\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
 \end{aligned}
 \end{equation}
 where this joint distribution can be interpreted as 'probability of latent and observed edges from Bernoulli distribution $\times$ probability of the observed time comes from Exponential distribution $\times$ probability of all latent time greater than the observed time, given that the latent time also come from Exponential distribution.'
   \subsection{Inference on the augmented data $\mathcal{J}_{\mbox{a}}$}
      Given the observed sender of the document $i_o^{(d)}$, we sample the latent receivers for each sender $i \in \mathcal{A}_{\backslash i_o^{(d)}}$. Here we illustrate how each sender-receiver pair in the document $d$ is updated.\\\newline
-       Define ${J}^{(d)}_{i}$ be the $(A-1)$ length vector of indicators (0/1) representing the latent receivers corresponding to the sender $i$ in the document $d$. For each sender $i$, we are going to resample the receiver vector ${J}^{(d)}_{i}$, one at a time. For a latent sender $i \in \mathcal{A}_{\backslash i_o^{(d)}}$, we derive the conditional probability:\\
+       Define ${\mathcal{J}}^{(d)}_{i}$ be the $(A-1)$ length random vector of indicators (0/1) with its realization being $J^{(d)}_{i}$, representing the latent receivers corresponding to the sender $i$ in the document $d$. For each sender $i$, we are going to resample ${J}^{(d)}_{ij}$, which is the $j^{th}$ element of the receiver vector ${J}^{(d)}_{i}$, one at a time with random order. \\
        \begin{equation}
        \begin{aligned}
        &P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\delta})\\&\propto P(\mathcal{J}^{(d)}_{i} ={J}^{(d)}_{i}, \mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\delta})
-       \\&\propto  \Big(\frac{(\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij})^{I(j \in J_i)}}{\frac{\delta}{|J^{(d)}_{i \backslash j}|}\lambda^{(d)}_{ij}+1}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
+       \\&\propto \mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times  \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big)
+       \\& \propto \mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big)\times \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
        \end{aligned}
        \end{equation}
        where we replace typical use of $(-d)$ to $(<d)$ on the right hand side of the conditional probability, due to the fact that $d^{(th)}$ document only depends on the past documents, not on the future ones.\\ \newline
-       No idea how to choose the proposal distribution for the indicator vector $J_i^{(d)}$. Possibly sample each element $J_{ij}^{(d)}$ as we did before, using M-H sampling with the choice of univariate Wallenius' distribution as the proposal density which relies on approximation (Fog, 2008).
+       To be more specific, since ${J}^{(d)}_{ij}$ could be either 1 or 0, we divide into two cases as below:
+       \begin{equation}
+       \begin{aligned}
+       &P(\mathcal{J}^{(d)}_{ij}=1| \mathcal{J}^{(d)}_{\backslash ij}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\& \propto \mbox{exp}\Big({\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{i[+j]}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{i[+j]}}-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{ i[+j]}}}\Big),
+       \end{aligned}
+       \end{equation}
+       where $J^{(d)}_{i[+j]}$ meaning that the $j^{th}$ element of $J_{i}^{(d)}$ is fixed as 1. On the other hand, 
+       \begin{equation}
+       \begin{aligned}
+       &P(\mathcal{J}^{(d)}_{ij}=0| \mathcal{J}^{(d)}_{\backslash ij}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\& \propto \mbox{exp}\Big({\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{i[-j]}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{i[-j]}}-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{ i[-j]}}}\Big),
+       \end{aligned}
+       \end{equation}
+       where $J^{(d)}_{i[-j]}$ meaning similarly that the $j^{th}$ element of $J_{i}^{(d)}$ is fixed as 0. \\\\ \newline Now we can use multinomial sampling using the two probabilities, Equation (7) and Equation (8). Again, we would calculate the probabilities in the log space to prevent from numerical underflow. 
            \subsection{Inference on $\mathcal{Z}$}
-      same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{dMWNCHypergeo}\Big(J_i^{(d)}; \mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}}\Big)\Big)$
+      same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big)\Big)$
           \subsection{Inference on $\mathcal{C}$}
-                same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{dMWNCHypergeo}\Big(J_i^{(d)}; \mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}}\Big)\Big)$
-    \subsection{Inference on $\mathcal{B}$}
-          same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{dMWNCHypergeo}\Big(J_i^{(d)}; \mathbf{1}_{A-1}, R_i^{(d)}, \{\lambda_{ij}^{(d)}\}_{j \in \mathcal{A}_{\backslash i}}\Big)\Big)$
+                same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big)\Big)$
+    \subsection{Inference on $\mathcal{B}$ and $\delta$}
+          same as before but edge probability part changed to $\Big(\prod_{i\in \mathcal{A}}\mbox{exp}\Big(\frac{\sum_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}\lambda^{(d)}_{ij} - \delta}{\sum\limits_{j \in \mathcal{A}_{\backslash i}}J^{(d)}_{ij}}\Big)\Big)$
 \end{document}
 
