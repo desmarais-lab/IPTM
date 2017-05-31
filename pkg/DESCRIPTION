@@ -21,7 +21,8 @@ Imports:
     RcppArmadillo,
     lda,
     reshape,
-    coda
+    coda,
+    combinat
 LinkingTo:
     Rcpp,
     RcppArmadillo 

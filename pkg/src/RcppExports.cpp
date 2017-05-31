@@ -255,6 +255,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// EdgeInEqZ_Gibbs
+double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta);
+RcppExport SEXP IPTM_EdgeInEqZ_Gibbs(SEXP iJiSEXP, SEXP lambdaSEXP, SEXP deltaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type iJi(iJiSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    rcpp_result_gen = Rcpp::wrap(EdgeInEqZ_Gibbs(iJi, lambda, delta));
+    return rcpp_result_gen;
+END_RCPP
+}
 // TimeInEqZ
 double TimeInEqZ(NumericVector LambdaiJi, double observedtdiff);
 RcppExport SEXP IPTM_TimeInEqZ(SEXP LambdaiJiSEXP, SEXP observedtdiffSEXP) {
@@ -309,6 +322,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// DataAug_cpp_Gibbs
+arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d, double delta, double timeinc_d, int i, int j);
+RcppExport SEXP IPTM_DataAug_cpp_Gibbs(SEXP iJi_diSEXP, SEXP lambda_diSEXP, SEXP XBSEXP, SEXP p_dSEXP, SEXP deltaSEXP, SEXP timeinc_dSEXP, SEXP iSEXP, SEXP jSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type iJi_di(iJi_diSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type lambda_di(lambda_diSEXP);
+    Rcpp::traits::input_parameter< List >::type XB(XBSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type p_d(p_dSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< double >::type timeinc_d(timeinc_dSEXP);
+    Rcpp::traits::input_parameter< int >::type i(iSEXP);
+    Rcpp::traits::input_parameter< int >::type j(jSEXP);
+    rcpp_result_gen = Rcpp::wrap(DataAug_cpp_Gibbs(iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"IPTM_callRMultinom", (DL_FUNC) &IPTM_callRMultinom, 1},
@@ -331,10 +362,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"IPTM_TopicInEqZ", (DL_FUNC) &IPTM_TopicInEqZ, 5},
     {"IPTM_WordInEqZ", (DL_FUNC) &IPTM_WordInEqZ, 5},
     {"IPTM_EdgeInEqZ", (DL_FUNC) &IPTM_EdgeInEqZ, 3},
+    {"IPTM_EdgeInEqZ_Gibbs", (DL_FUNC) &IPTM_EdgeInEqZ_Gibbs, 3},
     {"IPTM_TimeInEqZ", (DL_FUNC) &IPTM_TimeInEqZ, 2},
     {"IPTM_ObservedInEqZ", (DL_FUNC) &IPTM_ObservedInEqZ, 1},
     {"IPTM_lambdaiJi", (DL_FUNC) &IPTM_lambdaiJi, 3},
     {"IPTM_DataAug_cpp", (DL_FUNC) &IPTM_DataAug_cpp, 8},
+    {"IPTM_DataAug_cpp_Gibbs", (DL_FUNC) &IPTM_DataAug_cpp_Gibbs, 8},
     {NULL, NULL, 0}
 };
 

@@ -81,6 +81,10 @@ EdgeInEqZ <- function(iJi, lambda, delta) {
     .Call('IPTM_EdgeInEqZ', PACKAGE = 'IPTM', iJi, lambda, delta)
 }
 
+EdgeInEqZ_Gibbs <- function(iJi, lambda, delta) {
+    .Call('IPTM_EdgeInEqZ_Gibbs', PACKAGE = 'IPTM', iJi, lambda, delta)
+}
+
 TimeInEqZ <- function(LambdaiJi, observedtdiff) {
     .Call('IPTM_TimeInEqZ', PACKAGE = 'IPTM', LambdaiJi, observedtdiff)
 }
@@ -95,5 +99,9 @@ lambdaiJi <- function(p_d, XB, iJi) {
 
 DataAug_cpp <- function(iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j) {
     .Call('IPTM_DataAug_cpp', PACKAGE = 'IPTM', iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j)
+}
+
+DataAug_cpp_Gibbs <- function(iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j) {
+    .Call('IPTM_DataAug_cpp_Gibbs', PACKAGE = 'IPTM', iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j)
 }
 
