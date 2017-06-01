@@ -108,5 +108,10 @@ where this joint distribution can be interpreted as 'probability of latent and o
        \end{aligned}
        \end{equation}
        where $J^{(d)}_{i[-j]}$ meaning similarly that the $j^{th}$ element of $J_{i}^{(d)}$ is fixed as 0. \\\\ \newline Now we can use multinomial sampling using the two probabilities, Equation (7) and Equation (8). Again, we would calculate the probabilities in the log space to prevent from numerical underflow. 
+       
+ \section{Non-empty Gibbs measure}
+ 
+     $$\text{P($J_i$)} = \frac{1}{Z(\delta,\lambda_i^{(d)})} \exp\left[ \ln\left(\text{I}\left( \left(\sum_{j\neq i} J_{ij}\right) > 0 \right)\right) + \sum_{j\neq i} (\delta+\lambda_{ij})J_{ij} \right]$$       
+       
 \end{document}
 
