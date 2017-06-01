@@ -481,7 +481,7 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 	double edges = 0;
 	for (int i = 0; i < iJi.n_rows; i++) {
 		double meanlambda = sum(iJi.row(i) % lambda.row(i));
-		edges += meanlambda - R::dnorm(log(sum(iJi.row(i))), 0, delta, TRUE);
+		edges += meanlambda + R::dnorm(log(sum(iJi.row(i))), 0, delta, TRUE);
 	}
 	return edges;
 }
@@ -578,12 +578,12 @@ arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma
 			out[0] += p_d[IP] * exp(rowsums0);
 			}
 	}
-	lambdamean[1] = sum(iJi_di1 % lambda_di) - R::dnorm(log(sum(iJi_di1)), 0, delta, TRUE);
-	prob[1] = lambdamean[1] - (timeinc_d * out[1]);
+	lambdamean[1] = sum(iJi_di1 % lambda_di) + R::dnorm(log(sum(iJi_di1)), 0, delta, TRUE);
+	prob[1] = exp(lambdamean[1] - (timeinc_d * out[1]));
 	if (sumiJi0 > 0) {
-		lambdamean[0] = sum(iJi_di0 % lambda_di) - R::dnorm(log(sumiJi0), 0, delta, TRUE);
-		prob[0] = lambdamean[0] - (timeinc_d * out[0]);
+		lambdamean[0] = sum(iJi_di0 % lambda_di) + R::dnorm(log(sumiJi0), 0, delta, TRUE);
+		prob[0] = exp(lambdamean[0] - (timeinc_d * out[0]));
 	}
-	prob = prob - max(prob);
+	prob = prob / max(prob);
 	return prob;
 }

@@ -682,7 +682,8 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 		for (i in node[-as.numeric(edge[[d]][1])]) {
 			for (j in node[-i]) {
 				probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], i, j)
-				iJi[[d]][i, j] = multinom_vec(1, exp(probij)) - 1				
+				iJi[[d]][i, j] = multinom_vec(1, probij) - 1		
+				print(probij)		
 				}
 		}
 		iJi[[d]][as.numeric(edge[[d]][1]),] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
@@ -1401,7 +1402,7 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     		iJi[i, -i] = r.gibbs.measure(1, lambda[i, -i], delta, support = support)
     	}
        } else {
-    		iJi[-observedi,] = latentiJi[[d]]
+    		iJi = latentiJi[[d]]
     		observedi = backward.edge[[base.length + d]][[1]]
     		iJi[observedi, -observedi] = r.gibbs.measure(1, lambda[observedi,-observedi], delta, support = support)
     	}
