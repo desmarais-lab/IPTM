@@ -101,7 +101,7 @@ DataAug_cpp <- function(iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j) {
     .Call('IPTM_DataAug_cpp', PACKAGE = 'IPTM', iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j)
 }
 
-DataAug_cpp_Gibbs <- function(iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j) {
-    .Call('IPTM_DataAug_cpp_Gibbs', PACKAGE = 'IPTM', iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j)
+DataAug_cpp_Gibbs <- function(iJi_di, lambda_di, XB, p_d, delta, timeinc_d, j) {
+    .Call('IPTM_DataAug_cpp_Gibbs', PACKAGE = 'IPTM', iJi_di, lambda_di, XB, p_d, delta, timeinc_d, j)
 }
 

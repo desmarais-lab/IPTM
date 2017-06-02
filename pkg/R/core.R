@@ -20,13 +20,11 @@ NULL
 #' @return  a 2^n x n binary matrix representing the support of the binary Gibbs measure in n elements
 #'
 #' @export
-gibbs.measure.support <- function(n){
-	# returns a 2^n x n binary matrix representing
-	# the support of the binary Gibbs measure in n elements
-	gibbs.support <- rbind(rep(0, n), rep(1, n))
-	for(i in 1:(n - 1)){
-		gibbs.mat.i <- do.call('rbind', permn(c(rep(1, i), rep(0, n - i))))
-		gibbs.support <- rbind(gibbs.support, gibbs.mat.i)
+gibbs.measure.support = function(n) {
+	gibbs.support = rbind(rep(1, n))
+	for(i in 1:(n-1)){
+		gibbs.mat.i = do.call('rbind',permn(c(rep(1, i),rep(0, n - i))))
+		gibbs.support = rbind(gibbs.support, gibbs.mat.i)
 	}
 	as.matrix(unique(gibbs.support))
 }
@@ -35,38 +33,19 @@ gibbs.measure.support <- function(n){
 #' @description List out the support of Gibbs measure
 #'
 #' @param nsamp the number of binary vector samples to draw
-#' @param element_parameters a vector of coefficients according to which each element
+#' @param lambdai a vector of coefficients according to which each element
 #' @param delta a positive real valued parameter that controls the density penalty 
-#' @param scale a parameter that controls the degree to which the densit penalty 
 #' @param support support of Gibbs measure
 #'
 #' @return nsamp number of samples with each row denoting binary vector
 #'
 #' @export
-r.gibbs.measure <- function(nsamp,element_parameters,delta,scale=1,support){
-	# nsamp (positive integer) is the number of binary vectors to draw
-	# element_parameters is a vector of coefficients according to which each element
-	## of the vector should be weighted
-	# delta > 0 is the density penalty 
-	# support should be a 2^n x n binary matrix where n=length(element_parameters)
-	# scale is a parameter that controls the degree to which the densit penalty
-	## counters the element_parameters
-	
-	# calculate the contribution of the element-wise weights
-	element_weight <- support %*% cbind(element_parameters)
-	
-	# calculate the proportion control function
-	# this is a bit odd, but it is designed with three attributes
-	# first, it is -Inf when the sum is zero
-	# second, it scales based on a second parameter
-	# third, it is decreasing in the element sum between 1 and n
-	propControl <- dnorm(log(apply(support, 1, sum)), sd = delta, log = TRUE) * scale
-	
-	# total vector weight
-	vector_weight <- exp(element_weight + propControl)
-	
-	# sample elements 
-	samp <- sample(1:nrow(support), nsamp, replace = T, prob = vector_weight / sum(vector_weight))
+r.gibbs.measure <- function(nsamp, lambdai, delta, support) {
+	gibbsNormalizer = prod(exp(delta + log(lambdai)) + 1) - 1
+	logitNumerator = vapply(1:nrow(support), function(s) {
+					 	exp(sum((delta + log(lambdai)) * support[s,]))
+					  }, c(1))
+	samp <- sample(1:nrow(support), nsamp, replace = T, prob = logitNumerator / gibbsNormalizer)
 	
 	support[samp,]	
 }
@@ -657,7 +636,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
    	 	XB = MultiplyXBList(X, Beta.old)     
 		lambda[[d]] = lambda_cpp(p.d[d,], XB)
     	for (i in node) {
-    		iJi[[d]][i, -i] = r.gibbs.measure(1, lambda[[d]][i, -i], delta, support = support)
+    		iJi[[d]][i, -i] = r.gibbs.measure(1, lambda[[d]][i, -i], delta, support)
     		}
     	}
 
@@ -680,10 +659,9 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 		lambda[[d]] = lambda_cpp(p.d[d,], XB)
 		#calculate the resampling probability		
 		for (i in node[-as.numeric(edge[[d]][1])]) {
-			for (j in node[-i]) {
-				probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], i, j)
+			for (j in sample(node[-1], length(node) - 1)) {
+				probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], j)
 				iJi[[d]][i, j] = multinom_vec(1, probij) - 1		
-				print(probij)		
 				}
 		}
 		iJi[[d]][as.numeric(edge[[d]][1]),] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
@@ -1399,12 +1377,12 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     
     if (!backward) {
     	for (i in node) {
-    		iJi[i, -i] = r.gibbs.measure(1, lambda[i, -i], delta, support = support)
+    		iJi[i, -i] = r.gibbs.measure(1, lambda[i, -i], delta, support)
     	}
        } else {
     		iJi = latentiJi[[d]]
     		observedi = backward.edge[[base.length + d]][[1]]
-    		iJi[observedi, -observedi] = r.gibbs.measure(1, lambda[observedi,-observedi], delta, support = support)
+    		iJi[observedi, -observedi] = r.gibbs.measure(1, lambda[observedi,-observedi], delta, support)
     	}
     LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
    	LambdaiJi[is.na(LambdaiJi)] = 0

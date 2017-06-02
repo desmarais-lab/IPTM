@@ -4,16 +4,14 @@
 \alias{r.gibbs.measure}
 \title{r.gibbs.measure}
 \usage{
-r.gibbs.measure(nsamp, element_parameters, delta, scale = 1, support)
+r.gibbs.measure(nsamp, lambdai, delta, support)
 }
 \arguments{
 \item{nsamp}{the number of binary vector samples to draw}
 
-\item{element_parameters}{a vector of coefficients according to which each element}
+\item{lambdai}{a vector of coefficients according to which each element}
 
 \item{delta}{a positive real valued parameter that controls the density penalty}
-
-\item{scale}{a parameter that controls the degree to which the densit penalty}
 
 \item{support}{support of Gibbs measure}
 }

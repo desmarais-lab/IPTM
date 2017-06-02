@@ -323,8 +323,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // DataAug_cpp_Gibbs
-arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d, double delta, double timeinc_d, int i, int j);
-RcppExport SEXP IPTM_DataAug_cpp_Gibbs(SEXP iJi_diSEXP, SEXP lambda_diSEXP, SEXP XBSEXP, SEXP p_dSEXP, SEXP deltaSEXP, SEXP timeinc_dSEXP, SEXP iSEXP, SEXP jSEXP) {
+arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d, double delta, double timeinc_d, int j);
+RcppExport SEXP IPTM_DataAug_cpp_Gibbs(SEXP iJi_diSEXP, SEXP lambda_diSEXP, SEXP XBSEXP, SEXP p_dSEXP, SEXP deltaSEXP, SEXP timeinc_dSEXP, SEXP jSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -334,9 +334,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type p_d(p_dSEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< double >::type timeinc_d(timeinc_dSEXP);
-    Rcpp::traits::input_parameter< int >::type i(iSEXP);
     Rcpp::traits::input_parameter< int >::type j(jSEXP);
-    rcpp_result_gen = Rcpp::wrap(DataAug_cpp_Gibbs(iJi_di, lambda_di, XB, p_d, delta, timeinc_d, i, j));
+    rcpp_result_gen = Rcpp::wrap(DataAug_cpp_Gibbs(iJi_di, lambda_di, XB, p_d, delta, timeinc_d, j));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -367,7 +366,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"IPTM_ObservedInEqZ", (DL_FUNC) &IPTM_ObservedInEqZ, 1},
     {"IPTM_lambdaiJi", (DL_FUNC) &IPTM_lambdaiJi, 3},
     {"IPTM_DataAug_cpp", (DL_FUNC) &IPTM_DataAug_cpp, 8},
-    {"IPTM_DataAug_cpp_Gibbs", (DL_FUNC) &IPTM_DataAug_cpp_Gibbs, 8},
+    {"IPTM_DataAug_cpp_Gibbs", (DL_FUNC) &IPTM_DataAug_cpp_Gibbs, 7},
     {NULL, NULL, 0}
 };
 
