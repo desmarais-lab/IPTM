@@ -223,7 +223,7 @@ logWZ = function(K, currentZ, textlist, tableW, alpha, mvec, betas, nvec) {
 #' @param nvec Dirichlet base prior for topic-word distribution
 #' @param prior.b.mean mean vector of b in multivariate normal distribution
 #' @param prior.b.var covairance matrix of b in multivariate normal distribution
-#' @param prior.delta parameter of delta in gamma prior
+#' @param prior.delta parameter of delta in Normal prior
 #' @param out size of outer iterations 
 #' @param n_B size of third inner iteration for updates of B
 #' @param n_d size of third inner iteration for updates of delta
@@ -554,7 +554,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
 #' @param nvec Dirichlet base prior for topic-word distribution
 #' @param prior.b.mean mean vector of b in multivariate normal distribution
 #' @param prior.b.var covairance matrix of b in multivariate normal distribution
-#' @param prior.delta parameter of delta in gamma prior
+#' @param prior.delta parameter of delta in Normal prior
 #' @param out size of outer iterations 
 #' @param n_B size of third inner iteration for updates of B
 #' @param n_d size of third inner iteration for updates of delta
@@ -583,7 +583,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
   	phi = lapply(1L:K, function(k) {
 		rdirichlet_cpp(1, betas * nvec)
 	})
-	delta = rgamma(1, prior.delta[1], prior.delta[2])
+	delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
 	Beta.old = lapply(1:nIP, function(IP) {
       			 c(rmvnorm(1, prior.b.mean, prior.b.var))
       			 })
@@ -1587,7 +1587,7 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 #' @param nvec Dirichlet base prior for topic-word distribution
 #' @param prior.b.mean mean vector of b in multivariate normal distribution
 #' @param prior.b.var covairance matrix of b in multivariate normal distribution
-#' @param prior.delta parameter of delta in gamma prior
+#' @param prior.delta parameter of delta in Normal prior
 #' @param sigma_Q proposal distribution variance parameter for beta and eta
 #' @param niters (out, n_B, n_d, burn, thin) in the inference
 #' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
@@ -1705,7 +1705,7 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
 #' @param nvec Dirichlet base prior for topic-word distribution
 #' @param prior.b.mean mean vector of b in multivariate normal distribution
 #' @param prior.b.var covairance matrix of b in multivariate normal distribution
-#' @param prior.delta parameter of delta in gamma prior
+#' @param prior.delta parameter of delta in Normal prior
 #' @param sigma_Q proposal distribution variance parameter for beta and eta
 #' @param niters (out, n_B, n_d, burn, thin) in the inference
 #' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
@@ -1824,7 +1824,7 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
 #' @param nvec Dirichlet base prior for topic-word distribution
 #' @param prior.b.mean mean vector of b in multivariate normal distribution
 #' @param prior.b.var covairance matrix of b in multivariate normal distribution
-#' @param prior.delta parameter of delta in gamma prior
+#' @param prior.delta parameter of delta in Normal prior
 #' @param sigma_Q proposal distribution variance parameter for beta and eta
 #' @param niters (out, n_B, n_d, burn, thin) in the inference
 #' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")

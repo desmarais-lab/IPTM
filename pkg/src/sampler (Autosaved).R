@@ -481,7 +481,7 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 	double edges = 0;
 	for (int i = 0; i < iJi.n_rows; i++) {
 		double meanlambda = sum(iJi.row(i) % lambda.row(i));
-		edges += meanlambda + R::dnorm(log(sum(iJi.row(i))), 0, delta, TRUE);
+		edges += meanlambda;
 	}
 	return edges;
 }
