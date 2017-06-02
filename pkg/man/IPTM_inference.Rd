@@ -6,7 +6,7 @@
 \usage{
 IPTM_inference(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec,
   betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n_B, n_d, burn,
-  thin, netstat, plot = FALSE, optimize = FALSE)
+  thinning, netstat, plot = FALSE, optimize = FALSE)
 }
 \arguments{
 \item{edge}{list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)}
@@ -35,7 +35,7 @@ IPTM_inference(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec,
 
 \item{prior.b.var}{covairance matrix of b in multivariate normal distribution}
 
-\item{prior.delta}{parameter of delta in gamma prior}
+\item{prior.delta}{parameter of delta in Normal prior}
 
 \item{out}{size of outer iterations}
 
@@ -45,7 +45,7 @@ IPTM_inference(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec,
 
 \item{burn}{iterations to be discarded at the beginning of beta chain}
 
-\item{thin}{the thinning interval of beta chain}
+\item{thinning}{the thinningning interval of beta chain}
 
 \item{netstat}{which type of network statistics to use ("intercept", dyadic", "triadic", "degree")}
 

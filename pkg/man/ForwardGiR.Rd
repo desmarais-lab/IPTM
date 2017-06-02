@@ -36,11 +36,11 @@ ForwardGiR(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
 
 \item{prior.b.var}{covairance matrix of b in multivariate normal distribution}
 
-\item{prior.delta}{parameter of delta in gamma prior}
+\item{prior.delta}{parameter of delta in Normal prior}
 
 \item{sigma_Q}{proposal distribution variance parameter for beta and eta}
 
-\item{niters}{(out, n_B, n_d, burn, thin) in the inference}
+\item{niters}{(out, n_B, n_d, burn, thinning) in the inference}
 
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 

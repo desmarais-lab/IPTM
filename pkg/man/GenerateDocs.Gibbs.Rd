@@ -8,7 +8,7 @@ GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
   nvec, b, delta, currentC, netstat, base.edge, base.text,
   topic_token_assignments = NULL, latentiJi = list(), forward = FALSE,
   backward_init = FALSE, backward = FALSE, base = FALSE,
-  backward.edge = NULL)
+  backward.edge = NULL, support)
 }
 \arguments{
 \item{nDocs}{number of documents to be generated}
@@ -56,6 +56,8 @@ GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
 \item{base}{Logical indicating whether or not we are generating base edges (< 384)}
 
 \item{backward.edge}{edge from previous backward sample}
+
+\item{support}{support of latent edge vector Ji}
 }
 \value{
 generated edge and text, parameter b used to generate those, and base (if base == TRUE)

@@ -480,8 +480,21 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 	double edges = 0;
 	for (int i = 0; i < iJi.n_rows; i++) {
-		double meanlambda = sum(iJi.row(i) % lambda.row(i));
-		edges += meanlambda + R::dnorm(log(sum(iJi.row(i))), 0, delta, TRUE);
+		arma::vec normal = arma::zeros(iJi.n_rows - 1);
+		double prob = 0;
+		int iter = 0;
+		for (int j = 0; j < iJi.n_rows; j++) {
+			if (i != j) {
+				normal[iter] = exp(delta + log(lambda(i, j))) + 1;
+				prob += (delta + log(lambda(i, j))) * iJi(i, j);
+				iter = iter + 1;
+			}
+		  }
+		double normalizer = prod(normal) - 1; 
+		if (normalizer < 0.0000001) {
+		  	normalizer += 0.0000001;
+		  }
+		edges += prob - log(normalizer);
 	}
 	return edges;
 }
@@ -561,6 +574,7 @@ arma::vec DataAug_cpp(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec 
 // [[Rcpp::export]]
 arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d, double delta, double timeinc_d, int j) {
 	arma::vec prob = arma::zeros(2);
+	prob[0] = -arma::datum::inf;
 	arma::vec iJi_di1 = iJi_di;
 	arma::vec iJi_di0 = iJi_di;
 	int nIP = p_d.size();
@@ -577,10 +591,10 @@ arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma
 			out[0] += p_d[IP] * exp(rowsums0);
 			}
 	}
-	prob[1] = exp(delta + log(lambda_di[j - 1]) - timeinc_d * out[1]);
+	prob[1] = delta + log(lambda_di[j - 1]) - timeinc_d * out[1];
 	if (sumiJi0 > 0) {
-		prob[0] = exp(- timeinc_d * out[0]);
+		prob[0] = - timeinc_d * out[0];
 	}	
-	prob = prob / max(prob);
-	return prob;
+	prob = prob - max(prob);
+	return exp(prob);
 }

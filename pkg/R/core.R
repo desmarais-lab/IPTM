@@ -45,7 +45,7 @@ r.gibbs.measure <- function(nsamp, lambdai, delta, support) {
 	logitNumerator = vapply(1:nrow(support), function(s) {
 					 	exp(sum((delta + log(lambdai)) * support[s,]))
 					  }, c(1))
-	samp <- sample(1:nrow(support), nsamp, replace = T, prob = logitNumerator / gibbsNormalizer)
+	samp <- sample(1:nrow(support), nsamp, replace = TRUE, prob = logitNumerator / gibbsNormalizer)
 	
 	support[samp,]	
 }
@@ -228,7 +228,7 @@ logWZ = function(K, currentZ, textlist, tableW, alpha, mvec, betas, nvec) {
 #' @param n_B size of third inner iteration for updates of B
 #' @param n_d size of third inner iteration for updates of delta
 #' @param burn iterations to be discarded at the beginning of beta chain
-#' @param thin the thinning interval of beta chain
+#' @param thinning the thinningning interval of beta chain
 #' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
 #' @param plot to plot the convergence diagnostics or not (TRUE/FALSE)
 #' @param optimize to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)
@@ -237,7 +237,7 @@ logWZ = function(K, currentZ, textlist, tableW, alpha, mvec, betas, nvec) {
 #'
 #' @export
 IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, 
-					out, n_B, n_d, burn, thin, netstat, plot = FALSE, optimize = FALSE) {
+					out, n_B, n_d, burn, thinning, netstat, plot = FALSE, optimize = FALSE) {
    
   # trim the edge so that we only model edges after 384 hours
 	timestamps = vapply(edge, function(d) {
@@ -252,7 +252,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
   	phi = lapply(1L:K, function(k) {
 		rdirichlet_cpp(1, betas * nvec)
 	})
-	delta = rgamma(1, prior.delta[1], prior.delta[2])
+	delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
 	Beta.old = lapply(1:nIP, function(IP) {
       			 c(rmvnorm(1, prior.b.mean, prior.b.var))
       			 })
@@ -278,7 +278,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
     P = 1 * ("intercept" %in% netstat) + L * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
     bmat = list()
 	for (IP in 1L:nIP) {
-		bmat[[IP]] = matrix(0, nrow = P, ncol = (n_B - burn) / thin)
+		bmat[[IP]] = matrix(0, nrow = P, ncol = (n_B - burn) / thinning)
   	}
   	deltamat = rep(delta, n_d)
 
@@ -381,7 +381,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
         		}
        	}		
 
-      # C update given Z and B - within each document d
+      # C update given Z and B - withinning each document d
       for (k in unique(unlist(currentZ[edge2]))) { 
         document.k = which(vapply(currentZ, function(d){k %in% d}, c(1)) == 1)
         document.k = document.k[document.k %in% edge2]
@@ -432,9 +432,9 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
        		})
     	    XB = MultiplyXBList(X, Beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
-	      	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-		      nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
-          observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+	    LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+		nonemptyiJi[[d]] = LambdaiJi[[d]][!is.na(LambdaiJi[[d]])]
+        observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
 	}
 	 
 	# Beta and delta update
@@ -484,9 +484,9 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
          	prior.old1 = prior.new1
          	post.old1 = post.new1
         }
-         if (i3 > burn & i3 %% (thin) == 0) {
+         if (i3 > burn & i3 %% (thinning) == 0) {
         		for (IP in 1L:nIP) {
-           		bmat[[IP]][ , (i3 - burn) / thin] = Beta.old[[IP]]
+           		bmat[[IP]][ , (i3 - burn) / thinning] = Beta.old[[IP]]
            	}
     		}
     }
@@ -494,13 +494,13 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
     	 XB = MultiplyXBList(X, Beta.old)
          lambda[[d]] = lambda_cpp(p.d[d,], XB)  
     }
-    prior.old2 = dgamma(delta, prior.delta[1], prior.delta[2], log = TRUE)
+    prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
     post.old2 = sum(vapply(edge2, function(d) {
     				EdgeInEqZ(iJi[[d]], lambda[[d]], delta)
     				}, c(1))) / length(edge2)
  	for (i4 in 1L:n_d) {
         delta.new = exp(rnorm(1, log(delta), sigma_Q[2]))
-        prior.new2 = dgamma(delta.new, prior.delta[1], prior.delta[2], log = TRUE)
+        prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
         post.new2 = sum(vapply(edge2, function(d) {
         				EdgeInEqZ(iJi[[d]], lambda[[d]], delta.new)
         				}, c(1))) / length(edge2)
@@ -559,7 +559,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
 #' @param n_B size of third inner iteration for updates of B
 #' @param n_d size of third inner iteration for updates of delta
 #' @param burn iterations to be discarded at the beginning of beta chain
-#' @param thin the thinning interval of beta chain
+#' @param thinning the thinningning interval of beta chain
 #' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
 #' @param plot to plot the convergence diagnostics or not (TRUE/FALSE)
 #' @param optimize to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)
@@ -568,7 +568,7 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
 #'
 #' @export
 IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, 
-					out, n_B, n_d, burn, thin, netstat, plot = FALSE, optimize = FALSE) {
+					out, n_B, n_d, burn, thinning, netstat, plot = FALSE, optimize = FALSE) {
    
   # trim the edge so that we only model edges after 384 hours
 	timestamps = vapply(edge, function(d) {
@@ -609,7 +609,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     P = 1 * ("intercept" %in% netstat) + L * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
     bmat = list()
 	for (IP in 1L:nIP) {
-		bmat[[IP]] = matrix(0, nrow = P, ncol = (n_B - burn) / thin)
+		bmat[[IP]] = matrix(0, nrow = P, ncol = (n_B - burn) / thinning)
   	}
   	deltamat = rep(delta, n_d)
 
@@ -709,7 +709,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
         		}
        	}		
 
-      # C update given Z and B - within each document d
+      # C update given Z and B - withinning each document d
       for (k in unique(unlist(currentZ[edge2]))) { 
         document.k = which(vapply(currentZ, function(d){k %in% d}, c(1)) == 1)
         document.k = document.k[document.k %in% edge2]
@@ -809,9 +809,9 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
          	prior.old1 = prior.new1
          	post.old1 = post.new1
         }
-         if (i3 > burn & i3 %% (thin) == 0) {
+         if (i3 > burn & i3 %% (thinning) == 0) {
         		for (IP in 1L:nIP) {
-           		bmat[[IP]][ , (i3 - burn) / thin] = Beta.old[[IP]]
+           		bmat[[IP]][ , (i3 - burn) / thinning] = Beta.old[[IP]]
            	}
     		}
     }
@@ -819,17 +819,17 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     	 XB = MultiplyXBList(X, Beta.old)
          lambda[[d]] = lambda_cpp(p.d[d,], XB)  
     }
-    prior.old2 = dgamma(delta, prior.delta[1], prior.delta[2], log = TRUE)
+    prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
     post.old2 = sum(vapply(edge2, function(d) {
     				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
     				}, c(1))) / length(edge2)
  	for (i4 in 1L:n_d) {
-        delta.new = exp(rnorm(1, log(delta), sigma_Q[2]))
-        prior.new2 = dgamma(delta.new, prior.delta[1], prior.delta[2], log = TRUE)
+        delta.new = rnorm(1, delta, sigma_Q[2])
+        prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
         post.new2 = sum(vapply(edge2, function(d) {
         				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta.new)
         				}, c(1))) / length(edge2)
-        loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 + log(delta.new) - log(delta) 
+        loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 
         if (log(runif(1, 0, 1)) < loglike.diff2) {
         		delta = delta.new
          	prior.old2 = prior.new2
@@ -1298,13 +1298,14 @@ CollapsedGenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha,
 #' @param backward Logigal indicating whether we are generating backward samples
 #' @param base Logical indicating whether or not we are generating base edges (< 384)
 #' @param backward.edge edge from previous backward sample
+#' @param support support of latent edge vector Ji
 #'
 #' @return generated edge and text, parameter b used to generate those, and base (if base == TRUE)
 #'
 #' @export
 GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
                         b, delta, currentC, netstat, base.edge, base.text, topic_token_assignments = NULL, latentiJi = list(),
-                        forward = FALSE, backward_init = FALSE, backward = FALSE, base = FALSE, backward.edge = NULL) {
+                        forward = FALSE, backward_init = FALSE, backward = FALSE, base = FALSE, backward.edge = NULL, support) {
   W = length(vocabulary)
   phi = lapply(1L:K, function(k) {
     rdirichlet_cpp(1, betas * nvec)
@@ -1329,7 +1330,6 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
   }
   }
   word_type_topic_counts = matrix(0, W, K)
-  support = gibbs.measure.support(length(node) - 1)
   iJi = matrix(0, length(node), length(node))
   options(warn = -1)
   for (d in 1:nDocs) {
@@ -1382,7 +1382,7 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
        } else {
     		iJi = latentiJi[[d]]
     		observedi = backward.edge[[base.length + d]][[1]]
-    		iJi[observedi, -observedi] = r.gibbs.measure(1, lambda[observedi,-observedi], delta, support)
+    		iJi[observedi, -observedi] = r.gibbs.measure(1, lambda[observedi, -observedi], delta, support)
     	}
     LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
    	LambdaiJi[is.na(LambdaiJi)] = 0
@@ -1470,9 +1470,9 @@ GiR_QQ_Plots = function(Forward_stats, Backward_stats) {
   
   for (i in 1L:ncol(Forward_stats)) {
     if (nrow(Forward_stats) > 20000) {
-      thin = seq(from = floor(nrow(Forward_stats)/10), to = nrow(Forward_stats), length.out = 10000)
-      Forward_test = Forward_stats[thin, i]
-      Backward_test = Backward_stats[thin, i]
+      thinning = seq(from = floor(nrow(Forward_stats)/10), to = nrow(Forward_stats), length.out = 10000)
+      Forward_test = Forward_stats[thinning, i]
+      Backward_test = Backward_stats[thinning, i]
     } else {
       Forward_test = Forward_stats[, i]
       Backward_test = Backward_stats[, i]
@@ -1525,9 +1525,9 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
   
   for (i in 1L:ncol(Forward_stats)) {
     if (nrow(Forward_stats) > 20000) {
-      thin = seq(from = floor(nrow(Forward_stats)/10), to = nrow(Forward_stats), length.out = 10000)
-      Forward_test = Forward_stats[thin, i]
-      Backward_test = Backward_stats[thin, i]
+      thinning = seq(from = floor(nrow(Forward_stats)/10), to = nrow(Forward_stats), length.out = 10000)
+      Forward_test = Forward_stats[thinning, i]
+      Backward_test = Backward_stats[thinning, i]
     } else {
       Forward_test = Forward_stats[, i]
       Backward_test = Backward_stats[, i]
@@ -1589,7 +1589,7 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 #' @param prior.b.var covairance matrix of b in multivariate normal distribution
 #' @param prior.delta parameter of delta in Normal prior
 #' @param sigma_Q proposal distribution variance parameter for beta and eta
-#' @param niters (out, n_B, n_d, burn, thin) in the inference
+#' @param niters (out, n_B, n_d, burn, thinning) in the inference
 #' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
 #' @param base.edge artificial collection of documents to be used as initial state of history
 #' @param base.text artificial collection of documents to be used as initial state of history
@@ -1619,7 +1619,7 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
     b = lapply(1:nIP, function(IP) {
       c(rmvnorm(1, prior.b.mean, prior.b.var))
     })
-    delta = rgamma(1, prior.delta[1], prior.delta[2])
+    delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     currentC = sample(1L:nIP, K, replace = TRUE)
     Forward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
                                   base.edge = base.edge, base.text = base.text, forward = TRUE) 
@@ -1644,7 +1644,7 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
     if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
     Inference_samp = IPTM_inference(Backward_sample$edge, node, Backward_sample$text, vocabulary, nIP, K, sigma_Q, 
                                alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
-                               out = niters[1], n_B = niters[2], n_d = niters[3], burn = niters[4], thin = niters[5], 
+                               out = niters[1], n_B = niters[2], n_d = niters[3], burn = niters[4], thinning = niters[5], 
                                netstat)
     b = lapply(1:nIP, function(IP) {
         Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
@@ -1674,9 +1674,9 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
   tstats = rep(0, ncol(Forward_stats))
   wstats = rep(0, ncol(Forward_stats))
   for (j in 1:ncol(Forward_stats)) {
-    thin = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
-    Forward_test = Forward_stats[thin, j]
-    Backward_test = Backward_stats[thin, j]
+    thinning = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
+    Forward_test = Forward_stats[thinning, j]
+    Backward_test = Backward_stats[thinning, j]
     tstats[j] = t.test(Backward_test, Forward_test)$p.value
     wstats[j] = wilcox.test(Backward_test, Forward_test)$p.value
   }
@@ -1707,7 +1707,7 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
 #' @param prior.b.var covairance matrix of b in multivariate normal distribution
 #' @param prior.delta parameter of delta in Normal prior
 #' @param sigma_Q proposal distribution variance parameter for beta and eta
-#' @param niters (out, n_B, n_d, burn, thin) in the inference
+#' @param niters (out, n_B, n_d, burn, thinning) in the inference
 #' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
 #' @param base.edge artificial collection of documents to be used as initial state of history
 #' @param base.text artificial collection of documents to be used as initial state of history
@@ -1718,11 +1718,13 @@ GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, beta
 #'
 #' @export
 GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
-               prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat = c("dyadic"), base.edge, base.text, 
-               generate_PP_plots = TRUE, seed = 1) {
+               prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat = c("dyadic"), 
+               base.edge, base.text, generate_PP_plots = TRUE, seed = 1) {
   
   set.seed(seed)
-  P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
+  P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 
+  	  4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
+  supportD = gibbs.measure.support(length(node) - 1)
 
   #Forward sampling
   Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + 4 + nIP + K + length(vocabulary))
@@ -1737,10 +1739,11 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
     b = lapply(1:nIP, function(IP) {
       c(rmvnorm(1, prior.b.mean, prior.b.var))
     })
-    delta = rgamma(1, prior.delta[1], prior.delta[2])
+    delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     currentC = sample(1L:nIP, K, replace = TRUE)
-    Forward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
-                                  base.edge = base.edge, base.text = base.text, forward = TRUE) 
+    Forward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b,
+    		 								delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
+    		 								forward = TRUE, support = supportD) 
     Forward_stats[i, ] = GiR_stats(Forward_sample, K, currentC, vocabulary, forward = TRUE, backward = FALSE)
     
     topic_token_counts = tabulate(unlist(lapply(Forward_sample$text, function(d){as.numeric(names(d))})), K)
@@ -1751,8 +1754,9 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
   
   #Backward sampling
   Backward_stats = matrix(NA, nrow = Nsamp, ncol = ncol(Forward_stats))
-  Backward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
-                                 base.edge = base.edge, base.text = base.text, backward_init = TRUE, forward = FALSE, backward = FALSE) 
+  Backward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, 
+  									   delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
+  									   backward_init = TRUE, forward = FALSE, backward = FALSE, support = supportD) 
   deltamat2 = rep(NA, Nsamp)
   bmat2 = matrix(NA, nrow = Nsamp, ncol = nIP * P)		
   Zstat2 = rep(NA, Nsamp)	   
@@ -1760,10 +1764,10 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
   iJi = list()
   for (i in 1:Nsamp) { 
     if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
-    Inference_samp = IPTM_inference.Gibbs(Backward_sample$edge, node, Backward_sample$text, vocabulary, nIP, K, sigma_Q, 
-                               alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
-                               out = niters[1], n_B = niters[2], n_d = niters[3], burn = niters[4], thin = niters[5], 
-                               netstat)
+    Inference_samp = IPTM_inference.Gibbs(Backward_sample$edge, node, Backward_sample$text, vocabulary, nIP, K,
+    										  sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
+                               			  out = niters[1], n_B = niters[2], n_d = niters[3], burn = niters[4], 
+                               			  thinning = niters[5], netstat)
     b = lapply(1:nIP, function(IP) {
         Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
     })
@@ -1776,9 +1780,10 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
     }
     topic_token_counts = tabulate(unlist(Inference_samp$Z), K)
     
-    Backward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
-                                  base.edge = base.edge, base.text = base.text, topic_token_assignments = topic_token_assignments, latentiJi,
-                                   forward = FALSE, backward = TRUE, backward.edge = Backward_sample$edge)
+    Backward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, 
+    										 delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
+    										 topic_token_assignments = topic_token_assignments, latentiJi,
+                             			 forward = FALSE, backward = TRUE, backward.edge = Backward_sample$edge, support = supportD)
     Backward_stats[i, ] = GiR_stats(Backward_sample, K, currentC, vocabulary, forward = FALSE, backward = TRUE)
     
     bmat2[i, ] = unlist(b)
@@ -1792,9 +1797,9 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
   tstats = rep(0, ncol(Forward_stats))
   wstats = rep(0, ncol(Forward_stats))
   for (j in 1:ncol(Forward_stats)) {
-    thin = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
-    Forward_test = Forward_stats[thin, j]
-    Backward_test = Backward_stats[thin, j]
+    thinning = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
+    Forward_test = Forward_stats[thinning, j]
+    Backward_test = Backward_stats[thinning, j]
     tstats[j] = t.test(Backward_test, Forward_test)$p.value
     wstats[j] = wilcox.test(Backward_test, Forward_test)$p.value
   }
@@ -1803,8 +1808,9 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
     par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
-  return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats, delta = cbind(deltamat1, deltamat2),
-              b1 = bmat1, b2= bmat2, Zstat1 = Zstat1, Zstat2 = Zstat2, accept.rate = accept.rate, iJi = iJi))
+  return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats, 
+  			  delta = cbind(deltamat1, deltamat2), b1 = bmat1, b2= bmat2, Zstat1 = Zstat1, Zstat2 = Zstat2, 
+  			  accept.rate = accept.rate, iJi = iJi))
 }                         	
 
 
@@ -1826,7 +1832,7 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
 #' @param prior.b.var covairance matrix of b in multivariate normal distribution
 #' @param prior.delta parameter of delta in Normal prior
 #' @param sigma_Q proposal distribution variance parameter for beta and eta
-#' @param niters (out, n_B, n_d, burn, thin) in the inference
+#' @param niters (out, n_B, n_d, burn, thinning) in the inference
 #' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
 #' @param base.edge artificial collection of documents to be used as initial state of history
 #' @param base.text artificial collection of documents to be used as initial state of history
@@ -1856,7 +1862,7 @@ ForwardGiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mve
     b = lapply(1:nIP, function(IP) {
       c(rmvnorm(1, prior.b.mean, prior.b.var))
     })
-    delta = rgamma(1, prior.delta[1], prior.delta[2])
+    delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     currentC = sample(1L:nIP, K, replace = TRUE)
     Forward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
                                   base.edge = base.edge, base.text = base.text, forward = TRUE) 
@@ -1881,7 +1887,7 @@ ForwardGiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mve
     b = lapply(1:nIP, function(IP) {
       c(rmvnorm(1, prior.b.mean, prior.b.var))
     })
-    delta = rgamma(1, prior.delta[1], prior.delta[2])
+    delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     currentC = sample(1L:nIP, K, replace = TRUE)
     Forward_sample2 = CollapsedGenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
                                   base.edge = base.edge, base.text = base.text, forward = TRUE) 
@@ -1896,9 +1902,9 @@ ForwardGiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mve
   tstats = rep(0, ncol(Forward_stats))
   wstats = rep(0, ncol(Forward_stats2))
   for (j in 1:ncol(Forward_stats)) {
-    thin = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
-    Forward_test = Forward_stats[thin, j]
-    Forward_test2 = Forward_stats2[thin, j]
+    thinning = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
+    Forward_test = Forward_stats[thinning, j]
+    Forward_test2 = Forward_stats2[thinning, j]
     tstats[j] = t.test(Forward_test2, Forward_test)$p.value
     wstats[j] = wilcox.test(Forward_test2, Forward_test)$p.value
   }

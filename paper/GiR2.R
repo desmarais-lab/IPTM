@@ -1,10 +1,8 @@
-#library(devtools)
-#install_github('bomin8319/IPTM/pkg')
 library(IPTM)
 library(mvtnorm)
 library(MCMCpack)
-set.seed(1)
-nDocs = 5
+set.seed(123)
+nDocs = 10
 node = 1:4
 vocabulary = c("hi", "hello", "fine", "bye", "what")
 nIP = 2
@@ -15,22 +13,29 @@ mvec = rep(1/4, 4)
 betas = 2
 nvec = rep(1/5, 5)
 prior.b.mean = c(-3, rep(0, 6))
-prior.b.var =  0.05 * diag(7)
-prior.delta = c(1, 1)
-sigma_Q = c(0.05, 1)
-niters = c(2, 100, 20, 0, 5)
+prior.b.var = 0.05 * diag(7)
+prior.delta = c(3, 0.1)
+sigma_Q = c(0.05, 1.5)
+niters = c(1, 100, 10, 0, 5)
 netstat = c("intercept", "dyadic")
 P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
 b = lapply(1:nIP, function(IP) {
     c(rmvnorm(1,  prior.b.mean, prior.b.var))
   })
-delta = rgamma(1, 1, 1)
+delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
 currentC = sample(1:nIP, K, replace = TRUE)	 
-base.data = GenerateDocs.Gibbs(100, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE) 
+supportD = gibbs.measure.support(length(node) - 1)
+base.data = GenerateDocs.Gibbs(100, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE, support = supportD) 
 base.edge = base.data$edge	   
 base.text = base.data$text
-TryGiR3<- GiR.Gibbs(1000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
-              prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 123)
+GiRouter1<- GiR.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text)
+niters = c(3, 100, 10, 0, 5)
+GiRouter3<- GiR.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text)
+
+
+
 
 save(TryGiR2, file = "TryGiR2.RData")
 
@@ -45,7 +50,7 @@ abline(0, 1, col = 'red')
 par(mfrow=c(3,7))
 GiR_PP_Plots(TryGiR$Forward, TryGiR$Backward)
 
-TryGiR = TryGiR3
+TryGiR = GiRouter1
 Nsamp = nrow(TryGiR$Forward)
 thin = seq(from = floor(Nsamp / 10), to = Nsamp, length.out = 1000)
 par(mfrow=c(2,2))
