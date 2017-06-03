@@ -4,7 +4,7 @@
 \alias{AlphamvecOpt}
 \title{AlphamvecOpt}
 \usage{
-AlphamvecOpt(K, currentZ, alpha, mvec)
+AlphamvecOpt(K, currentZ, alpha, mvec, niter)
 }
 \arguments{
 \item{K}{total number of topics specified by the user}
@@ -14,6 +14,8 @@ AlphamvecOpt(K, currentZ, alpha, mvec)
 \item{alpha}{Dirichlet concentration prior for topic distribution}
 
 \item{mvec}{Dirichlet base prior for topic distribution}
+
+\item{niter}{number of iterations to perfom}
 }
 \value{
 The optimized value of the vector (= alpha * mvec)

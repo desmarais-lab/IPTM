@@ -2,7 +2,7 @@ library(IPTM)
 library(mvtnorm)
 library(MCMCpack)
 set.seed(123)
-nDocs = 10
+nDocs = 5
 node = 1:4
 vocabulary = c("hi", "hello", "fine", "bye", "what")
 nIP = 2
@@ -16,7 +16,7 @@ prior.b.mean = c(-3, rep(0, 6))
 prior.b.var = 0.05 * diag(7)
 prior.delta = c(3, 0.1)
 sigma_Q = c(0.05, 1.5)
-niters = c(1, 100, 10, 0, 5)
+niters = c(3, 100, 10, 0, 5)
 netstat = c("intercept", "dyadic")
 P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
 b = lapply(1:nIP, function(IP) {
@@ -28,13 +28,8 @@ supportD = gibbs.measure.support(length(node) - 1)
 base.data = GenerateDocs.Gibbs(100, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE, support = supportD) 
 base.edge = base.data$edge	   
 base.text = base.data$text
-GiRouter1<- GiR.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+TryGiR<- GiR.Gibbs(10^5, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text)
-niters = c(3, 100, 10, 0, 5)
-GiRouter3<- GiR.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
-					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text)
-
-
 
 
 save(TryGiR2, file = "TryGiR2.RData")

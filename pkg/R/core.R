@@ -118,11 +118,12 @@ Netstats = function(historyIP, node, sender, netstat) {
 #' @param currentZ current state of the assignment of topics 
 #' @param alpha Dirichlet concentration prior for topic distribution
 #' @param mvec Dirichlet base prior for topic distribution
+#' @param niter number of iterations to perfom
 #'
 #' @return The optimized value of the vector (= alpha * mvec)
 #'
 #' @export
-AlphamvecOpt =  function(K, currentZ, alpha, mvec) {
+AlphamvecOpt =  function(K, currentZ, alpha, mvec, niter) {
 	# Optimize the hyperparmeter vector given the current assignment of Z
 	#
 	# Args 
@@ -136,7 +137,6 @@ AlphamvecOpt =  function(K, currentZ, alpha, mvec) {
 	
 	final.vec = list()
 	
-	iter = 1
 	current.vec = alpha * mvec
 	n.word = mapply(length, currentZ)
 	n.word.table = tabulate(n.word)
@@ -147,12 +147,11 @@ AlphamvecOpt =  function(K, currentZ, alpha, mvec) {
 		nK.word.table = lapply(1L:K, function(k){
 			  tabulate(nK.word.list[,k])
 			  })
-	while ((abs(alpha - sum(current.vec)) > 0.001) | (iter == 1)) {
+	for (i in 1:niter) {
 	alpha = sum(current.vec)
 	S = UpdateDenom(alpha, n.word.table)		
 	s = UpdateNum(current.vec, nK.word.table)	
 	current.vec = current.vec * s / S
-	iter = iter + 1
 	}
 	final.vec = current.vec	
 	return(final.vec)	
@@ -645,7 +644,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       
       if (optimize) {
       #update the hyperparameter alpha and mvec
-      vec = AlphamvecOpt(K, currentZ[edge2], alpha, mvec)
+      vec = AlphamvecOpt(K, currentZ[edge2], alpha, mvec, 5)
       alpha = sum(vec)
       mvec = vec / alpha
       }
@@ -759,8 +758,8 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
        		})
     	    XB = MultiplyXBList(X, Beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
-	      	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-          observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+	    LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+        observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
 	}
 	 
 	# Beta and delta update
@@ -1375,17 +1374,10 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     XB = MultiplyXBList(X, b)     
     lambda = lambda_cpp(p.d[base.length + d,], XB)
     
-    if (!backward) {
     	for (i in node) {
     		iJi[i, -i] = r.gibbs.measure(1, lambda[i, -i], delta, support)
     	}
-       } else {
-    		iJi = latentiJi[[d]]
-    		observedi = backward.edge[[base.length + d]][[1]]
-    		iJi[observedi, -observedi] = r.gibbs.measure(1, lambda[observedi, -observedi], delta, support)
-    	}
     LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
-   	LambdaiJi[is.na(LambdaiJi)] = 0
     i.d = multinom_vec(1, LambdaiJi)
     j.d = which(iJi[i.d,] == 1)
     t.d = t.d + rexp(1, sum(LambdaiJi))
