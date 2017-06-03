@@ -8,8 +8,9 @@
 #' @importFrom entropy entropy.empirical
 #' @importFrom lda top.topic.words
 #' @importFrom reshape melt
-#' @importFrom coda mcmc
+#' @importFrom coda mcmc geweke.diag
 #' @importFrom combinat permn
+
 NULL
 
 #' @title gibbs.measure.support
@@ -816,7 +817,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     }
     for (d in edge2) {
     	 XB = MultiplyXBList(X, Beta.old)
-         lambda[[d]] = lambda_cpp(p.d[d,], XB)  
+     lambda[[d]] = lambda_cpp(p.d[d,], XB)  
     }
     prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
     post.old2 = sum(vapply(edge2, function(d) {
@@ -1393,7 +1394,7 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     edge = edge[1:cutoff]
     text = text[1:cutoff]
   }
-  return(list(edge = edge, text = text, b = b, d = delta, base = base.length))							
+  return(list(edge = edge, text = text, base = base.length, b = b, d = delta, X = X))							
 } 
 
 
@@ -1425,25 +1426,27 @@ GiR_stats = function(GiR_sample, K, currentC, vocabulary, forward = FALSE, backw
   nIP = length(GiR_sample$b)
   nwords = length(GiR_sample$text[[1]])
   W = length(vocabulary)
+  A = nrow(GiR_sample$X[[1]][[1]])
   
-  GiR_stats[1:P] = Reduce('+', GiR_sample$b) / nIP
-  GiR_stats[P + 1] = GiR_sample$d
-  GiR_stats[P + 2] = mean(vapply(1:nDocs, function(d) {
+  GiR_stats[1:P] = Reduce('+', GiR_sample$b) / nIP 
+  GiR_stats[(P + 1):(P + 3)] = nIP * Reduce('+', lapply(1:A, function(i) {colMeans(GiR_sample$X[[i]][[1]][,2:4])})) / A
+  GiR_stats[P + 4] = GiR_sample$d
+  GiR_stats[P + 5] = mean(vapply(1:nDocs, function(d) {
     length(edge[[d]][[2]])
   }, c(1)))
-  GiR_stats[P + 3] = mean(c(edge[[1]][[3]] - 384, vapply(2:nDocs, function(d) {
+  GiR_stats[P + 6] = mean(c(edge[[1]][[3]] - 384, vapply(2:nDocs, function(d) {
     edge[[d]][[3]] - edge[[d-1]][[3]]
   }, c(1)))) 			
-  GiR_stats[P + 4] = mean(currentC)
+  GiR_stats[P + 7] = mean(currentC)
   Tokens_in_Topic = tabulate(vapply(1:nDocs, function(d){
     as.numeric(names(text[[d]]))
   }, rep(0, nwords)), K)
-  GiR_stats[(P + 5):(P + 4 + nIP)] = vapply(1:nIP, function(IP) {
+  GiR_stats[(P + 8):(P + 7 + nIP)] = vapply(1:nIP, function(IP) {
     Tokens_in_Topic %*% (currentC == IP)
   }, c(1))
-  GiR_stats[(P + 5 + nIP):(P + 4 + nIP + K)] = Tokens_in_Topic
+  GiR_stats[(P + 8 + nIP):(P + 7 + nIP + K)] = Tokens_in_Topic
   Tokens_in_Word = tabulate(unlist(text), W)
-  GiR_stats[(P + 5 + nIP + K):(P + 4 + nIP + K + W)] = Tokens_in_Word
+  GiR_stats[(P + 8 + nIP + K):(P + 7 + nIP + K + W)] = Tokens_in_Word
   
   return(GiR_stats)
 }
@@ -1516,8 +1519,8 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
   nms = colnames(Forward_stats)
   
   for (i in 1L:ncol(Forward_stats)) {
-    if (nrow(Forward_stats) > 20000) {
-      thinning = seq(from = floor(nrow(Forward_stats)/10), to = nrow(Forward_stats), length.out = 10000)
+    if (nrow(Forward_stats) > 5000) {
+      thinning = seq(from = floor(nrow(Forward_stats)/10), to = nrow(Forward_stats), length.out = 5000)
       Forward_test = Forward_stats[thinning, i]
       Backward_test = Backward_stats[thinning, i]
     } else {
@@ -1553,10 +1556,19 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
            cex.axis = 1,
            cex.main = 1)
     abline(0, 1, lty = 1, col = "red", lwd = 2)
-    text(paste("Backward Mean:", round(mean(Backward_stats[,i]), 4),
-               "\nForward Mean:", round(mean(Forward_stats[,i]), 4),
-               "\nt-test p-value:", round(t.test(Backward_test, Forward_test)$p.value, 4),
-               "\nMann-Whitney p-value:", round(wilcox.test(Backward_test, Forward_test)$p.value,4)),
+    
+    if (nrow(Forward_stats) > 500) {
+    thinning2 = seq(from = floor(nrow(Forward_stats) / 5), to = nrow(Forward_stats), length.out = 500)
+    Forward_test2 = Forward_stats[thinning2, i]
+    Backward_test2 = Backward_stats[thinning2, i]
+    } else {
+      Forward_test2 = Forward_stats[, i]
+      Backward_test2 = Backward_stats[, i]    	
+    }
+    text(paste("Backward Mean:", round(mean(Backward_stats[, i]), 4),
+               "\nForward Mean:", round(mean(Forward_stats[, i]), 4),
+               "\nt-test p-value:", round(t.test(Backward_test2, Forward_test2)$p.value, 4),
+               "\nMann-Whitney p-value:", round(wilcox.test(Backward_test2, Forward_test2)$p.value,4)),
          x = 0.65,
          y = 0.15,
          cex = 0.4)
@@ -1719,13 +1731,9 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
   supportD = gibbs.measure.support(length(node) - 1)
 
   #Forward sampling
-  Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + 4 + nIP + K + length(vocabulary))
-  colnames(Forward_stats) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Mean_timediff", "Mean_TopicIP", 
-                              paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
-                              paste0("Tokens_in_Word", 1:length(vocabulary)))
-  deltamat1 = rep(NA, Nsamp)
-  bmat1 = matrix(NA, nrow = Nsamp, ncol = nIP * P)
-  Zstat1 = rep(NA, Nsamp)
+  Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + (P - 1) / 2 + 4 + nIP + K + length(vocabulary))
+  colnames(Forward_stats) = c(paste0("B_",1:P), paste0("Send_",1:3), "delta", "Mean_recipients", "Mean_timediff", 
+  							  "Mean_TopicIP", paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), paste0("Tokens_in_Word",1:length(vocabulary)))
   for (i in 1:Nsamp) { 
     if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
     b = lapply(1:nIP, function(IP) {
@@ -1737,23 +1745,16 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
     		 								delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
     		 								forward = TRUE, support = supportD) 
     Forward_stats[i, ] = GiR_stats(Forward_sample, K, currentC, vocabulary, forward = TRUE, backward = FALSE)
-    
-    topic_token_counts = tabulate(unlist(lapply(Forward_sample$text, function(d){as.numeric(names(d))})), K)
-    bmat1[i, ] = unlist(b)
-    deltamat1[i] = delta
-    Zstat1[i] = mean(sapply(Forward_sample$text, function(d){entropy.empirical(as.numeric(names(d)))}))
-  }
+    }
   
   #Backward sampling
   Backward_stats = matrix(NA, nrow = Nsamp, ncol = ncol(Forward_stats))
   Backward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, 
   									   delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
   									   backward_init = TRUE, forward = FALSE, backward = FALSE, support = supportD) 
-  deltamat2 = rep(NA, Nsamp)
-  bmat2 = matrix(NA, nrow = Nsamp, ncol = nIP * P)		
-  Zstat2 = rep(NA, Nsamp)	   
   accept.rate = matrix(NA, nrow = Nsamp, ncol = 2)
-  iJi = list()
+  geweke.diag1 = matrix(NA, nrow = Nsamp, ncol = P)
+  geweke.diag2 = matrix(NA, nrow = Nsamp, ncol = P)  
   for (i in 1:Nsamp) { 
     if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
     Inference_samp = IPTM_inference.Gibbs(Backward_sample$edge, node, Backward_sample$text, vocabulary, nIP, K,
@@ -1778,31 +1779,28 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
                              			 forward = FALSE, backward = TRUE, backward.edge = Backward_sample$edge, support = supportD)
     Backward_stats[i, ] = GiR_stats(Backward_sample, K, currentC, vocabulary, forward = FALSE, backward = TRUE)
     
-    bmat2[i, ] = unlist(b)
-    deltamat2[i] = delta
-    Zstat2[i] = mean(sapply(topic_token_assignments, function(d){entropy.empirical(d)}))
     accept.rate[i, 1] = length(unique(Inference_samp$B[[1]][1,])) / ((niters[2] - niters[4]) / niters[5])
-    accept.rate[i, 2] = length(unique(Inference_samp$D)) / niters[3]
-    iJi[[i]] = latentiJi
+    accept.rate[i, 2] = length(unique(Inference_samp$D)) / niters[3]    
+    geweke.diag1[i, ] = geweke.diag(t(Inference_samp$B[[1]]))[[1]]
+    geweke.diag2[i, ] = geweke.diag(t(Inference_samp$B[[2]]))[[1]]
   }
   
-  tstats = rep(0, ncol(Forward_stats))
-  wstats = rep(0, ncol(Forward_stats))
-  for (j in 1:ncol(Forward_stats)) {
-    thinning = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
-    Forward_test = Forward_stats[thinning, j]
-    Backward_test = Backward_stats[thinning, j]
-    tstats[j] = t.test(Backward_test, Forward_test)$p.value
-    wstats[j] = wilcox.test(Backward_test, Forward_test)$p.value
-  }
-  names(tstats) = names(wstats) = colnames(Forward_stats)						
+  # tstats = rep(0, ncol(Forward_stats))
+  # wstats = rep(0, ncol(Forward_stats))
+  # for (j in 1:ncol(Forward_stats)) {
+    # thinning = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
+    # Forward_test = Forward_stats[thinning, j]
+    # Backward_test = Backward_stats[thinning, j]
+    # tstats[j] = t.test(Backward_test, Forward_test)$p.value
+    # wstats[j] = wilcox.test(Backward_test, Forward_test)$p.value
+  # }
+  # names(tstats) = names(wstats) = colnames(Forward_stats)						
   if (generate_PP_plots) {
     par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
-  return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats, 
-  			  delta = cbind(deltamat1, deltamat2), b1 = bmat1, b2= bmat2, Zstat1 = Zstat1, Zstat2 = Zstat2, 
-  			  accept.rate = accept.rate, iJi = iJi))
+  return(list(Forward = Forward_stats, Backward = Backward_stats, 
+  			  accept.rate = accept.rate, geweke1 = geweke.diag1, geweke2 = geweke.diag2))
 }                         	
 
 
@@ -1890,20 +1888,10 @@ ForwardGiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mve
     deltamat2[i] = delta
     Zstat2[i] = mean(sapply(Forward_sample2$text, function(d){entropy.empirical(as.numeric(names(d)))}))
   }
-  
-  tstats = rep(0, ncol(Forward_stats))
-  wstats = rep(0, ncol(Forward_stats2))
-  for (j in 1:ncol(Forward_stats)) {
-    thinning = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
-    Forward_test = Forward_stats[thinning, j]
-    Forward_test2 = Forward_stats2[thinning, j]
-    tstats[j] = t.test(Forward_test2, Forward_test)$p.value
-    wstats[j] = wilcox.test(Forward_test2, Forward_test)$p.value
-  }
-  names(tstats) = names(wstats) = colnames(Forward_stats)						
+  					
   if (generate_PP_plots) {
     par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Forward_stats2)
   }			
-  return(list(Forward = Forward_stats, Forward2 = Forward_stats2, tstats = tstats, wstats = wstats, delta = cbind(deltamat1, deltamat2)))
+  return(list(Forward = Forward_stats, Forward2 = Forward_stats2, delta = cbind(deltamat1, deltamat2)))
 }                         	
