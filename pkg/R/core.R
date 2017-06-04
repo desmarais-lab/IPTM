@@ -1877,15 +1877,15 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
   for (i in 1L:ncol(Forward_stats)) {
     all = c(Backward_stats[, i], Forward_stats[, i])
     
-    quantiles = 50
+    quantiles = 100
     if (grepl("B_", nms[i]) ) {
-      quantiles = 500
+      quantiles = 1000
     }
     if (grepl("delta", nms[i]) ) {
-      quantiles = 500
+      quantiles = 1000
     }
     if (grepl("Mean_timediff", nms[i]) ) {
-      quantiles = 500
+      quantiles = 1000
     }
     uniqueValues = quantile(all,seq(0, 1, length = quantiles))
     qx1 = numeric(length(uniqueValues))

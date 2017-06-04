@@ -1,7 +1,7 @@
 library(IPTM)
 library(mvtnorm)
 library(MCMCpack)
-set.seed(123)
+set.seed(100)
 nDocs = 5
 node = 1:4
 vocabulary = c("hi", "hello", "fine", "bye", "what")
@@ -18,7 +18,7 @@ prior.b.mean = c(-3, rep(0, P-1))
 prior.b.var = 0.05 * diag(P)
 prior.delta = c(3, 0.1)
 sigma_Q = c(0.04, 2)
-niters = c(1, 330, 10, 30, 3)
+niters = c(3, 330, 10, 30, 3)
 b = lapply(1:nIP, function(IP) {
     c(rmvnorm(1,  prior.b.mean, prior.b.var))
   })

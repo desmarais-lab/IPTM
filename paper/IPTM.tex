@@ -596,38 +596,46 @@ For backward sampling, we let $NKV$ be a $V\times K$ dimensional matrix where ea
    		\item[-] netstat = ``intercept" and ``dyadic"
    	\end{minipage}
    	\begin{minipage}{0.5\textwidth}
-   		\item[-] prior for $\boldsymbol{b}^{(c)}$: $\mu_{\boldsymbol{b}^{(c)}} = (-3,\boldsymbol{0}_6), \Sigma_{\boldsymbol{b}^{(c)}} = 0.1\times I_7$
-   		\item[-] prior for $\delta$: $\mu_\delta = 0$, $\sigma^2_\delta = 1$
+   		\item[-] prior for $\boldsymbol{b}^{(c)}$: $\mu_{\boldsymbol{b}^{(c)}} = (-3,\boldsymbol{0}_6), \Sigma_{\boldsymbol{b}^{(c)}} = 0.05\times I_7$
+   		\item[-] prior for $\delta$: $\mu_\delta = 0$, $\sigma^2_\delta = 0.1$
    		\item[-] $I$ (outer iteration) = 3
    		\item[-] $n_1$ (iteration for hyperparamter optimization) = 0
-   		\item[-] $n_2$ (M-H sampling iteration of $\mathcal{B}$) = 100
-   		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 0
-   		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 5
-   		\item[-] $\sigma_{Q1}^2$ (proposal variance for $\mathcal{B}$) = 1
-   		\item[-] $n_3$ (M-H sampling iteration of $\delta$) = 20
-   		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 1
+   		\item[-] $n_2$ (M-H sampling iteration of $\mathcal{B}$) = 330
+   		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 30
+   		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 3
+   		\item[-] $\sigma_{Q1}^2$ (proposal variance for $\mathcal{B}$) = 0.04
+   		\item[-] $n_3$ (M-H sampling iteration of $\delta$) = 10
+   		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 2
    	\end{minipage}
    \end{itemize}
    Next, we list the selection of statistics we save for each forward and backward sample. Note that these statistics are not sensitive to the label swithches across the updates. Therefore, at each iteration, we calculate and save the statistics below:
       \begin{itemize}
       	\item[1.] Mean of interaction pattern parameters $(\boldsymbol{b}_p^{(1)},...,\boldsymbol{b}_p^{(C)})$ for every $p = 1,...,P$,
-      	\item[2.] Mean number of recipients,
-      	\item[3.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ for every $d=2,...,\mbox{nDocs}$,
-      	\item[4.] Mean topic-interaction pattern assignment (for interaction patterns indexed by 1 and 2), 
-      	\item[5.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$,
-      	\item[6.] Number of tokens assigned to each topic $k=1,...,K$, 
-       \item[7.] Number of tokens assigned to each unique word type $w=1,...,W$.
+      	      	\item[2.] Three istory statistic `send' calculated for the last document
+      	      	\item[3.] $\delta$ value used to generate the samples
+      	      	\item[4.] Mean number of recipients,
+      	\item[5.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ for every $d=2,...,\mbox{nDocs}$,
+      	\item[6.] Mean topic-interaction pattern assignment (for interaction patterns indexed by 1 and 2), 
+      	\item[7.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$,
+      	\item[8.] Number of tokens assigned to each topic $k=1,...,K$, 
+       \item[9.] Number of tokens assigned to each unique word type $w=1,...,W$.
       	      \end{itemize}
 \subsection{GiR Results}
-Having saved a set of samples (collected $10^5$ forward and backward samples), we generated PP (Probability-Probability)  plots for each of the 21 statistics we saved. We calculated 1,000 quantiles for each of the interaction pattern statistics (1.), and 50 quantiles for the rest of the statistics. Exactly follwoing CPME, we also calculated a t-test p-value for the equivalence
+Having saved a set of samples, we generated PP (Probability-Probability)  plots for each of the 25 statistics we saved. We calculated 1,000 quantiles for each of the interaction pattern statistics (1.), and 50 quantiles for the rest of the statistics. Exactly follwoing CPME, we also calculated a t-test p-value for the equivalence
 of statistic means between forward and backward samples, and a Mann-Whitney test p-value for the equivalence of statistic
 distributions between forward and backward samples. Before we calculated these statistics, we first thinned our sample of
 statistics by taking every 90th sample starting at the 100,000th sample for a resulting sample size of 10,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each plot that we expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure below.
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1.05\textwidth]{GiRplot.jpeg} 
+	\includegraphics[width=1.05\textwidth]{Rplot01.png} 
 	\label{fig:GiR}
 	\caption{Getting it Right test result}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.05\textwidth]{trace.png} 
+	\label{fig:GiRtrace}
+	\caption{Getting it Right test traceplot (Black- Forward and Red - Backward)}
 \end{figure}
  \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
