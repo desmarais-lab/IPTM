@@ -492,11 +492,21 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 				}
 			}
 		  }
-		double normalizer = exp(sum(normal)) - 1; 
-		if (normalizer < 0.0000001) {
-		  	normalizer = 0.0000001;
-		  }
-		edges += prob - log(normalizer);
+		double normalizer = 0;
+		double sumnorm = sum(normal);
+		if (sumnorm > 35) {
+			normalizer = sumnorm;
+		} else {
+		if (sumnorm < -10) {
+			normalizer = exp(sumnorm);
+		} else {
+			if (sumnorm <= 0) {
+				sumnorm = 0.000000000001;
+			}
+			normalizer = log(exp(sumnorm) - 1);
+		}
+		}
+		edges += prob - normalizer;
 	}
 	return edges;
 }

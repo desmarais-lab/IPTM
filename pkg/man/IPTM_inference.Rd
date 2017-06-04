@@ -21,7 +21,7 @@ IPTM_inference(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec,
 
 \item{K}{total number of topics specified by the user}
 
-\item{sigma_Q}{proposal distribution variance parameter for beta and eta}
+\item{sigma_Q}{proposal distribution variance parameter for beta and delta}
 
 \item{alpha}{Dirichlet concentration prior for document-topic distribution}
 

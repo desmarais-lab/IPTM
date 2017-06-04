@@ -18,7 +18,7 @@ prior.b.mean = c(-3, rep(0, P-1))
 prior.b.var = 0.05 * diag(P)
 prior.delta = c(3, 0.1)
 sigma_Q = c(0.04, 2)
-niters = c(1, 330, 10, 30, 3)
+niters = c(2, 330, 10, 30, 3)
 b = lapply(1:nIP, function(IP) {
     c(rmvnorm(1,  prior.b.mean, prior.b.var))
   })
@@ -28,10 +28,10 @@ supportD = gibbs.measure.support(length(node) - 1)
 base.data = GenerateDocs.Gibbs(100, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE, support = supportD) 
 base.edge = base.data$edge	   
 base.text = base.data$text
-TryGiR<- GiR.Gibbs(5 * 10^4, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+TryGiR<- GiR.Gibbs(1000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 123)
 
-
+load("TryGiR.RData")
 save(TryGiR, file = "TryGiR.RData")
 
 load("TryGiR.RData")

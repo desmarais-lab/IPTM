@@ -38,7 +38,7 @@ GiR(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
 
 \item{prior.delta}{parameter of delta in Normal prior}
 
-\item{sigma_Q}{proposal distribution variance parameter for beta and eta}
+\item{sigma_Q}{proposal distribution variance parameter for beta and delta}
 
 \item{niters}{(out, n_B, n_d, burn, thinning) in the inference}
 
