@@ -477,7 +477,7 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 //               Edge contribution in update of Z            //
 // **********************************************************//
 // [[Rcpp::export]]
-double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
+double EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
 	double edges = 0;
 	for (int i = 0; i < iJi.n_rows; i++) {
 		arma::vec normal = arma::zeros(iJi.n_rows - 1);
@@ -510,6 +510,126 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 	}
 	return edges;
 }
+
+// **********************************************************//
+//               Edge contribution in update of Z            //
+// **********************************************************//
+// [[Rcpp::export]]
+double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
+	double edges = 0;
+	for (int i = 0; i < iJi.n_rows; i++) {
+		arma::vec normal = arma::zeros(iJi.n_rows - 1);
+		double prob = 0;
+		int iter = 0;
+		for (int j = 0; j < iJi.n_rows; j++) {
+			if (i != j) {
+				if (lambda(i, j) > 0) {
+				double pre = delta + log(lambda(i, j));
+				if (pre > 35) {
+					normal[iter] = pre;
+				} else {
+					if (pre < -10) {
+						normal[iter] = exp(pre);
+					} else {
+						normal[iter] = log(exp(pre) + 1);
+					}
+				}
+				prob += (delta + log(lambda(i, j))) * iJi(i, j);
+				iter = iter + 1;
+				}
+			}
+		  }
+		double sumnorm = sum(normal);
+		while (sumnorm < 0.000001) {
+    		sumnorm += 0.000001;
+  		}  
+		double normalizer = log(exp(sumnorm) - 1);
+		edges += prob - normalizer;
+	}
+	return edges;
+}
+
+// **********************************************************//
+//               Edge contribution in update of Z            //
+// **********************************************************//
+// [[Rcpp::export]]
+arma::mat EdgeInEqZ_Gibbs3(arma::mat iJi, arma::mat lambda, double delta) {
+	double edges = 0;
+	arma::mat normmat = arma::zeros(iJi.n_rows, iJi.n_rows - 1);
+	for (int i = 0; i < iJi.n_rows; i++) {
+		arma::vec normal = arma::zeros(iJi.n_rows - 1);
+		double prob = 0;
+		int iter = 0;
+		for (int j = 0; j < iJi.n_rows; j++) {
+			if (i != j) {
+				if (lambda(i, j) > 0) {
+				double pre = delta + log(lambda(i, j));
+				if (pre > 35) {
+					normal[iter] = pre;
+				} else {
+					if (pre < -10) {
+						normal[iter] = exp(pre);
+					} else {
+						normal[iter] = log(exp(pre) + 1);
+					}
+				}
+				prob += (delta + log(lambda(i, j))) * iJi(i, j);
+				iter = iter + 1;
+				}
+			}
+		  }
+		double sumnorm = sum(normal);
+		while (sumnorm < 0.000001) {
+    		sumnorm += 0.000001;
+  		}
+  		normmat.row(i) = normal;  
+		double normalizer = log(exp(sumnorm) - 1);
+		edges += prob - normalizer;
+	}
+	return normmat;
+}
+
+// **********************************************************//
+//               Edge contribution in update of Z            //
+// **********************************************************//
+// [[Rcpp::export]]
+arma::vec EdgeInEqZ_Gibbs4(arma::mat iJi, arma::mat lambda, double delta) {
+	double edges = 0;
+	arma::vec probvec = arma::zeros(iJi.n_rows);
+	for (int i = 0; i < iJi.n_rows; i++) {
+		arma::vec normal = arma::zeros(iJi.n_rows - 1);
+		double prob = 0;
+		int iter = 0;
+		for (int j = 0; j < iJi.n_rows; j++) {
+			if (i != j) {
+				if (lambda(i, j) > 0) {
+				double pre = delta + log(lambda(i, j));
+				if (pre > 35) {
+					normal[iter] = pre;
+				} else {
+					if (pre < -10) {
+						normal[iter] = exp(pre);
+					} else {
+						normal[iter] = log(exp(pre) + 1);
+					}
+				}
+				prob += (delta + log(lambda(i, j))) * iJi(i, j);
+				iter = iter + 1;
+				}
+			}
+		  }
+		double sumnorm = sum(normal);
+		while (sumnorm < 0.000001) {
+    		sumnorm += 0.000001;
+  		}
+  		probvec[i] = prob;  
+		double normalizer = log(exp(sumnorm) - 1);
+		edges += prob - normalizer;
+	}
+	return probvec;
+}
+
+
 
 // **********************************************************//
 //               Time contribution in update of Z            //

@@ -66,9 +66,10 @@ r.gibbs.measure <- function(nsamp, lambdai, delta, support) {
 adaptive_MH = function(sigma_Q, accept_rates, target = 0.25, update_size, tol = 0.05) {
 	for (i in 1:length(sigma_Q)) {
 		if (accept_rates[i] < target) {
-			if (sigma_Q[i] > update_size[i]) {
+			while (sigma_Q[i] < update_size[i]) {
+				update_size[i] = update_size[i] / 2
+			} 
 				sigma_Q[i] = sigma_Q[i] - update_size[i]
-			}
 		}
 		if (accept_rates[i] > (target + tol)) {
 			sigma_Q[i] = sigma_Q[i] + update_size[i]
@@ -799,15 +800,15 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     			 	}, c(1))) / length(edge2)
   
 	options(warn = -1)
-	proposal.var = list()
-    for (IP in 1L:nIP) {
-     	proposal.var[[IP]] = cor(t(bmat[[IP]]))
-        proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
-        if (sum(eigen(proposal.var[[IP]])$values < 0 ) > 0) {
-         	proposal.var[[IP]] = diag(P)
-        }
-    }
-    #proposal.var = lapply(1:nIP, function(IP){diag(P)})
+	#proposal.var = list()
+  #  for (IP in 1L:nIP) {
+  #   	proposal.var[[IP]] = cor(t(bmat[[IP]]))
+  #      proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
+  #      if (sum(eigen(proposal.var[[IP]])$values < 0 ) > 0) {
+  #       	proposal.var[[IP]] = diag(P)
+  #      }
+  #  }
+    proposal.var = lapply(1:nIP, function(IP){diag(P)})
     options(warn = 0)
     for (i3 in 1L:n_B) {
     		beta.new = lapply(1L:nIP, function(IP) {
@@ -1099,7 +1100,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     
     if (o != 1) {
 		accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
-    	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = c(0.0001, 0.05))
+    	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = c(0.0005, 0.05))
     }
     
     for (d in edge2) {
@@ -1213,7 +1214,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     title("Convergence of delta")
   }
   
-  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat, E = iJi[edge2])
+  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat)
   return(chain.final)
 }
 
@@ -1874,28 +1875,25 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
   nms = colnames(Forward_stats)
   
   for (i in 1L:ncol(Forward_stats)) {
-    if (nrow(Forward_stats) > 5000) {
-      thinning = seq(from = floor(nrow(Forward_stats)/10), to = nrow(Forward_stats), length.out = 5000)
-      Forward_test = Forward_stats[thinning, i]
-      Backward_test = Backward_stats[thinning, i]
-    } else {
-      Forward_test = Forward_stats[, i]
-      Backward_test = Backward_stats[, i]
-    }
-    
-    all = c(Backward_test, Forward_test)
+    all = c(Backward_stats[, i], Forward_stats[, i])
     
     quantiles = 50
     if (grepl("B_", nms[i]) ) {
-      quantiles = 1000
+      quantiles = 500
     }
-    uniqueValues = sort(unique(all))
+    if (grepl("delta", nms[i]) ) {
+      quantiles = 500
+    }
+    if (grepl("Mean_timediff", nms[i]) ) {
+      quantiles = 500
+    }
+    uniqueValues = quantile(all,seq(0, 1, length = quantiles))
     qx1 = numeric(length(uniqueValues))
   	qx2 = numeric(length(uniqueValues))
   		
   	for (j in 1:length(uniqueValues)) {
-  		qx1[j] = mean(Forward_test <= uniqueValues[j])
-  		qx2[j] = mean(Backward_test <= uniqueValues[j])
+  		qx1[j] = mean(Forward_stats[, i] <= uniqueValues[j])
+  		qx2[j] = mean(Backward_stats[, i] <= uniqueValues[j])
   	}
     
     qqplot(x = qx1,
@@ -1913,7 +1911,7 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
     abline(0, 1, lty = 1, col = "red", lwd = 2)
     
     if (nrow(Forward_stats) > 1000) {
-    thinning2 = seq(from = floor(nrow(Forward_stats) / 5), to = nrow(Forward_stats), length.out = 1000)
+    thinning2 = seq(from = floor(nrow(Forward_stats) / 10), to = nrow(Forward_stats), length.out = 1000)
     Forward_test2 = Forward_stats[thinning2, i]
     Backward_test2 = Backward_stats[thinning2, i]
     } else {
@@ -1923,7 +1921,7 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
     text(paste("Backward Mean:", round(mean(Backward_stats[, i]), 4),
                "\nForward Mean:", round(mean(Forward_stats[, i]), 4),
                "\nt-test p-value:", round(t.test(Backward_test2, Forward_test2)$p.value, 4),
-               "\nMann-Whitney p-value:", round(wilcox.test(Backward_test2, Forward_test2)$p.value,4)),
+               "\nMann-Whitney p-value:", round(wilcox.test(Backward_test2, Forward_test2)$p.value, 4)),
          x = 0.65,
          y = 0.15,
          cex = 0.4)
