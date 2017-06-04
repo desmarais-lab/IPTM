@@ -485,14 +485,16 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 		int iter = 0;
 		for (int j = 0; j < iJi.n_rows; j++) {
 			if (i != j) {
-				normal[iter] = exp(delta + log(lambda(i, j))) + 1;
+				if (lambda(i, j) > 0) {
+				normal[iter] = log(exp(delta + log(lambda(i, j))) + 1);
 				prob += (delta + log(lambda(i, j))) * iJi(i, j);
 				iter = iter + 1;
+				}
 			}
 		  }
-		double normalizer = prod(normal) - 1; 
+		double normalizer = exp(sum(normal)) - 1; 
 		if (normalizer < 0.0000001) {
-		  	normalizer += 0.0000001;
+		  	normalizer = 0.0000001;
 		  }
 		edges += prob - log(normalizer);
 	}
