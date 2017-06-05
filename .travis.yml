@@ -25,7 +25,11 @@ r_packages:
   - MCMCpack
   - entropy
   - Rcpp
+  - RcppArmadillo
   - lda
+  - reshape
+  - coda
+  - combninat
 
 notifications:
   email:
