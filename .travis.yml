@@ -29,7 +29,7 @@ r_packages:
   - lda
   - reshape
   - coda
-  - combninat
+  - combinat
 
 notifications:
   email:
