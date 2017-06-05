@@ -7,7 +7,7 @@
 GiR.Gibbs(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
   nvec, prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters,
   netstat = c("dyadic"), base.edge, base.text, generate_PP_plots = TRUE,
-  seed = 1)
+  generate_trace_plots = FALSE, seed = 1)
 }
 \arguments{
 \item{Nsamp}{number of GiR samples to be generated}
@@ -49,6 +49,8 @@ GiR.Gibbs(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
 \item{base.text}{artificial collection of documents to be used as initial state of history}
 
 \item{generate_PP_plots}{Logical indicating whether to draw PP plots}
+
+\item{generate_trace_plots}{Logical indicating whether to draw trace plots for each inference}
 
 \item{seed}{an integer value which controls random number generation}
 }
