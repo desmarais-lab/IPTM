@@ -283,14 +283,14 @@ IPTM_inference = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alp
 	beta.old = lapply(1:nIP, function(IP) {
       			 c(rmvnorm(1, prior.b.mean, prior.b.var))
       			 })
-	# initialize C, thdelta and Z
+	# initialize C, theta and Z
 	currentC = sample(1:nIP, K, replace = TRUE)
-	thdelta = rdirichlet_cpp(length(edge), alpha * mvec)
+	theta = rdirichlet_cpp(length(edge), alpha * mvec)
 	currentZ = lapply(seq(along = edge), function(d) {
     if (length(textlist[[d]]) > 0) {
-    		multinom_vec(length(textlist[[d]]), thdelta[d, ])
+    		multinom_vec(length(textlist[[d]]), theta[d, ])
     	} else {
-    		multinom_vec(1, thdelta[d, ])
+    		multinom_vec(1, theta[d, ])
     	}
     })
 	p.d = t(vapply(seq(along = edge), function(d) {
@@ -613,29 +613,24 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 	beta.old = lapply(1:nIP, function(IP) {
       			 c(rmvnorm(1, prior.b.mean, prior.b.var))
       			 })
-	# initialize C, thdelta and Z
-	currentC = sample(1:nIP, K, replace = TRUE)
-	thdelta = rdirichlet_cpp(length(edge), alpha * mvec)
-	currentZ = lapply(seq(along = edge), function(d) {
-    if (length(textlist[[d]]) > 0) {
-    		multinom_vec(length(textlist[[d]]), thdelta[d, ])
-    	} else {
-    		multinom_vec(1, thdelta[d, ])
-    	}
-    })
-	p.d = t(vapply(seq(along = edge), function(d) {
-	  vapply(1L:nIP, function(IP) {
-	    sum(currentZ[[d]] %in% which(currentC == IP))
-	  }, c(1)) / length(currentZ[[d]])
-	}, rep(1, nIP)))
+	# initialize C, theta and Z
+	 currentC = sample(1:nIP, K, replace = TRUE)
+  	 theta = rdirichlet_cpp(length(edge), alpha * mvec)
+     currentZ = lapply(seq(along = edge), function(d) {
+     			 multinom_vec(max(1, length(textlist[[d]])), theta[d, ])
+ 				 })
+ 	 p.d = t(vapply(seq(along = edge), function(d) {
+    	vapply(1L:nIP, function(IP) {
+      	sum(currentZ[[d]] %in% which(currentC == IP))
+  	 		 }, c(1)) / length(currentZ[[d]])
+ 		 }, rep(1, nIP)))
 
     # initialize beta
-    sigma = 1
     L = 3
     P = 1 * ("intercept" %in% netstat) + L * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
     bmat = list()
 	for (IP in 1L:nIP) {
-		bmat[[IP]] = matrix(0, nrow = P, ncol = (n_B - burn) / thinning)
+		bmat[[IP]] = matrix(beta.old[[IP]], nrow = P, ncol = (n_B - burn) / thinning)
   	}
   	deltamat = rep(delta, n_d)
 
@@ -653,7 +648,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
   	lambda = list()
     LambdaiJi = list()
 	observediJi = list()
-		support = gibbs.measure.support(length(node)-1)
+	support = gibbs.measure.support(length(node) - 1)
 	for (d in edge2) {
    	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
    	 	X = lapply(node, function(i) {
@@ -663,6 +658,338 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 		lambda[[d]] = lambda_cpp(p.d[d,], XB)
     	for (i in node) {
     		iJi[[d]][i, -i] = r.gibbs.measure(1, lambda[[d]][i, -i], delta, support)
+    		}
+    	}
+
+    #start outer iteration
+    for (o in 1L:out) {
+      
+      if (optimize) {
+      #update the hyperparameter alpha and mvec
+      vec = AlphamvecOpt(K, currentZ[edge2], alpha, mvec, 5)
+      alpha = sum(vec)
+      mvec = vec / alpha
+      }
+     # Data augmentation
+      for (d in edge2) {
+   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	X = lapply(node, function(i) {
+  	        Netstats(history.t, node, i, netstat)
+            })
+   	 	XB = MultiplyXBList(X, beta.old)     
+		lambda[[d]] = lambda_cpp(p.d[d,], XB)
+		#calculate the resampling probability	
+		for (i in node[-as.numeric(edge[[d]][1])]) {
+			for (j in sample(node[-1], length(node) - 1)) {
+				probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], j)
+				iJi[[d]][i, j] = multinom_vec(1, probij) - 1		
+				}
+		}
+		iJi[[d]][as.numeric(edge[[d]][1]),] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
+		LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+		observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+		}	 
+	
+    	  textlist.raw = unlist(textlist[edge2])
+    	  table.W = lapply(1L:K, function(k) {
+      			tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
+      			})    
+      	for (d in edge2) {
+      		textlist.d = textlist[[d]]
+        		if (length(textlist.d) > 0) {
+        			topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
+       			wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
+        		} else {
+        			topicpart.d = 0
+        			wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
+        		}
+        		edgepart.d = EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
+        		timepart.d = TimeInEqZ(LambdaiJi[[d]], timeinc[d])
+        		observed.d = ObservedInEqZ(observediJi[[d]]) 
+        		fixedpart = topicpart.d + edgepart.d + timepart.d + observed.d 
+        		for (w in 1L:length(currentZ[[d]])) {
+          		const.Z = fixedpart + wordpart.d[w, ]
+          		const.Z = const.Z - max(const.Z)
+          		zw.old = currentZ[[d]][w]
+          		zw.new = multinom_vec(1, exp(const.Z))
+          		if (zw.new != zw.old) {
+            			currentZ[[d]][w] = zw.new
+            			topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
+            			if (length(textlist.d) > 0) {	
+            				wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
+            			}
+            			table.W = lapply(1L:K, function(k) {
+      				  tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
+      				})
+      				p.d[d, ] = vapply(1L:nIP, function(IP) {
+	 					sum(currentZ[[d]] %in% which(currentC == IP))
+	 				}, c(1)) / length(currentZ[[d]])
+      				LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+         			observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+          		}
+        		}
+       	}		
+
+      # C update given Z and B - withinning each document d
+      for (k in sort(unique(unlist(currentZ[edge2])))) { 
+        document.k = which(vapply(currentZ, function(d){k %in% d}, c(1)) == 1)
+        document.k = document.k[document.k %in% edge2]
+        const.C = rep(NA, nIP)
+        for (IP in 1:nIP) {
+          	currentC[k] = IP
+          	p.d = t(vapply(seq(along = edge), function(d) {
+    				vapply(1L:nIP, function(IP) {
+      				sum(currentZ[[d]] %in% which(currentC == IP))
+  	 				 }, c(1)) / length(currentZ[[d]])
+ 					 }, rep(1, nIP)))
+          	for (d in edge2) {
+           		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    	   	   		X = lapply(node, function(i) {
+               		Netstats(history.t, node, i, netstat)
+               		})
+    	       		XB = MultiplyXBList(X, beta.old)    
+           		lambda[[d]] = lambda_cpp(p.d[d,], XB)
+		       	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+           		observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+          	}
+          const.C[IP] = sum(vapply(document.k, function(d) {
+          				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + 
+          				TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
+    						  ObservedInEqZ(observediJi[[d]]) 
+          				}, c(1))) / length(document.k)
+      	}
+        const.C = const.C - max(const.C)
+        currentC[k] = multinom_vec(1, exp(const.C))
+     }
+    
+    if (plot) {
+      entropy.mat = c(entropy.mat, entropy.empirical(currentC))
+      alpha.mat = rbind(alpha.mat, alpha)
+      logWZ.mat = c(logWZ.mat, logWZ(K, currentZ[edge2], textlist[edge2], table.W, alpha, mvec, betas, nvec))
+    }
+    if (o != 1) {
+    	accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
+    	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = c(0.0005, 0.1))
+    }
+    
+    p.d = t(vapply(seq(along = edge), function(d) {
+    				vapply(1L:nIP, function(IP) {
+      				sum(currentZ[[d]] %in% which(currentC == IP))
+  	 				 }, c(1)) / length(currentZ[[d]])
+ 					 }, rep(1, nIP)))  
+    for (d in edge2) {
+        	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    	    X = lapply(node, function(i) {
+            Netstats(history.t, node, i, netstat)
+       		})
+    	    XB = MultiplyXBList(X, beta.old)   
+    	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
+	    LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+        observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+	}
+	 
+	# beta update
+	prior.old1 = sum(vapply(1L:nIP, function(IP) {
+		  		 dmvnorm(beta.old[[IP]], prior.b.mean, prior.b.var, log = TRUE)
+		  		 }, c(1))) 
+	post.old1 = sum(vapply(edge2, function(d) {
+	     	    EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) +
+    			 	ObservedInEqZ(observediJi[[d]])
+    			 	}, c(1))) / length(edge2)
+  
+	options(warn = -1)
+    proposal.var = lapply(1:nIP, function(IP){diag(P)})
+    if (o != 1) {
+    for (IP in 1:nIP) {
+     	proposal.var[[IP]] = cor(t(bmat[[IP]]))
+        proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
+        if (sum(eigen(proposal.var[[IP]])$values < 0 ) > 0) {
+         	proposal.var[[IP]] = diag(P)
+        }
+    }
+   }
+   options(warn = 0)
+    for (i3 in 1L:n_B) {
+    		beta.new = lapply(1L:nIP, function(IP) {
+          		   rmvnorm(1, beta.old[[IP]], sigma_Q[1] * proposal.var[[IP]])
+         		   }) 
+        for (d in edge2) {
+           XB = MultiplyXBList(X, beta.new)
+           lambda[[d]] = lambda_cpp(p.d[d,], XB)    
+           LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+	       observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+        }
+        prior.new1 = sum(vapply(1L:nIP, function(IP) {
+        				 dmvnorm(beta.new[[IP]], prior.b.mean, prior.b.var, log = TRUE)
+        				 }, c(1))) 
+        post.new1 = sum(vapply(edge2, function(d) {
+    			   		EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
+    			    	ObservedInEqZ(observediJi[[d]])
+    			    	}, c(1))) / length(edge2)
+    		loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
+      
+        if (log(runif(1, 0, 1)) < loglike.diff) {
+        		for (IP in 1L:nIP) {
+         		beta.old[[IP]] = beta.new[[IP]]
+         	}
+         	prior.old1 = prior.new1
+         	post.old1 = post.new1
+        }
+         if (i3 > burn & i3 %% (thinning) == 0) {
+        		for (IP in 1L:nIP) {
+           		bmat[[IP]][ , (i3 - burn) / thinning] = beta.old[[IP]]
+           	}
+    		}
+    }
+    
+    #delta update
+    for (d in edge2) {
+    		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    	X = lapply(node, function(i) {
+            Netstats(history.t, node, i, netstat)
+       		})
+    	 	XB = MultiplyXBList(X, beta.old)
+     	lambda[[d]] = lambda_cpp(p.d[d,], XB)  
+    }
+    prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
+    post.old2 = sum(vapply(edge2, function(d) {
+    				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
+    				}, c(1))) / length(edge2)
+ 	for (i4 in 1L:n_d) {
+        delta.new = rnorm(1, delta, sqrt(sigma_Q[2]))
+        prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
+        post.new2 = sum(vapply(edge2, function(d) {
+        				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta.new)
+        				}, c(1))) / length(edge2)
+        loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 
+        if (log(runif(1, 0, 1)) < loglike.diff2) {
+        		delta = delta.new
+         	prior.old2 = prior.new2
+         	post.old2 = post.new2
+        } 
+            deltamat[i4] = delta
+    	}
+ }
+         
+  if (plot) {
+    par(mfrow = c(2, 2))
+    matplot(alpha.mat, lty = 1, type = "l", col = 1L:nIP, 
+  	        xlab = "(Outer) Iterations", ylab = "alpha")
+  	abline(h = mean(alpha.mat), lty = 1, col = 1L:nIP)
+	title("Convergence of Optimized alpha")
+	plot(logWZ.mat, type = "l", 
+	       xlab = "(Outer) Iterations", ylab = "logWZ")
+	abline(h = mean(logWZ.mat), lty = 1)
+	title("Convergence of logWZ")
+	matplot(bmat[[1]][1,], lty = 1, col = 1L:P, type = "l", 
+	          main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
+	abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
+	plot(deltamat, type = "l", 
+	xlab = "(Outer) Iterations", ylab = "Entropy of IP")
+	abline(h = mean(deltamat), lty = 1)
+	title("Convergence of delta")
+  }
+     
+  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat)
+  return(chain.final)
+}
+
+
+#' @title IPTM_inference.data
+#' @description Iterate Markov Chain Monte Carlo (MCMC) algorithm using Gibbs measure to sequentially update the assignments of Z, C and B
+#'
+#' @param edge list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)
+#' @param node nodelist containing the ID of nodes (ID starting from 1)
+#' @param textlist list of text (length=number of documents in total) containing the words in each document
+#' @param vocabulary all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns specified by the user
+#' @param K total number of topics specified by the user
+#' @param sigma_Q proposal distribution variance parameter for beta and delta
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param betas Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
+#' @param prior.b.mean mean vector of b in multivariate normal distribution
+#' @param prior.b.var covairance matrix of b in multivariate normal distribution
+#' @param prior.delta parameter of delta in Normal prior
+#' @param out size of outer iterations 
+#' @param n_B size of third inner iteration for updates of B
+#' @param n_d size of third inner iteration for updates of delta
+#' @param burn iterations to be discarded at the beginning of beta chain
+#' @param thinning the thinningning interval of beta chain
+#' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
+#' @param plot to plot the convergence diagnostics or not (TRUE/FALSE)
+#' @param optimize to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)
+#'
+#' @return MCMC output containing IP assignment, topic assignment, and (beta, mu, delta) chain 
+#'
+#' @export
+IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, 
+					out, n_B, n_d, burn, thinning, netstat, plot = FALSE, optimize = FALSE) {
+   
+  # trim the edge so that we only model edges after 384 hours
+	timestamps = vapply(edge, function(d) {
+  			  d[[3]]
+ 			  }, c(1))
+
+    edge2 = which_int(384, timestamps) : length(edge)
+    timeinc = c(timestamps[1], timestamps[-1] - timestamps[-length(timestamps)])
+   
+  # initialize alpha, mvec, delta, nvec, delta, lvec, and gammas
+ 	W = length(vocabulary)
+  	phi = lapply(1L:K, function(k) {
+		rdirichlet_cpp(1, betas * nvec)
+	})
+	delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
+	beta.old = lapply(1:nIP, function(IP) {
+      			 c(rmvnorm(1, prior.b.mean, prior.b.var))
+      			 })
+	# initialize C, theta and Z
+	 currentC = sample(1:nIP, K, replace = TRUE)
+  	 theta = rdirichlet_cpp(length(edge), alpha * mvec)
+     currentZ = lapply(seq(along = edge), function(d) {
+     			 multinom_vec(max(1, length(textlist[[d]])), theta[d, ])
+ 				 })
+ 	 p.d = t(vapply(seq(along = edge), function(d) {
+    	vapply(1L:nIP, function(IP) {
+      	sum(currentZ[[d]] %in% which(currentC == IP))
+  	 		 }, c(1)) / length(currentZ[[d]])
+ 		 }, rep(1, nIP)))
+
+    # initialize beta
+    L = 3
+    P = 1 * ("intercept" %in% netstat) + L * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
+    bmat = list()
+	for (IP in 1L:nIP) {
+		bmat[[IP]] = matrix(beta.old[[IP]], nrow = P, ncol = (n_B - burn) / thinning)
+  	}
+  	deltamat = rep(delta, n_d)
+
+    # to check the convergence  
+    if (plot) {
+     	logWZ.mat = c()							  
+     	alpha.mat = c()
+     	entropy.mat = c()
+    }
+
+  	#initialize the latent sender-receiver pairs
+  	iJi = lapply(seq(along = edge), function(d) {
+  		matrix(0, nrow = length(node), ncol = length(node))
+  	})
+  	lambda = list()
+    LambdaiJi = list()
+	observediJi = list()
+	for (d in edge2) {
+   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	X = lapply(node, function(i) {
+  	        Netstats(history.t, node, i, netstat)
+            })
+   	 	XB = MultiplyXBList(X, beta.old)     
+		lambda[[d]] = lambda_cpp(p.d[d,], XB)
+    	for (i in node) {
+    		while (sum(iJi[[d]][i, ]) == 0) {
+    			iJi[[d]][i, -i] = rbinom(length(node) - 1, 1, 0.5)
+    		}
     		}
     	}
 
@@ -736,17 +1063,17 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
        	}		
 
       # C update given Z and B - withinning each document d
-      for (k in unique(unlist(currentZ[edge2]))) { 
+      for (k in sort(unique(unlist(currentZ[edge2])))) { 
         document.k = which(vapply(currentZ, function(d){k %in% d}, c(1)) == 1)
         document.k = document.k[document.k %in% edge2]
         const.C = rep(NA, nIP)
-        for (IP in 1L:nIP) {
-          		currentC[k] = IP
-          	for (d in document.k) {
-            		p.d[d, ] =  vapply(1L:nIP, function(IP) {
-              				sum(currentZ[[d]] %in% which(currentC == IP))
-            					}, c(1)) / length(currentZ[[d]])
-          	}
+        for (IP in 1:nIP) {
+          	currentC[k] = IP
+          	p.d = t(vapply(seq(along = edge), function(d) {
+    				vapply(1L:nIP, function(IP) {
+      				sum(currentZ[[d]] %in% which(currentC == IP))
+  	 				 }, c(1)) / length(currentZ[[d]])
+ 					 }, rep(1, nIP)))
           	for (d in edge2) {
            		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
     	   	   		X = lapply(node, function(i) {
@@ -775,12 +1102,15 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     if (o != 1) {
     	accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
     	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = c(0.0005, 0.1))
-    }  
+    }
+    
+    p.d = t(vapply(seq(along = edge), function(d) {
+    				vapply(1L:nIP, function(IP) {
+      				sum(currentZ[[d]] %in% which(currentC == IP))
+  	 				 }, c(1)) / length(currentZ[[d]])
+ 					 }, rep(1, nIP)))  
     for (d in edge2) {
-    		p.d[d, ] = vapply(1L:nIP, function(IP) {
-              	   sum(currentZ[[d]] %in% which(currentC == IP))
-       			   }, c(1)) / length(currentZ[[d]])
-     	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+        	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
     	    X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
        		})
@@ -790,7 +1120,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
         observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
 	}
 	 
-	# beta and delta update
+	# beta update
 	prior.old1 = sum(vapply(1L:nIP, function(IP) {
 		  		 dmvnorm(beta.old[[IP]], prior.b.mean, prior.b.var, log = TRUE)
 		  		 }, c(1))) 
@@ -800,16 +1130,17 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     			 	}, c(1))) / length(edge2)
   
 	options(warn = -1)
-	#proposal.var = list()
-  #  for (IP in 1L:nIP) {
-  #   	proposal.var[[IP]] = cor(t(bmat[[IP]]))
-  #      proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
-  #      if (sum(eigen(proposal.var[[IP]])$values < 0 ) > 0) {
-  #       	proposal.var[[IP]] = diag(P)
-  #      }
-  #  }
     proposal.var = lapply(1:nIP, function(IP){diag(P)})
-    options(warn = 0)
+    if (o != 1) {
+    for (IP in 1:nIP) {
+     	proposal.var[[IP]] = cor(t(bmat[[IP]]))
+        proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
+        if (sum(eigen(proposal.var[[IP]])$values < 0 ) > 0) {
+         	proposal.var[[IP]] = diag(P)
+        }
+    }
+   }
+   options(warn = 0)
     for (i3 in 1L:n_B) {
     		beta.new = lapply(1L:nIP, function(IP) {
           		   rmvnorm(1, beta.old[[IP]], sigma_Q[1] * proposal.var[[IP]])
@@ -831,7 +1162,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       
         if (log(runif(1, 0, 1)) < loglike.diff) {
         		for (IP in 1L:nIP) {
-         		beta.old[[IP]]  = beta.new[[IP]]
+         		beta.old[[IP]] = beta.new[[IP]]
          	}
          	prior.old1 = prior.new1
          	post.old1 = post.new1
@@ -842,16 +1173,22 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
            	}
     		}
     }
+    
+    #delta update
     for (d in edge2) {
-    	 XB = MultiplyXBList(X, beta.old)
-     lambda[[d]] = lambda_cpp(p.d[d,], XB)  
+    		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    	X = lapply(node, function(i) {
+            Netstats(history.t, node, i, netstat)
+       		})
+    	 	XB = MultiplyXBList(X, beta.old)
+     	lambda[[d]] = lambda_cpp(p.d[d,], XB)  
     }
     prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
     post.old2 = sum(vapply(edge2, function(d) {
     				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
     				}, c(1))) / length(edge2)
  	for (i4 in 1L:n_d) {
-        delta.new = rnorm(1, delta, sigma_Q[2])
+        delta.new = rnorm(1, delta, sqrt(sigma_Q[2]))
         prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
         post.new2 = sum(vapply(edge2, function(d) {
         				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta.new)
@@ -885,335 +1222,6 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 	title("Convergence of delta")
   }
      
-  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat, E = iJi[edge2])
-  return(chain.final)
-}
-
-
-#' @title IPTM_inference.data
-#' @description Iterate Markov Chain Monte Carlo (MCMC) algorithm using Gibbs measure to sequentially update the assignments of Z, C and B
-#'
-#' @param edge list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)
-#' @param node nodelist containing the ID of nodes (ID starting from 1)
-#' @param textlist list of text (length=number of documents in total) containing the words in each document
-#' @param vocabulary all vocabularies used over the corpus
-#' @param nIP total number of interaction patterns specified by the user
-#' @param K total number of topics specified by the user
-#' @param sigma_Q proposal distribution variance parameter for beta and delta
-#' @param alpha Dirichlet concentration prior for document-topic distribution
-#' @param mvec Dirichlet base prior for document-topic distribution
-#' @param betas Dirichlet concentration prior for topic-word distribution
-#' @param nvec Dirichlet base prior for topic-word distribution
-#' @param prior.b.mean mean vector of b in multivariate normal distribution
-#' @param prior.b.var covairance matrix of b in multivariate normal distribution
-#' @param prior.delta parameter of delta in Normal prior
-#' @param out size of outer iterations 
-#' @param n_B size of third inner iteration for updates of B
-#' @param n_d size of third inner iteration for updates of delta
-#' @param burn iterations to be discarded at the beginning of beta chain
-#' @param thinning the thinningning interval of beta chain
-#' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
-#' @param plot to plot the convergence diagnostics or not (TRUE/FALSE)
-#' @param optimize to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)
-#'
-#' @return MCMC output containing IP assignment, topic assignment, and (beta, mu, delta) chain 
-#'
-#' @export
-IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, 
-                                out, n_B, n_d, burn, thinning, netstat, plot = FALSE, optimize = FALSE) {
-  
-  # trim the edge so that we only model edges after 384 hours
-  timestamps = vapply(edge, function(d) {
-    d[[3]]
-  }, c(1))
-  
-  edge2 = which_int(384, timestamps) : length(edge)
-  timeinc = c(timestamps[1], timestamps[-1] - timestamps[-length(timestamps)])
-  
-  # initialize alpha, mvec, delta, nvec, delta, lvec, and gammas
-  W = length(vocabulary)
-  phi = lapply(1L:K, function(k) {
-    rdirichlet_cpp(1, betas * nvec)
-  })
-  delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
-  beta.old = lapply(1:nIP, function(IP) {
-    c(rmvnorm(1, prior.b.mean, prior.b.var))
-  })
-  # initialize C, thdelta and Z
-  currentC = sample(1:nIP, K, replace = TRUE)
-  thdelta = rdirichlet_cpp(length(edge), alpha * mvec)
-  currentZ = lapply(seq(along = edge), function(d) {
-    if (length(textlist[[d]]) > 0) {
-      multinom_vec(length(textlist[[d]]), thdelta[d, ])
-    } else {
-      multinom_vec(1, thdelta[d, ])
-    }
-  })
-  p.d = t(vapply(seq(along = edge), function(d) {
-    vapply(1L:nIP, function(IP) {
-      sum(currentZ[[d]] %in% which(currentC == IP))
-    }, c(1)) / length(currentZ[[d]])
-  }, rep(1, nIP)))
-  
-  # initialize beta
-  sigma = 1
-  L = 3
-  P = 1 * ("intercept" %in% netstat) + L * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
-  bmat = list()
-  for (IP in 1L:nIP) {
-    bmat[[IP]] = matrix(0, nrow = P, ncol = (n_B - burn) / thinning)
-  }
-  deltamat = rep(delta, n_d)
-  
-  # to check the convergence  
-  if (plot) {
-    logWZ.mat = c()							  
-    alpha.mat = c()
-    entropy.mat = c()
-  }
-  
-  #initialize the latent sender-receiver pairs
-  iJi = lapply(seq(along = edge), function(d) {
-    matrix(0, nrow = length(node), ncol = length(node))
-  })
-  lambda = list()
-  LambdaiJi = list()
-  observediJi = list()
-  for (d in edge2) {
-    history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
-    X = lapply(node, function(i) {
-      Netstats(history.t, node, i, netstat)
-    })
-    XB = MultiplyXBList(X, beta.old)     
-    lambda[[d]] = lambda_cpp(p.d[d,], XB)
-    for (i in node) {
-      iJi[[d]][i, -i] = rbinom(length(node) - 1, 1, 0.5)
-    }
-  }
-  
-  #start outer iteration
-  for (o in 1L:out) { print(o)
-    if (optimize) {
-      #update the hyperparameter alpha and mvec
-      vec = AlphamvecOpt(K, currentZ[edge2], alpha, mvec, 5)
-      alpha = sum(vec)
-      mvec = vec / alpha
-    }
-    # Data augmentation
-    for (d in edge2) {
-      history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
-      X = lapply(node, function(i) {
-        Netstats(history.t, node, i, netstat)
-      })
-      XB = MultiplyXBList(X, beta.old)     
-      lambda[[d]] = lambda_cpp(p.d[d,], XB)
-      #calculate the resampling probability		
-      for (i in node[-as.numeric(edge[[d]][1])]) {
-        for (j in sample(node[-1], length(node) - 1)) {
-          probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], j)
-          iJi[[d]][i, j] = multinom_vec(1, probij) - 1		
-        }
-      }
-      iJi[[d]][as.numeric(edge[[d]][1]),] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
-      LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-      observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
-    }	 
-    
-    textlist.raw = unlist(textlist[edge2])
-    table.W = lapply(1L:K, function(k) {
-      tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
-    })    
-    for (d in edge2) {
-      textlist.d = textlist[[d]]
-      if (length(textlist.d) > 0) {
-        topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
-        wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
-      } else {
-        topicpart.d = 0
-        wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
-      }
-      edgepart.d = EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
-      timepart.d = TimeInEqZ(LambdaiJi[[d]], timeinc[d])
-      observed.d = ObservedInEqZ(observediJi[[d]]) 
-      fixedpart = topicpart.d + edgepart.d + timepart.d + observed.d 
-      for (w in 1L:length(currentZ[[d]])) {
-        const.Z = fixedpart + wordpart.d[w, ]
-        const.Z = const.Z - max(const.Z)
-        zw.old = currentZ[[d]][w]
-        zw.new = multinom_vec(1, exp(const.Z))
-        if (zw.new == 0) { browser()}
-        if (zw.new != zw.old) {
-          currentZ[[d]][w] = zw.new
-          topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
-          if (length(textlist.d) > 0) {	
-            wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
-          }
-          table.W = lapply(1L:K, function(k) {
-            tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
-          })
-          p.d[d, ] = vapply(1L:nIP, function(IP) {
-            sum(currentZ[[d]] %in% which(currentC == IP))
-          }, c(1)) / length(currentZ[[d]])
-          LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-          observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
-        }
-      }
-    }		
-    
-    # C update given Z and B - withinning each document d
-    for (k in unique(unlist(currentZ[edge2]))) { 
-      document.k = which(vapply(currentZ, function(d){k %in% d}, c(1)) == 1)
-      document.k = document.k[document.k %in% edge2]
-      const.C = rep(NA, nIP)
-      for (IP in 1L:nIP) {
-          currentC[k] = IP
-          for (d in document.k) {
-            p.d[d, ] =  vapply(1L:nIP, function(IP) {
-              sum(currentZ[[d]] %in% which(currentC == IP))
-            }, c(1)) / length(currentZ[[d]])
-          }
-          for (d in edge2) {
-            history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
-            X = lapply(node, function(i) {
-              Netstats(history.t, node, i, netstat)
-            })
-            XB = MultiplyXBList(X, beta.old)    
-            lambda[[d]] = lambda_cpp(p.d[d,], XB)
-            LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-            observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
-          }
-        const.C[IP] = sum(vapply(document.k, function(d) {
-          EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + 
-            TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
-            ObservedInEqZ(observediJi[[d]]) 
-        }, c(1))) / length(document.k)
-      }
-      const.C = const.C - max(const.C)
-      currentC[k] = multinom_vec(1, exp(const.C))
-    }
-    
-    if (plot) {
-      entropy.mat = c(entropy.mat, entropy.empirical(currentC))
-      alpha.mat = rbind(alpha.mat, alpha)
-      logWZ.mat = c(logWZ.mat, logWZ(K, currentZ[edge2], textlist[edge2], table.W, alpha, mvec, betas, nvec))
-    }
-    
-    if (o != 1) {
-		accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
-    	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = c(0.0005, 0.05))
-    }
-    
-    for (d in edge2) {
-      p.d[d, ] = vapply(1L:nIP, function(IP) {
-        sum(currentZ[[d]] %in% which(currentC == IP))
-      }, c(1)) / length(currentZ[[d]])
-      history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
-      X = lapply(node, function(i) {
-        Netstats(history.t, node, i, netstat)
-      })
-      XB = MultiplyXBList(X, beta.old)   
-      lambda[[d]] = lambda_cpp(p.d[d,], XB)
-      LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-      observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
-    }
-    
-    # beta and delta update
-    prior.old1 = sum(vapply(1L:nIP, function(IP) {
-      dmvnorm(beta.old[[IP]], prior.b.mean, prior.b.var, log = TRUE)
-    }, c(1))) 
-    post.old1 = sum(vapply(edge2, function(d) {
-      EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) +
-        ObservedInEqZ(observediJi[[d]])
-    }, c(1))) / length(edge2)
-    
-    options(warn = -1)
-    proposal.var = list()
-    for (IP in 1L:nIP) {
-      proposal.var[[IP]] = cor(t(bmat[[IP]]))
-      proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
-      if (sum(eigen(proposal.var[[IP]])$values < 0 ) > 0) {
-        proposal.var[[IP]] = diag(P)
-      }
-    }
-    #proposal.var = lapply(1:nIP, function(IP){diag(P)})
-    options(warn = 0)
-    for (i3 in 1L:n_B) {
-      beta.new = lapply(1L:nIP, function(IP) {
-        rmvnorm(1, beta.old[[IP]], sigma_Q[1] * proposal.var[[IP]])
-      }) 
-      for (d in edge2) {
-        XB = MultiplyXBList(X, beta.new)
-        lambda[[d]] = lambda_cpp(p.d[d,], XB)    
-        LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-        observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
-      }
-      prior.new1 = sum(vapply(1L:nIP, function(IP) {
-        dmvnorm(beta.new[[IP]], prior.b.mean, prior.b.var, log = TRUE)
-      }, c(1))) 
-      post.new1 = sum(vapply(edge2, function(d) {
-        EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
-          ObservedInEqZ(observediJi[[d]])
-      }, c(1))) / length(edge2)
-
-     loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
-     if (is.na(loglike.diff)) { browser()}
-      if (log(runif(1, 0, 1)) < loglike.diff) {
-        for (IP in 1L:nIP) {
-          beta.old[[IP]]  = beta.new[[IP]]
-        }
-        prior.old1 = prior.new1
-        post.old1 = post.new1
-      }
-      if (i3 > burn & i3 %% (thinning) == 0) {
-        for (IP in 1L:nIP) {
-          bmat[[IP]][ , (i3 - burn) / thinning] = beta.old[[IP]]
-        }
-      }
-    }
-    for (d in edge2) {
-      XB = MultiplyXBList(X, beta.old)
-      lambda[[d]] = lambda_cpp(p.d[d,], XB)  
-    }
-    prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-    post.old2 = sum(vapply(edge2, function(d) {
-      EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
-    }, c(1))) / length(edge2)
-    for (i4 in 1L:n_d) {
-      delta.new = rnorm(1, delta, sigma_Q[2])
-      prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-      post.new2 = sum(vapply(edge2, function(d) {
-        EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta.new)
-      }, c(1))) / length(edge2)
-      loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 
-      if (log(runif(1, 0, 1)) < loglike.diff2) {
-        delta = delta.new
-        prior.old2 = prior.new2
-        post.old2 = post.new2
-      } 
-      deltamat[i4] = delta
-    }
-  }
-  
-  if (plot) {
-    par(mfrow = c(2, 2))
-    burnin = 1:floor(0.1 * out)
-    matplot(alpha.mat[-burnin], lty = 1, type = "l", col = 1L:nIP, 
-            xlab = "(Outer) Iterations", ylab = "alpha")
-    abline(h = mean(alpha.mat[-burnin]), lty = 1, col = 1L:nIP)
-    title("Convergence of Optimized alpha")
-    plot(logWZ.mat[-burnin], type = "l", 
-         xlab = "(Outer) Iterations", ylab = "logWZ")
-    abline(h = mean(logWZ.mat[-burnin]), lty = 1)
-    title("Convergence of logWZ")
-    matplot(bmat[[1]][1,], lty = 1, col = 1L:P, type = "l", 
-            main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
-    abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
-    plot(deltamat, type = "l", 
-         xlab = "(Outer) Iterations", ylab = "Entropy of IP")
-    abline(h = mean(deltamat), lty = 1)
-    title("Convergence of delta")
-  }
-  
   chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat)
   return(chain.final)
 }
@@ -1420,8 +1428,8 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
     text[[base.length + d]] = rep(NA, N.d)
     
     if (!backward) {
-      thdelta.d = rdirichlet_cpp(1, alpha * mvec)	
-      topic.d = multinom_vec(max(1, N.d), thdelta.d)
+      theta.d = rdirichlet_cpp(1, alpha * mvec)	
+      topic.d = multinom_vec(max(1, N.d), theta.d)
       
         for (n in 1:N.d){
           text[[base.length + d]][n] = multinom_vec(1, phi[[topic.d[n]]])
@@ -1557,8 +1565,8 @@ CollapsedGenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha,
     text[[base.length + d]] = rep(NA, N.d)
     
     if (!backward) {
-      thdelta.d = rdirichlet_cpp(1, alpha * mvec)	
-      topic.d = multinom_vec(max(1, N.d), thdelta.d)
+      theta.d = rdirichlet_cpp(1, alpha * mvec)	
+      topic.d = multinom_vec(max(1, N.d), theta.d)
       
         for (n in 1:N.d){
           text[[base.length + d]][n] = multinom_vec(1, phi[[topic.d[n]]])
@@ -1648,20 +1656,18 @@ CollapsedGenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha,
 #' @param base.edge edges before 384 hours that is used to calculate initial history of interactions
 #' @param base.text texts corresponding to base.edge
 #' @param topic_token_assignments matrix of topic-token assignments
-#' @param latentiJi inferred latent sender-receiver matrix (only used for backward sampling)
 #' @param forward Logigal indicating whether we are generating forward samples
 #' @param backward_init Logigal indicating whether we are generating initial backward samples
 #' @param backward Logigal indicating whether we are generating backward samples
 #' @param base Logical indicating whether or not we are generating base edges (< 384)
-#' @param backward.edge edge from previous backward sample
 #' @param support support of latent edge vector Ji
 #'
 #' @return generated edge and text, parameter b used to generate those, and base (if base == TRUE)
 #'
 #' @export
 GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
-                        b, delta, currentC, netstat, base.edge, base.text, topic_token_assignments = NULL, latentiJi = list(),
-                        forward = FALSE, backward_init = FALSE, backward = FALSE, base = FALSE, backward.edge = NULL, support) {
+                        b, delta, currentC, netstat, base.edge, base.text, topic_token_assignments = NULL,
+                        forward = FALSE, backward_init = FALSE, backward = FALSE, base = FALSE, support) {
   W = length(vocabulary)
   phi = lapply(1L:K, function(k) {
     rdirichlet_cpp(1, betas * nvec)
@@ -1685,6 +1691,11 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     }, c(1)) / max(1, length(text[[d]]))
   }
   }
+ history.t = lapply(1:nIP, function(IP) {
+        	 	 lapply(1:3, function(l){
+         		matrix(0, length(node), length(node))
+       			})
+     		 })  
   word_type_topic_counts = matrix(0, W, K)
   iJi = matrix(0, length(node), length(node))
   options(warn = -1)
@@ -1693,9 +1704,8 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     text[[base.length + d]] = rep(NA, N.d)
     
     if (!backward) {
-      thdelta.d = rdirichlet_cpp(1, alpha * mvec)	
-      topic.d = multinom_vec(max(1, N.d), thdelta.d)
-      
+      theta.d = rdirichlet_cpp(1, alpha * mvec)	
+      topic.d = multinom_vec(max(1, N.d), theta.d)
         for (n in 1:N.d){
           text[[base.length + d]][n] = multinom_vec(1, phi[[topic.d[n]]])
         }
@@ -1716,13 +1726,7 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     p.d[base.length + d, ] = vapply(1L:nIP, function(IP) {
       sum(topic.d %in% which(currentC == IP))
     }, c(1)) / max(1, N.d)
-    if (base & t.d < 384) {
-      history.t = lapply(1:nIP, function(IP) {
-        			  lapply(1:3, function(l){
-         		  matrix(0, length(node), length(node))
-       			  })
-     			  })
-    } else {	
+    if (t.d >= 384) {
       history.t = History(edge, p.d, node, t.d + 10^(-10))
     }
     X = lapply(node, function(i) {
@@ -1927,124 +1931,7 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
          cex = 0.4)
   }
 }      
-
-#' @title GiR
-#' @description Getting it Right test for IPTM
-#'
-#' @param Nsamp number of GiR samples to be generated 
-#' @param nDocs number of documents to be generated per each sample
-#' @param node nodelist containing the ID of nodes (ID starting from 1)
-#' @param vocabulary all vocabularies used over the corpus
-#' @param nIP total number of interaction patterns specified by the user
-#' @param K total number of topics specified by the user
-#' @param nwords number of words in a document (fixed constant for now)
-#' @param alpha Dirichlet concentration prior for document-topic distribution
-#' @param mvec Dirichlet base prior for document-topic distribution
-#' @param betas Dirichlet concentration prior for topic-word distribution
-#' @param nvec Dirichlet base prior for topic-word distribution
-#' @param prior.b.mean mean vector of b in multivariate normal distribution
-#' @param prior.b.var covairance matrix of b in multivariate normal distribution
-#' @param prior.delta parameter of delta in Normal prior
-#' @param sigma_Q proposal distribution variance parameter for beta and delta
-#' @param niters (out, n_B, n_d, burn, thinning) in the inference
-#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
-#' @param base.edge artificial collection of documents to be used as initial state of history
-#' @param base.text artificial collection of documents to be used as initial state of history
-#' @param generate_PP_plots Logical indicating whether to draw PP plots
-#' @param seed an integer value which controls random number generation
-#'
-#' @return Forward and Backward samples and corresponding test results
-#'
-#' @export
-GiR = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
-               prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat = c("dyadic"), base.edge, base.text, 
-               generate_PP_plots = TRUE, seed = 1) {
-  
-  set.seed(seed)
-  P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
-
-  #Forward sampling
-  Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + 4 + nIP + K + length(vocabulary))
-  colnames(Forward_stats) = c(paste0("B_",1:P), "delta", "Mean_recipients", "Mean_timediff", "Mean_TopicIP", 
-                              paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), 
-                              paste0("Tokens_in_Word", 1:length(vocabulary)))
-  deltamat1 = rep(NA, Nsamp)
-  bmat1 = matrix(NA, nrow = Nsamp, ncol = nIP * P)
-  Zstat1 = rep(NA, Nsamp)
-  for (i in 1:Nsamp) { 
-    if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
-    b = lapply(1:nIP, function(IP) {
-      c(rmvnorm(1, prior.b.mean, prior.b.var))
-    })
-    delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
-    currentC = sample(1L:nIP, K, replace = TRUE)
-    Forward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
-                                  base.edge = base.edge, base.text = base.text, forward = TRUE) 
-    Forward_stats[i, ] = GiR_stats(Forward_sample, K, currentC, vocabulary, forward = TRUE, backward = FALSE)
-    
-    topic_token_counts = tabulate(unlist(lapply(Forward_sample$text, function(d){as.numeric(names(d))})), K)
-    bmat1[i, ] = unlist(b)
-    deltamat1[i] = delta
-    Zstat1[i] = mean(sapply(Forward_sample$text, function(d){entropy.empirical(as.numeric(names(d)))}))
-  }
-  
-  #Backward sampling
-  Backward_stats = matrix(NA, nrow = Nsamp, ncol = ncol(Forward_stats))
-  Backward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
-                                 base.edge = base.edge, base.text = base.text, backward_init = TRUE, forward = FALSE, backward = FALSE) 
-  deltamat2 = rep(NA, Nsamp)
-  bmat2 = matrix(NA, nrow = Nsamp, ncol = nIP * P)		
-  Zstat2 = rep(NA, Nsamp)	   
-  accept.rate = matrix(NA, nrow = Nsamp, ncol = 2)
-  iJi = list()
-  for (i in 1:Nsamp) { 
-    if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
-    Inference_samp = IPTM_inference(Backward_sample$edge, node, Backward_sample$text, vocabulary, nIP, K, sigma_Q, 
-                               alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
-                               out = niters[1], n_B = niters[2], n_d = niters[3], burn = niters[4], thinning = niters[5], 
-                               netstat)
-    b = lapply(1:nIP, function(IP) {
-        Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
-    })
-    delta = Inference_samp$D[length(Inference_samp$D)]
-    currentC = Inference_samp$C
-    latentiJi = Inference_samp$E
-    topic_token_assignments = Inference_samp$Z
-    for (d in 1:length(topic_token_assignments)) {
-      names(topic_token_assignments[[d]]) = Backward_sample$text[[d + length(base.text)]]
-    }
-    topic_token_counts = tabulate(unlist(Inference_samp$Z), K)
-    
-    Backward_sample = GenerateDocs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, 
-                                   base.edge = base.edge, base.text = base.text, topic_token_assignments = topic_token_assignments, latentiJi,
-                                   forward = FALSE, backward = TRUE, backward.edge = Backward_sample$edge)
-    Backward_stats[i, ] = GiR_stats(Backward_sample, K, currentC, vocabulary, forward = FALSE, backward = TRUE)
-    
-    bmat2[i, ] = unlist(b)
-    deltamat2[i] = delta
-    Zstat2[i] = mean(sapply(topic_token_assignments, function(d){entropy.empirical(d)}))
-    accept.rate[i, 1] = length(unique(Inference_samp$B[[1]][1,])) / ((niters[2] - niters[4]) / niters[5])
-    accept.rate[i, 2] = length(unique(Inference_samp$D)) / niters[3]
-    iJi[[i]] = latentiJi
-  }
-  
-  tstats = rep(0, ncol(Forward_stats))
-  wstats = rep(0, ncol(Forward_stats))
-  for (j in 1:ncol(Forward_stats)) {
-    thinning = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
-    Forward_test = Forward_stats[thinning, j]
-    Backward_test = Backward_stats[thinning, j]
-    tstats[j] = t.test(Backward_test, Forward_test)$p.value
-    wstats[j] = wilcox.test(Backward_test, Forward_test)$p.value
-  }
-  names(tstats) = names(wstats) = colnames(Forward_stats)						
-  if (generate_PP_plots) {
-    par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
-    GiR_PP_Plots(Forward_stats, Backward_stats)
-  }			
-  return(list(Forward = Forward_stats, Backward = Backward_stats, tstats = tstats, wstats = wstats, delta = cbind(deltamat1, deltamat2),
-              b1 = bmat1, b2= bmat2, Zstat1 = Zstat1, Zstat2 = Zstat2, accept.rate = accept.rate, iJi = iJi))
-}                         	
+             	
 
 #' @title GiR.Gibbs
 #' @description Getting it Right test for IPTM
@@ -2088,6 +1975,7 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
   colnames(Forward_stats) = c(paste0("B_",1:P), paste0("Send_",1:3), "delta", "Mean_recipients", "Mean_timediff", 
   							  "Mean_TopicIP", paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), paste0("Tokens_in_Word",1:length(vocabulary)))
   bmat1 = matrix(NA, nrow = Nsamp, ncol = nIP * P)
+  cmat1 = matrix(NA, nrow = Nsamp, ncol = K)
   for (i in 1:Nsamp) { 
     if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
     b = lapply(1:nIP, function(IP) {
@@ -2097,20 +1985,22 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
     currentC = sample(1L:nIP, K, replace = TRUE)
     Forward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b,
     		 								delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
-    		 								forward = TRUE, support = supportD) 
+    		 								forward = TRUE, base = FALSE, support = supportD) 
     Forward_stats[i, ] = GiR_stats(Forward_sample, K, currentC, vocabulary, forward = TRUE, backward = FALSE)
     bmat1[i, ] = unlist(b)
+    cmat1[i, ] = currentC
     }
   
   #Backward sampling
   Backward_stats = matrix(NA, nrow = Nsamp, ncol = ncol(Forward_stats))
   Backward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, 
   									   delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
-  									   backward_init = TRUE, forward = FALSE, backward = FALSE, support = supportD) 
+  									   backward_init = TRUE, forward = FALSE, backward = FALSE, base = FALSE, support = supportD) 
   accept.rate = matrix(NA, nrow = Nsamp, ncol = 2)
   geweke.diag1 = matrix(NA, nrow = Nsamp, ncol = P)
   geweke.diag2 = matrix(NA, nrow = Nsamp, ncol = P)
   bmat2 = matrix(NA, nrow = Nsamp, ncol = nIP * P)		
+  cmat2 = matrix(NA, nrow = Nsamp, ncol = K)
   
   for (i in 1:Nsamp) { 
     if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
@@ -2123,17 +2013,15 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
     })
     delta = Inference_samp$D[length(Inference_samp$D)]
     currentC = Inference_samp$C
-    latentiJi = Inference_samp$E
     topic_token_assignments = Inference_samp$Z
     for (d in 1:length(topic_token_assignments)) {
       names(topic_token_assignments[[d]]) = Backward_sample$text[[d + length(base.text)]]
     }
-    topic_token_counts = tabulate(unlist(Inference_samp$Z), K)
     
     Backward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, 
     										 delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
-    										 topic_token_assignments = topic_token_assignments, latentiJi,
-                             			 forward = FALSE, backward = TRUE, backward.edge = Backward_sample$edge, support = supportD)
+    										 topic_token_assignments = topic_token_assignments, 
+                             			 forward = FALSE, backward = TRUE, base = FALSE, support = supportD)
     Backward_stats[i, ] = GiR_stats(Backward_sample, K, currentC, vocabulary, forward = FALSE, backward = TRUE)
     
     accept.rate[i, 1] = length(unique(Inference_samp$B[[1]][1,])) / ((niters[2] - niters[4]) / niters[5])
@@ -2141,24 +2029,14 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
     geweke.diag1[i, ] = geweke.diag(t(Inference_samp$B[[1]]))[[1]]
     geweke.diag2[i, ] = geweke.diag(t(Inference_samp$B[[2]]))[[1]]
     bmat2[i, ] = unlist(b)
-    
+    cmat2[i, ] = currentC
   }
-  
-  # tstats = rep(0, ncol(Forward_stats))
-  # wstats = rep(0, ncol(Forward_stats))
-  # for (j in 1:ncol(Forward_stats)) {
-    # thinning = seq(from = floor(Nsamp / 5), to = Nsamp, length.out = 400)
-    # Forward_test = Forward_stats[thinning, j]
-    # Backward_test = Backward_stats[thinning, j]
-    # tstats[j] = t.test(Backward_test, Forward_test)$p.value
-    # wstats[j] = wilcox.test(Backward_test, Forward_test)$p.value
-  # }
-  # names(tstats) = names(wstats) = colnames(Forward_stats)						
+  				
   if (generate_PP_plots) {
     par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
-  return(list(Forward = Forward_stats, Backward = Backward_stats, b1 = bmat1, b2= bmat2,
+  return(list(Forward = Forward_stats, Backward = Backward_stats, b1 = bmat1, b2= bmat2, c1 = cmat1, c2 = cmat2,
   			  accept.rate = accept.rate, geweke1 = geweke.diag1, geweke2 = geweke.diag2))
 }                         	
 

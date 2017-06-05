@@ -405,8 +405,10 @@ arma::mat lambda_cpp(arma::vec p_d, List XB) {
   int node = example.n_rows;
   arma::mat lambdamat = arma::zeros(node, node);
   for (int IP = 0; IP < nIP; IP++) {
+  	if (p_d[IP] > 0) {
     arma::mat XB_IP = XB[IP];
-    lambdamat += p_d[IP] * exp(XB_IP);
+    lambdamat += exp(log(p_d[IP]) + XB_IP);
+  	}
   }
   lambdamat.diag().zeros();
   return lambdamat;
@@ -472,45 +474,6 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 	return edges;
 }
 
-
-// **********************************************************//
-//               Edge contribution in update of Z            //
-// **********************************************************//
-// [[Rcpp::export]]
-double EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
-	double edges = 0;
-	for (int i = 0; i < iJi.n_rows; i++) {
-		arma::vec normal = arma::zeros(iJi.n_rows - 1);
-		double prob = 0;
-		int iter = 0;
-		for (int j = 0; j < iJi.n_rows; j++) {
-			if (i != j) {
-				if (lambda(i, j) > 0) {
-				normal[iter] = log(exp(delta + log(lambda(i, j))) + 1);
-				prob += (delta + log(lambda(i, j))) * iJi(i, j);
-				iter = iter + 1;
-				}
-			}
-		  }
-		double normalizer = 0;
-		double sumnorm = sum(normal);
-		if (sumnorm > 35) {
-			normalizer = sumnorm;
-		} else {
-		if (sumnorm < -10) {
-			normalizer = exp(sumnorm);
-		} else {
-			if (sumnorm <= 0) {
-				sumnorm = 0.000000000001;
-			}
-			normalizer = log(exp(sumnorm) - 1);
-		}
-		}
-		edges += prob - normalizer;
-	}
-	return edges;
-}
-
 // **********************************************************//
 //               Edge contribution in update of Z            //
 // **********************************************************//
@@ -540,93 +503,15 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 			}
 		  }
 		double sumnorm = sum(normal);
-		while (sumnorm < 0.000001) {
-    		sumnorm += 0.000001;
-  		}  
-		double normalizer = log(exp(sumnorm) - 1);
+		double normalizer = 0;
+		if (sumnorm >= 13) {
+			normalizer = sumnorm;
+		} else {
+			normalizer = log(exp(sumnorm) - 1);
+		}
 		edges += prob - normalizer;
 	}
 	return edges;
-}
-
-// **********************************************************//
-//               Edge contribution in update of Z            //
-// **********************************************************//
-// [[Rcpp::export]]
-arma::mat EdgeInEqZ_Gibbs3(arma::mat iJi, arma::mat lambda, double delta) {
-	double edges = 0;
-	arma::mat normmat = arma::zeros(iJi.n_rows, iJi.n_rows - 1);
-	for (int i = 0; i < iJi.n_rows; i++) {
-		arma::vec normal = arma::zeros(iJi.n_rows - 1);
-		double prob = 0;
-		int iter = 0;
-		for (int j = 0; j < iJi.n_rows; j++) {
-			if (i != j) {
-				if (lambda(i, j) > 0) {
-				double pre = delta + log(lambda(i, j));
-				if (pre > 35) {
-					normal[iter] = pre;
-				} else {
-					if (pre < -10) {
-						normal[iter] = exp(pre);
-					} else {
-						normal[iter] = log(exp(pre) + 1);
-					}
-				}
-				prob += (delta + log(lambda(i, j))) * iJi(i, j);
-				iter = iter + 1;
-				}
-			}
-		  }
-		double sumnorm = sum(normal);
-		while (sumnorm < 0.000001) {
-    		sumnorm += 0.000001;
-  		}
-  		normmat.row(i) = normal;  
-		double normalizer = log(exp(sumnorm) - 1);
-		edges += prob - normalizer;
-	}
-	return normmat;
-}
-
-// **********************************************************//
-//               Edge contribution in update of Z            //
-// **********************************************************//
-// [[Rcpp::export]]
-arma::vec EdgeInEqZ_Gibbs4(arma::mat iJi, arma::mat lambda, double delta) {
-	double edges = 0;
-	arma::vec probvec = arma::zeros(iJi.n_rows);
-	for (int i = 0; i < iJi.n_rows; i++) {
-		arma::vec normal = arma::zeros(iJi.n_rows - 1);
-		double prob = 0;
-		int iter = 0;
-		for (int j = 0; j < iJi.n_rows; j++) {
-			if (i != j) {
-				if (lambda(i, j) > 0) {
-				double pre = delta + log(lambda(i, j));
-				if (pre > 35) {
-					normal[iter] = pre;
-				} else {
-					if (pre < -10) {
-						normal[iter] = exp(pre);
-					} else {
-						normal[iter] = log(exp(pre) + 1);
-					}
-				}
-				prob += (delta + log(lambda(i, j))) * iJi(i, j);
-				iter = iter + 1;
-				}
-			}
-		  }
-		double sumnorm = sum(normal);
-		while (sumnorm < 0.000001) {
-    		sumnorm += 0.000001;
-  		}
-  		probvec[i] = prob;  
-		double normalizer = log(exp(sumnorm) - 1);
-		edges += prob - normalizer;
-	}
-	return probvec;
 }
 
 
@@ -644,9 +529,6 @@ double TimeInEqZ(NumericVector LambdaiJi, double observedtdiff) {
 // **********************************************************//
 // [[Rcpp::export]]
 double ObservedInEqZ(double observediJi) {
-  if (observediJi < 0.0000001) {
-    observediJi += 0.0000001;
-  }
 	return log(observediJi);
 }
 
@@ -706,7 +588,6 @@ arma::vec DataAug_cpp(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec 
 // [[Rcpp::export]]
 arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d, double delta, double timeinc_d, int j) {
 	arma::vec prob = arma::zeros(2);
-	prob[0] = -arma::datum::inf;
 	arma::vec iJi_di1 = iJi_di;
 	arma::vec iJi_di0 = iJi_di;
 	int nIP = p_d.size();
@@ -715,18 +596,26 @@ arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma
 	iJi_di0[j - 1] = 0;
 	double sumiJi0 = sum(iJi_di0);
 	for (int IP = 0; IP < nIP; IP++) {
-		arma::vec XB_IP = XB[IP];
+			if (p_d[IP] > 0) {
+			arma::vec XB_IP = XB[IP];
 			double rowsums1 = sum(XB_IP % iJi_di1) / sum(iJi_di1);
 			out[1] += p_d[IP] * exp(rowsums1);
 			if (sumiJi0 > 0) {
 			double rowsums0 = sum(XB_IP % iJi_di0) / sumiJi0;
 			out[0] += p_d[IP] * exp(rowsums0);
+				}
 			}
 	}
-	prob[1] = delta + log(lambda_di[j - 1]) - timeinc_d * out[1];
+	if (lambda_di[j - 1] > 0) {
+		prob[1] = delta + log(lambda_di[j - 1]) - timeinc_d * out[1];
+	} else {
+		prob[1] = -arma::datum::inf;
+	}
 	if (sumiJi0 > 0) {
 		prob[0] = - timeinc_d * out[0];
-	}	
+	} else {
+		prob[0] = -arma::datum::inf;
+	}
 	prob = prob - max(prob);
 	return exp(prob);
 }
