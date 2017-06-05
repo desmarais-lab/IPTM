@@ -279,9 +279,9 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
   	phi = lapply(1L:K, function(k) {
 		rdirichlet_cpp(1, betas * nvec)
 	})
-	delta = 0
+	delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
 	beta.old = lapply(1:nIP, function(IP) {
-      			 rep(0, P)
+      			 c(rmvnorm(1, prior.b.mean, prior.b.var))
       			 })
 	# initialize C, theta and Z
 	 currentC = sample(1:nIP, K, replace = TRUE)
@@ -303,7 +303,6 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 		bmat[[IP]] = matrix(beta.old[[IP]], nrow = P, ncol = (n_B - burn) / thinning)
   	}
   	deltamat = rep(delta, n_d)
-    proposal.var = lapply(1:nIP, function(IP){diag(P)})
 
     # to check the convergence  
     if (plot) {
@@ -432,7 +431,17 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
         const.C = const.C - max(const.C)
         currentC[k] = multinom_vec(1, exp(const.C))
      }
-      
+    
+    if (plot) {
+      entropy.mat = c(entropy.mat, entropy.empirical(currentC))
+      alpha.mat = rbind(alpha.mat, alpha)
+      logWZ.mat = c(logWZ.mat, logWZ(K, currentZ[edge2], textlist[edge2], table.W, alpha, mvec, betas, nvec))
+    }
+    if (o != 1) {
+    	accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
+    	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = c(0.0005, 0.1))
+    }
+    
     p.d = t(vapply(seq(along = edge), function(d) {
     				vapply(1L:nIP, function(IP) {
       				sum(currentZ[[d]] %in% which(currentC == IP))
@@ -458,15 +467,18 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     			 	ObservedInEqZ(observediJi[[d]])
     			 	}, c(1))) / length(edge2)
   
+	options(warn = -1)
+    proposal.var = lapply(1:nIP, function(IP){diag(P)})
     if (o != 1) {
-    		accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
-    	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.1 * sigma_Q)
-    	if (accept.rates[1] > 1 / ncol(bmat[[1]])) {
-    		for (IP in 1:nIP) {
-     		proposal.var[[IP]] = var(t(bmat[[IP]]))
-      	}
-      	}
+    for (IP in 1:nIP) {
+     	proposal.var[[IP]] = cor(t(bmat[[IP]]))
+        proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
+        if (sum(eigen(proposal.var[[IP]])$values < 0 ) > 0) {
+         	proposal.var[[IP]] = diag(P)
+        }
+    }
    }
+   options(warn = 0)
     for (i3 in 1L:n_B) {
     		beta.new = lapply(1L:nIP, function(IP) {
           		   rmvnorm(1, beta.old[[IP]], sigma_Q[1] * proposal.var[[IP]])
@@ -485,7 +497,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     			    	ObservedInEqZ(observediJi[[d]])
     			    	}, c(1))) / length(edge2)
     		loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
-      	if (is.na(loglike.diff)) {browser()}
+      
         if (log(runif(1, 0, 1)) < loglike.diff) {
         		for (IP in 1L:nIP) {
          		beta.old[[IP]] = beta.new[[IP]]
@@ -531,11 +543,11 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
          
   if (plot) {
     par(mfrow = c(1, 2))
-	matplot(bmat[[1]][1,], lty = 1, col = 1L:P, type = "l", 
+   matplot(bmat[[1]][1,], lty = 1, col = 1L:P, type = "l", 
 	          main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
 	abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
 	plot(deltamat, type = "l", 
-	xlab = "(Outer) Iterations", ylab = "")
+	xlab = "(Outer) Iterations", ylab = "Entropy of IP")
 	abline(h = mean(deltamat), lty = 1)
 	title("Traceplot of delta")
   }
@@ -614,7 +626,6 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
 		bmat[[IP]] = matrix(beta.old[[IP]], nrow = P, ncol = (n_B - burn) / thinning)
   	}
   	deltamat = rep(delta, n_d)
-    proposal.var = lapply(1:nIP, function(IP){diag(P)})
 
     # to check the convergence  
     if (plot) {
@@ -646,7 +657,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
 
     #start outer iteration
     for (o in 1L:out) {
-      print(o)
+      
       if (optimize) {
       #update the hyperparameter alpha and mvec
       vec = AlphamvecOpt(K, currentZ[edge2], alpha, mvec, 5)
@@ -750,7 +761,11 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       alpha.mat = rbind(alpha.mat, alpha)
       logWZ.mat = c(logWZ.mat, logWZ(K, currentZ[edge2], textlist[edge2], table.W, alpha, mvec, betas, nvec))
     }
- 
+    if (o != 1) {
+    	accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
+    	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = c(0.0005, 0.1))
+    }
+    
     p.d = t(vapply(seq(along = edge), function(d) {
     				vapply(1L:nIP, function(IP) {
       				sum(currentZ[[d]] %in% which(currentC == IP))
@@ -776,13 +791,18 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     			 	ObservedInEqZ(observediJi[[d]])
     			 	}, c(1))) / length(edge2)
   
+	options(warn = -1)
+    proposal.var = lapply(1:nIP, function(IP){diag(P)})
     if (o != 1) {
-    	    accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
-    	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.1 * sigma_Q)
-	    for (IP in 1:nIP) {
-   	 	 	proposal.var[[IP]] = var(t(bmat[[IP]]))
-    		 }
+    for (IP in 1:nIP) {
+     	proposal.var[[IP]] = cor(t(bmat[[IP]]))
+        proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
+        if (sum(eigen(proposal.var[[IP]])$values < 0 ) > 0) {
+         	proposal.var[[IP]] = diag(P)
+        }
+    }
    }
+   options(warn = 0)
     for (i3 in 1L:n_B) {
     		beta.new = lapply(1L:nIP, function(IP) {
           		   rmvnorm(1, beta.old[[IP]], sigma_Q[1] * proposal.var[[IP]])
@@ -791,7 +811,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
            XB = MultiplyXBList(X, beta.new)
            lambda[[d]] = lambda_cpp(p.d[d,], XB)    
            LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-	         observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+	       observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
         }
         prior.new1 = sum(vapply(1L:nIP, function(IP) {
         				 dmvnorm(beta.new[[IP]], prior.b.mean, prior.b.var, log = TRUE)
@@ -819,7 +839,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     #delta update
     for (d in edge2) {
     		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
-    		X = lapply(node, function(i) {
+    	X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
        		})
     	 	XB = MultiplyXBList(X, beta.old)
@@ -846,23 +866,22 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
  }
          
   if (plot) {
-  par(mfrow = c(2, 2))
-  burnin = 1:(0.1 * out)
-  matplot(alpha.mat[-burnin], lty = 1, type = "l", col = 1L:nIP, 
+    par(mfrow = c(2, 2))
+    matplot(alpha.mat, lty = 1, type = "l", col = 1L:nIP, 
   	        xlab = "(Outer) Iterations", ylab = "alpha")
-  abline(h = mean(alpha.mat[-burnin]), lty = 1, col = 1L:nIP)
+  	abline(h = mean(alpha.mat), lty = 1, col = 1L:nIP)
 	title("Convergence of Optimized alpha")
-	plot(logWZ.mat[-burnin], type = "l", 
+	plot(logWZ.mat, type = "l", 
 	       xlab = "(Outer) Iterations", ylab = "logWZ")
-	abline(h = mean(logWZ.mat[-burnin]), lty = 1)
+	abline(h = mean(logWZ.mat), lty = 1)
 	title("Convergence of logWZ")
 	matplot(bmat[[1]][1,], lty = 1, col = 1L:P, type = "l", 
-	main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
+	          main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
 	abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
 	plot(deltamat, type = "l", 
-	xlab = "(Inner) Iterations", ylab = "")
+	xlab = "(Outer) Iterations", ylab = "Entropy of IP")
 	abline(h = mean(deltamat), lty = 1)
-	title("Traceplot of delta")
+	title("Convergence of delta")
   }
      
   chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat)
@@ -1065,6 +1084,7 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
   }
   }
   word_type_topic_counts = matrix(0, W, K)
+  options(warn = -1)
   for (d in 1:nDocs) {
     N.d = nwords
     text[[base.length + d]] = rep(NA, N.d)
@@ -1130,6 +1150,7 @@ GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, be
     t.d = t.d + Time.inc[i.d]
     edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
   }
+  options(warn = 0)
   if (forward) {
     edge = edge[-(1:base.length)]
     text = text[-(1:base.length)]
@@ -1200,6 +1221,7 @@ CollapsedGenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha,
   }
   }
   word_type_topic_counts = matrix(0, W, K)
+  options(warn = -1)
   for (d in 1:nDocs) {
     N.d = nwords
     text[[base.length + d]] = rep(NA, N.d)
@@ -1263,6 +1285,7 @@ CollapsedGenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha,
     t.d = t.d + rexp(1, sum(LambdaiJi))
     edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
   }
+  options(warn = 0)
   if (forward) {
     edge = edge[-(1:base.length)]
     text = text[-(1:base.length)]
@@ -1337,6 +1360,7 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
      		 })  
   word_type_topic_counts = matrix(0, W, K)
   iJi = matrix(0, length(node), length(node))
+  options(warn = -1)
   for (d in 1:nDocs) {
     N.d = nwords
     text[[base.length + d]] = rep(NA, N.d)
@@ -1382,6 +1406,7 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     t.d = t.d + rexp(1, sum(LambdaiJi))
     edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
   }
+  options(warn = 0)
   if (forward) {
     edge = edge[-(1:base.length)]
     text = text[-(1:base.length)]
@@ -1548,7 +1573,7 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
            main = nms[i],
            cex.lab = 1,
            cex.axis = 1,
-           cex.main = 0.5)
+           cex.main = 1)
     abline(0, 1, lty = 1, col = "red", lwd = 2)
     
     if (nrow(Forward_stats) > 1000) {
@@ -1644,7 +1669,7 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
     Inference_samp = IPTM_inference.Gibbs(Backward_sample$edge, node, Backward_sample$text, vocabulary, nIP, K,
     										  sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
                                			  out = niters[1], n_B = niters[2], n_d = niters[3], burn = niters[4], 
-                               			  thinning = niters[5], netstat, plot = TRUE)
+                               			  thinning = niters[5], netstat)
     b = lapply(1:nIP, function(IP) {
         Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
     })
