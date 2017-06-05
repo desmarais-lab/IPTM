@@ -15,10 +15,10 @@ nvec = rep(1/5, 5)
 netstat = c("intercept", "dyadic")
 P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
 prior.b.mean = c(-3, rep(0, P-1))
-prior.b.var = 0.05 * diag(P)
-prior.delta = c(2, 0.1)
-sigma_Q = c(0.02, 2)
-niters = c(3, 100, 10, 0, 1)
+prior.b.var = 0.1 * diag(P)
+prior.delta = c(2.5, 0.1)
+sigma_Q = c(1.25, 2)
+niters = c(3, 440, 200, 40, 2)
 b = lapply(1:nIP, function(IP) {
     c(rmvnorm(1,  prior.b.mean, prior.b.var))
   })
@@ -28,11 +28,10 @@ supportD = gibbs.measure.support(length(node) - 1)
 base.data = GenerateDocs.Gibbs(100, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE, support = supportD) 
 base.edge = base.data$edge	   
 base.text = base.data$text
-TryGiR<- GiR.Gibbs(500, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+TryGiR2<- GiR.Gibbs(100, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 1)
 
-load("TryGiR.RData")
-save(TryGiR, file = "TryGiR.RData")
+save(TryGiR, file = "/Users/bomin8319/Desktop/IPTM-master/paper/TryGiR.RData")
 
 load("TryGiR.RData")
 load("TryGiR2.RData")
@@ -42,7 +41,7 @@ abline(0, 1, col = 'red')
 qqplot(TryGiR2$delta[,1], TryGiR2$delta[,2])
 abline(0, 1, col = 'red')
 
-par(mfrow=c(5,5))
+par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
 GiR_PP_Plots(TryGiR$Forward, TryGiR$Backward)
 
 TryGiR = TryGiR2

@@ -515,7 +515,6 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 }
 
 
-
 // **********************************************************//
 //               Time contribution in update of Z            //
 // **********************************************************//
