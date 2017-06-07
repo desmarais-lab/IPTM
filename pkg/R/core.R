@@ -66,9 +66,6 @@ r.gibbs.measure <- function(nsamp, lambdai, delta, support) {
 adaptive_MH = function(sigma_Q, accept_rates, target = 0.25, update_size, tol = 0.05) {
 	for (i in 1:length(sigma_Q)) {
 		if (accept_rates[i] < target) {
-			while (sigma_Q[i] < update_size[i]) {
-				update_size[i] = update_size[i] / 2
-			} 
 				sigma_Q[i] = sigma_Q[i] - update_size[i]
 		}
 		if (accept_rates[i] > (target + tol)) {
@@ -774,8 +771,8 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     
     if (o != 1) {
       accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
-      sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.1 * sigma_Q)
-      if (accept.rates[1] > 1 / ncol(bmat[[1]])) {
+      sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
+      if (accept.rates[1] > 1 / ncol(bmat[[1]])) { 
         for (IP in 1:nIP) {
           proposal.var[[IP]] = var(t(bmat[[IP]]))
         }

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#PBS -l nodes=1:ppn=1
+#PBS -l pmem=4gb
+#PBS -l walltime=48:00:00
+
+cd $PBS_O_WORKDIR
+
+echo " "
+echo " "
+echo "quename Started on `hostname` at `date`"
+
+# load R and run R code codename.r
+module load R/3.2.0
+R CMD BATCH newcode_A4.R
+Rscript newcode_A4.R
+
+# load module and then run matlab script codename.m
+#module load matlab
+#matlab -nosplash -nodisplay -r codename
+
+echo " "
+echo "quename Ended at `date`"
+echo " "
