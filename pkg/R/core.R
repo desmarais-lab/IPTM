@@ -528,9 +528,9 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
          
   if (plot) {
     par(mfrow = c(1, 2))
-	matplot(bmat[[1]][1,], lty = 1, col = 1L:P, type = "l", 
+	matplot(bmat[[1]][7,], lty = 1, col = 1L:P, type = "l", 
 	          main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
-	abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
+	abline(h = mean(bmat[[1]][7,]), lty = 1, col = 1L)
 	plot(deltamat, type = "l", 
 	xlab = "(Outer) Iterations", ylab = "")
 	abline(h = mean(deltamat), lty = 1)
@@ -1156,9 +1156,9 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
          
   if (plot) {
     par(mfrow = c(1, 2))
-	matplot(bmat[[1]][1,], lty = 1, col = 1L:P, type = "l", 
+	matplot(bmat[[1]][7,], lty = 1, col = 1L:P, type = "l", 
 	          main = "Traceplot of beta", xlab = "(Inner) Iterations", ylab = "")
-	abline(h = mean(bmat[[1]][1,]), lty = 1, col = 1L)
+	abline(h = mean(bmat[[1]][7,]), lty = 1, col = 1L)
 	plot(deltamat, type = "l", 
 	xlab = "(Outer) Iterations", ylab = "")
 	abline(h = mean(deltamat), lty = 1)

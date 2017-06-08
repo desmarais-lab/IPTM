@@ -2,6 +2,7 @@
 #include <cmath>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
+
 //[[Rcpp::depends(RcppArmadillo)]]
 using std::log;
 using std::exp;
@@ -464,9 +465,9 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 		for (int j = 0; j < iJi.ncol(); j++) {
 			if (i != j) {
 		  double deltalambda = delta * lambda(i, j);
-		  if (deltalambda < 0.0000001) {
-		  	deltalambda += 0.0000001;
-		  }
+		 if (deltalambda < exp(-700)) {
+		deltalambda = exp(-700);
+		}
 			edges = edges + iJi(i, j) * log(deltalambda) - log(deltalambda + 1);
 			}
 		}
@@ -528,6 +529,9 @@ double TimeInEqZ(NumericVector LambdaiJi, double observedtdiff) {
 // **********************************************************//
 // [[Rcpp::export]]
 double ObservedInEqZ(double observediJi) {
+	if (observediJi < exp(-700)) {
+		observediJi = exp(-700);
+	}
 	return log(observediJi);
 }
 

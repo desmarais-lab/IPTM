@@ -34,14 +34,16 @@ load('/Users/bomin8319/Desktop/IPTM/DareServer/Darenew.RData')
 attach(Dare)
 Dare$node = 1:nrow(Dare$node)
 Dare$text = Dare$text[762:length(Dare$edge)]
-mintime = Dare$edge[[762]][[3]]
-for (n in 762:length(Dare$edge)){
+Dare$edge = Dare$edge[762:length(Dare$edge)]
+Dare$edge = Dare$edge[-which(sapply(Dare$text, function(d){length(d)})==0)]
+Dare$text = Dare$text[-which(sapply(Dare$text, function(d){length(d)})==0)]
+mintime = Dare$edge[[1]][[3]]
+for (n in 1:length(Dare$edge)){
   Dare$edge[[n]][3] = (Dare$edge[[n]][[3]] - mintime) / 3600
 }
-Dare$edge = Dare$edge[762:length(Dare$edge)]
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 Daretest <- IPTM_inference.data(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP = 2, K = 5, sigma_Q = c(0.01, 0.1),
                         alpha = 2, mvec = rep(1/5, 5), betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), 
-                        prior.b.mean = c(-3, rep(0, 24)), 
-                       prior.b.var = 0.1 * diag(25), prior.delta = c(0, 0.1), out = 1, n_B = 11000, n_d = 500, burn = 1000, 
-                       thinning = 20, netstat = c("intercept", "dyadic", "degree", "triadic"), plot = TRUE, optimize = TRUE)
+                        prior.b.mean = c(-5, rep(0, 24)), 
+                       prior.b.var = 0.1 * diag(25), prior.delta = c(0, 0.1), out = 2, n_B = 5500, n_d = 500, burn = 500, 
+                       thinning = 10, netstat = c("intercept", "dyadic", "degree", "triadic"), plot = FALSE, optimize = TRUE)
