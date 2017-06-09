@@ -91,15 +91,12 @@ Bomin Kim\textsuperscript{1}\and
 \bni 
 \item For each topic $k =1,...,K:$\vspace{0.2cm}
 	\begin{itemize}
-		\item[1.] Topic-word distribution {$\boldsymbol{\phi}^{(k)} \sim \mbox{Dirichlet}(\beta, \bf u)$}\\
-		- A topic $k$ is characterized by a discrete distribution over $V$ word types with probability vector $\boldsymbol{\phi}^{(k)}$. \vspace{0.2cm}
-		\item[2.] Topic-IP distribution $c_k\sim \mbox{Uniform}(1, C)$\\
-		- Each topic is associated with a single interaction pattern.			
+		\item[1.] Topic-word distribution {$\boldsymbol{\phi}^{(k)} \sim \mbox{Dirichlet}(\beta, \bf u)$}\vspace{0.2cm}
+		\item[2.] Topic-IP distribution $c_k\sim \mbox{Uniform}(1, C)$			
 		\end{itemize}\vspace{0.4cm}
 \item For each document $d =1,...,D:$ \vspace{0.2cm}
 	\begin{itemize}
-\item[3-1.] Document-topic distribution $\boldsymbol{\theta}^{(d)}\sim \mbox{Dirichlet}(\alpha, \boldsymbol{m})$\\
-- A document $d$ is characterized by a discrete distribution over $K$ topics with probability vector $\boldsymbol{\theta}^{(d)}$. \vspace{0.2cm}
+\item[3-1.] Document-topic distribution $\boldsymbol{\theta}^{(d)}\sim \mbox{Dirichlet}(\alpha, \boldsymbol{m})$\vspace{0.2cm}
 		\item[3-2.] For each word in a document $n=1$ to $N^{(d)}$:
 		\begin{itemize}
 			\item[(a)] Choose a topic $z_n^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(d)})$
@@ -123,10 +120,10 @@ Bomin Kim\textsuperscript{1}\and
 	 \begin{figure}
 	 	\includegraphics[width=0.45\textwidth]{Triadic.pdf}
 	 \end{figure}	
-\item Partition the interval $[-\infty, t)$ into 4 sub-intervals
+\item Partition the past 384 hours (=16 days) into 3 sub-intervals
  \footnotesize
  \begin{equation*}
- [-\infty,t) = [-\infty,t-16d)\cup [t-16d, t-3d) \cup [t-3d, t-24h)\cup [t-24h, t),
+ [t-384h,t) = [t-384h, t-96h) \cup [t-96h, t-24h)\cup [t-24h, t),
  \end{equation*}
 	 \normalsize
 	 then define the interval-based statistics for $l \in \{1,2,3\}$ and $c \in \{1,...,C\}$\\ \vspace{0.4cm}
@@ -164,21 +161,21 @@ Bomin Kim\textsuperscript{1}\and
 \end{frame}
 \begin{frame}{Tie Generating Process}
 	\begin{itemize}
-		\item[1.] For every sender $i \in \{1,...,A\}$, choose a binary vector $J^{(d)}_i$ of length $(A-1)$, by applying Gibbs measure (Fellows and Handcock, 2017) 
+		\item[1.] For each sender $i \in \{1,...,A\}$, choose a binary vector $J^{(d)}_i$ of length $(A-1)$, by applying Gibbs measure (Fellows and Handcock, 2017) 
 		\footnotesize\begin{equation} \text{P}(J_i^{(d)}) = \frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
 		\end{equation}
 		\normalsize
 		where $\delta$ is a real-valued intercept controlling the recipient size and  $Z(\delta,\mbox{log}(\lambda_i^{(d)}))$ is the normalizing constant.\vspace{0.4cm}
-		\item[2.] For every sender $i \in \mathcal{A}$, generate the time increments 
+		\item[2.] For each sender $i \in \mathcal{A}$, generate the time increments 
 	\footnotesize	\begin{equation*}
 		\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}).
 		\end{equation*}\normalsize
 		\item[3.] Set timestamp, sender, and receivers simultaneously:
 	\footnotesize	\begin{equation*}
 		\begin{aligned}
-		&t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}}),\\
-		&i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}, \\
-		&J^{(d)} = J_{i^{(d)}}.
+		&t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})\\
+		&i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})} \\
+		&J^{(d)} = J_{i^{(d)}}
 		\end{aligned}
 		\end{equation*}
 		\normalsize
@@ -225,7 +222,10 @@ Bomin Kim\textsuperscript{1}\and
  \end{figure}	
 \end{frame}
 
-\begin{frame}{Effect of Hurricane Sandy}
+\begin{frame}{Effect of Hurricane Sandy on Email Exchange}
+	 \begin{figure}
+	 	\includegraphics[width=0.5\textwidth]{Sendplot.pdf}	 	\includegraphics[width=0.5\textwidth]{Receiveplot.pdf}
+	 \end{figure}	
 \end{frame}
 
 \begin{frame}{IPTM Result}
