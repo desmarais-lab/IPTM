@@ -117,39 +117,49 @@ Bomin Kim\textsuperscript{1}\and
 \begin{frame}{Dynamic Network Features (Perry and Wolfe, 2012)}
 	\bni
 	 \item $\boldsymbol{x}^{(c)}_t(i, j)$ is the network statistics at time $t$, for interaction pattern $c$ \\
-\begin{minipage}{0.5\textwidth}	 
 	- Degree: outdegree and  indegree\\
  - Dyadic: send and receive \\
- - Triadic: 2-send, 2-receive,\\
-\hspace*{1.5cm}sibling and cosibling
-\end{minipage}
-\begin{minipage}{0.4\textwidth}
+ - Triadic: 2-send, 2-receive, sibling and cosibling
 	 \begin{figure}
-	 	\includegraphics[width=1\textwidth]{Triadic.pdf}
+	 	\includegraphics[width=0.45\textwidth]{Triadic.pdf}
 	 \end{figure}	
-\end{minipage}\vspace{0.2cm}
 \item Partition the interval $[-\infty, t)$ into 4 sub-intervals
  \footnotesize
  \begin{equation*}
- [-\infty,t) = [-\infty,t-16d)\cup [t-16d, t-3d) \cup [t-3d, t-24h)\cup [t-24h, t-0)
+ [-\infty,t) = [-\infty,t-16d)\cup [t-16d, t-3d) \cup [t-3d, t-24h)\cup [t-24h, t),
  \end{equation*}
 	 \normalsize
-	 and define interval-based statistics such as $\mbox{\textbf{outdegree}}^{(c)}_{t, l}(i)=\sum\limits_{d: t^{(d)} \in I_{t}^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow \forall j\}$
+	 then define the interval-based statistics for $l \in \{1,2,3\}$ and $c \in \{1,...,C\}$\\ \vspace{0.4cm}
+	 \begin{minipage}{0.49\textwidth}
+	 \footnotesize
+	  $\mbox{\textbf{outdegree}}^{(c)}_{t, l}(i)=\sum\limits_{d: t^{(d)} \in I_{t}^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow \forall j\}$\\$\mbox{\textbf{indegree}}^{(c)}_{t, l}(j)=\sum\limits_{d: t^{(d)} \in I_{t}^{(l)}}p_c^{(d)}\cdot I\{\forall i \rightarrow j\}$	 
+	  \normalsize
+	 \end{minipage}
+	 	 	 \begin{minipage}{0.44\textwidth}
+	 \footnotesize 
+	 $\mbox{\textbf{send}}^{(c)}_{t, l}(i, j)=\sum\limits_{d: t^{(d)} \in I_{t}^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow j\}$\\
+	  $\mbox{\textbf{receive}}^{(c)}_{t, l}(i, j)=\sum\limits_{d: t^{(d)} \in I_{t}^{(l)}}p_c^{(d)}\cdot I\{j\rightarrow i\}$
+	  \normalsize
+	 	 		 \end{minipage}
 	 \ei
 \end{frame}
 
 \begin{frame}{Stochastic Intensity}
 	\bni
-		\item Stochastic intensity $\lambda^{(d)}$
+		\item $\lambda^{(d)}_{ij}(t)$=P\{for document $d$, $i\rightarrow j$ occurs in time interval $[t, t+dt)$:
 		\footnotesize \begin{equation}
 		\lambda^{(d)}_{ij}(t)=\sum\limits_{c=1}^{C} p^{(d)}_c
 		\cdot  \mbox{exp}\Big\{\lambda^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\},
 		\end{equation}\normalsize
-		where $\boldsymbol{b}^{(c)}$ is a vector of coefficients in $\boldsymbol{R}^{p}$.
+		where $\lambda^{(c)}_0$ is the baseline hazards for the interaction pattern $c$ and $\boldsymbol{b}^{(c)}$ is a vector of coefficients in $\boldsymbol{R}^{p}$.\vspace{0.4cm}
+		\item  For multicast interactions -- single sender $i$ and multiple
+		receivers $J$:
 		\footnotesize 
 		\begin{equation}
-		\lambda^{(d)}_{iJ}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\frac{1}{|J|}\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}.
+		\lambda^{(d)}_{iJ}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\frac{1}{|J|}\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\},
 		\end{equation}\normalsize
+		which is obtained by taking the average of $\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)$ across the receivers.\vspace{0.4cm}
+		\item Probability of $i$ sends a document to $j$ (or $J$) is a mixture of contents and history of interactions
 		\ei
 \end{frame}
 \begin{frame}{Tie Generating Process}
