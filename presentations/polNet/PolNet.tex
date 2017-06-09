@@ -7,6 +7,9 @@
 \usepackage{amsthm}%
 \usepackage{amsfonts}%
 \usepackage{amssymb}%
+\usepackage[algo2e]{algorithm2e}
+\usepackage{algorithmic}  
+\usepackage{algorithm}
 \usepackage{tikz}
 \usepackage[english]{babel}
 \usepackage{amsmath, amssymb, amsthm}
@@ -94,23 +97,76 @@ Bomin Kim\textsuperscript{1}\and
 		\begin{itemize}
 			\item[(a)] Choose a topic $z_n^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(d)})$
 			\item[(b)] Choose a word $w_n^{(d)} \sim\mbox{Multinomial} (\boldsymbol{\phi}^{(z_n^{(d)})})$
-		\end{itemize}
+		\end{itemize} \vspace{0.2cm}
+		\item[3-3] Calculate the distribution of interaction patterns within a document:
+		 \begin{equation}
+		p_c^{(d)} = \Big({\sum\limits_{k: c_k=c} N^{(k|d)}}\Big)/{N^{(d)}},
+		\end{equation}
 	\end{itemize}
 \ei	
 \end{frame}
 
 
 \begin{frame}{Dynamic Network Features (Perry and Wolfe, 2012)}
+	 9 different effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling) to measure popularity, centrality, reciprocity, and transitivity
 	 \begin{figure}
 	 	\includegraphics[width=0.85\textwidth]{PerryWolfeimage.jpeg}
 	 \end{figure}	
-	 
+	 \begin{equation}
+	 \lambda^{(d)}_{ij}(t)=\sum\limits_{c=1}^{C} p^{(d)}_c
+	 \cdot  \mbox{exp}\Big\{\lambda^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\},
+	 \end{equation}
+	 \begin{equation}
+	 \lambda^{(d)}_{iJ}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\frac{1}{|J|}\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}.
+	 \end{equation}
 \end{frame}
 
 
 \begin{frame}{Tie Generating Process}
+	\begin{itemize}
+		\item[1.] (Data augmentation) For each sender $i \in \{1,...,A\}$, create binary receiver vector of length $A-1$, $J^{(d)}_i$, by applying the non-empty Gibbs measure to every $j \in \mathcal{A}_{\backslash i}$. 
+		\begin{equation} \text{P}(J_i^{(d)}) = \frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
+		\end{equation}
+		\item[2.] For every sender $i \in \mathcal{A}$, generate the time increments \begin{equation}
+		\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}).
+		\end{equation}
+		\item[3.] Set timestamp, sender, and receivers simultaneously (NOTE: $t^{(0)}=0$):
+		\begin{equation}
+		\begin{aligned}
+		&t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}}),\\
+		&i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}, \\
+		&J^{(d)} = J_{i^{(d)}}.
+		\end{aligned}
+		\end{equation}
+		\end{itemize}
 \end{frame}
 \begin{frame}{Inference - Pseudocode}
+	 \begin{algorithm}[H]
+\SetAlgoLined
+	 	\caption{MCMC}
+	 	set initial values $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, $ and $(\mathcal{B}^{(0)}, \delta^{(0)})$\\
+	 	\For{o=1 to O}{
+	 		\For{n=1 to $n_1$}{
+	 			optimize $\alpha$ and $\boldsymbol{m}$ using hyperparameter optimization in \cite{wallach2008structured}
+	 		}
+	 		\For{d=1 to D}{
+	 			\For{i $\in \mathcal{A}_{\backslash i_o^{(d)}}$}{
+	 				sample the augmented data $J^{(d)}_i$ 
+	 			}
+	 			\For{n=1 to $N^{(d)}$}{
+	 				draw of $z_n^{(d)}\sim\mbox{Multinomial}(p^\mathcal{Z})$}}
+	 		\For{k=1 to K}{
+	 			draw $C_k\sim \mbox{Multinomial}(p^\mathcal{C})$
+	 		}
+	 		\For{n=1 to $n_2$}{
+	 			sample $\mathcal{B}$ using M-H
+	 		}
+	 		\For{n=1 to $n_3$}{
+	 			sample $\delta$ using M-H
+	 		}
+	 	}	Summarize the results with:\\
+	 	last sample of $\mathcal{C}$, last sample of $\mathcal{Z}$, last $n_2$ length chain of $\mathcal{B}$, last $n_3$ length chain of $\delta$ 
+	 \end{algorithm}
 \end{frame}
 
 \begin{frame}{Data: North Carolina Dare county email data}

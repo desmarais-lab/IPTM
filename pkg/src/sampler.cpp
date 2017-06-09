@@ -408,7 +408,10 @@ arma::mat lambda_cpp(arma::vec p_d, List XB) {
   for (int IP = 0; IP < nIP; IP++) {
   	if (p_d[IP] > 0) {
     arma::mat XB_IP = XB[IP];
-    lambdamat += exp(log(p_d[IP]) + XB_IP);
+  	arma::mat eXB_IP = exp(XB_IP);
+  	arma::umat uinf = find(eXB_IP == arma::datum::inf);
+  	eXB_IP.elem(uinf).fill(exp(700));
+    lambdamat += p_d[IP] * eXB_IP;
   	}
   }
   lambdamat.diag().zeros();
@@ -481,13 +484,14 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 // [[Rcpp::export]]
 double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 	double edges = 0;
+  arma::umat uinf = find(log(lambda) == -arma::datum::inf);
+  lambda.elem(uinf).fill(exp(-700));
 	for (int i = 0; i < iJi.n_rows; i++) {
 		arma::vec normal = arma::zeros(iJi.n_rows - 1);
 		double prob = 0;
 		int iter = 0;
 		for (int j = 0; j < iJi.n_rows; j++) {
 			if (i != j) {
-				if (lambda(i, j) > 0) {
 				double pre = delta + log(lambda(i, j));
 				if (pre > 35) {
 					normal[iter] = pre;
@@ -500,19 +504,64 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 				}
 				prob += (delta + log(lambda(i, j))) * iJi(i, j);
 				iter = iter + 1;
-				}
-			}
 		  }
+		}
 		double sumnorm = sum(normal);
 		double normalizer = 0;
 		if (sumnorm >= 13) {
 			normalizer = sumnorm;
 		} else {
+		  if (exp(sumnorm) <= 1) {
+		    normalizer = -700;
+		  } else {
 			normalizer = log(exp(sumnorm) - 1);
+		}
 		}
 		edges += prob - normalizer;
 	}
 	return edges;
+}
+
+
+// [[Rcpp::export]]
+arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
+  arma::vec edges = arma::zeros(iJi.n_rows);
+  arma::umat uinf = find(log(lambda) == -arma::datum::inf);
+  lambda.elem(uinf).fill(exp(-700));
+  for (int i = 0; i < iJi.n_rows; i++) {
+    arma::vec normal = arma::zeros(iJi.n_rows - 1);
+    double prob = 0;
+    int iter = 0;
+    for (int j = 0; j < iJi.n_rows; j++) {
+      if (i != j) {
+        double pre = delta + log(lambda(i, j));
+        if (pre > 35) {
+          normal[iter] = pre;
+        } else {
+          if (pre < -10) {
+            normal[iter] = exp(pre);
+          } else {
+            normal[iter] = log(exp(pre) + 1);
+          }
+        }
+        prob += (delta + log(lambda(i, j))) * iJi(i, j);
+        iter = iter + 1;
+      }
+    }
+    double sumnorm = sum(normal);
+    double normalizer = 0;
+    if (sumnorm >= 13) {
+      normalizer = sumnorm;
+    } else {
+      if (exp(sumnorm) <= 1) {
+        normalizer = -700;
+      } else {
+        normalizer = log(exp(sumnorm) - 1);
+      }
+    }
+    edges[i] = prob - normalizer;
+  }
+  return edges;
 }
 
 
@@ -550,7 +599,11 @@ NumericVector lambdaiJi(NumericVector p_d, List XB, IntegerMatrix iJi) {
 			for (int j = 0; j < node; j++) {
 				rowsums += XB_IP(i, j) * iJi(i, j);
 			}
-			out[i] += p_d[IP] * exp(rowsums / sum(iJi(i, _)));
+			double rowiJi = exp(rowsums / sum(iJi(i, _)));
+			if (rowiJi == arma::datum::inf) {
+			  rowiJi = exp(700);
+			}
+			out[i] += p_d[IP] * rowiJi;
 		}		
 	}
 	return out;
@@ -572,11 +625,17 @@ arma::vec DataAug_cpp(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec 
 	int sumiJi0 =  sum(iJi_di0);
 	for (int IP = 0; IP < nIP; IP++) {
 		arma::vec XB_IP = XB[IP];
-			double rowsums1 = sum(XB_IP % iJi_di1) / sum(iJi_di1);
-			out[1] += p_d[IP] * exp(rowsums1);
+			double rowsums1 = exp(sum(XB_IP % iJi_di1) / sum(iJi_di1));
+			if (rowsums1 == arma::datum::inf) {
+			  rowsums1 = exp(700);
+			}
+			out[1] += p_d[IP] * rowsums1;
 			if (sumiJi0 > 0) {
-			double rowsums0 = sum(XB_IP % iJi_di0) / sumiJi0;
-			out[0] += p_d[IP] * exp(rowsums0);
+			double rowsums0 = exp(sum(XB_IP % iJi_di0) / sumiJi0);
+			  if (rowsums0 == arma::datum::inf) {
+			    rowsums0 = exp(700);
+			  }
+			out[0] += p_d[IP] * rowsums0;
 			}
 	}
 	prob[1] = log(delta) + log(lambda_di[j - 1]) - (timeinc_d * out[1]);

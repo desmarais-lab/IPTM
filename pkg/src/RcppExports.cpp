@@ -268,6 +268,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// EdgeInEqZ_Gibbs2
+arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta);
+RcppExport SEXP IPTM_EdgeInEqZ_Gibbs2(SEXP iJiSEXP, SEXP lambdaSEXP, SEXP deltaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type iJi(iJiSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    rcpp_result_gen = Rcpp::wrap(EdgeInEqZ_Gibbs2(iJi, lambda, delta));
+    return rcpp_result_gen;
+END_RCPP
+}
 // TimeInEqZ
 double TimeInEqZ(NumericVector LambdaiJi, double observedtdiff);
 RcppExport SEXP IPTM_TimeInEqZ(SEXP LambdaiJiSEXP, SEXP observedtdiffSEXP) {
@@ -362,6 +375,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"IPTM_WordInEqZ", (DL_FUNC) &IPTM_WordInEqZ, 5},
     {"IPTM_EdgeInEqZ", (DL_FUNC) &IPTM_EdgeInEqZ, 3},
     {"IPTM_EdgeInEqZ_Gibbs", (DL_FUNC) &IPTM_EdgeInEqZ_Gibbs, 3},
+    {"IPTM_EdgeInEqZ_Gibbs2", (DL_FUNC) &IPTM_EdgeInEqZ_Gibbs2, 3},
     {"IPTM_TimeInEqZ", (DL_FUNC) &IPTM_TimeInEqZ, 2},
     {"IPTM_ObservedInEqZ", (DL_FUNC) &IPTM_ObservedInEqZ, 1},
     {"IPTM_lambdaiJi", (DL_FUNC) &IPTM_lambdaiJi, 3},

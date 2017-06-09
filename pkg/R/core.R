@@ -634,11 +634,10 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     })
     XB = MultiplyXBList(X, beta.old)     
     lambda[[d]] = lambda_cpp(p.d[d,], XB)
-    for (i in node) {
-      iJi[[d]][i, -i] = rbinom(length(node) - 1, 1, 0.5)
-    }
+    iJi[[d]] = matrix(rbinom(length(node)^2, 1, 0.5), nrow =length(node), ncol = length(node))
+    diag(iJi[[d]]) = 0
   }
-  
+
   #start outer iteration
   for (o in 1L:out) {
     print(o)
@@ -707,7 +706,6 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         }
       }
     }		
-    
     # C update given Z and B - withinning each document d
     for (k in sort(unique(unlist(currentZ[edge2])))) { 
       document.k = which(vapply(currentZ, function(d){k %in% d}, c(1)) == 1)
@@ -738,6 +736,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       }
       const.C = const.C - max(const.C)
       currentC[k] = multinom_vec(1, exp(const.C))
+      if (currentC[k]==0) {browser()}
     }
     if (plot) {
       entropy.mat = c(entropy.mat, entropy.empirical(currentC))
@@ -2153,6 +2152,7 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     })
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     currentC = sample(1L:nIP, K, replace = TRUE)
+    print(list(b=b, d=delta, c=currentC))
     Forward_sample = GenerateDocs.Schein(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b,
     		 								delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
     		 								forward = TRUE, base = FALSE, support = supportD) 
@@ -2171,6 +2171,7 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     })
     delta = Inference_samp$D[length(Inference_samp$D)]
     currentC = Inference_samp$C
+     print(list(b=b, d=delta, c=currentC))
     topic_token_assignments = Inference_samp$Z
     for (d in 1:length(topic_token_assignments)) {
       names(topic_token_assignments[[d]]) = Forward_sample$text[[d + length(base.text)]]
