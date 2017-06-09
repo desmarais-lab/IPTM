@@ -42,10 +42,10 @@ for (n in 1:length(Dare$edge)){
   Dare$edge[[n]][3] = (Dare$edge[[n]][[3]] - mintime) / 3600
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
-Daretest2 <- IPTM_inference.data(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP = 2, K = 5, sigma_Q = c(0.001, 0.02),
+Daretest <- IPTM_inference.data(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP = 2, K = 5, sigma_Q = c(0.05, 0.1),
                         alpha = 2, mvec = rep(1/5, 5), betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), 
                         prior.b.mean = rep(0, 25), 
-                       prior.b.var = 1 * diag(25), prior.delta = c(0, 1), out = 5, n_B = 550, n_d = 50, burn = 50, 
-                       thinning = 5, netstat = c("intercept", "dyadic", "degree", "triadic"), plot = FALSE, optimize = TRUE)
-
+                       prior.b.var = 1 * diag(25), prior.delta = c(0, 1), out = 10, n_B = 15000, n_d = 500, burn = 5000, 
+                       thinning = 20, netstat = c("intercept", "dyadic", "degree", "triadic"), plot = FALSE, optimize = TRUE)
+save(Daretest2, file = "Daretest2.RData")
 PlotbetaIP(Daretest2$B)

@@ -189,7 +189,7 @@ form. We partition the interval $[-\infty, t)$ into $L=4$ sub-intervals by setti
 \\& \quad\quad\quad=I_t^{(4)}\cup  I_t^{(3)}\cup  I_t^{(2)}\cup I_t^{(1)},
 \end{aligned}
 \end{equation*}
-where $\Delta_0 = 0$ and $I_{t}^{(l)} $ is the half-open interval $[t-\Delta_l, t-\Delta_{l-1})$. \\ \newline Based on the results in \cite{PerryWolfe2012}, we decided to not to include the iuse the last interval, history before 16 days ago, considering the diminishing effects of previous email interactions. Also, we do not include the binary indicator terms for each statistics, since those terms do not reflect the recency. The specification of these dynamic network covariates could be reformulated based on the objectives of each study. Thus, in this paper, the dyadic efffects are defined as
+where $\Delta_0 = 0$ and $I_{t}^{(l)} $ is the half-open interval $[t-\Delta_l, t-\Delta_{l-1})$. \\ \newline Based on the results in \cite{PerryWolfe2012}, we decided to not to include the last interval, history before 16 days ago, considering the diminishing effects of previous email interactions. Also, we do not include the binary indicator terms for each statistics, since those terms do not reflect the recency. The specification of these dynamic network covariates could be reformulated based on the objectives of each study. Thus, in this paper, the dyadic efffects are defined as
  \begin{itemize}
  	 	 \item [2.]  $\mbox{\textbf{outdegree}}^{(c)}_{t, l}(i)=\sum\limits_{d: t^{(d)} \in I_{t}^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow \forall j\}$
  	 	 \item [3.] $\mbox{\textbf{indegree}}^{(c)}_{t, l}(j)=\sum\limits_{d: t^{(d)} \in I_{t}^{(l)}}p_c^{(d)}\cdot I\{\forall i \rightarrow j\}$	 	 	

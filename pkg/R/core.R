@@ -735,8 +735,12 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         }, c(1))) / length(document.k)
       }
       const.C = const.C - max(const.C)
-      currentC[k] = multinom_vec(1, exp(const.C))
-      if (currentC[k]==0) {browser()}
+      expconst.C = exp(const.C)
+      if (Inf %in% expconst.C) {
+        expconst.C[which(expconst.C == Inf)] = exp(-700)
+          }
+      currentC[k] = multinom_vec(1, expconst.C)
+      if (currentC[k] == 0) {browser()}
     }
     if (plot) {
       entropy.mat = c(entropy.mat, entropy.empirical(currentC))

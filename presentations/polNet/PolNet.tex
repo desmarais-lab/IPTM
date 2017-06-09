@@ -17,6 +17,13 @@
 \usepackage{mathrsfs}
 %\usepackage{epstopdf}
 \usepackage{graphicx}
+\mode<presentation>
+{
+	\usetheme{CambridgeUS}
+	\usecolortheme{dolphin}
+	\usecolortheme{rose}
+	\setbeamercovered{transparent}
+}
 \newcommand{\mrel}{\mathrel{\bigcirc}}
 %\usepackage[onehalfspacing]{setspace}
 %\setbeamertemplate{footline}[frame number]
@@ -99,74 +106,106 @@ Bomin Kim\textsuperscript{1}\and
 			\item[(b)] Choose a word $w_n^{(d)} \sim\mbox{Multinomial} (\boldsymbol{\phi}^{(z_n^{(d)})})$
 		\end{itemize} \vspace{0.2cm}
 		\item[3-3] Calculate the distribution of interaction patterns within a document:
-		 \begin{equation}
+		 \footnotesize\begin{equation}
 		p_c^{(d)} = \Big({\sum\limits_{k: c_k=c} N^{(k|d)}}\Big)/{N^{(d)}},
-		\end{equation}
+		\end{equation}\normalsize
 	\end{itemize}
 \ei	
 \end{frame}
 
 
 \begin{frame}{Dynamic Network Features (Perry and Wolfe, 2012)}
-	 9 different effects as components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling) to measure popularity, centrality, reciprocity, and transitivity
+	\bni
+	 \item $\boldsymbol{x}^{(c)}_t(i, j)$ is the network statistics at time $t$, for interaction pattern $c$ \\
+\begin{minipage}{0.5\textwidth}	 
+	- Degree: outdegree and  indegree\\
+ - Dyadic: send and receive \\
+ - Triadic: 2-send, 2-receive,\\
+\hspace*{1.5cm}sibling and cosibling
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
 	 \begin{figure}
-	 	\includegraphics[width=0.85\textwidth]{PerryWolfeimage.jpeg}
+	 	\includegraphics[width=1\textwidth]{Triadic.pdf}
 	 \end{figure}	
-	 \begin{equation}
-	 \lambda^{(d)}_{ij}(t)=\sum\limits_{c=1}^{C} p^{(d)}_c
-	 \cdot  \mbox{exp}\Big\{\lambda^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\},
-	 \end{equation}
-	 \begin{equation}
-	 \lambda^{(d)}_{iJ}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\frac{1}{|J|}\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}.
-	 \end{equation}
+\end{minipage}\vspace{0.2cm}
+\item Partition the interval $[-\infty, t)$ into 4 sub-intervals
+ \footnotesize
+ \begin{equation*}
+ [-\infty,t) = [-\infty,t-16d)\cup [t-16d, t-3d) \cup [t-3d, t-24h)\cup [t-24h, t-0)
+ \end{equation*}
+	 \normalsize
+	 and define interval-based statistics such as $\mbox{\textbf{outdegree}}^{(c)}_{t, l}(i)=\sum\limits_{d: t^{(d)} \in I_{t}^{(l)}}p_c^{(d)}\cdot I\{i\rightarrow \forall j\}$
+	 \ei
 \end{frame}
 
-
+\begin{frame}{Stochastic Intensity}
+	\bni
+		\item Stochastic intensity $\lambda^{(d)}$
+		\footnotesize \begin{equation}
+		\lambda^{(d)}_{ij}(t)=\sum\limits_{c=1}^{C} p^{(d)}_c
+		\cdot  \mbox{exp}\Big\{\lambda^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\},
+		\end{equation}\normalsize
+		where $\boldsymbol{b}^{(c)}$ is a vector of coefficients in $\boldsymbol{R}^{p}$.
+		\footnotesize 
+		\begin{equation}
+		\lambda^{(d)}_{iJ}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\frac{1}{|J|}\sum\limits_{j \in J} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}.
+		\end{equation}\normalsize
+		\ei
+\end{frame}
 \begin{frame}{Tie Generating Process}
 	\begin{itemize}
-		\item[1.] (Data augmentation) For each sender $i \in \{1,...,A\}$, create binary receiver vector of length $A-1$, $J^{(d)}_i$, by applying the non-empty Gibbs measure to every $j \in \mathcal{A}_{\backslash i}$. 
-		\begin{equation} \text{P}(J_i^{(d)}) = \frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
+		\item[1.] For every sender $i \in \{1,...,A\}$, choose a binary vector $J^{(d)}_i$ of length $(A-1)$, by applying Gibbs measure (Fellows and Handcock, 2017) 
+		\footnotesize\begin{equation} \text{P}(J_i^{(d)}) = \frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
 		\end{equation}
-		\item[2.] For every sender $i \in \mathcal{A}$, generate the time increments \begin{equation}
+		\normalsize
+		where $\delta$ is a real-valued intercept controlling the recipient size and  $Z(\delta,\mbox{log}(\lambda_i^{(d)}))$ is the normalizing constant.\vspace{0.4cm}
+		\item[2.] For every sender $i \in \mathcal{A}$, generate the time increments 
+	\footnotesize	\begin{equation*}
 		\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}).
-		\end{equation}
-		\item[3.] Set timestamp, sender, and receivers simultaneously (NOTE: $t^{(0)}=0$):
-		\begin{equation}
+		\end{equation*}\normalsize
+		\item[3.] Set timestamp, sender, and receivers simultaneously:
+	\footnotesize	\begin{equation*}
 		\begin{aligned}
 		&t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}}),\\
 		&i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}, \\
 		&J^{(d)} = J_{i^{(d)}}.
 		\end{aligned}
-		\end{equation}
+		\end{equation*}
+		\normalsize
 		\end{itemize}
 \end{frame}
 \begin{frame}{Inference - Pseudocode}
-	 \begin{algorithm}[H]
+  	\begin{center}
+  		\scalebox{0.65}{	 
+ 	 \begin{minipage}{1\linewidth}\begin{algorithm}[H]
 \SetAlgoLined
-	 	\caption{MCMC}
-	 	set initial values $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, $ and $(\mathcal{B}^{(0)}, \delta^{(0)})$\\
+	 	\caption{Markov Chain Monte Carlo (MCMC)}
+	 	Set initial values $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, $ and $(\mathcal{B}^{(0)}, \delta^{(0)})$\\
 	 	\For{o=1 to O}{
-	 		\For{n=1 to $n_1$}{
-	 			optimize $\alpha$ and $\boldsymbol{m}$ using hyperparameter optimization in \cite{wallach2008structured}
-	 		}
 	 		\For{d=1 to D}{
 	 			\For{i $\in \mathcal{A}_{\backslash i_o^{(d)}}$}{
-	 				sample the augmented data $J^{(d)}_i$ 
+	 				\For{j $\in \mathcal{A}_{\backslash i}$}{
+	 				Sample the \textcolor{blue}{latent edge} $J^{(d)}_{ij}$ via Gibbs sampling
 	 			}
+	 		}
 	 			\For{n=1 to $N^{(d)}$}{
-	 				draw of $z_n^{(d)}\sim\mbox{Multinomial}(p^\mathcal{Z})$}}
+	 				Sample the \textcolor{blue}{topic assignments} via Gibbs sampling\\
+	 				$z_n^{(d)}\sim\mbox{Multinomial}(p^\mathcal{Z})$
+	 				}}
 	 		\For{k=1 to K}{
-	 			draw $C_k\sim \mbox{Multinomial}(p^\mathcal{C})$
+	 			Sample the \textcolor{blue}{interaction pattern assignments} via Gibbs sampling\\
+	 			$C_k\sim \mbox{Multinomial}(p^\mathcal{C})$
 	 		}
-	 		\For{n=1 to $n_2$}{
-	 			sample $\mathcal{B}$ using M-H
+	 		\For{n=1 to $n_B$}{
+	 				Sample the \textcolor{blue}{interaction pattern parameters} $\mathcal{B}$  via Metropolis-Hastings 
 	 		}
-	 		\For{n=1 to $n_3$}{
-	 			sample $\delta$ using M-H
+	 		\For{n=1 to $n_\delta$}{
+	 			Sample the \textcolor{blue}{receiver size parameter} $\delta$ via Metropolis-Hastings
 	 		}
-	 	}	Summarize the results with:\\
-	 	last sample of $\mathcal{C}$, last sample of $\mathcal{Z}$, last $n_2$ length chain of $\mathcal{B}$, last $n_3$ length chain of $\delta$ 
+	 	}
 	 \end{algorithm}
+	\end{minipage}}
+	 	\end{center}
 \end{frame}
 
 \begin{frame}{Data: North Carolina Dare county email data}
