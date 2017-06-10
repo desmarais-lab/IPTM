@@ -41,7 +41,7 @@ abline(0, 1, col = 'red')
 qqplot(TryGiR2$delta[,1], TryGiR2$delta[,2])
 abline(0, 1, col = 'red')
 
-par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
+par(mfrow=c(5,5), oma = c(0.1,0.1,0.1,0.1), mar = c(2,1,1,1))
 GiR_PP_Plots(TryGiR$Forward, TryGiR$Backward)
 
 TryGiR = TryGiR2
