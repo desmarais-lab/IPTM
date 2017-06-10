@@ -660,19 +660,24 @@ arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma
 	for (int IP = 0; IP < nIP; IP++) {
 			if (p_d[IP] > 0) {
 			arma::vec XB_IP = XB[IP];
-			double rowsums1 = sum(XB_IP % iJi_di1) / sum(iJi_di1);
-			out[1] += p_d[IP] * exp(rowsums1);
+			double rowsums1 = exp(sum(XB_IP % iJi_di1) / sum(iJi_di1));
+			if (rowsums1 == arma::datum::inf) {
+			  rowsums1 = exp(700);
+			}
+			out[1] += p_d[IP] * rowsums1;
 			if (sumiJi0 > 0) {
-			double rowsums0 = sum(XB_IP % iJi_di0) / sumiJi0;
-			out[0] += p_d[IP] * exp(rowsums0);
+			double rowsums0 = exp(sum(XB_IP % iJi_di0) / sumiJi0);
+			  if (rowsums0 == arma::datum::inf) {
+			    rowsums0 = exp(700);
+			  }
+			out[0] += p_d[IP] * rowsums0;
 				}
 			}
 	}
-	if (lambda_di[j - 1] > 0) {
-		prob[1] = delta + log(lambda_di[j - 1]) - timeinc_d * out[1];
-	} else {
-		prob[1] = -arma::datum::inf;
+	if (lambda_di[j - 1] < exp(-700)) {
+	  lambda_di[j - 1] = exp(-700);
 	}
+		prob[1] = delta + log(lambda_di[j - 1]) - timeinc_d * out[1];
 	if (sumiJi0 > 0) {
 		prob[0] = - timeinc_d * out[0];
 	} else {

@@ -659,7 +659,8 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       for (i in node[-as.numeric(edge[[d]][1])]) {
         for (j in sample(node[-1], length(node) - 1)) {
           probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], j)
-          iJi[[d]][i, j] = multinom_vec(1, probij) - 1		
+          iJi[[d]][i, j] = multinom_vec(1, probij) - 1
+          if (iJi[[d]][i, j]== -1) {browser()}
         }
       }
       iJi[[d]][as.numeric(edge[[d]][1]),] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
@@ -740,7 +741,6 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         expconst.C[which(expconst.C == Inf)] = exp(-700)
           }
       currentC[k] = multinom_vec(1, expconst.C)
-      if (currentC[k] == 0) {browser()}
     }
     if (plot) {
       entropy.mat = c(entropy.mat, entropy.empirical(currentC))

@@ -87,10 +87,10 @@ i = i + 1
 	geom_vline(xintercept = 20, colour = "red", size = 0.5, linetype = "dashed")+ annotate("text", x =25, y = 27, label = "Sandy", colour= "red" ) + 
 	annotate("segment", x = 18, xend = 20, y = 20, yend = 19, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =18, y = 20.5, label = "First Sandy", colour= "red", size = 3) 
 	
-which(Dare$vocab == "sandy")
-which(Dare$vocab == "hurricane")
-Sandy = which(sapply(Dare$text, function(d) {49 %in% d})==TRUE)
-Hurr = which(sapply(Dare$text, function(d) {81 %in% d})==TRUE)
+#which(Dare$vocab == "sandy")
+#which(Dare$vocab == "hurricane")
+#Sandy = which(sapply(Dare$text, function(d) {49 %in% d})==TRUE)
+#Hurr = which(sapply(Dare$text, function(d) {81 %in% d})==TRUE)
 
 sapply(Sandy, function(d){sum(49 == Dare$text[[d]])})
 sapply(Hurr, function(d){sum(81== Dare$text[[d]])})
@@ -123,4 +123,182 @@ for (i in 1:3) {
 }
 grid.arrange <- getFromNamespace("grid.arrange", asNamespace("gridExtra"))
 grid.arrange(grobs = g, nrow = 1)
+
+
+
+
+
+#IPTM model results
+load('/Users/bomin8319/Desktop/IPTM/paper/Darenew.RData')
+# 762 - 
+attach(Dare)
+Dare$node = 1:nrow(Dare$node)
+Dare$text = Dare$text[762:length(Dare$edge)]
+Dare$edge = Dare$edge[762:length(Dare$edge)]
+Dare$edge = Dare$edge[-which(sapply(Dare$text, function(d){length(d)})==0)]
+Dare$text = Dare$text[-which(sapply(Dare$text, function(d){length(d)})==0)]
+mintime = Dare$edge[[1]][[3]]
+for (n in 1:length(Dare$edge)){
+  Dare$edge[[n]][3] = (Dare$edge[[n]][[3]] - mintime) / 3600
+}
+Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
+
+load("Daretest2.RData")
+Daretest2$C
+
+TableWord = function(Zchain, K, textlist, vocabulary) {
+  # Generate a table of token-topic assignments with high probabilities for each IP
+  #
+  # Args 
+  #  Zchain summary of Z obtained using MCMC function
+  #  K total number of topics specified by the user
+  #  textlist list of text containing the words in each document
+  #  vocabulary all vocabularies used over the corpus
+  #
+  # Returns
+  #  List of table that summarize token-topic assignments for each IP
+  W = length(vocabulary)
+    Zsummary = list()
+    topic.word = matrix(0, nrow = K, ncol = W)
+    colnames(topic.word) = vocabulary
+    iter = 1
+    for (d in seq(along = textlist)) {
+      if (length(Zchain[[d]]) > 0){
+        Zsummary[[iter]] = Zchain[[d]]
+        names(Zsummary[[iter]])<- vocabulary[textlist[[d]]]
+        iter = iter+1
+      }
+    }
+    topic.dist = t(tabulate(unlist(Zsummary), K)/length(unlist(Zsummary)))
+    colnames(topic.dist) = c(1L:K)
+    top.topic = topic.dist[, order(topic.dist, decreasing = TRUE)]
+    all.word = unlist(Zsummary)
+    for (i in seq(along = all.word)){
+      matchWZ = which(colnames(topic.word) == names(all.word[i]))
+      topic.word[all.word[i], matchWZ] = topic.word[all.word[i], matchWZ] + 1
+    }
+    table.word = top.topic.words(topic.word, num.words = 10, by.score = TRUE)
+    colnames(table.word) = names(top.topic)
+  return(table.word)
+}
+
+TableWord(Daretest2$Z[1:47], 5, Dare$text[319:365], Dare$vocab)
+table(unlist(Daretest2$Z[1:47])) / sum(table(unlist(Daretest2$Z[1:47])))
+TableWord(Daretest2$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
+table(unlist(Daretest2$Z[48:764])) / sum(table(unlist(Daretest2$Z[48:764])))
+TableWord(Daretest2$Z[765:1138], 5, Dare$text[1083:1456], Dare$vocab)
+table(unlist(Daretest2$Z[765:1138])) / sum(table(unlist(Daretest2$Z[765:1138])))
+
+TableWord(Daretest2$Z[1:1138], 5, Dare$text[319:1456], Dare$vocab)
+table(unlist(Daretest2$Z[1:1138])) / sum(table(unlist(Daretest2$Z[319:1138])))
+
+TableWordIP = function(MCMCchainC, MCMCchainZ, K, textlist, vocabulary) {
+	W = length(vocabulary)
+	nIP = length(unique(MCMCchainC))
+	table.word = list()
+	for (IP in 1:nIP) {
+		Zsummary = list()
+		IP.word = matrix(0, nrow = nIP, ncol = W)
+		colnames(IP.word) = vocabulary
+		iter = 1
+		for (d in 1:length(MCMCchainZ)) {
+			if (length(MCMCchainZ[[d]]) > 0) {
+				Zsummary[[iter]] = MCMCchainC[MCMCchainZ[[d]]]
+				names(Zsummary[[iter]]) = vocabulary[textlist[[d]]]
+				iter = iter + 1
+			}
+		}
+		IP.dist = t(tabulate(unlist(Zsummary), nIP) / length(unlist(Zsummary)))
+		colnames(IP.dist) = c(1:nIP)
+		all.word = unlist(Zsummary)
+		for (i in seq(along = all.word)) {
+			matchWZ = which(c(colnames(IP.word))== names(all.word[i]))
+			IP.word[all.word[i], matchWZ] = IP.word[all.word[i], matchWZ] + 1
+		}
+		table.word[[IP]] = top.topic.words(IP.word, num.words = 15, by.score = TRUE)[,IP]
+			}
+			return(table.word)
+	
+}
+TableWordIP(Daretest2$C, Daretest2$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
+TableWordIP(Daretest2$C, Daretest2$Z[1:1138], 5, Dare$text[319:1456], Dare$vocab)
+
+lapply(Daretest2$B, function(IP) {rowMeans(IP)})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
