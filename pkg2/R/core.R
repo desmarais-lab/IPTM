@@ -1,4 +1,4 @@
-#' @useDynLib IPTM
+#' @useDynLib IPTM2
 #' @import stats
 #' @import grDevices
 #' @import graphics
@@ -126,12 +126,7 @@ Netstats = function(historyIP, node, sender, netstat) {
   	triadic = NULL
   }
  
-  netstatmat = lapply(1L:nIP, function(IP) {
-  	matrix(cbind(intercept, degree[[IP]], dyadic[[IP]], triadic[[IP]][,1:12]), nrow = length(node))
-  	})
-  # for (IP in 1L:nIP) {
-  #   colnames(netstatmat[[IP]]) = matcolnames
-  # }
+  netstatmat = matrix(cbind(intercept, degree, dyadic, triadic), nrow = length(node))
   return(netstatmat)
 }
 
@@ -318,7 +313,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 	observediJi = list()
 	support = gibbs.measure.support(length(node) - 1)
 	for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	history.t = History(edge, node, as.numeric(edge[[d]][3]))
    	 	X = lapply(node, function(i) {
   	        Netstats(history.t, node, i, netstat)
             })
@@ -340,7 +335,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       }
      # Data augmentation
       for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	history.t = History(edge, node, as.numeric(edge[[d]][3]))
    	 	X = lapply(node, function(i) {
   	        Netstats(history.t, node, i, netstat)
             })
@@ -411,7 +406,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
   	 				 }, c(1)) / length(currentZ[[d]])
  					 }, rep(1, nIP)))
           	for (d in edge2) {
-           		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+           		history.t = History(edge, node, as.numeric(edge[[d]][3]))
     	   	   		X = lapply(node, function(i) {
                		Netstats(history.t, node, i, netstat)
                		})
@@ -436,7 +431,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
   	 				 }, c(1)) / length(currentZ[[d]])
  					 }, rep(1, nIP)))  
     for (d in edge2) {
-        	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+        	history.t = History(edge, node, as.numeric(edge[[d]][3]))
     	    X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
        		})
@@ -499,7 +494,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     
     #delta update
     for (d in edge2) {
-    		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    		history.t = History(edge, node, as.numeric(edge[[d]][3]))
     	X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
        		})
@@ -628,7 +623,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   LambdaiJi = list()
   observediJi = list()
   for (d in edge2) {
-    history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    history.t = History(edge, node, as.numeric(edge[[d]][3]))
     X = lapply(node, function(i) {
       Netstats(history.t, node, i, netstat)
     })
@@ -649,7 +644,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     }
     # Data augmentation
     for (d in edge2) {
-      history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+      history.t = History(edge, node, as.numeric(edge[[d]][3]))
       X = lapply(node, function(i) {
         Netstats(history.t, node, i, netstat)
       })
@@ -720,7 +715,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
           }, c(1)) / length(currentZ[[d]])
         }, rep(1, nIP)))
         for (d in edge2) {
-          history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+          history.t = History(edge, node, as.numeric(edge[[d]][3]))
           X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
           })
@@ -753,7 +748,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       }, c(1)) / length(currentZ[[d]])
     }, rep(1, nIP)))  
     for (d in edge2) {
-      history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+      history.t = History(edge, node, as.numeric(edge[[d]][3]))
       X = lapply(node, function(i) {
         Netstats(history.t, node, i, netstat)
       })
@@ -816,7 +811,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     
     #delta update
     for (d in edge2) {
-      history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+      history.t = History(edge, node, as.numeric(edge[[d]][3]))
       X = lapply(node, function(i) {
         Netstats(history.t, node, i, netstat)
       })
@@ -951,7 +946,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 	observediJi = list()
 	support = gibbs.measure.support(length(node) - 1)
 	for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	history.t = History(edge, node, as.numeric(edge[[d]][3]))
    	 	X = lapply(node, function(i) {
   	        Netstats(history.t, node, i, netstat)
             })
@@ -973,7 +968,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
       }
      # Data augmentation
       for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	history.t = History(edge, node, as.numeric(edge[[d]][3]))
    	 	X = lapply(node, function(i) {
   	        Netstats(history.t, node, i, netstat)
             })
@@ -1044,7 +1039,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
   	 				 }, c(1)) / length(currentZ[[d]])
  					 }, rep(1, nIP)))
           	for (d in edge2) {
-           		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+           		history.t = History(edge, node, as.numeric(edge[[d]][3]))
     	   	   		X = lapply(node, function(i) {
                		Netstats(history.t, node, i, netstat)
                		})
@@ -1069,7 +1064,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
   	 				 }, c(1)) / length(currentZ[[d]])
  					 }, rep(1, nIP)))  
     for (d in edge2) {
-        	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+        	history.t = History(edge, node, as.numeric(edge[[d]][3]))
     	    X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
        		})
@@ -1132,7 +1127,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
     
     #delta update
     for (d in edge2) {
-    		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    		history.t = History(edge, node, as.numeric(edge[[d]][3]))
     	X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
        		})
@@ -1314,272 +1309,6 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
   return(table.word)
 }
 
-#' @title GenerateDocs
-#' @description Generate a collection of documents according to the generative process of IPTM
-#'
-#' @param nDocs number of documents to be generated
-#' @param node nodelist containing the ID of nodes (ID starting from 1)
-#' @param vocabulary all vocabularies used over the corpus
-#' @param nIP total number of interaction patterns specified by the user
-#' @param K total number of topics specified by the user
-#' @param nwords number of words in a document (fixed constant for now)
-#' @param alpha Dirichlet concentration prior for document-topic distribution
-#' @param mvec Dirichlet base prior for document-topic distribution
-#' @param betas Dirichlet concentration prior for topic-word distribution
-#' @param nvec Dirichlet base prior for topic-word distribution
-#' @param b List of coefficients estimating the history effect for each IP 
-#' @param delta tuning parameter controlling the number of recipients
-#' @param currentC topic-IP assignment
-#' @param netstat which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")
-#' @param base.edge edges before 384 hours that is used to calculate initial history of interactions
-#' @param base.text texts corresponding to base.edge
-#' @param topic_token_assignments matrix of topic-token assignments
-#' @param latentiJi inferred latent sender-receiver matrix (only used for backward sampling)
-#' @param forward Logigal indicating whether we are generating forward samples
-#' @param backward_init Logigal indicating whether we are generating initial backward samples
-#' @param backward Logigal indicating whether we are generating backward samples
-#' @param base Logical indicating whether or not we are generating base edges (< 384)
-#' @param backward.edge edge from previous backward sample
-#'
-#' @return generated edge and text, parameter b used to generate those, and base (if base == TRUE)
-#'
-#' @export
-GenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
-                        b, delta, currentC, netstat, base.edge, base.text, topic_token_assignments = NULL, latentiJi = list(),
-                        forward = FALSE, backward_init = FALSE, backward = FALSE, base = FALSE, backward.edge = NULL) {
-  W = length(vocabulary)
-  phi = lapply(1L:K, function(k) {
-    rdirichlet_cpp(1, betas * nvec)
-  })
-  L = 3
-  P = 1 * ("intercept" %in% netstat) + L * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
-  
-  if (base) {
-    t.d = 0
-  } else {
-    t.d = 384
-  }
-  edge = base.edge
-  text = base.text
-  base.length = length(edge)
-  p.d = matrix(NA, nrow = nDocs + base.length, ncol = nIP)
-  if (!base) {
-  for (d in 1:base.length) {
-  	 p.d[d, ] = vapply(1L:nIP, function(IP) {
-      sum(names(text[[d]]) %in% which(currentC == IP))
-    }, c(1)) / max(1, length(text[[d]]))
-  }
-  }
-  word_type_topic_counts = matrix(0, W, K)
-  for (d in 1:nDocs) {
-    N.d = nwords
-    text[[base.length + d]] = rep(NA, N.d)
-    
-    if (!backward) {
-      theta.d = rdirichlet_cpp(1, alpha * mvec)	
-      topic.d = multinom_vec(max(1, N.d), theta.d)
-      
-        for (n in 1:N.d){
-          text[[base.length + d]][n] = multinom_vec(1, phi[[topic.d[n]]])
-        }
-        names(text[[base.length + d]]) = topic.d
-    } else {
-      phi.k = rep(NA, K)
-      topic.d = topic_token_assignments[[d]]
-        for (n in 1:N.d){
-          for (w in 1:W) {
-            phi.k[w] = (word_type_topic_counts[w, topic.d[n]] + betas * nvec[w]) / (sum(word_type_topic_counts[,topic.d[n]]) + betas)
-          } 
-          text[[base.length + d]][n] = multinom_vec(1, phi.k)
-          word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] = word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] + 1
-        }
-        names(text[[base.length + d]]) = topic.d
-    }
-    
-    p.d[base.length + d, ] = vapply(1L:nIP, function(IP) {
-      sum(topic.d %in% which(currentC == IP))
-    }, c(1)) / max(1, N.d)
-    if (base & t.d < 384) {
-      history.t = lapply(1:nIP, function(IP) {
-        			  lapply(1:3, function(l){
-         		  matrix(0, length(node), length(node))
-       			  })
-     			  })
-    } else {	
-      history.t = History(edge, p.d, node, t.d + 10^(-10))
-    }
-    X = lapply(node, function(i) {
-      	Netstats(history.t, node, i, netstat)
-   		})
-    XB = MultiplyXBList(X, b)     
-    lambda = lambda_cpp(p.d[base.length + d,], XB)
-    
-    if (!backward) {
-    iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
-    while (sum(iJi) == 0) {
-      iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
-    }
-    } else {
-    		iJi = latentiJi[[d]]
-    		observedi = backward.edge[[base.length + d]][[1]]
-    		iJi[observedi, ] = rbinom_mat((delta * lambda) / (delta * lambda + 1))[observedi,]
-    		while (sum(iJi[observedi, ]) == 0) {
-      		iJi[observedi, ] = rbinom_mat((delta * lambda) / (delta * lambda + 1))[observedi,]
-    		}
-    	}
-    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
-    Time.inc = vapply(LambdaiJi, function(lambda) {
-      rexp(1, lambda)
-    }, c(1))
-    i.d = which(Time.inc == min(Time.inc[!is.na(Time.inc)]))
-    j.d = which(iJi[i.d,] == 1)
-    t.d = t.d + Time.inc[i.d]
-    edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
-  }
-  if (forward) {
-    edge = edge[-(1:base.length)]
-    text = text[-(1:base.length)]
-  }
-  if (base == TRUE & t.d > 384) {
-    cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
-    edge = edge[1:cutoff]
-    text = text[1:cutoff]
-  }
-  return(list(edge = edge, text = text, b = b, d = delta, base = base.length))							
-} 
-
-
-#' @title CollapsedGenerateDocs
-#' @description Generate a collection of documents according to the generative process of IPTM
-#'
-#' @param nDocs number of documents to be generated
-#' @param node nodelist containing the ID of nodes (ID starting from 1)
-#' @param vocabulary all vocabularies used over the corpus
-#' @param nIP total number of interaction patterns specified by the user
-#' @param K total number of topics specified by the user
-#' @param nwords number of words in a document (fixed constant for now)
-#' @param alpha Dirichlet concentration prior for document-topic distribution
-#' @param mvec Dirichlet base prior for document-topic distribution
-#' @param betas Dirichlet concentration prior for topic-word distribution
-#' @param nvec Dirichlet base prior for topic-word distribution
-#' @param b List of coefficients estimating the history effect for each IP 
-#' @param delta tuning parameter controlling the number of recipients
-#' @param currentC topic-IP assignment
-#' @param netstat which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")
-#' @param base.edge edges before 384 hours that is used to calculate initial history of interactions
-#' @param base.text texts corresponding to base.edge
-#' @param topic_token_assignments matrix of topic-token assignments
-#' @param latentiJi inferred latent sender-receiver matrix (only used for backward sampling)
-#' @param forward Logigal indicating whether we are generating forward samples
-#' @param backward_init Logigal indicating whether we are generating initial backward samples
-#' @param backward Logigal indicating whether we are generating backward samples
-#' @param base Logical indicating whether or not we are generating base edges (< 384)
-#' @param backward.edge edge from previous backward sample
-#'
-#' @return generated edge and text, parameter b used to generate those, and base (if base == TRUE)
-#'
-#' @export
-CollapsedGenerateDocs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
-                        b, delta, currentC, netstat, base.edge, base.text, topic_token_assignments = NULL, latentiJi = list(),
-                        forward = FALSE, backward_init = FALSE, backward = FALSE, base = FALSE, backward.edge = NULL) {
-  W = length(vocabulary)
-  phi = lapply(1L:K, function(k) {
-    rdirichlet_cpp(1, betas * nvec)
-  })
-  L = 3
-  P = 1 * ("intercept" %in% netstat) + L * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
-  
-  if (base) {
-    t.d = 0
-  } else {
-    t.d = 384
-  }
-  edge = base.edge
-  text = base.text
-  base.length = length(edge)
-  p.d = matrix(NA, nrow = nDocs + base.length, ncol = nIP)
-  if (!base) {
-  for (d in 1:base.length) {
-  	 p.d[d, ] = vapply(1L:nIP, function(IP) {
-      sum(names(text[[d]]) %in% which(currentC == IP))
-    }, c(1)) / max(1, length(text[[d]]))
-  }
-  }
-  word_type_topic_counts = matrix(0, W, K)
-  for (d in 1:nDocs) {
-    N.d = nwords
-    text[[base.length + d]] = rep(NA, N.d)
-    
-    if (!backward) {
-      theta.d = rdirichlet_cpp(1, alpha * mvec)	
-      topic.d = multinom_vec(max(1, N.d), theta.d)
-      
-        for (n in 1:N.d){
-          text[[base.length + d]][n] = multinom_vec(1, phi[[topic.d[n]]])
-        }
-        names(text[[base.length + d]]) = topic.d
-    } else {
-      phi.k = rep(NA, K)
-      topic.d = topic_token_assignments[[d]]
-        for (n in 1:N.d){
-          for (w in 1:W) {
-            phi.k[w] = (word_type_topic_counts[w, topic.d[n]] + betas * nvec[w]) / (sum(word_type_topic_counts[,topic.d[n]]) + betas)
-          } 
-          text[[base.length + d]][n] = multinom_vec(1, phi.k)
-          word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] = word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] + 1
-        }
-        names(text[[base.length + d]]) = topic.d
-    }
-    
-    p.d[base.length + d, ] = vapply(1L:nIP, function(IP) {
-      sum(topic.d %in% which(currentC == IP))
-    }, c(1)) / max(1, N.d)
-    if (base & t.d < 384) {
-      history.t = lapply(1:nIP, function(IP) {
-        			  lapply(1:3, function(l){
-         		  matrix(0, length(node), length(node))
-       			  })
-     			  })
-    } else {	
-      history.t = History(edge, p.d, node, t.d + 10^(-10))
-    }
-    X = lapply(node, function(i) {
-      	Netstats(history.t, node, i, netstat)
-   		})
-    XB = MultiplyXBList(X, b)     
-    lambda = lambda_cpp(p.d[base.length + d,], XB)
-    
-    if (!backward) {
-    iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
-    while (sum(iJi) == 0) {
-      iJi = rbinom_mat((delta * lambda) / (delta * lambda + 1))
-    }
-    } else {
-    		iJi = latentiJi[[d]]
-    		observedi = backward.edge[[base.length + d]][[1]]
-    		iJi[observedi, ] = rbinom_mat((delta * lambda) / (delta * lambda + 1))[observedi,]
-    		while (sum(iJi[observedi, ]) == 0) {
-      		iJi[observedi, ] = rbinom_mat((delta * lambda) / (delta * lambda + 1))[observedi,]
-    		}
-    	}
-    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
-   	LambdaiJi[is.na(LambdaiJi)] = 0
-    i.d = multinom_vec(1, LambdaiJi)
-    j.d = which(iJi[i.d,] == 1)
-    t.d = t.d + rexp(1, sum(LambdaiJi))
-    edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
-  }
-  if (forward) {
-    edge = edge[-(1:base.length)]
-    text = text[-(1:base.length)]
-  }
-  if (base == TRUE & t.d > 384) {
-    cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
-    edge = edge[1:cutoff]
-    text = text[1:cutoff]
-  }
-  return(list(edge = edge, text = text, b = b, d = delta, base = base.length))							
-} 
 
 #' @title GenerateDocs.Gibbs
 #' @description Generate a collection of documents according to the generative process of IPTM using Gibbs measure
@@ -1636,11 +1365,9 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     }, c(1)) / max(1, length(text[[d]]))
   }
   }
- history.t = lapply(1:nIP, function(IP) {
-        	 	 lapply(1:3, function(l){
+ history.t =  lapply(1:3, function(l){
          		matrix(0, length(node), length(node))
-       			})
-     		 })  
+       			})     	 
   word_type_topic_counts = matrix(0, W, K)
   iJi = matrix(0, length(node), length(node))
   for (d in 1:nDocs) {
@@ -1671,7 +1398,7 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
       sum(topic.d %in% which(currentC == IP))
     }, c(1)) / max(1, N.d)
     if (t.d >= 384) {
-      history.t = History(edge, p.d, node, t.d + 10^(-10))
+      history.t = History(edge, node, t.d + 10^(-10))
     }
     X = lapply(node, function(i) {
       	Netstats(history.t, node, i, netstat)
@@ -1755,11 +1482,9 @@ GenerateDocs.Schein = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     }, c(1)) / max(1, length(text[[d]]))
   }
   }
- history.t = lapply(1:nIP, function(IP) {
-        	 	 lapply(1:3, function(l){
+ history.t = lapply(1:3, function(l){
          		matrix(0, length(node), length(node))
        			})
-     		 })  
   word_type_topic_counts = matrix(0, W, K)
   iJi = matrix(0, length(node), length(node))
   for (d in 1:nDocs) {
@@ -1790,7 +1515,7 @@ GenerateDocs.Schein = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, m
       sum(topic.d %in% which(currentC == IP))
     }, c(1)) / max(1, N.d)
     if (t.d >= 384) {
-      history.t = History(edge, p.d, node, t.d + 10^(-10))
+      history.t = History(edge, node, t.d + 10^(-10))
     }
     X = lapply(node, function(i) {
       	Netstats(history.t, node, i, netstat)
@@ -1844,10 +1569,10 @@ GiR_stats = function(GiR_sample, K, currentC, vocabulary, forward = FALSE, backw
   nIP = length(GiR_sample$b)
   nwords = length(GiR_sample$text[[1]])
   W = length(vocabulary)
-  A = nrow(GiR_sample$X[[1]][[1]])
+  A =length(GiR_sample$X)
   
   GiR_stats[1:P] = Reduce('+', GiR_sample$b) / nIP 
-  GiR_stats[(P + 1):(P + 3)] = nIP * Reduce('+', lapply(1:A, function(i) {colMeans(GiR_sample$X[[i]][[1]][,2:4])})) / A
+  GiR_stats[(P + 1):(P + 3)] = nIP * Reduce('+', lapply(1:A, function(i) {colMeans(GiR_sample$X[[i]][,2:4])})) / A
   GiR_stats[P + 4] = GiR_sample$d
   GiR_stats[P + 5] = mean(vapply(1:nDocs, function(d) {
     length(edge[[d]][[2]])
@@ -1868,60 +1593,6 @@ GiR_stats = function(GiR_sample, K, currentC, vocabulary, forward = FALSE, backw
   
   return(GiR_stats)
 }
-
-#' @title GiR_QQ_Plots
-#' @description Generate QQ-plots (quantile-quantile plots) for Gettig it Right test
-#'
-#' @param Forward_stats statistics obtained from forward sampling
-#' @param Backward_stats statistics obtained from backward sampling
-#'
-#' @return QQ-plots for different GiR statistics of interest
-#'
-#' @export
-GiR_QQ_Plots = function(Forward_stats, Backward_stats) {
-  nms = colnames(Forward_stats)
-  
-  for (i in 1L:ncol(Forward_stats)) {
-    if (nrow(Forward_stats) > 20000) {
-      thinning = seq(from = floor(nrow(Forward_stats)/10), to = nrow(Forward_stats), length.out = 10000)
-      Forward_test = Forward_stats[thinning, i]
-      Backward_test = Backward_stats[thinning, i]
-    } else {
-      Forward_test = Forward_stats[, i]
-      Backward_test = Backward_stats[, i]
-    }
-    
-    all = c(Backward_stats[, i], Forward_stats[, i])
-    ylims = c(min(all) - 0.1 * max(abs(all)), max(all) + 0.1 * max(abs(all)))
-    xlims = ylims
-    
-    quantiles = 50
-    if (grepl("B_", nms[i]) ) {
-      quantiles = 1000
-    }
-    
-    qqplot(x = quantile(Forward_stats[, i], seq(0, 1, length = quantiles)),
-           y = quantile(Backward_stats[, i], seq(0, 1, length = quantiles)),
-           ylim = ylims,
-           xlim = xlims,
-           ylab = "Backward",
-           xlab = "Forward",
-           col = "blue",
-           pch = 19,
-           main = nms[i],
-           cex.lab = 1,
-           cex.axis = 1,
-           cex.main = 1)
-    lines(x = xlims, y = ylims, col = "red", lwd = 3)
-    text(paste("Backward Mean:", round(mean(Backward_stats[,i]), 4),
-               "\nForward Mean:", round(mean(Forward_stats[,i]), 4),
-               "\nt-test p-value:", round(t.test(Backward_test, Forward_test)$p.value, 4),
-               "\nMann-Whitney p-value:", round(wilcox.test(Backward_test, Forward_test)$p.value,4)),
-         x = xlims[2] - 0.35 * abs(xlims[2] - xlims[1]),
-         y = ylims[1] + 0.15 * abs(ylims[2] - ylims[1]),
-         cex = 0.3)
-  }
-}      
 
 
 #' @title GiR_PP_Plots
@@ -2158,7 +1829,6 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     })
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     currentC = sample(1L:nIP, K, replace = TRUE)
-    print(list(b=b, d=delta, c=currentC))
     Forward_sample = GenerateDocs.Schein(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b,
     		 								delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
     		 								forward = TRUE, base = FALSE, support = supportD) 
@@ -2177,7 +1847,6 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     })
     delta = Inference_samp$D[length(Inference_samp$D)]
     currentC = Inference_samp$C
-     print(list(b=b, d=delta, c=currentC))
     topic_token_assignments = Inference_samp$Z
     for (d in 1:length(topic_token_assignments)) {
       names(topic_token_assignments[[d]]) = Forward_sample$text[[d + length(base.text)]]

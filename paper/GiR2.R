@@ -1,4 +1,4 @@
-library(IPTM)
+library(IPTM2)
 library(mvtnorm)
 library(MCMCpack)
 set.seed(100)

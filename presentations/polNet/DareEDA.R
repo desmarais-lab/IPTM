@@ -182,6 +182,16 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
   return(table.word)
 }
 
+which(Sandy$date %in% unique(Sandy$date)[20:27])
+TableWord(Daretest2$Z[72:418], 5, Dare$text[390:736], Dare$vocab)
+
+
+which(Sandy$date %in% unique(Sandy$date)[23:27])
+TableWord(Daretest2$Z[216:418], 5, Dare$text[534:736], Dare$vocab)
+
+
+
+
 TableWord(Daretest2$Z[1:47], 5, Dare$text[319:365], Dare$vocab)
 table(unlist(Daretest2$Z[1:47])) / sum(table(unlist(Daretest2$Z[1:47])))
 TableWord(Daretest2$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
@@ -215,13 +225,15 @@ TableWordIP = function(MCMCchainC, MCMCchainZ, K, textlist, vocabulary) {
 			matchWZ = which(c(colnames(IP.word))== names(all.word[i]))
 			IP.word[all.word[i], matchWZ] = IP.word[all.word[i], matchWZ] + 1
 		}
-		table.word[[IP]] = top.topic.words(IP.word, num.words = 15, by.score = TRUE)[,IP]
+		table.word[[IP]] = top.topic.words(IP.word, num.words = 15, by.score = FALSE)[,IP]
 			}
 			return(table.word)
 	
 }
 TableWordIP(Daretest2$C, Daretest2$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
 TableWordIP(Daretest2$C, Daretest2$Z[1:1138], 5, Dare$text[319:1456], Dare$vocab)
+TableWordIP(Daretest2$C, Daretest2$Z[72:418], 5, Dare$text[390:736], Dare$vocab)
+TableWordIP(Daretest2$C, Daretest2$Z[216:418], 5, Dare$text[534:736], Dare$vocab)
 
 lapply(Daretest2$B, function(IP) {rowMeans(IP)})
 
