@@ -30,11 +30,17 @@ for (date in unique(sender$date)) {
 Dept[(22*(i-1)+1) : (22*i),3]= tabulate(sender[which(sender[,4] == date),2], 22)
 i = i + 1
 }
-
+ave = c()
+i = 1
+for (date in unique(Dept$Date)) {
+	ave[i] = mean(Dept[which(Dept$Date == date),3])
+	i = i + 1
+}
+Dept2 = data.frame(Date = unique(Dept$Date), Send = ave)
 	f <- ggplot(Dept, aes(Date, Send, colour = Department), show.legend=FALSE)
 	f + geom_line(aes(group = Department)) + guides(col = guide_legend(nrow=22)) + scale_x_discrete(breaks = function(n) n[seq(0, length(n), by = length(n)/10)]) + theme(legend.text = element_text(size = 10)) +geom_vline(xintercept = 23, colour = "red", size = 1) +geom_vline(xintercept = 27, colour = "red", size = 1) + 
 	geom_vline(xintercept = 20, colour = "red", size = 0.5, linetype = "dashed")+ annotate("text", x =25, y = 21, label = "Sandy", colour= "red" ) + 
-	annotate("segment", x = 18, xend = 20, y = 15, yend = 14, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =18, y = 15.5, label = "First Sandy", colour= "red", size = 3)  + theme(legend.position="none")
+	annotate("segment", x = 18, xend = 20, y = 15, yend = 14, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =18, y = 15.5, label = "First Sandy", colour= "red", size = 3)  + theme(legend.position="none") + stat_summary(aes(group = 1), size = 1.2, fun.y=mean, geom="line", colour = "grey35")
 
 	which(Dare$vocab == "sandy")
 which(Dare$vocab == "hurricane")
@@ -62,7 +68,8 @@ i = i + 1
 	f <- ggplot(Dept, aes(Date, Receive, colour = Department))
 	f + geom_line(aes(group = Department)) + guides(col = guide_legend(nrow=22)) + scale_x_discrete(breaks = function(n) n[seq(0, length(n), by = length(n)/10)]) + theme(legend.text = element_text(size = 5)) +geom_vline(xintercept = 23, colour = "red", size = 1) +geom_vline(xintercept = 27, colour = "red", size = 1) + 
 	geom_vline(xintercept = 20, colour = "red", size = 0.5, linetype = "dashed")+ annotate("text", x =25, y = 27, label = "Sandy", colour= "red" ) + 
-	annotate("segment", x = 18, xend = 20, y = 20, yend = 19, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =18, y = 20.5, label = "First Sandy", colour= "red", size = 3)  + theme(legend.position="none")
+	annotate("segment", x = 18, xend = 20, y = 20, yend = 19, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =18, y = 20.5, label = "First Sandy", colour= "red", size = 3)  + theme(legend.position="none")+ stat_summary(aes(group = 1), size = 1.2, fun.y=mean, geom="line", colour = "grey35")
+
 
 	
 
@@ -236,81 +243,3 @@ TableWordIP(Daretest2$C, Daretest2$Z[72:418], 5, Dare$text[390:736], Dare$vocab)
 TableWordIP(Daretest2$C, Daretest2$Z[216:418], 5, Dare$text[534:736], Dare$vocab)
 
 lapply(Daretest2$B, function(IP) {rowMeans(IP)})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
