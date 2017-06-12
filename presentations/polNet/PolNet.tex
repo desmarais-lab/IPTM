@@ -99,11 +99,17 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 
 \begin{frame}{Content Generating Process: LDA (Blei et al., 2003)}
 \bni 
+\begin{minipage}{0.66\linewidth}
 \item For each topic $k =1,...,K:$\vspace{0.2cm}
 	\begin{itemize}
 		\item[1.] Topic-word distribution {$\boldsymbol{\phi}^{(k)} \sim \mbox{Dirichlet}(\beta, \bf u)$}\vspace{0.2cm}
 		\item[2.] Topic-IP distribution $c_k\sim \mbox{Uniform}(1, C)$			
-		\end{itemize}\vspace{0.4cm}
+		\end{itemize}
+		\vspace{0.4cm}
+	\end{minipage}
+	\begin{minipage}{0.3\linewidth}
+			\includegraphics[width=0.8\textwidth]{figures/word.jpeg}
+		\end{minipage}
 			\begin{minipage}{0.62\linewidth}
 				\item For each document $d =1,...,D:$ \vspace{0.2cm}
 		\begin{itemize}
@@ -211,7 +217,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \begin{frame}{Data: North Carolina Dare county email data}
  \bni \item $D = 1456$ emails between $A = 27$ county government managers, covering 2 month periods (October 1 - November 30) in 2013
  \begin{figure}
- 	\includegraphics[width=0.55\textwidth]{Dare.png}
+ 	\includegraphics[width=0.55\textwidth]{figures/Dare.png}
  \end{figure}	
 \vspace{0.4cm}
  \item Hurricane Sandy passed by NC: October 26 - October 30
@@ -225,9 +231,9 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 	 	 \end{figure}	
 	 \begin{figure}
 	 %	\includegraphics[width=0.5\textwidth]{Wordplot.pdf}	 
-	 		 	\includegraphics[width=0.85\textwidth]{Networkplot.pdf}
+	 		 	\includegraphics[width=0.85\textwidth]{figures/Networkplot.pdf}
 	 		 	\hspace{0.1cm}
-	 		 		 	\includegraphics[width=0.11\textwidth]{Dept2.jpg}
+	 		 		 	\includegraphics[width=0.11\textwidth]{figures/Dept2.jpg}
 	 \end{figure}	
 \end{frame}
 
@@ -268,7 +274,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
  	\vspace{0.4cm}
  \item Allowance of multicast -- multiple senders and/or receivers
  	\vspace{0.4cm}
- \item Possible application to various political science data\\ e.g. cosponsorship of bills and international sanctions
+ \item Possible application to various political science data
  \ei
 \end{frame}
 \end{document}
