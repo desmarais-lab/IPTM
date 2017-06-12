@@ -5,13 +5,32 @@ Good afternoon, I am Bomin Kim from the statistics department of Penn state, and
 
 Slide 2.
 
-Our new model is called “Interaction-Partitioned Topic Model”, which I will refer to as IPTM.
-IPTM is a statistical model for time-stamped textual communications, such as emails, cosponsorship of bills, or international sanctions. The model is built upon two well-known models, one is Latent Dirichlet Allocation, a model for topic-based contents where each document can be viewed as a mixture of various topics, and the second one is ERGM, the exponential random graph model, which is a family of statistical models used to analyze networks. So, IPTM is a model about “who communicates with whom about what, and when?”, and we will use LDA to model “what” and use continuous-time version of ERGM to model “who, whom and when”.
+Our new model is called “Interaction-Partitioned Topic Model”, which I will refer to as IPTM. IPTM is a statistical model for time-stamped textual communications, such as emails, cosponsorship of bills, or international sanctions. The model is built upon two well-known models, one is Latent Dirichlet Allocation, a model for topic-based contents where each document can be viewed as a mixture of various topics, and the second one is ERGM, the exponential random graph model, which is a family of statistical models used to analyze networks. So, IPTM is a model about “who communicates with whom about what, and when?”, and we will use LDA to model “what” and use continuous-time version of ERGM to model “who, whom and when”.
 
 
 Slide 3.
 
 First, I will introduce how the contents or the words are generated. For each topic has unique topic-word distribution phi of k, which means that topic k is characterized by a discrete distribution over the word types. Next, we assign each topic to one interaction pattern, from uniform distribution.
+
 Now, when we create a document, we first sample a topic distribution of each document, for example in this figure, this document has topic distribution as this (highest proportion of topic 1 and topic 2, 3 follows). Then for each word, we first choose the topic from document-topic distribution theta, and then choose a word from topic-word distribution phi given the chosen topic. 
+
+Finally, the content will be summarized as a distribution of interaction patterns, p_c^{(d)}, which is the proportion of words from the topics corresponding to specific interaction pattern. This statistic will be passed and reflected in the tie generating process.
+
+
+Slide 4. 
+
+Before we move to tie generating process, I would like to briefly mention how we defined our dynamic network statistics. Considering that document sending/receiving behavior is highly influenced by the previous interactions, we track the history of interactions back to 16 days ago, and divide the past 16 days into 3 intervals: now to 1 day ago, 1 day to 3 days ago, and 3 days to 16 days ago, such that they have equal space in log-scale. Then we define the interval-based network statistics, as below.
+
+So, X is the network statistic, and we use three types of network statistics to measure popularity, centrality, reciprocity, and transitivity. We first use outdegree and in degree statistics, how many times i sent a document to anyone or received from anyone; then we use two dyadic statistics, send and receive, which simply means how many times i sent to or received from j. Lastly we use 4 triadic statistics, which are analogous to common 2-star or 2-path statistics in network studies. Details on these statistics are illustrated in Perry and Wolfe, 2012 paper.
+
+
+Slide 5.
+
+Now this is the key part of our model, the tie generating process. Basic assumption is, in the latent space, everyone is planning to send a document to a single or multiple receivers. 
+ 
+
+
+
+
 
 
