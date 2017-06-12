@@ -48,6 +48,6 @@ Daretest1 <- IPTM_inference.data(Dare$edge, Dare$node, Dare$text, Dare$vocab, nI
                        prior.b.var = 1 * diag(25), prior.delta = c(0, 1), out = 20, n_B = 11000, n_d = 600, burn = c(1000,100), 
                        thinning = c(20, 1), netstat = c("intercept", "dyadic", "degree", "triadic"), plot = TRUE, optimize = TRUE)
 save(Daretest3, file = "Daretest3.RData")
-save(Daretest2, file = "Daretest2.RData")
+save(Daretest1, file = "Daretest1.RData")
 
-PlotbetaIP(Daretest2$B)
+PlotbetaIP(Daretest1$B)

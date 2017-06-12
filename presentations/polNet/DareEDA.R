@@ -150,8 +150,8 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("Daretest2.RData")
-Daretest2$C
+load("Daretest1.RData")
+Daretest1$C
 
 TableWord = function(Zchain, K, textlist, vocabulary) {
   # Generate a table of token-topic assignments with high probabilities for each IP
@@ -190,24 +190,24 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
 }
 
 which(Sandy$date %in% unique(Sandy$date)[20:27])
-TableWord(Daretest2$Z[72:418], 5, Dare$text[390:736], Dare$vocab)
+TableWord(Daretest1$Z[72:418], 5, Dare$text[390:736], Dare$vocab)
 
 
 which(Sandy$date %in% unique(Sandy$date)[23:27])
-TableWord(Daretest2$Z[216:418], 5, Dare$text[534:736], Dare$vocab)
+TableWord(Daretest1$Z[216:418], 5, Dare$text[534:736], Dare$vocab)
 
 
 
 
-TableWord(Daretest2$Z[1:47], 5, Dare$text[319:365], Dare$vocab)
-table(unlist(Daretest2$Z[1:47])) / sum(table(unlist(Daretest2$Z[1:47])))
-TableWord(Daretest2$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
-table(unlist(Daretest2$Z[48:764])) / sum(table(unlist(Daretest2$Z[48:764])))
-TableWord(Daretest2$Z[765:1138], 5, Dare$text[1083:1456], Dare$vocab)
-table(unlist(Daretest2$Z[765:1138])) / sum(table(unlist(Daretest2$Z[765:1138])))
+TableWord(Daretest1$Z[1:47], 5, Dare$text[319:365], Dare$vocab)
+table(unlist(Daretest1$Z[1:47])) / sum(table(unlist(Daretest1$Z[1:47])))
+TableWord(Daretest1$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
+table(unlist(Daretest1$Z[48:764])) / sum(table(unlist(Daretest1$Z[48:764])))
+TableWord(Daretest1$Z[765:1138], 5, Dare$text[1083:1456], Dare$vocab)
+table(unlist(Daretest1$Z[765:1138])) / sum(table(unlist(Daretest1$Z[765:1138])))
 
-TableWord(Daretest2$Z[1:1138], 5, Dare$text[319:1456], Dare$vocab)
-table(unlist(Daretest2$Z[1:1138])) / sum(table(unlist(Daretest2$Z[319:1138])))
+TableWord(Daretest1$Z[1:1138], 5, Dare$text[319:1456], Dare$vocab)
+table(unlist(Daretest1$Z[1:1138])) / sum(table(unlist(Daretest1$Z[319:1138])))
 
 TableWordIP = function(MCMCchainC, MCMCchainZ, K, textlist, vocabulary) {
 	W = length(vocabulary)
@@ -232,14 +232,47 @@ TableWordIP = function(MCMCchainC, MCMCchainZ, K, textlist, vocabulary) {
 			matchWZ = which(c(colnames(IP.word))== names(all.word[i]))
 			IP.word[all.word[i], matchWZ] = IP.word[all.word[i], matchWZ] + 1
 		}
-		table.word[[IP]] = top.topic.words(IP.word, num.words = 15, by.score = FALSE)[,IP]
+		table.word[[IP]] = top.topic.words(IP.word, num.words = 15, by.score = TRUE)[,IP]
 			}
 			return(table.word)
 	
 }
-TableWordIP(Daretest2$C, Daretest2$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
-TableWordIP(Daretest2$C, Daretest2$Z[1:1138], 5, Dare$text[319:1456], Dare$vocab)
-TableWordIP(Daretest2$C, Daretest2$Z[72:418], 5, Dare$text[390:736], Dare$vocab)
-TableWordIP(Daretest2$C, Daretest2$Z[216:418], 5, Dare$text[534:736], Dare$vocab)
+TableWordIP(Daretest1$C, Daretest1$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
+TableWordIP(Daretest1$C, Daretest1$Z[1:1138], 5, Dare$text[319:1456], Dare$vocab)
+TableWordIP(Daretest1$C, Daretest1$Z[72:418], 5, Dare$text[390:736], Dare$vocab)
+TableWordIP(Daretest1$C, Daretest1$Z[216:418], 5, Dare$text[534:736], Dare$vocab)
 
-lapply(Daretest2$B, function(IP) {rowMeans(IP)})
+lapply(Daretest1$B, function(IP) {rowMeans(IP)})
+
+library(reshape)
+
+DareB = matrix(NA, 500, 25)
+DareB[,1:25] = t(Daretest1$B[[1]])
+colnames(DareB)= c( "intercept",
+"outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
+"send1", "send2", "send3" ,"receive1", "receive2", "receive3",
+"2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
+"sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
+DareB = melt(DareB)
+
+DareB2 = matrix(NA, 500, 25)
+DareB2[,1:25] = t(Daretest1$B[[2]])
+colnames(DareB2)= c( "intercept",
+"outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
+"send1", "send2", "send3" ,"receive1", "receive2", "receive3",
+"2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
+"sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
+DareB2 = melt(DareB2)
+colnames(DareB2) = c("variable", "value")
+
+DareB$IP = 1
+DareB2$IP = 2
+DareBnew = rbind(DareB, DareB2)[,-1]
+DareBnew$IP = as.factor(DareBnew$IP)
+DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( "intercept",
+"outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
+"send1", "send2", "send3" ,"receive1", "receive2", "receive3",
+"2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
+"sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3"))
+colnames(DareBnew) = c("Netstat", "Estimate", "IP")
+p <- ggplot(DareBnew, aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() + geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
