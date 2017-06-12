@@ -184,7 +184,7 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
       matchWZ = which(colnames(topic.word) == names(all.word[i]))
       topic.word[all.word[i], matchWZ] = topic.word[all.word[i], matchWZ] + 1
     }
-    table.word = top.topic.words(topic.word, num.words = 10, by.score = TRUE)
+    table.word = top.topic.words(topic.word, num.words = 15, by.score = TRUE)
     colnames(table.word) = names(top.topic)
   return(table.word)
 }

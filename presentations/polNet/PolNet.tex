@@ -164,7 +164,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 		- \footnotesize$\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c
 		\cdot  \mbox{exp}\Big\{\lambda^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)\Big\}\quad$\normalsize  is a stochastic intensity\\\vspace{0.1cm}
 		- $\delta$ is a real-valued intercept controlling the recipient size\\ \vspace{0.1cm}
-		- $Z(\delta,\mbox{log}(\lambda_i^{(d)}))$ is the normalizing constant\vspace{0.1cm}
+		- \footnotesize$Z(\delta,\mbox{log}(\lambda_i^{(d)})) = (\prod\limits_{j \in \mathcal{A} \backslash i }(\mbox{exp}\{\delta + \mbox{log}(\lambda^{(d)}_{ij})\}+1))-1$ \normalsize is the normalizing constant\vspace{0.1cm}
  \begin{figure}
  	\includegraphics[width=0.23\textwidth]{figures/table.pdf}
  \end{figure}	
@@ -215,7 +215,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \end{frame}
 
 \begin{frame}{Data: North Carolina Dare county email data}
- \bni \item $D = 1456$ emails between $A = 27$ county government managers, covering 2 month periods (October 1 - November 30) in 2013
+ \bni \item $D = 1456$ emails between $A = 27$ county government managers, covering 2 month periods (October 1 - November 30) in 2012
  \begin{figure}
  	\includegraphics[width=0.55\textwidth]{figures/Dare.png}
  \end{figure}	
@@ -247,6 +247,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
  \begin{frame}{IPTM Result: Contents}
  	\bni \item IPTM result with $C=2$, $K=5$ and $O= 20$:
  	\ei
+ 	\footnotesize
 \centering	\begin{table}[ht]
 	\centering
 	\begin{tabular}{ |c|c|c|c|c|c|} 
@@ -263,16 +264,22 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 		      & evans & summary& dangerous & early & human\\
 		 & tonnage & operations & curves & situation & period\\
 		 & coastal & late & north & wash & administrative\\
+		 &vacation &thought &canal &reading & serial\\ 
+		 &actions &read &timing &test & track \\
+		 &rough & gusty & characteristics & watch & employee\\
+		 &protective & mourning & side & estate & system\\
+		 & android-powered & inlet & currents & close & transportation\\
 			\hline
 	\end{tabular}
 \end{table}
+\normalsize
 \end{frame}
 
 \begin{frame}{Conclusion}
  \bni
  \item Joint modeling of ties (sender, receiver, time) and contents
  	\vspace{0.4cm}
- \item Allowance of multicast -- multiple senders and/or receivers
+ \item Allowance of multicast -- single sender and multiple receivers
  	\vspace{0.4cm}
  \item Possible application to various political science data
  \ei
