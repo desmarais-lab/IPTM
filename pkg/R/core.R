@@ -318,7 +318,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 	observediJi = list()
 	support = gibbs.measure.support(length(node) - 1)
 	for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
    	 	X = lapply(node, function(i) {
   	        Netstats(history.t, node, i, netstat)
             })
@@ -340,7 +340,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       }
      # Data augmentation
       for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
    	 	X = lapply(node, function(i) {
   	        Netstats(history.t, node, i, netstat)
             })
@@ -411,7 +411,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
   	 				 }, c(1)) / length(currentZ[[d]])
  					 }, rep(1, nIP)))
           	for (d in edge2) {
-           		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+           		history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
     	   	   		X = lapply(node, function(i) {
                		Netstats(history.t, node, i, netstat)
                		})
@@ -436,7 +436,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
   	 				 }, c(1)) / length(currentZ[[d]])
  					 }, rep(1, nIP)))  
     for (d in edge2) {
-        	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+        	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
     	    X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
        		})
@@ -482,7 +482,6 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     			    	ObservedInEqZ(observediJi[[d]])
     			    	}, c(1))) / length(edge2)
     		loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
-      	if (is.na(loglike.diff)) {browser()}
         if (log(runif(1, 0, 1)) < loglike.diff) {
         		for (IP in 1L:nIP) {
          		beta.old[[IP]] = beta.new[[IP]]
@@ -499,7 +498,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     
     #delta update
     for (d in edge2) {
-    		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    		history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
     	X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
        		})
@@ -628,7 +627,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   LambdaiJi = list()
   observediJi = list()
   for (d in edge2) {
-    history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
     X = lapply(node, function(i) {
       Netstats(history.t, node, i, netstat)
     })
@@ -649,7 +648,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     }
     # Data augmentation
     for (d in edge2) {
-      history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+      history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
       X = lapply(node, function(i) {
         Netstats(history.t, node, i, netstat)
       })
@@ -660,7 +659,6 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         for (j in sample(node[-1], length(node) - 1)) {
           probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], j)
           iJi[[d]][i, j] = multinom_vec(1, probij) - 1
-          if (iJi[[d]][i, j]== -1) {browser()}
         }
       }
       iJi[[d]][as.numeric(edge[[d]][1]),] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
@@ -691,7 +689,6 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         expconst.Z = exp(const.Z)
         zw.old = currentZ[[d]][w]
         zw.new = multinom_vec(1, expconst.Z)
-        if (zw.new == 0) {browser()}
         if (zw.new != zw.old) {
           currentZ[[d]][w] = zw.new
           topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
@@ -722,7 +719,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
           }, c(1)) / length(currentZ[[d]])
         }, rep(1, nIP)))
         for (d in edge2) {
-          history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+          history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
           X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
           })
@@ -744,18 +741,20 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
           }
       currentC[k] = multinom_vec(1, expconst.C)
     }
+    
     if (plot) {
       entropy.mat = c(entropy.mat, entropy.empirical(currentC))
       alpha.mat = rbind(alpha.mat, alpha)
       logWZ.mat = c(logWZ.mat, logWZ(K, currentZ[edge2], textlist[edge2], table.W, alpha, mvec, betas, nvec))
     }
+    
     p.d = t(vapply(seq(along = edge), function(d) {
       vapply(1L:nIP, function(IP) {
         sum(currentZ[[d]] %in% which(currentC == IP))
       }, c(1)) / length(currentZ[[d]])
     }, rep(1, nIP)))  
     for (d in edge2) {
-      history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+      history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
       X = lapply(node, function(i) {
         Netstats(history.t, node, i, netstat)
       })
@@ -801,7 +800,6 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
           ObservedInEqZ(observediJi[[d]])
       }, c(1))) / length(edge2)
       loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
-      if (is.na(loglike.diff)) {browser()}
       if (log(runif(1, 0, 1)) < loglike.diff) {
         for (IP in 1L:nIP) {
           beta.old[[IP]] = beta.new[[IP]]
@@ -818,7 +816,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     
     #delta update
     for (d in edge2) {
-      history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+      history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
       X = lapply(node, function(i) {
         Netstats(history.t, node, i, netstat)
       })
@@ -953,7 +951,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 	observediJi = list()
 	support = gibbs.measure.support(length(node) - 1)
 	for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
    	 	X = lapply(node, function(i) {
   	        Netstats(history.t, node, i, netstat)
             })
@@ -975,7 +973,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
       }
      # Data augmentation
       for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
    	 	X = lapply(node, function(i) {
   	        Netstats(history.t, node, i, netstat)
             })
@@ -1046,7 +1044,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
   	 				 }, c(1)) / length(currentZ[[d]])
  					 }, rep(1, nIP)))
           	for (d in edge2) {
-           		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+           		history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
     	   	   		X = lapply(node, function(i) {
                		Netstats(history.t, node, i, netstat)
                		})
@@ -1071,7 +1069,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
   	 				 }, c(1)) / length(currentZ[[d]])
  					 }, rep(1, nIP)))  
     for (d in edge2) {
-        	history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+        	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
     	    X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
        		})
@@ -1133,7 +1131,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
     
     #delta update
     for (d in edge2) {
-    		history.t = History(edge, p.d, node, as.numeric(edge[[d]][3]))
+    		history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
     	X = lapply(node, function(i) {
             Netstats(history.t, node, i, netstat)
        		})
@@ -1669,7 +1667,7 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     }
     
     p.d[base.length + d, ] = vapply(1L:nIP, function(IP) {
-      sum(topic.d %in% which(currentC == IP))
+      sum(names(text[[base.length + d]]) %in% which(currentC == IP))
     }, c(1)) / max(1, N.d)
     if (t.d >= 384) {
       history.t = History(edge, p.d, node, t.d + 10^(-10))
@@ -1788,7 +1786,7 @@ GenerateDocs.Schein = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     }
     
     p.d[base.length + d, ] = vapply(1L:nIP, function(IP) {
-      sum(topic.d %in% which(currentC == IP))
+      sum(names(text[[base.length + d]]) %in% which(currentC == IP))
     }, c(1)) / max(1, N.d)
     if (t.d >= 384) {
       history.t = History(edge, p.d, node, t.d + 10^(-10))
@@ -2159,7 +2157,6 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     })
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     currentC = sample(1L:nIP, K, replace = TRUE)
-    print(list(b=b, d=delta, c=currentC))
     Forward_sample = GenerateDocs.Schein(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b,
     		 								delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
     		 								forward = TRUE, base = FALSE, support = supportD) 
@@ -2177,8 +2174,7 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
         Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
     })
     delta = Inference_samp$D[length(Inference_samp$D)]
-    currentC = Inference_samp$C
-     print(list(b=b, d=delta, c=currentC))
+    #currentC = Inference_samp$C
     topic_token_assignments = Inference_samp$Z
     for (d in 1:length(topic_token_assignments)) {
       names(topic_token_assignments[[d]]) = Forward_sample$text[[d + length(base.text)]]

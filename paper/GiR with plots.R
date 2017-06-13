@@ -1,4 +1,4 @@
-library(IPTM2)
+library(IPTM)
 library(mvtnorm)
 library(MCMCpack)
 set.seed(1234)
@@ -38,8 +38,8 @@ GiR_PP_Plots(TryGiR2$Forward, TryGiR2$Backward)
 sigma_Q = c(0.01, 1)
 niters = c(1, 2, 2, 0, 1)
 nDocs = 10
-TrySchein<- Schein.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
-					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 14, generate_trace_plots = FALSE)
+TrySchein<- Schein.Gibbs(1000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 100, generate_trace_plots = FALSE)
 
 TryGiR = TrySchein
 Nsamp = nrow(TrySchein$Forward)
