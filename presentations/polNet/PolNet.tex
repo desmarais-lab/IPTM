@@ -102,22 +102,23 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \begin{minipage}{0.66\linewidth}
 \item For each topic $k =1,...,K:$\vspace{0.2cm}
 	\begin{itemize}
-		\item[1.] Topic-word distribution {$\boldsymbol{\phi}^{(k)} \sim \mbox{Dirichlet}(\beta, \bf u)$}\vspace{0.2cm}
-		\item[2.] Topic-IP distribution $c_k\sim \mbox{Uniform}(1, C)$			
+		\item[1.] Choose a topic-word distribution \vspace{0.2cm}
+		\item[2.] Choose a topic-interaction pattern assignment			
 		\end{itemize}
-		\vspace{0.4cm}
+		\vspace{0.2cm}
 	\end{minipage}
 	\begin{minipage}{0.3\linewidth}
-			\includegraphics[width=0.8\textwidth]{figures/word.pdf}
+			\includegraphics[width=0.9\textwidth]{figures/word.pdf}
+				\vspace{0.2cm}
 		\end{minipage}
 			\begin{minipage}{0.62\linewidth}
 				\item For each document $d =1,...,D:$ \vspace{0.2cm}
 		\begin{itemize}
-					\item[3-1.] Document-topic distribution: \\\vspace{0.1cm} $\boldsymbol{\theta}^{(d)}\sim \mbox{Dirichlet}(\alpha, \boldsymbol{m})$
-		\item[3-2.] For each word in a document $n=1$ to $N^{(d)}$:
+					\item[3-1.] Choose a document-topic distribution \\\vspace{0.1cm} 
+		\item[3-2.] For each word in a document $n=1$ to $N^{(d)}$:\vspace{0.1cm} 
 		\begin{itemize}
-			\item[(a)] Choose a topic $z_n^{(d)} \sim \mbox{Multinomial}(\boldsymbol{\theta}^{(d)})$
-			\item[(b)] Choose a word $w_n^{(d)} \sim\mbox{Multinomial} (\boldsymbol{\phi}^{(z_n^{(d)})})$
+			\item[(a)] Choose a topic\vspace{0.2cm} 
+			\item[(b)] Choose a word
 		\end{itemize} 
 			\end{itemize}
 		\end{minipage}

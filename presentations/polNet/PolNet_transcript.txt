@@ -10,9 +10,9 @@ Our new model is called “Interaction-Partitioned Topic Model”, which I will 
 
 Slide 3.
 
-First, I will introduce how the contents or the words are generated. Each topic has unique topic-word distribution over the word types, as these. Next, we assign each topic to one interaction pattern, from uniform distribution, such as c_1 = 1, c_2= 2, and c_3 = 1.
+First, I will introduce how the contents or the words are generated. Each topic has unique topic-word distribution over the word types, as these. Next, we assign each topic to one interaction pattern, from uniform distribution, such as IP_1 = 1, IP_2= 2, and IP_3 = 1.
 
-Now, when we create a document, we first sample a topic distribution of each document, for example in this figure, this document has topic distribution as this (highest proportion of topic 2 and topic 1, 3 follows). Then for each word, we first choose the topic from document-topic distribution theta, and then choose a word from topic-word distribution phi given the chosen topic. 
+Now, when we create a document, we first sample a topic distribution of each document, for example in this figure, this document has topic distribution as this (highest proportion of topic 2 and topic 1, 3 follows). Then for each word, we first choose the topic from document-topic distribution, and then choose a word from topic-word distribution given the chosen topic. 
 
 Finally, the content will be summarized as a distribution of interaction patterns, p_c^{(d)}, which is the proportion of words from the topics corresponding to specific interaction pattern. This statistic will be passed and reflected in the tie generating process.
 

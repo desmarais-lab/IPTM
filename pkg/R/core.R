@@ -688,8 +688,10 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       for (w in 1L:length(currentZ[[d]])) {
         const.Z = fixedpart + wordpart.d[w, ]
         const.Z = const.Z - max(const.Z)
+        expconst.Z = exp(const.Z)
         zw.old = currentZ[[d]][w]
-        zw.new = multinom_vec(1, exp(const.Z))
+        zw.new = multinom_vec(1, expconst.Z)
+        if (zw.new == 0) {browser()}
         if (zw.new != zw.old) {
           currentZ[[d]][w] = zw.new
           topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
@@ -738,7 +740,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       const.C = const.C - max(const.C)
       expconst.C = exp(const.C)
       if (Inf %in% expconst.C) {
-        expconst.C[which(expconst.C == Inf)] = exp(-700)
+        expconst.C[which(expconst.C == Inf)] = exp(700)
           }
       currentC[k] = multinom_vec(1, expconst.C)
     }
@@ -1115,7 +1117,6 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
     			    	ObservedInEqZ(observediJi[[d]])
     			    	}, c(1))) / length(edge2)
     		loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
-      	if (is.na(loglike.diff)) {browser()}
         if (log(runif(1, 0, 1)) < loglike.diff) {
         		for (IP in 1L:nIP) {
          		beta.old[[IP]] = beta.new[[IP]]
