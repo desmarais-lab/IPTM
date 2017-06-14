@@ -1062,7 +1062,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
         const.C = const.C - max(const.C)
         currentC[k] = multinom_vec(1, exp(const.C))
      }
-      
+     
     p.d = t(vapply(seq(along = edge), function(d) {
     				vapply(1L:nIP, function(IP) {
       				sum(currentZ[[d]] %in% which(currentC == IP))
@@ -1908,8 +1908,8 @@ GiR_QQ_Plots = function(Forward_stats, Backward_stats) {
            col = "blue",
            pch = 19,
            main = nms[i],
-           cex.lab = 1,
-           cex.axis = 1,
+           cex.lab = 0.2,
+           cex.axis = 0.2,
            cex.main = 1)
     lines(x = xlims, y = ylims, col = "red", lwd = 3)
     text(paste("Backward Mean:", round(mean(Backward_stats[,i]), 4),
@@ -1965,11 +1965,12 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
            xlab = "Forward",
            col = "blue",
            pch = 19,
+           cex = 0.25,
            main = nms[i],
-           cex.lab = 1,
-           cex.axis = 1,
+           cex.lab = 0.25,
+           cex.axis = 0.25,
            cex.main = 0.5)
-    abline(0, 1, lty = 1, col = "red", lwd = 2)
+    abline(0, 1, lty = 1, col = "red", lwd = 1)
     
     if (nrow(Forward_stats) > 1000) {
     thinning2 = seq(from = floor(nrow(Forward_stats) / 10), to = nrow(Forward_stats), length.out = 1000)
@@ -2195,7 +2196,7 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
   }
   				
   if (generate_PP_plots) {
-    par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
+    par(mfrow=c(5,5), oma = c(2,2,2,2), mar = c(1,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats, b1 = bmat1, b2= bmat2, c1 = cmat1, c2 = cmat2,

@@ -570,7 +570,11 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
 // **********************************************************//
 // [[Rcpp::export]]
 double TimeInEqZ(NumericVector LambdaiJi, double observedtdiff) {
-	return - observedtdiff * sum(LambdaiJi);
+  double sumlambda = sum(LambdaiJi);
+  if (sumlambda == arma::datum::inf) {
+    sumlambda = exp(700);
+  }
+	return - observedtdiff * sumlambda;
 }
 
 // **********************************************************//

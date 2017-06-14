@@ -40,7 +40,7 @@
 \def\be{\begin{equation}} \def\ee{\end{equation}}
 \def\fn{\footnote} \def\bn{\begin} \def\nit{\noindent}
 \def\iff{\textit{~if and only if~~}}
-
+\renewcommand*{\thefootnote}{\fnsymbol{footnote}}
 % THEOREMS -------------------------------------------------------
 \newtheorem{thm}{Theorem}%[section]
 \newtheorem{cor}[thm]{Corollary}
@@ -239,38 +239,39 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \end{frame}
 
 \begin{frame}{IPTM Result: Dynamic Network Effects}
-	\bni \item IPTM result with $C=2$, $K=5$ and $O= 20$:
+	\bni \item IPTM result with $C=2$, $K=20$ and $O= 5$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
 		\ei
   				 		 \begin{figure}
-  				 		 	\includegraphics[width=1\textwidth]{figures/DareBplot.pdf}
+  				 		 	\includegraphics[width=1\textwidth]{figures/Netplot.pdf}
   				 		 \end{figure}	
   				 		\end{frame}
  \begin{frame}{IPTM Result: Contents}
- 	\bni \item IPTM result with $C=2$, $K=5$ and $O= 20$:
+ 	\bni \item IPTM result with $C=2$, $K=20$ and $O= 5$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
  	\ei
- 	\footnotesize
+ 	\scriptsize
 \centering	\begin{table}[ht]
 	\centering
-	\begin{tabular}{ |c|c|c|c|c|c|} 
+	\begin{tabular}{ |c||c|c|c||c|c|c|} 
 		\hline
-		\textbf{IP} & \textbf{2} &  \textbf{2} & \textbf{1}  &\textbf{2} &\textbf{2}  \\ \hline
-			\textbf{Topic} & \textbf{5} &  \textbf{1} & \textbf{2}  &\textbf{3} &\textbf{4}  \\ \hline
-			\textbf{Word}& tim & forecast & updates & parcels &overtime\\
-			& request& force & amount & billed & east \\
-		 & services & today & mph & real & scheduled \\
-		   & report & rip & exam & ocean & library\\
-		   & tax & race & machine & continues & comp\\
-		    &northwest & moderate & esi & watched & count \\
-		    & michelle & app  &view & duration & expected \\
-		      & evans & summary& dangerous & early & human\\
-		 & tonnage & operations & curves & situation & period\\
-		 & coastal & late & north & wash & administrative\\
-		 &vacation &thought &canal &reading & serial\\ 
-		 &actions &read &timing &test & track \\
-		 &rough & gusty & characteristics & watch & employee\\
-		 &protective & mourning & side & estate & system\\
-		 & android-powered & inlet & currents & close & transportation\\
-			\hline
+		\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
+			\textbf{Topic} & \textbf{15} &  \textbf{1} & \textbf{5}  &\textbf{10} &\textbf{20}  &\textbf{14}  \\ \hline\hline
+			\textbf{Word}& inclement & winds& report& overtime & late & oct\\
+			& east & hurricane & force & update & watned & wednesday \\
+			& closed & changes & water & north & early & touch \\
+			& conditions & inlet &  violation & personnel & request & will \\
+			& coastal &moday & irene& period & will & breifing \\
+			& touching &track & doc& outer & rodanthe & change \\
+			& wind & sandy & extend& office & michelle & night \\
+			& email & tuesday & impacts & situation & evans & dot \\
+			& cellular & bridge & view & exam & sunday & transportaion\\
+			& android-powered & forecast &  sandy & call & changing & post \\
+			& bobby & revision &  thought & moved & workcentre &  collector\\
+			& surf & will &  flood & comp & watch & monday\\
+			& tomorrow & tonight & color & well & large & cell\\
+			& web & obx & property & time & comunications & hours\\
+			& side & shore &  outer & carolina & planning &  point\\
+			
+				\hline
 	\end{tabular}
 \end{table}
 \normalsize

@@ -6,6 +6,7 @@ library(reshape2)
 library(gridExtra)
 library(ggrepel)
 library(RColorBrewer)
+library(lda)
 
 load('/Users/bomin8319/Desktop/IPTM/paper/Darenew.RData')
 # 762 - 
@@ -150,7 +151,8 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("Daretest1.RData")
+load("/Users/bomin8319/Desktop/IPTM/presentations/polNet/Daretest3.RData")
+Daretest1 = Daretest2
 Daretest1$C
 
 TableWord = function(Zchain, K, textlist, vocabulary) {
@@ -190,11 +192,12 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
 }
 
 which(Sandy$date %in% unique(Sandy$date)[20:27])
-TableWord(Daretest1$Z[72:418], 5, Dare$text[390:736], Dare$vocab)
+TableWord(Daretest1$Z[72:418], 20, Dare$text[390:736], Dare$vocab)
 
 
 which(Sandy$date %in% unique(Sandy$date)[23:27])
-TableWord(Daretest1$Z[216:418], 5, Dare$text[534:736], Dare$vocab)
+TableWord(Daretest1$Z[216:418], 20, Dare$text[534:736], Dare$vocab)
+table(unlist(Daretest1$Z[216:418])) / sum(table(unlist(Daretest1$Z[534:736])))
 
 
 
@@ -263,12 +266,12 @@ colnames(DareB2)= c( "intercept",
 "2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
 "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
 DareB2 = melt(DareB2)
-colnames(DareB2) = c("variable", "value")
 
 DareB$IP = 1
 DareB2$IP = 2
 DareBnew = rbind(DareB, DareB2)[,-1]
 DareBnew$IP = as.factor(DareBnew$IP)
+colnames(DareBnew) = c("Netstat", "Estimate", "IP")
 DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( "intercept",
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
 "send1", "send2", "send3" ,"receive1", "receive2", "receive3",

@@ -1,6 +1,6 @@
 Slide 1.
 
-Good afternoon, I am Bomin Kim from the statistics department of Penn state, and I will introduce my paper with great collaborators, including prof. Bruce Desmarais there, called a network model for dynamic textual communications with application to government email corpora.
+Good afternoon, I am Bomin Kim from the statistics department of Penn state, and I will introduce my paper with great collaborators, including prof. Bruce Desmarais there, and the paper is called a network model for dynamic textual communications with application to government email corpora.
 
 
 Slide 2.

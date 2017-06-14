@@ -35,10 +35,10 @@ par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
 GiR_PP_Plots(TryGiR2$Forward, TryGiR2$Backward)
 
 
-sigma_Q = c(0.01, 1)
+sigma_Q = c(0.1, 1)
 niters = c(1, 2, 2, 0, 1)
 nDocs = 10
-TrySchein<- Schein.Gibbs(1000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+TrySchein<- Schein.Gibbs(50000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 100, generate_trace_plots = FALSE)
 
 TryGiR = TrySchein
