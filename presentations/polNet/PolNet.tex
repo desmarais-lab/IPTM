@@ -2,6 +2,8 @@
 %\usetheme{Boadilla}
 %\usecolortheme{beaver}
 %\usepackage[latin1]{inputenc}
+\useoutertheme{split}
+\setbeamertemplate{navigation symbols}{}
 \usefonttheme[onlymath]{serif}
 \usepackage{amsmath}%
 \usepackage{amsthm}%
@@ -60,9 +62,9 @@
 \newcommand{\rs}{\right\}}
 
 
-\title{ \vspace{-.25cm} \\ A Network Model for \\Dynamic Textual Communications \\with Application to
+\title[Interaction-Partitioned Topic Model (IPTM)]{ \vspace{-.25cm} \\ A Network Model for \\Dynamic Textual Communications \\with Application to
 	Government Email Corpora}
-\author{
+\author[\quad B. Kim, A. Schein, B. Desmarais and H. Wallach\quad]{
 Bomin Kim\textsuperscript{1}\and
 \quad Aaron Schein\textsuperscript{3}\and\\
 		Bruce Desmarais \textsuperscript{1}\and Hanna Wallach\textsuperscript{2,3}}
@@ -99,31 +101,31 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 
 \begin{frame}{Content Generating Process: LDA (Blei et al., 2003)}
 \bni 
-\begin{minipage}{0.66\linewidth}
+\begin{minipage}{0.7\linewidth}
 \item For each topic $k =1,...,K:$\vspace{0.2cm}
 	\begin{itemize}
-		\item[1.] Choose a topic-word distribution \vspace{0.2cm}
+		\item[1.] Choose a topic-word distribution over the word types\vspace{0.2cm}
 		\item[2.] Choose a topic-interaction pattern assignment			
 		\end{itemize}
 		\vspace{0.2cm}
 	\end{minipage}
-	\begin{minipage}{0.3\linewidth}
-			\includegraphics[width=0.9\textwidth]{figures/word.pdf}
+	\begin{minipage}{0.25\linewidth}
+			\includegraphics[width=1\textwidth]{figures/word.pdf}
 				\vspace{0.2cm}
 		\end{minipage}
-			\begin{minipage}{0.62\linewidth}
+			\begin{minipage}{0.68\linewidth}
 				\item For each document $d =1,...,D:$ \vspace{0.2cm}
 		\begin{itemize}
 					\item[3-1.] Choose a document-topic distribution \\\vspace{0.1cm} 
 		\item[3-2.] For each word in a document $n=1$ to $N^{(d)}$:\vspace{0.1cm} 
 		\begin{itemize}
-			\item[(a)] Choose a topic\vspace{0.2cm} 
-			\item[(b)] Choose a word
+			\item[(a)] Choose a topic from document-topic distribution\vspace{0.2cm} 
+			\item[(b)] Choose a word from topic-word distribution
 		\end{itemize} 
 			\end{itemize}
 		\end{minipage}
-		\begin{minipage}{0.36\linewidth}
-	\includegraphics[width=1\textwidth]{figures/LDAimage.jpeg}
+		\begin{minipage}{0.3\linewidth}
+	\includegraphics[width=1.05\textwidth]{figures/LDAimage.jpeg}
 		\end{minipage}
 		\vspace{0.2cm}
 				\begin{itemize}\item[3-3] Calculate the distribution of interaction patterns within a document:
@@ -147,25 +149,26 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 	 \item $\boldsymbol{x}^{(c)}_{t, l}(i, j)$ is the network statistics at time $t$, for interaction pattern $c$ \\\vspace{0.1cm}
 	- Degree: outdegree and  indegree\\\vspace{0.1cm}
  - Dyadic: send and receive \\\vspace{0.1cm}
- - Triadic: 2-send, 2-receive, sibling and cosibling\\\vspace{0.1cm}
+ - Triadic: 2-send, 2-receive, sibling and cosibling\\\vspace{0.2cm}
 	 \begin{figure}
-	 	\includegraphics[width=0.8\textwidth]{figures/Netstat.pdf}
+	 	\includegraphics[width=0.9\textwidth]{figures/netstats.pdf}
 	 \end{figure}	
 	 \ei
 \end{frame}
 
 \begin{frame}{Tie Generating Process: Latent Edges}
 		\begin{itemize}
-		\item[1.] For each sender $i \in \{1,...,A\}$, choose a binary vector $J^{(d)}_i$ of length $(A-1)$, by applying Gibbs measure (Fellows and Handcock, 2017) 
+		\item [1.] For each sender $i \in \{1,...,A\}$ and receiver $j \in \{1,...,A\}$, calculate the stochastic indensity between $i$ and $j$:
 		\footnotesize
-		\begin{equation*} \text{P}(J_i^{(d)}) = \frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
+			\begin{equation*}\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c
+		\cdot  \mbox{exp}\Big\{\lambda^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)\Big\},	\end{equation*}\normalsize
+		which is a mixture of contents, baseline interaction rate, and network effects.\\ \vspace{0.4cm}
+		\item[2.] For each sender $i \in \{1,...,A\}$, choose a binary vector $J^{(d)}_i$ of length $(A-1)$, by applying Gibbs measure (Fellows and Handcock, 2017) 
+		\footnotesize
+		\begin{equation*} \text{P}(J_i^{(d)}) \propto \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
 		\end{equation*}
 		\normalsize
-		where\\\vspace{0.1cm}
-		- \footnotesize$\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c
-		\cdot  \mbox{exp}\Big\{\lambda^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)\Big\}\quad$\normalsize  is a stochastic intensity\\\vspace{0.1cm}
-		- $\delta$ is a real-valued intercept controlling the recipient size\\ \vspace{0.1cm}
-		- \footnotesize$Z(\delta,\mbox{log}(\lambda_i^{(d)})) = (\prod\limits_{j \in \mathcal{A} \backslash i }(\mbox{exp}\{\delta + \mbox{log}(\lambda^{(d)}_{ij})\}+1))-1$ \normalsize is the normalizing constant\vspace{0.1cm}
+		where $\delta$ is a real-valued intercept controlling the recipient size\\ \vspace{0.1cm}
  \begin{figure}
  	\includegraphics[width=0.23\textwidth]{figures/table.pdf}
  \end{figure}	
@@ -173,17 +176,17 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 	\end{frame}
 \begin{frame}{Tie Generating Process: Observed}
 \begin{itemize}
-		\item [2.] For each sender $i \in \mathcal{A}$, generate the time increments 
+		\item [3.] For each sender $i \in \mathcal{A}$, generate the time increments 
 		\footnotesize	\begin{equation*}
 		\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}),
 		\end{equation*}\normalsize
-		where \footnotesize$\lambda^{(d)}_{iJ_i}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\frac{1}{|J_i|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)\Big\}.$\normalsize\vspace{0.4cm}
-		\item[3.] Set timestamp, sender, and receivers simultaneously:
+		where \footnotesize$\lambda^{(d)}_{iJ_i}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\textcolor{blue}{\frac{1}{|J_i|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)}\Big\}\quad$\normalsize is the updated sender-specific stochastic intensity given the receivers.\vspace{0.4cm}
+		\item[4.] Set the observed sender, receivers and timestamp simultaneously:
 		\footnotesize	\begin{equation*}
 		\begin{aligned}
-		&t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})\\
 		&i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})} \\
-		&J^{(d)} = J_{i^{(d)}}
+		&J^{(d)} = J_{i^{(d)}}\\
+		&t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})\\
 		\end{aligned}
 		\end{equation*}
 		\normalsize
@@ -225,17 +228,22 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
  \ei
 \end{frame}
 
-\begin{frame}{Effect of Hurricane Sandy on Email Exchange}
+\begin{frame}{Exploratory Data Analysis: Effect of Sandy}
+	\begin{minipage}{0.85\linewidth}
 	 	 \begin{figure}
 	 	 	\includegraphics[width=0.5\textwidth]{figures/Sendplot.pdf}	 	
 	 	 	\includegraphics[width=0.5\textwidth]{figures/Receiveplot.pdf}
 	 	 \end{figure}	
 	 \begin{figure}
 	 %	\includegraphics[width=0.5\textwidth]{Wordplot.pdf}	 
-	 		 	\includegraphics[width=0.85\textwidth]{figures/Networkplot.pdf}
-	 		 	\hspace{0.1cm}
-	 		 		 	\includegraphics[width=0.11\textwidth]{figures/Dept2.jpg}
+	 		 	\includegraphics[width=1\textwidth]{figures/Networkplot.pdf}
+	 		 		 \end{figure}	
+\end{minipage}
+\begin{minipage}{0.13\linewidth}
+		 \begin{figure}
+	 		 		 	\includegraphics[width=1.25\textwidth]{figures/Dept2.jpg}
 	 \end{figure}	
+	\end{minipage}
 \end{frame}
 
 \begin{frame}{IPTM Result: Dynamic Network Effects}
