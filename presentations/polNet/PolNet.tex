@@ -179,7 +179,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \begin{itemize}
 		\item [3.] For each sender $i \in \mathcal{A}$, generate the time increments for document $d$
 		\footnotesize	\begin{equation*}
-		\Delta T^{(d)}_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}),
+		\Delta T^{(d)}_{i{J_i}} \sim \mbox{Exponential}(\lambda_{i{J_i}}^{(d)}),
 		\end{equation*}\normalsize
 		where \footnotesize$\lambda^{(d)}_{iJ_i}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\textcolor{gray}{\frac{1}{|J_i|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)}\Big\}\quad$\normalsize is the updated sender-specific stochastic intensity given the receivers.\vspace{0.4cm}
 		\item[4.] Set the observed sender, receivers and timestamp simultaneously:
