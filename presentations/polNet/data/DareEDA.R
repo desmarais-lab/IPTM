@@ -151,7 +151,7 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("/Users/bomin8319/Desktop/IPTM/presentations/polNet/Daretest1.RData")
+load("/Users/bomin8319/Desktop/IPTM/presentations/polNet/data/Daretest.RData")
 Daretest1 = Daretest
 Daretest1$C
 

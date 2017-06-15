@@ -93,7 +93,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 	\item Integration of two generative models:\\
 		\vspace{0.1cm}
 	 - Latent Dirichlet allocation (LDA) for topic-based contents\\	\vspace{0.2cm}
-	 - Dynamic exponential random graph model (ERGM) for ties\\
+	 - Dynamic exponential random graph model (ERGM) for ties \\
 	\ei
 		\vspace{0.4cm}
 \centering \large\textit{``who communicates with whom about what, and when?"}
@@ -156,12 +156,12 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 	 \ei
 \end{frame}
 
-\begin{frame}{Tie Generating Process: Latent Edges}
+\begin{frame}{Tie Generating Process: Receivers}
 		\begin{itemize}
 		\item [1.] For each sender $i \in \{1,...,A\}$ and receiver $j \in \{1,...,A\}$, calculate the stochastic indensity between $i$ and $j$:
 		\footnotesize
 			\begin{equation*}\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c
-		\cdot  \mbox{exp}\Big\{\lambda^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)\Big\},	\end{equation*}\normalsize
+		\cdot  \mbox{exp}\Big\{\boldsymbol{b}^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)\Big\},	\end{equation*}\normalsize
 		which is a mixture of contents, baseline interaction rate, and network effects.\\ \vspace{0.4cm}
 		\item[2.] For each sender $i \in \{1,...,A\}$, choose a binary vector $J^{(d)}_i$ of length $(A-1)$, by applying Gibbs measure (Fellows and Handcock, 2017) 
 		\footnotesize
@@ -174,13 +174,13 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
  \end{figure}	
 	\end{itemize}
 	\end{frame}
-\begin{frame}{Tie Generating Process: Observed}
+\begin{frame}{Tie Generating Process: Sender and Time}
 \begin{itemize}
 		\item [3.] For each sender $i \in \mathcal{A}$, generate the time increments 
 		\footnotesize	\begin{equation*}
 		\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}),
 		\end{equation*}\normalsize
-		where \footnotesize$\lambda^{(d)}_{iJ_i}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\textcolor{blue}{\frac{1}{|J_i|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)}\Big\}\quad$\normalsize is the updated sender-specific stochastic intensity given the receivers.\vspace{0.4cm}
+		where \footnotesize$\lambda^{(d)}_{iJ_i}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\textcolor{gray}{\frac{1}{|J_i|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)}\Big\}\quad$\normalsize is the updated sender-specific stochastic intensity given the receivers.\vspace{0.4cm}
 		\item[4.] Set the observed sender, receivers and timestamp simultaneously:
 		\footnotesize	\begin{equation*}
 		\begin{aligned}
@@ -245,16 +245,8 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 	 \end{figure}	
 	\end{minipage}
 \end{frame}
-
-\begin{frame}{IPTM Result: Dynamic Network Effects}
-	\bni \item IPTM result with $C=2$, $K=20$ and $O= 5$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
-		\ei
-  				 		 \begin{figure}
-  				 		 	\includegraphics[width=1\textwidth]{figures/Netplot.pdf}
-  				 		 \end{figure}	
-  				 		\end{frame}
  \begin{frame}{IPTM Result: Contents}
- 	\bni \item IPTM result with $C=2$, $K=20$ and $O= 5$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
+ 	\bni \item IPTM result with $C=2$, $K=20$ and $O= 20$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
  	\ei
  	\scriptsize
 \centering	\begin{table}[ht]
@@ -262,29 +254,35 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 	\begin{tabular}{ |c||c|c|c||c|c|c|} 
 		\hline
 		\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
-			\textbf{Topic} & \textbf{15} &  \textbf{1} & \textbf{5}  &\textbf{10} &\textbf{20}  &\textbf{14}  \\ \hline\hline
-			\textbf{Word}& inclement & winds& report& overtime & late & oct\\
-			& east & hurricane & force & update & watned & wednesday \\
-			& closed & changes & water & north & early & touch \\
-			& conditions & inlet &  violation & personnel & request & will \\
-			& coastal &moday & irene& period & will & breifing \\
-			& touching &track & doc& outer & rodanthe & change \\
-			& wind & sandy & extend& office & michelle & night \\
-			& email & tuesday & impacts & situation & evans & dot \\
-			& cellular & bridge & view & exam & sunday & transportaion\\
-			& android-powered & forecast &  sandy & call & changing & post \\
-			& bobby & revision &  thought & moved & workcentre &  collector\\
-			& surf & will &  flood & comp & watch & monday\\
-			& tomorrow & tonight & color & well & large & cell\\
-			& web & obx & property & time & comunications & hours\\
-			& side & shore &  outer & carolina & planning &  point\\
+			\textbf{Topic} & \textbf{2} &  \textbf{13} & \textbf{7}  &\textbf{10} &\textbf{9}  &\textbf{12}  \\ \hline\hline
+			\textbf{Word}& winds & track & offices & sanitation & marshall & morning\\
+			&flooding & offices & hurricane & billed & human & fema\\
+			&policy & obx & sandy & long & collins & weather\\
+			&mph & shore &  update & bill & phone & ems\\
+			&moving & winds & force & question & resources & risks \\
+			&outer & exam & reading & staff & phr & sure\\
+			&banks & area &  contact & vehicles & drive & tomorrow\\
+			&rain & change & updates & additional & box & opening\\
+			&will & continues & amount & form & fax & address\\
+			&duration & expect & northwest &  estimate & bridge &  elections\\
+			&monday & curves & tuesday &  total & director & thought\\
+			&ocean & side & expected & doors & monday & minutes \\
+			&open & east & good & services & manteo & starting\\
+			&heads & better &  well & tomorrow & summary & wrote\\
+			&late & mile & night & haterras & october & operation\\
 			
 				\hline
 	\end{tabular}
 \end{table}
 \normalsize
 \end{frame}
-
+\begin{frame}{IPTM Result: Dynamic Network Effects}
+	\bni \item IPTM result with $C=2$, $K=20$ and $O= 20$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
+	\ei
+	\begin{figure}
+		\includegraphics[width=1\textwidth]{figures/DareBplot.pdf}
+	\end{figure}	
+\end{frame}
 \begin{frame}{Conclusion}
  \bni
  \item Joint modeling of ties (sender, receiver, time) and contents
