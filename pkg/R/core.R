@@ -865,7 +865,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     title("Traceplot of delta")
   }
   
-  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat)
+  chain.final = list(C = currentC, Z = currentZ[[d]], B = bmat, D = deltamat)
   return(chain.final)
 }
 
@@ -917,8 +917,12 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
  	delta = initial$D
 	beta.old = initial$B
 	# initialize C, theta and Z
-	 currentC = initial$C
-     currentZ = initial$Z
+	currentC = initial$C
+     theta = rdirichlet_cpp(length(edge), alpha * mvec)
+ 	 currentZ = lapply(seq(along = edge), function(d) {
+   			 multinom_vec(max(1, length(textlist[[d]])), theta[d, ])
+ 	 })
+ 	 currentZ[edge2] = initial$Z
  	 p.d = t(vapply(seq(along = edge), function(d) {
     	vapply(1L:nIP, function(IP) {
       	sum(currentZ[[d]] %in% which(currentC == IP))
@@ -943,24 +947,24 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
     }
 
   	#initialize the latent sender-receiver pairs
-  	iJi = lapply(seq(along = edge), function(d) {
-  		matrix(0, nrow = length(node), ncol = length(node))
-  	})
-  	lambda = list()
-    LambdaiJi = list()
-	observediJi = list()
-	support = gibbs.measure.support(length(node) - 1)
-	for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
-   	 	X = lapply(node, function(i) {
-  	        Netstats(history.t, node, i, netstat)
-            })
-   	 	XB = MultiplyXBList(X, beta.old)     
-		lambda[[d]] = lambda_cpp(p.d[d,], XB)
-    	for (i in node) {
-    		iJi[[d]][i, -i] = r.gibbs.measure(1, lambda[[d]][i, -i], delta, support)
-    		}
-    	}
+    #initialize the latent sender-receiver pairs
+  iJi = lapply(seq(along = edge), function(d) {
+    matrix(0, nrow = length(node), ncol = length(node))
+  })
+  lambda = list()
+  LambdaiJi = list()
+  observediJi = list()
+  for (d in edge2) {
+    history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
+    X = lapply(node, function(i) {
+      Netstats(history.t, node, i, netstat)
+    })
+    XB = MultiplyXBList(X, beta.old)     
+    lambda[[d]] = lambda_cpp(p.d[d,], XB)
+    iJi[[d]] = matrix(rbinom(length(node)^2, 1, 0.5), nrow =length(node), ncol = length(node))
+    diag(iJi[[d]]) = 0
+  }
+
 
     #start outer iteration
     for (o in 1L:out) {
@@ -1098,6 +1102,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
       }
    }
     for (i3 in 1L:n_B) {
+    	if (i3 %% 500 == 0 ){print(i3)}
     		beta.new = lapply(1L:nIP, function(IP) {
           		   rmvnorm(1, beta.old[[IP]], sigma_Q[1] * proposal.var[[IP]])
          		   }) 
@@ -1169,7 +1174,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 	title("Traceplot of delta")
   }
      
-  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat)
+  chain.final = list(C = currentC, Z = currentZ[[d]], B = bmat, D = deltamat)
   return(chain.final)
 }
 
