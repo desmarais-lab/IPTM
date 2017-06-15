@@ -14,7 +14,7 @@ Let me first introduce how the contents or the words are generated. Each topic h
 
 Now, when we create a document, we first sample a topic distribution of each document, for example in this figure, this document has topic distribution as this (highest proportion of topic 2 and topic 1, 3 follows). Then for each word, we first choose the topic from document-topic distribution, and then choose a word from topic-word distribution given the chosen topic. 
 
-Finally, the content will be summarized as a distribution of interaction patterns, p_c^{(d)}, which is the proportion of words from the topics corresponding to specific interaction pattern. This statistic will be passed and reflected in the tie generating process.
+Finally, the content will be summarized as a distribution of interaction patterns, p_c^{(d)}, which is the proportion of words with the topics corresponding to specific interaction pattern. This statistic will be passed and reflected in the tie generating process.
 
 
 Slide 4. 

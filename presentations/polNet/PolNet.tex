@@ -171,23 +171,23 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 		\normalsize
 		where $\delta$ is a real-valued intercept controlling the recipient size\\ \vspace{0.1cm}
  \begin{figure}
- 	\includegraphics[width=0.23\textwidth]{figures/table.pdf}
+ 	\includegraphics[width=0.5\textwidth]{figures/edge.pdf}
  \end{figure}	
 	\end{itemize}
 	\end{frame}
 \begin{frame}{Tie Generating Process: Sender and Time}
 \begin{itemize}
-		\item [3.] For each sender $i \in \mathcal{A}$, generate the time increments 
+		\item [3.] For each sender $i \in \mathcal{A}$, generate the time increments for document $d$
 		\footnotesize	\begin{equation*}
-		\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}),
+		\Delta T^{(d)}_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}),
 		\end{equation*}\normalsize
 		where \footnotesize$\lambda^{(d)}_{iJ_i}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\textcolor{gray}{\frac{1}{|J_i|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)}\Big\}\quad$\normalsize is the updated sender-specific stochastic intensity given the receivers.\vspace{0.4cm}
 		\item[4.] Set the observed sender, receivers and timestamp simultaneously:
 		\footnotesize	\begin{equation*}
 		\begin{aligned}
-		&i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})} \\
+		&i^{(d)} = i_{\mbox{min}(\Delta T^{(d)}_{i{J_i}})} \\
 		&J^{(d)} = J_{i^{(d)}}\\
-		&t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})\\
+		&t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T^{(d)}_{i{J_i}})\\
 		\end{aligned}
 		\end{equation*}
 		\normalsize
