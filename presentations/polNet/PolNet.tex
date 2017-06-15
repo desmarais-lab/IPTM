@@ -165,7 +165,8 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 		which is a mixture of contents, baseline interaction rate, and network effects.\\ \vspace{0.4cm}
 		\item[2.] For each sender $i \in \{1,...,A\}$, choose a binary vector $J^{(d)}_i$ of length $(A-1)$, by applying Gibbs measure (Fellows and Handcock, 2017) 
 		\footnotesize
-		\begin{equation*} \text{P}(J_i^{(d)}) \propto \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
+		%\mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + 
+		\begin{equation*} \text{P}(J_i^{(d)}) \propto \exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
 		\end{equation*}
 		\normalsize
 		where $\delta$ is a real-valued intercept controlling the recipient size\\ \vspace{0.1cm}
