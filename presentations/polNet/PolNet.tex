@@ -158,32 +158,34 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 
 \begin{frame}{Tie Generating Process: Receivers}
 		\begin{itemize}
-		\item [1.] For each sender $i \in \{1,...,A\}$ and receiver $j \in \{1,...,A\}$, calculate the stochastic indensity between $i$ and $j$:
-		\footnotesize
+		\item [1.] For each sender $i \in \{1,...,A\}$ and receiver $j \in \{1,...,A\}$ ($i \neq j$), calculate the stochastic indensity between $i$ and $j$:
+	%	\footnotesize
 			\begin{equation*}\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c
 		\cdot  \mbox{exp}\Big\{\boldsymbol{b}^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)\Big\},	\end{equation*}\normalsize
 		which is a mixture of contents, baseline interaction rate, and network effects.\\ \vspace{0.4cm}
 		\item[2.] For each sender $i \in \{1,...,A\}$, choose a binary vector $J^{(d)}_i$ of length $(A-1)$, by applying Gibbs measure (Fellows and Handcock, 2017) 
-		\footnotesize
+	%	\footnotesize
 		%\mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + 
 		\begin{equation*} \text{P}(J_i^{(d)}) \propto \exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
 		\end{equation*}
 		\normalsize
 		where $\delta$ is a real-valued intercept controlling the recipient size\\ \vspace{0.1cm}
  \begin{figure}
- 	\includegraphics[width=0.5\textwidth]{figures/edge.pdf}
+ 	\includegraphics[width=0.4\textwidth]{figures/edge.pdf}
  \end{figure}	
 	\end{itemize}
 	\end{frame}
 \begin{frame}{Tie Generating Process: Sender and Time}
 \begin{itemize}
-		\item [3.] For each sender $i \in \mathcal{A}$, generate the time increments for document $d$
-		\footnotesize	\begin{equation*}
+		\item [3.] For each sender $i \in \{1,...,A\}$, generate the time increments for document $d$
+	%	\footnotesize
+		\begin{equation*}
 		\Delta T^{(d)}_{i{J_i}} \sim \mbox{Exponential}(\lambda_{i{J_i}}^{(d)}),
 		\end{equation*}\normalsize
 		where \footnotesize$\lambda^{(d)}_{iJ_i}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\textcolor{gray}{\frac{1}{|J_i|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)}\Big\}\quad$\normalsize is the updated sender-specific stochastic intensity given the receivers.\vspace{0.4cm}
 		\item[4.] Set the observed sender, receivers and timestamp simultaneously:
-		\footnotesize	\begin{equation*}
+		%\footnotesize
+			\begin{equation*}
 		\begin{aligned}
 		&i^{(d)} = i_{\mbox{min}(\Delta T^{(d)}_{i{J_i}})} \\
 		&J^{(d)} = J_{i^{(d)}}\\
@@ -192,25 +194,29 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 		\end{equation*}
 		\normalsize
 \end{itemize}
- \begin{figure}
- 	\includegraphics[width=0.57\textwidth]{figures/tie.pdf}
- \end{figure}	
+ %\begin{figure}
+ %	\includegraphics[width=0.57\textwidth]{figures/tie.pdf}
+ %\end{figure}	
 \end{frame}
 
-\begin{frame}{Inference - Pseudocode}
-	\bni
-	\item Bayesian Inference using Markov Chain Monte Carlo (MCMC)
+\begin{frame}{Joint Generating Process and Bayesian Inference}
+		\bni 
+		\item Joint Generating Process
+	\begin{figure}
+		\includegraphics[width=0.6\textwidth]{figures/summary.pdf}
+	\end{figure}	\vspace{0.1cm}
+\item Bayesian Inference using Markov Chain Monte Carlo (MCMC)
   	\begin{center}
-  		\scalebox{0.85}{	 
+  		\scalebox{0.65}{	 
  	 \begin{minipage}{1\linewidth}\begin{algorithm}[H]
 \SetAlgoLined
 	 	\caption{MCMC}
 	 	Set initial values $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, $ and $(\mathcal{B}^{(0)}, \delta^{(0)})$\\
 	 	\For{o=1 to O}{
-	 				Sample the \textcolor{blue}{latent edge} $J^{(d)}_{ij}$ via Gibbs sampling\\\\
-	 				Sample the \textcolor{blue}{topic assignments} $\mathcal{Z}$ via Gibbs sampling\\\\
-	 			Sample the \textcolor{blue}{interaction pattern assignments} $\mathcal{C}$ via Gibbs sampling\\\\
-	 		 				Sample the \textcolor{blue}{network effect parameters} $\mathcal{B}$  via Metropolis-Hastings \\\\
+	 				Sample the \textcolor{blue}{latent edge} $J^{(d)}_{ij}$ via Gibbs sampling\\
+	 				Sample the \textcolor{blue}{topic assignments} $\mathcal{Z}$ via Gibbs sampling\\
+	 			Sample the \textcolor{blue}{interaction pattern assignments} $\mathcal{C}$ via Gibbs sampling\\
+	 		 				Sample the \textcolor{blue}{network effect parameters} $\mathcal{B}$  via Metropolis-Hastings \\
 	 			Sample the \textcolor{blue}{receiver size parameter} $\delta$ via Metropolis-Hastings
 	 	}
 	 \end{algorithm}

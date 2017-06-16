@@ -45,7 +45,7 @@ Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
 initial = list(C = Daretest$C, D = Daretest$D[500], B = lapply(1:2, function(IP){rowMeans(Daretest$B[[IP]])}), Z = Daretest$Z)
 
-Daretest1 <- IPTM_inference.Schein(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP = 2, K = 20, sigma_Q = c(0.005, 0.01),
+Daretest1 <- IPTM_inference.Schein(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP = 2, K = 20, sigma_Q = c(0.0001, 0.01),
                         alpha = 2, mvec = rep(1/20, 20), betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), 
                         prior.b.mean = c(-3, rep(0, 24)), 
                        prior.b.var = 1 * diag(25), prior.delta = c(0, 1), out = 1, n_B = 110, n_d = 1, burn = 10, 
