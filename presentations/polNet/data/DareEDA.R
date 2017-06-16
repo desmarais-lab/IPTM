@@ -249,7 +249,7 @@ lapply(Daretest1$B, function(IP) {rowMeans(IP)})
 
 library(reshape)
 
-DareB = matrix(NA, 500, 25)
+DareB = matrix(NA, 1000, 25)
 DareB[,1:25] = t(Daretest1$B[[1]])
 colnames(DareB)= c( "intercept",
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
@@ -258,7 +258,7 @@ colnames(DareB)= c( "intercept",
 "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
 DareB = melt(DareB)
 
-DareB2 = matrix(NA, 500, 25)
+DareB2 = matrix(NA, 1000, 25)
 DareB2[,1:25] = t(Daretest1$B[[2]])
 colnames(DareB2)= c( "intercept",
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
