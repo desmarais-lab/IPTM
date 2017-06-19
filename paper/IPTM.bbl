@@ -86,6 +86,13 @@ Kinne, B.~J. (2016).
   trade.
 \newblock {\em Journal of Peace Research}, 53(3):359--377.
 
+\bibitem[Krafft et~al., 2012]{Krafft2012}
+Krafft, P., Moore, J., Desmarais, B., and Wallach, H.~M. (2012).
+\newblock Topic-partitioned multinetwork embeddings.
+\newblock In Pereira, F., Burges, C., Bottou, L., and Weinberger, K., editors,
+  {\em Advances in Neural Information Processing Systems 25}, pages 2807--2815.
+  Curran Associates, Inc.
+
 \bibitem[Kronegger et~al., 2011]{kronegger2011collaboration}
 Kronegger, L., Mali, F., Ferligoj, A., and Doreian, P. (2011).
 \newblock Collaboration structures in slovenian scientific communities.
@@ -103,6 +110,19 @@ Liang, X. (2015).
   the co-author networks in scientometrics (1983-2013).
 \newblock In {\em System Sciences (HICSS), 2015 48th Hawaii International
   Conference on}, pages 722--731. IEEE.
+
+\bibitem[Lim et~al., 2013]{lim2013twitter}
+Lim, K.~W., Chen, C., and Buntine, W. (2013).
+\newblock Twitter-network topic model: A full bayesian treatment for social
+  network and text modeling.
+\newblock In {\em NIPS2013 Topic Model workshop}, pages 1--5.
+
+\bibitem[McCallum et~al., 2005]{mccallum2005author}
+McCallum, A., Corrada-Emmanuel, A., and Wang, X. (2005).
+\newblock The author-recipient-topic model for topic and role discovery in
+  social networks, with application to enron and academic email.
+\newblock In {\em Workshop on Link Analysis, Counterterrorism and Security},
+  page~33.
 
 \bibitem[Minka, 2000]{minka2000estimating}
 Minka, T. (2000).
