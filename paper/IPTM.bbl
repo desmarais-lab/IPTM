@@ -6,6 +6,11 @@ Alem{\'a}n, E. and Calvo, E. (2013).
   of bill initiation data.
 \newblock {\em Political Studies}, 61(2):356--377.
 
+\bibitem[Barab{\'a}si and Albert, 1999]{barabasi1999emergence}
+Barab{\'a}si, A.-L. and Albert, R. (1999).
+\newblock Emergence of scaling in random networks.
+\newblock {\em science}, 286(5439):509--512.
+
 \bibitem[Blei et~al., 2003]{Blei2003}
 Blei, D.~M., Ng, A.~Y., and Jordan, M.~I. (2003).
 \newblock Latent dirichlet allocation.
@@ -16,6 +21,11 @@ Bratton, K.~A. and Rouse, S.~M. (2011).
 \newblock Networks in the legislative arena: How group dynamics affect
   cosponsorship.
 \newblock {\em Legislative Studies Quarterly}, 36(3):423--460.
+
+\bibitem[Burda et~al., 2004]{burda2004network}
+Burda, Z., Jurkiewicz, J., and Krzywicki, A. (2004).
+\newblock Network transitivity and matrix models.
+\newblock {\em Physical Review E}, 69(2):026106.
 
 \bibitem[Burgess et~al., 2004]{burgess2004email}
 Burgess, A., Jackson, T., and Edwards, J. (2004).
@@ -68,12 +78,23 @@ Geweke, J. (2004).
 \newblock {\em Journal of the American Statistical Association},
   99(467):799--804.
 
+\bibitem[Hammer, 1985]{hammer1985implications}
+Hammer, M. (1985).
+\newblock Implications of behavioral and cognitive reciprocity in social
+  network data.
+\newblock {\em Social Networks}, 7(2):189--201.
+
 \bibitem[Hunter et~al., 2008]{hunter2008ergm}
 Hunter, D.~R., Handcock, M.~S., Butts, C.~T., Goodreau, S.~M., and Morris, M.
   (2008).
 \newblock ergm: A package to fit, simulate and diagnose exponential-family
   models for networks.
 \newblock {\em Journal of statistical software}, 24(3):nihpa54860.
+
+\bibitem[Jeong et~al., 2003]{jeong2003measuring}
+Jeong, H., N{\'e}da, Z., and Barab{\'a}si, A.-L. (2003).
+\newblock Measuring preferential attachment in evolving networks.
+\newblock {\em EPL (Europhysics Letters)}, 61(4):567.
 
 \bibitem[Kanungo and Jain, 2008]{kanungo2008modeling}
 Kanungo, S. and Jain, V. (2008).
@@ -117,6 +138,12 @@ Lim, K.~W., Chen, C., and Buntine, W. (2013).
   network and text modeling.
 \newblock In {\em NIPS2013 Topic Model workshop}, pages 1--5.
 
+\bibitem[Louch, 2000]{louch2000personal}
+Louch, H. (2000).
+\newblock Personal network integration: transitivity and homophily in
+  strong-tie relations.
+\newblock {\em Social networks}, 22(1):45--64.
+
 \bibitem[McCallum et~al., 2005]{mccallum2005author}
 McCallum, A., Corrada-Emmanuel, A., and Wang, X. (2005).
 \newblock The author-recipient-topic model for topic and role discovery in
@@ -145,6 +172,12 @@ Pew, R.~C. (2016).
 \newblock Social media fact sheet.
 \newblock {\em Accessed on 03/07/17}.
 
+\bibitem[Rao and Bandyopadhyay, 1987]{rao1987measures}
+Rao, A.~R. and Bandyopadhyay, S. (1987).
+\newblock Measures of reciprocity in a social network.
+\newblock {\em Sankhy{\=a}: The Indian Journal of Statistics, Series A}, pages
+  141--188.
+
 \bibitem[Robins et~al., 2007]{robins2007introduction}
 Robins, G., Pattison, P., Kalish, Y., and Lusher, D. (2007).
 \newblock An introduction to exponential random graph (p*) models for social
@@ -155,6 +188,12 @@ Robins, G., Pattison, P., Kalish, Y., and Lusher, D. (2007).
 Sz{\'o}stek, A.~M. (2011).
 \newblock ?dealing with my emails?: Latent user needs in email management.
 \newblock {\em Computers in Human Behavior}, 27(2):723--729.
+
+\bibitem[V{\'a}zquez, 2003]{vazquez2003growing}
+V{\'a}zquez, A. (2003).
+\newblock Growing network with local rules: Preferential attachment, clustering
+  hierarchy, and degree correlations.
+\newblock {\em Physical Review E}, 67(5):056104.
 
 \bibitem[Wallach, 2008]{wallach2008structured}
 Wallach, H.~M. (2008).
