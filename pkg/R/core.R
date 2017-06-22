@@ -281,8 +281,8 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       			  c(rmvnorm(1,  prior.b.mean, prior.b.var))
       			 })
 	# initialize C, theta and Z
-	 currentC = rep(1:nIP, K / 2)
-  	 theta = rdirichlet_cpp(length(edge), alpha * mvec)
+	 currentC = sample(1L:nIP, K, replace = TRUE)  	 
+	 theta = rdirichlet_cpp(length(edge), alpha * mvec)
      currentZ = lapply(seq(along = edge), function(d) {
      			 multinom_vec(max(1, length(textlist[[d]])), theta[d, ])
  				 })
@@ -399,36 +399,34 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
        	}		
 
       # C update given Z and B - withinning each document d
-      # for (k in sort(unique(unlist(currentZ[edge2])))) { 
-        # document.k = which(vapply(currentZ, function(d){k %in% d}, c(1)) == 1)
-        # document.k = document.k[document.k %in% edge2]
-        # const.C = rep(NA, nIP)
-        # for (IP in 1:nIP) {
-          	# currentC[k] = IP
-          	# p.d = t(vapply(seq(along = edge), function(d) {
-    				# vapply(1L:nIP, function(IP) {
-      				# sum(currentZ[[d]] %in% which(currentC == IP))
-  	 				 # }, c(1)) / length(currentZ[[d]])
- 					 # }, rep(1, nIP)))
-          	# for (d in edge2) {
-           		# history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
-    	   	   		# X = lapply(node, function(i) {
-               		# Netstats(history.t, node, i, netstat)
-               		# })
-    	       		# XB = MultiplyXBList(X, beta.old)    
-           		# lambda[[d]] = lambda_cpp(p.d[d,], XB)
-		       	# LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-           		# observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
-          	# }
-          # const.C[IP] = sum(vapply(document.k, function(d) {
-          				# EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + 
-          				# TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
-    						  # ObservedInEqZ(observediJi[[d]]) 
-          				# }, c(1))) / length(document.k)
-      	# }
-        # const.C = const.C - max(const.C)
-        # currentC[k] = multinom_vec(1, exp(const.C))
-     # }
+       for (k in sort(unique(unlist(currentZ[edge2])))) { 
+         const.C = rep(NA, nIP)
+         for (IP in 1:nIP) {
+          	 currentC[k] = IP
+          	 p.d = t(vapply(seq(along = edge), function(d) {
+    				 vapply(1L:nIP, function(IP) {
+      				 sum(currentZ[[d]] %in% which(currentC == IP))
+  	 				  }, c(1)) / length(currentZ[[d]])
+ 					  }, rep(1, nIP)))
+          	 for (d in edge2) {
+           		 history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
+    	   	   		 X = lapply(node, function(i) {
+               		 Netstats(history.t, node, i, netstat)
+               		 })
+    	       		 XB = MultiplyXBList(X, beta.old)    
+           		 lambda[[d]] = lambda_cpp(p.d[d,], XB)
+		       	 LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+           		 observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+          	 }
+           const.C[IP] = sum(vapply(edge2, function(d) {
+          				 EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + 
+          				 TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
+    						 ObservedInEqZ(observediJi[[d]]) 
+          				 }, c(1))) / length(edge2)
+      	 }
+         const.C = const.C - max(const.C)
+         currentC[k] = multinom_vec(1, exp(const.C))
+      }
       
     p.d = t(vapply(seq(along = edge), function(d) {
     				vapply(1L:nIP, function(IP) {
@@ -708,8 +706,6 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     }		
     # C update given Z and B - withinning each document d
     for (k in sort(unique(unlist(currentZ[edge2])))) { 
-      document.k = which(vapply(currentZ, function(d){k %in% d}, c(1)) == 1)
-      document.k = document.k[document.k %in% edge2]
       const.C = rep(NA, nIP)
       for (IP in 1:nIP) {
         currentC[k] = IP
@@ -728,11 +724,11 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
           LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
           observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
         }
-        const.C[IP] = sum(vapply(document.k, function(d) {
+        const.C[IP] = sum(vapply(edge2, function(d) {
           EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + 
             TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
             ObservedInEqZ(observediJi[[d]]) 
-        }, c(1))) / length(document.k)
+        }, c(1))) / length(edge2)
       }
       const.C = const.C - max(const.C)
       expconst.C = exp(const.C)
@@ -942,7 +938,6 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
      	entropy.mat = c()
     }
 
-  	#initialize the latent sender-receiver pairs
     #initialize the latent sender-receiver pairs
   iJi = lapply(seq(along = edge), function(d) {
     matrix(0, nrow = length(node), ncol = length(node))
@@ -1032,36 +1027,34 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
        	}		
 
       # C update given Z and B - withinning each document d
-      # for (k in sort(unique(unlist(currentZ[edge2])))) { 
-        # document.k = which(vapply(currentZ, function(d){k %in% d}, c(1)) == 1)
-        # document.k = document.k[document.k %in% edge2]
-        # const.C = rep(NA, nIP)
-        # for (IP in 1:nIP) {
-          	# currentC[k] = IP
-          	# p.d = t(vapply(seq(along = edge), function(d) {
-    				# vapply(1L:nIP, function(IP) {
-      			 # sum(currentZ[[d]] %in% which(currentC == IP))
-  	 				 # }, c(1)) / length(currentZ[[d]])
- 					 # }, rep(1, nIP)))
-          	# for (d in edge2) {
-           		# history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
-    	   	   		# X = lapply(node, function(i) {
-               		# Netstats(history.t, node, i, netstat)
-               		# })
-    	       		# XB = MultiplyXBList(X, beta.old)    
-           		# lambda[[d]] = lambda_cpp(p.d[d,], XB)
-		       	# LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-           		# observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
-          	# }
-          # const.C[IP] = sum(vapply(document.k, function(d) {
-          				# EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + 
-          				# TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
-    						  # ObservedInEqZ(observediJi[[d]]) 
-          				# }, c(1))) / length(document.k)
-      	# }
-        # const.C = const.C - max(const.C)
-        # currentC[k] = multinom_vec(1, exp(const.C))
-     # }
+      for (k in sort(unique(unlist(currentZ[edge2])))) { 
+        const.C = rep(NA, nIP)
+        for (IP in 1:nIP) {
+          	currentC[k] = IP
+          	p.d = t(vapply(seq(along = edge), function(d) {
+    				vapply(1L:nIP, function(IP) {
+      			sum(currentZ[[d]] %in% which(currentC == IP))
+  	 				 }, c(1)) / length(currentZ[[d]])
+ 					 }, rep(1, nIP)))
+          	for (d in edge2) {
+           		history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
+    	   	   		X = lapply(node, function(i) {
+               		Netstats(history.t, node, i, netstat)
+               		})
+    	       		XB = MultiplyXBList(X, beta.old)    
+           		lambda[[d]] = lambda_cpp(p.d[d,], XB)
+		       	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+           		observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+          	}
+          const.C[IP] = sum(vapply(edge2, function(d) {
+          				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + 
+          				TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
+    						  ObservedInEqZ(observediJi[[d]]) 
+          				}, c(1))) / length(edge2)
+      	}
+        const.C = const.C - max(const.C)
+        currentC[k] = multinom_vec(1, exp(const.C))
+     }
      
     p.d = t(vapply(seq(along = edge), function(d) {
     				vapply(1L:nIP, function(IP) {
@@ -1983,7 +1976,7 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
     }
     text(paste("Backward Mean:", round(mean(Backward_stats[, i]), 4),
                "\nForward Mean:", round(mean(Forward_stats[, i]), 4),
-               #"\nt-test p-value:", round(t.test(Backward_test2, Forward_test2)$p.value, 4),
+               "\nt-test p-value:", round(t.test(Backward_test2, Forward_test2)$p.value, 4),
                "\nMann-Whitney p-value:", round(wilcox.test(Backward_test2, Forward_test2)$p.value, 4)),
          x = 0.65,
          y = 0.15,
@@ -2158,8 +2151,7 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
       c(rmvnorm(1, prior.b.mean, prior.b.var))
     })
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
-    #currentC = sample(1L:nIP, K, replace = TRUE)
-    currentC = rep(1:nIP, K / 2)
+    currentC = sample(1L:nIP, K, replace = TRUE)
     Forward_sample = GenerateDocs.Schein(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b,
     		 								delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
     		 								forward = TRUE, base = FALSE, support = supportD) 
@@ -2177,7 +2169,7 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
         Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
     })
     delta = Inference_samp$D[length(Inference_samp$D)]
-    #currentC = Inference_samp$C
+    currentC = Inference_samp$C
     topic_token_assignments = Inference_samp$Z
     for (d in 1:length(topic_token_assignments)) {
       names(topic_token_assignments[[d]]) = Forward_sample$text[[d + length(base.text)]]
