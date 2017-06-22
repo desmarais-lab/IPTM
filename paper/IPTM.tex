@@ -683,7 +683,7 @@ By examining the estimates in Figure 2 and their corresponding interpretation, i
  
  \section{Posterior predictive experiments}
  
- We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For documents $d=\{M,M+1,\hdots,D-1\}$, we fit the IPTM to the first $d$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$) for document $d+1$ conditional on the content in document $d+1$.
+ We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For documents $d=\{M,M+1,\hdots,D-1\}$, we fit the IPTM to the first $d$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$) for document $d+1$ conditional on the content in document $d+1$, ($\boldsymbol{w}^{(d+1)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set.
  
   
 \bibliographystyle{apalike}
