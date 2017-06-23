@@ -5,11 +5,11 @@ set.seed(1234)
 nDocs = 5
 node = 1:4
 vocabulary = c("hi", "hello", "fine", "bye", "what")
-nIP = 2
-K = 4
-nwords = 4
+nIP = 10
+K = 10
+nwords = 10
 alpha = 2
-mvec = rep(1/4, 4)
+mvec = rep(1/10, 10)
 betas = 2
 nvec = rep(1/5, 5)
 netstat = c("intercept", "dyadic")
@@ -31,12 +31,12 @@ base.text = base.data$text
 TryGiR2<- GiR.Gibbs(500, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 1, generate_trace_plots = FALSE)
 
-par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
-GiR_PP_Plots(TryGiR2$Forward, TryGiR2$Backward)
+par(mfrow=c(5,8), oma = c(1,1,1,1), mar = c(1,1,1,1))
+GiR_PP_Plots(TrySchein$Forward, TrySchein$Backward)
 
 
 sigma_Q = c(0.1, 1)
-niters = c(10, 2, 2, 0, 1)
+niters = c(1, 2, 2, 0, 1)
 nDocs = 10
 TrySchein<- Schein.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 100, generate_trace_plots = FALSE)

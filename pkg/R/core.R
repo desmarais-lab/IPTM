@@ -1163,7 +1163,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 	title("Traceplot of delta")
   }
      
-  chain.final = list(C = currentC, Z = currentZ[edge2], B = bmat, D = deltamat)
+  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat)
   return(chain.final)
 }
 
