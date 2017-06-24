@@ -87,7 +87,8 @@ To define and derive the IPTM, we begin by describing a probabilistic process by
 
 The data generated under the IPTM consists of $D$ unique documents. A single email, indexed by $d \in \{1,...,D\}$, is represented by the four components ($i^{(d)}, J^{(d)}, t^{(d)},  \boldsymbol{w}^{(d)}$). The first two are the sender and recipients of the email: an integer $i^{(d)} \in \{1,...,A\}$ indicates the identity of the sender out of $A$ actors (or nodes) and an integer vector $J^{(d)} = \{j_r^{(d)}\}_{r=1}^{|J^{(d)}|} $, which indicates the identity of the receiver (or receivers) out of $A-1$ actors, where $|J^{(d)}|\in \{1,...,A-1\}$ denotes the total number of receivers. Next, $t^{(d)}$ is the  timestamp of the email $d$, and $\boldsymbol{w}^{(d)} = \{w^{(d)}_n \}_{n=1}^{N^{(d)}}$ is a set of tokens, or word type instances, that comprise the text of the email. In this section, we illustrate how the words $\boldsymbol{w}^{(d)}$ are generated according to latent Dirichlet allocation \citep{Blei2003}, and then how the other components, ($i^{(d)}, J^{(d)}, t^{(d)}$), are generated conditional on the document content. For simplicity, we assume that documents are ordered by time such that $t^{(d)} < t^{(d+1)}$ for all $d=1, ..., D$. 
 \subsection{Content Generating Process} \label{subsec: Content Generating Process} 
-The content generating process follows from the generative process of Latent Dirichlet Allocation \cite{Blei2003}. First we generate the global (corpus-wide) variables. Each topic $k$ is associated with a cluster, or interaction pattern, assignment $c_k$, where $c_k$ can take one of $c = \{1,2,...,C\}$ values.  There are two main sets of global variables---those that describe the content via topics and those that describe how people interact (interaction patterns). These variables are linked by a third set of variables that associate each topic with the pattern that best describes how people interact when talking about that topic. \newline
+The content generating process follows from the generative process of Latent Dirichlet Allocation \cite{Blei2003}. First we generate the global (corpus-wide) variables. Each topic $k$ is associated with a cluster, or interaction pattern, assignment $c_k$, where $c_k$ can take one of $c = \{1,2,...,C\}$ values.  There are two main sets of global variables---those that describe the content via topics and those that describe how people interact (interaction patterns). These variables are linked by a third set of variables that associate each topic with the pattern that best describes how people interact when talking about that topic. 
+
 There are $K$ topics. Each topic $k$ is a discrete distribution over $V$ word types.
 \begin{itemize}
 	\item[1.] {$\boldsymbol{\phi}^{(k)} \sim \mbox{Dirichlet}(\beta, \bf u)$} \textbf{[See Algorithm 1]}\\
@@ -101,9 +102,10 @@ There are $K$ topics. Each topic $k$ is a discrete distribution over $V$ word ty
 \noindent The topics and interaction patterns are tied together via a set of $K$ categorical variables.
 \begin{itemize}
 	\item[3.] $c_k\sim \mbox{Uniform}(1, C)$ \textbf{[See Algorithm 3]}: \\
-	- Each topic is associated with a single interaction pattern.\\
+	- Each topic is associated with a single interaction pattern, and topics under same interaction pattern share the network properties via $\boldsymbol{b}^{(c)}$.
 \end{itemize}
-\noindent We have now defined all of the variables that make up the generative process of the IPTM. We assume the following generative process for each document $d$ in a corpus $D$ \textbf{[See Algorithm 4]}:
+
+ We have now defined all of the variables that make up the generative process of the IPTM. We assume the following generative process for each document $d$ in a corpus $D$ \textbf{[See Algorithm 4]}:
 \begin{itemize}
 	\item[4-1.] Choose the number of words $\bar N^{(d)} = \mbox{max}(1,  N^{(d)})$, where $N^{(d)}$ is known.
 	\item[4-2.] Choose document-topic distribution $\boldsymbol{\theta}^{(d)}\sim \mbox{Dir}(\alpha, \boldsymbol{m})$
@@ -116,7 +118,7 @@ There are $K$ topics. Each topic $k$ is a discrete distribution over $V$ word ty
 \subsection{Stochastic Intensity} \label{subsec: Stochastic Intensity}
 Here we illustrate how a set of dynamic network features and topic-interaction assignments  jointly identify the stochastic intensity of a document, which plays a key role in the tie generating process\ref{subsec: Tie Generating Process}. Assume that each document $d \in \{1,...,D\}$ is associated with an $A\times A$ stochastic intensity (or hazard) matrix of $\boldsymbol{\lambda}^{(d)}(t) = \{\{\lambda^{(d)}_{ij}(t)\}_{i=1}^{A}\}_{j=1}^{A}$.  
 
-To calculate the distribution of interaction patterns within a document, we estimate the (empirical) proportion of the words in document $d$ which are assigned the topics corresponding to the interaction pattern $c$ from \ref{subsec: Content Generating Process}: 
+To calculate the distribution of interaction patterns within a document, we estimate the (empirical) proportion of the words in document $d$ which are assigned the topics corresponding to the interaction pattern $c$ from Section \ref{subsec: Content Generating Process}: 
 \begin{equation}
 p_c^{(d)} = \frac{\sum\limits_{k: c_k=c} N^{(k|d)}}{N^{(d)}},
 \end{equation}
@@ -140,7 +142,7 @@ We assume the following generative process for each document $d$ in a corpus $D$
 	\item[1.] (Data augmentation) For each sender $i \in \{1,...,A\}$, create binary receiver vector of length $A-1$, $J^{(d)}_i$, by applying the non-empty Gibbs measure to every $j \in \mathcal{A}_{\backslash i}$. 
 	\begin{equation} \text{P}(J_i^{(d)}) = \frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
 	\end{equation}
-	where $\delta$ is real-valued intercept that controls the expected value of $J_{ij}^{(d)}$ (or recipient size) with its prior distribution specified as Nomral($\mu_\delta, \sigma^2_\delta)$, $\lambda_{ij}^{(d)}$ is a positive dyad-specific function of the attributes included in the model (as defined in \ref{subsec: Stochastic Intensity}), and $\lambda_{i}^{(d)}$ is the vector of dyadic weights in which $i$ is the sender. Note that $\lambda_{ij}^{(d)}$ is evaluated at time $t_+^{(d-1)}$, where $_+$ denotes including the timepoint itself, meaning that $\lambda_{ij}$ for $d^{th}$ document is obtained using the history of interactions until and including the timestamp $t^{(d-1)}$.\\
+	where $\delta$ is real-valued intercept that controls the expected value of $J_{ij}^{(d)}$ (or recipient size) with its prior distribution specified as Nomral($\mu_\delta, \sigma^2_\delta)$, $\lambda_{ij}^{(d)}$ is a positive dyad-specific function of the attributes included in the model (as defined in \ref{subsec: Stochastic Intensity}), and $\lambda_{i}^{(d)}$ is the vector of dyadic weights in which $i$ is the sender. Note that $\lambda_{ij}^{(d)}$ is evaluated at time $t_+^{(d-1)}$, where $_+$ denotes including the timepoint itself, meaning that $\lambda_{ij}$ for $d^{th}$ document is obtained using the history of interactions until and including the timestamp $t^{(d-1)}$.
 	
 	To assure that the probabilities sum to unity, we use the normalizing constant $Z(\delta,\mbox{log}(\lambda_i^{(d)}))$, which is the sum of $P(J_i^{(d)})$ over the entire support: 
 	\begin{equation}
@@ -149,9 +151,10 @@ We assume the following generative process for each document $d$ in a corpus $D$
 		\end{aligned}
 	\end{equation}
 	Details on how the normalizing constant ends up with this functional form are shown in APPENDIX \ref{subsec: non-empty Gibbs measure}.
-	\item[2.] For every sender $i \in \mathcal{A}$, generate the time increments \begin{equation}
-\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}).
+	\item[2.] For every sender $i \in \mathcal{A}$, generate the time increments : \begin{equation}
+\Delta T_{i{J_i}} \sim \mbox{Exp}(\lambda_{i{J_i}}^{(d)}),
 	\end{equation}
+	where $\lambda_{i{J_i}}^{(d)}$ is calculated using Equation (3), with chosen receivers  $\{J^{(d)}_i\}_{i=1}^A$ from the earlier step.
 	 	 \item[3.] Set timestamp, sender, and receivers simultaneously (NOTE: $t^{(0)}=0$):
 	 	 \begin{equation}
 	 	 \begin{aligned}
@@ -364,11 +367,11 @@ Second, we are going to resample the topic assignments, one words in a document 
  \begin{equation}
  \begin{aligned} & 
  P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W},  \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta)\\
- & \propto P(z^{(d)}_n=k, w^{(d)}_n, \mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}|\mathcal{Z}_{\backslash d, n}, \mathcal{C},   \mathcal{B},\delta,\mathcal{W}_{\backslash d, n}, \mathcal{I}^{(-d)}_{\mbox{o}}, \mathcal{J}^{(-d)}_{\mbox{o}}, \mathcal{T}^{(-d)}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m})\\
- &\propto P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n}, \alpha, \boldsymbol{m})P(w^{(d)}_n|z^{(d)}_n=k, \mathcal{W}_{\backslash d, n}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{u} )\times P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \delta)
+ & \propto P(z^{(d)}_n=k, w^{(d)}_n, \mathcal{J}^{(\geq d)}_{\mbox{a}}, i^{(\geq d)}_{\mbox{o}}, J^{(\geq d)}_{\mbox{o}}, t^{(\geq d)}_{\mbox{o}}|\mathcal{Z}_{\backslash d, n}, \mathcal{C},   \mathcal{B},\delta,\mathcal{W}_{\backslash d, n}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m})\\
+ &\propto P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n}, \alpha, \boldsymbol{m})P(w^{(d)}_n|z^{(d)}_n=k, \mathcal{W}_{\backslash d, n}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{u} )\times \prod_{d = d}^D P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \delta)
  \end{aligned}
  \end{equation}
- where the subscript $``{\backslash d, n}"$ denotes the exclsuion of position $n$ in $d^{th}$ document and the subscript $``{\backslash d}"$ and $``{(-d)}"$ denotes the exclsuion of $d^{th}$ document. We know that:
+ where the subscript $``{\backslash d, n}"$ denotes the exclsuion of position $n$ in $d^{th}$ document. Note that since selecting a topic for any token influences the histories acting on all documents from $d$ on, we use the product from $d$ through $D$ for the tie contribution part. We know that:
  \begin{equation}
  \begin{aligned} 
  P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n}, \alpha, \boldsymbol{m})=\frac{N^{(k|d)}_{\backslash d, n}+\alpha \boldsymbol{m}_k}{N^{(d)}-1+\alpha}
@@ -390,13 +393,15 @@ Second, we are going to resample the topic assignments, one words in a document 
  Therefore, if $N^{(d)} > 0$, then the conditional probability of $n^{th}$ word in document $d$ being topic $k$ is:
  \begin{equation}
  \begin{aligned}
-  &P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta)\\&\propto (N^{(k|d)}_{\backslash d, n}+\alpha \boldsymbol{m}_k)\times \frac{N^{(w_n^{(d)}|k)}_{\backslash d, n}+\frac{\beta}{W} }{N^{(k)}_{\backslash d, n}+\beta}\times \Big(\prod_{i\in \mathcal{A}} \frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big), 
+  &P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta)\\&\propto (N^{(k|d)}_{\backslash d, n}+\alpha \boldsymbol{m}_k)\times \frac{N^{(w_n^{(d)}|k)}_{\backslash d, n}+\frac{\beta}{W} }{N^{(k)}_{\backslash d, n}+\beta}\times \\&\prod_{d=d}^D
+  \Bigg(\Big(\prod_{i\in \mathcal{A}} \frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big)\Bigg), 
  \end{aligned}
  \end{equation}
  and if $N^{(d)} = 0$, then the first term becomes $\alpha\boldsymbol{m_k}$ and disappears because it is a constant. The second term disappears since there are no tokens, thus we just have the term remaining as below.
   \begin{equation}
   \begin{aligned}
-  &P(z^{(d)}_1=k|\mathcal{Z}_{\backslash d, 1}=\emptyset,   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta)\\&\propto\Big( \prod_{i\in \mathcal{A}}\frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times \Big(e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big).
+  &P(z^{(d)}_1=k|\mathcal{Z}_{\backslash d, 1}=\emptyset,   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta)\\&\propto\prod_{d=d}^D
+  \Bigg(\Big( \prod_{i\in \mathcal{A}}\frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big)\Bigg).
   \end{aligned}
   \end{equation}
  \subsection{Resampling $\mathcal{C}$} \label{subsec: Resampling C}
@@ -612,7 +617,6 @@ distributions between forward and backward samples. Before we calculated these s
 statistics by taking every 90th sample starting at the 100,000th sample for a resulting sample size of 10,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each plot that we expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure below.
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1.05\textwidth]{Rplot.pdf} 
 	\label{fig:GiR}
 	\caption{Getting it Right test result}
 \end{figure}
