@@ -5,11 +5,11 @@ set.seed(1234)
 nDocs = 5
 node = 1:4
 vocabulary = c("hi", "hello", "fine", "bye", "what")
-nIP = 10
-K = 10
-nwords = 10
+nIP = 2
+K = 4
+nwords = 5
 alpha = 2
-mvec = rep(1/10, 10)
+mvec = rep(1/4, 4)
 betas = 2
 nvec = rep(1/5, 5)
 netstat = c("intercept", "dyadic")
