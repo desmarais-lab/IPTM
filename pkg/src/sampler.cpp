@@ -140,9 +140,9 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
 	    int sender = document2[0];
 	    IntegerVector receiver = document2[1];
 	    double time = Rcpp::as<double>(document2[2]);
-	    double time1 = Rcpp::as<double>(when - 384);
-	  	double time2 = Rcpp::as<double>(when - 96);
-		double time3 = Rcpp::as<double>(when - 24); 
+	    double time1 = when - 384;
+	  	double time2 = when - 96;
+		double time3 = when - 24; 
 	    for (int r = 0; r < receiver.size(); r++){
 	       for (int IP = 0; IP < nIP; IP++) {
   			  List IPlist_IP = IPmat[IP];
@@ -186,12 +186,12 @@ List Degree(List history, IntegerVector node, int sender) {
     int receiver = node[b];
     for (int l = 0; l < 3; l++) {
     	NumericMatrix historyIP_l = historyIP[l];
-    double send = Rcpp::as<double>(historyIP_l(sender - 1, receiver - 1));
+    double send = historyIP_l(sender - 1, receiver - 1);
     	
    	NumericVector indegree(node.size());
     	for (int h = 0; h < node.size(); h++) {
      	 int third = node[h];
-     	double htor = Rcpp::as<double>(historyIP_l(third - 1, receiver - 1));
+     	double htor = historyIP_l(third - 1, receiver - 1);
     	 indegree[h] = htor;
      	}
     	degree[l + 3] = sum(indegree);			
@@ -258,10 +258,10 @@ List Triadic(List history, IntegerVector node, int sender) {
             NumericMatrix historyIP_m = historyIP[m];
        	    for (int h = 0; h < node.size(); h++) {
      	        int third = node[h];	
-     	       double stoh = Rcpp::as<double>(historyIP_l(sender - 1, third - 1));
-      	       double htos = Rcpp::as<double>(historyIP_l(third - 1, sender - 1)); 
-     	       double rtoh = Rcpp::as<double>(historyIP_m(receiver - 1, third - 1));
-      	       double htor = Rcpp::as<double>(historyIP_m(third - 1, receiver - 1)); 
+     	       double stoh = historyIP_l(sender - 1, third - 1);
+      	       double htos = historyIP_l(third - 1, sender - 1)); 
+     	       double rtoh = historyIP_m(receiver - 1, third - 1);
+      	       double htor = historyIP_m(third - 1, receiver - 1); 
       	        twosend[h] = stoh * htor;
       	        tworeceive[h] = htos * rtoh;
       	        sibling[h] = htos * htor;
@@ -385,7 +385,7 @@ NumericVector UpdateNum(NumericVector vec, List nKwordtable) {
 //                 C++ version of tabulate() in R            //
 // **********************************************************//
 // [[Rcpp::export]]
-IntegerVector tabulateC(const IntegerVector& x, const unsigned max) {
+IntegerVector tabulateC(const IntegerVector& x, const signed max) {
   IntegerVector counts(max);
   std::size_t n = x.size();
   for (std::size_t i=0; i < n; i++) {
@@ -466,7 +466,7 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda,double delta) {
 	for (int i = 0; i < iJi.nrow(); i++) {
 		for (int j = 0; j < iJi.ncol(); j++) {
 			if (i != j) {
-		 double deltalambda = Rcpp::as<double>(delta * lambda(i, j));
+		 double deltalambda = delta * lambda(i, j);
 		 if (deltalambda < exp(-700)) {
 		deltalambda = exp(-700);
 		}
@@ -485,13 +485,13 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda,double delta) {
 	double edges = Rcpp::as<double>(0);
   arma::umat uinf = find(log(lambda) == -arma::datum::inf);
   lambda.elem(uinf).fill(exp(-700));
-	for (int i = 0; i < iJi.n_rows; i++) {
+	for (unsigned int i = 0; i < iJi.n_rows; i++) {
 		arma::vec normal = arma::zeros(iJi.n_rows - 1);
 		double prob = Rcpp::as<double>(0);
 		int iter = 0;
 		for (int j = 0; j < iJi.n_rows; j++) {
 			if (i != j) {
-				double pre = Rcpp::as<double>(delta + log(lambda(i, j)));
+				double pre = delta + log(lambda(i, j));
 				if (pre > 35) {
 					normal[iter] = pre;
 				} else {
@@ -505,7 +505,7 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda,double delta) {
 				iter = iter + 1;
 		  }
 		}
-		double sumnorm = Rcpp::as<double>(sum(normal));
+		double sumnorm = sum(normal);
 		double normalizer = Rcpp::as<double>(0);
 		if (sumnorm >= 13) {
 			normalizer = sumnorm;
@@ -547,7 +547,7 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
         iter = iter + 1;
       }
     }
-   double sumnorm = Rcpp::as<double>(sum(normal));
+   double sumnorm = sum(normal);
    double normalizer = Rcpp::as<double>(0);
     if (sumnorm >= 13) {
       normalizer = sumnorm;
@@ -569,7 +569,7 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
 // **********************************************************//
 // [[Rcpp::export]]
 double TimeInEqZ(NumericVector LambdaiJi,double observedtdiff) {
- double sumlambda = Rcpp::as<double>(sum(LambdaiJi));
+ double sumlambda = sum(LambdaiJi);
   if (sumlambda == arma::datum::inf) {
     sumlambda = exp(700);
   }
@@ -602,7 +602,7 @@ NumericVector lambdaiJi(NumericVector p_d, List XB, IntegerMatrix iJi) {
 			for (int j = 0; j < node; j++) {
 				rowsums += XB_IP(i, j) * iJi(i, j);
 			}
-			double rowiJi = Rcpp::as<double>(exp(rowsums / sum(iJi(i, _))));
+			double rowiJi = exp(rowsums / sum(iJi(i, _)));
 			if (rowiJi == arma::datum::inf) {
 			  rowiJi = exp(700);
 			}
@@ -634,7 +634,7 @@ arma::vec DataAug_cpp(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec 
 			}
 			out[1] += p_d[IP] * rowsums1;
 			if (sumiJi0 > 0) {
-			double rowsums0 = Rcpp::as<double>(exp(sum(XB_IP % iJi_di0) / sumiJi0));
+			double rowsums0 = exp(sum(XB_IP % iJi_di0) / sumiJi0);
 			  if (rowsums0 == arma::datum::inf) {
 			    rowsums0 = exp(700);
 			  }
@@ -659,11 +659,11 @@ arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma
 	arma::vec out = arma::zeros(2);
 	iJi_di1[j - 1] = 1;
 	iJi_di0[j - 1] = 0;
-	double sumiJi0 = Rcpp::as<double>(sum(iJi_di0));
+	double sumiJi0 = sum(iJi_di0);
 	for (int IP = 0; IP < nIP; IP++) {
 			if (p_d[IP] > 0) {
 			arma::vec XB_IP = XB[IP];
-			double rowsums1 = Rcpp::as<double>(exp(sum(XB_IP % iJi_di1) / sum(iJi_di1)));
+			double rowsums1 = exp(sum(XB_IP % iJi_di1) / sum(iJi_di1));
 			if (rowsums1 == arma::datum::inf) {
 			  rowsums1 = exp(700);
 			}
