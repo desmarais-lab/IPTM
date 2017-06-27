@@ -130,7 +130,7 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
   NumericVector timestamps(edge.size());
   for (int d = 0; d < edge.size(); d++) {
  	  List document = edge[d];
- 	  timestamps[d] = document[2];
+ 	  timestamps[d] = Rcpp::as<double>(document[2]);
   }
   int iter = which_num(when, timestamps);
  
