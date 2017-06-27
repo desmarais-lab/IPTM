@@ -1,5 +1,4 @@
 #include <RcppArmadillo.h>
-#include <cmath>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
 
@@ -10,7 +9,6 @@ using std::max;
 using std::abs;
 using std::sqrt;
 using std::pow;
-using std::double;
 
 using namespace Rcpp; 
 
