@@ -116,7 +116,7 @@ IntegerMatrix rbinom_mat(NumericMatrix probmat) {
 //              Construct the history of interaction         //
 // **********************************************************//
 // [[Rcpp::export]]
-List History(List edge, NumericMatrix p_d, IntegerVector node, double Rcpp::as<double>(when)) {
+List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
   int nIP = p_d.ncol();
   List IPmat(nIP);
   for (int IP = 1; IP < (nIP + 1); IP++) {
@@ -634,7 +634,7 @@ arma::vec DataAug_cpp(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec 
 			}
 			out[1] += p_d[IP] * rowsums1;
 			if (sumiJi0 > 0) {
-			double rowsums0 = exp(sum(XB_IP % iJi_di0) / sumiJi0);
+			double rowsums0 = Rcpp::as<double>(exp(sum(XB_IP % iJi_di0) / sumiJi0));
 			  if (rowsums0 == arma::datum::inf) {
 			    rowsums0 = exp(700);
 			  }
@@ -659,11 +659,11 @@ arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma
 	arma::vec out = arma::zeros(2);
 	iJi_di1[j - 1] = 1;
 	iJi_di0[j - 1] = 0;
-	double sumiJi0 = sum(iJi_di0);
+	double sumiJi0 = Rcpp::as<double>(sum(iJi_di0));
 	for (int IP = 0; IP < nIP; IP++) {
 			if (p_d[IP] > 0) {
 			arma::vec XB_IP = XB[IP];
-			double rowsums1 = exp(sum(XB_IP % iJi_di1) / sum(iJi_di1));
+			double rowsums1 = Rcpp::as<double>(exp(sum(XB_IP % iJi_di1) / sum(iJi_di1)));
 			if (rowsums1 == arma::datum::inf) {
 			  rowsums1 = exp(700);
 			}
