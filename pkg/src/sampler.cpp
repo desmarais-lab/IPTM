@@ -354,7 +354,7 @@ List MultiplyXBList(List X, List B){
 //     Hyperparameter optimization of alpha - denominator    //
 // **********************************************************//
 // [[Rcpp::export]]
-std:: double UpdateDenom(double alpha, IntegerVector nwordtable){
+double UpdateDenom(double alpha, IntegerVector nwordtable){
  double D = 0;
  double S = 0;
   for (int n = 1; n < (nwordtable.size() + 1); n++) {
