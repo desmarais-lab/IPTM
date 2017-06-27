@@ -259,7 +259,7 @@ List Triadic(List history, IntegerVector node, int sender) {
        	    for (int h = 0; h < node.size(); h++) {
      	        int third = node[h];	
      	       double stoh = historyIP_l(sender - 1, third - 1);
-      	       double htos = historyIP_l(third - 1, sender - 1)); 
+      	       double htos = historyIP_l(third - 1, sender - 1); 
      	       double rtoh = historyIP_m(receiver - 1, third - 1);
       	       double htor = historyIP_m(third - 1, receiver - 1); 
       	        twosend[h] = stoh * htor;
@@ -489,7 +489,7 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda,double delta) {
 		arma::vec normal = arma::zeros(iJi.n_rows - 1);
 		double prob = Rcpp::as<double>(0);
 		int iter = 0;
-		for (int j = 0; j < iJi.n_rows; j++) {
+		for (unsigned int j = 0; j < iJi.n_rows; j++) {
 			if (i != j) {
 				double pre = delta + log(lambda(i, j));
 				if (pre > 35) {
@@ -527,11 +527,11 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
   arma::vec edges = arma::zeros(iJi.n_rows);
   arma::umat uinf = find(log(lambda) == -arma::datum::inf);
   lambda.elem(uinf).fill(exp(-700));
-  for (int i = 0; i < iJi.n_rows; i++) {
+  for (unsigned int i = 0; i < iJi.n_rows; i++) {
     arma::vec normal = arma::zeros(iJi.n_rows - 1);
    double prob = Rcpp::as<double>(0);
     int iter = 0;
-    for (int j = 0; j < iJi.n_rows; j++) {
+    for (unsigned int j = 0; j < iJi.n_rows; j++) {
       if (i != j) {
        double pre = delta + log(lambda(i, j));
         if (pre > 35) {
