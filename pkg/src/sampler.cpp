@@ -1,4 +1,5 @@
 #include <RcppArmadillo.h>
+#include <cmath>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
 
@@ -84,7 +85,7 @@ arma::mat rdirichlet_cpp(int num_samples, arma::vec alpha_m) {
 	arma::mat distribution = arma::zeros(num_samples, dist_size);
 	
 	for (int i = 0; i < num_samples; ++i) {
-		double sum_term = Rcpp::as<double>(0);
+		double sum_term = 0;
 		for (int j = 0; j < dist_size; ++j) {
 			double cur = R::rgamma(alpha_m[j], 1.0);
 			distribution(i, j) = cur;
@@ -321,7 +322,7 @@ List Triadic_reduced(List triadic) {
 NumericVector MultiplyXB(NumericMatrix X, NumericVector B){
   NumericVector XB(X.nrow());
   for (int i = 0; i < X.nrow(); i++) {
-   double sum = Rcpp::as<double>(0);
+   double sum = 0;
     for (int j = 0; j < B.size(); j++) {
       sum = sum + X(i, j) * B[j];
     }
@@ -355,8 +356,8 @@ List MultiplyXBList(List X, List B){
 // **********************************************************//
 // [[Rcpp::export]]
 double UpdateDenom(double alpha, IntegerVector nwordtable){
- double D = Rcpp::as<double>(0);
- double S = Rcpp::as<double>(0);
+ double D = 0;
+ double S = 0;
   for (int n = 1; n < (nwordtable.size() + 1); n++) {
     D += 1 / (n - 1 + alpha);
     S += nwordtable[n - 1] * D;
@@ -371,7 +372,7 @@ double UpdateDenom(double alpha, IntegerVector nwordtable){
 NumericVector UpdateNum(NumericVector vec, List nKwordtable) {
   NumericVector s(vec.size());
   for (int k = 0; k < vec.size(); k++){
-   double d = Rcpp::as<double>(0);
+   double d = 0;
     IntegerVector newtable = nKwordtable[k];
     for (int n = 1; n < (newtable.size() + 1); n++) {
       d += 1 / (n - 1 + vec[k]);
@@ -462,7 +463,7 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 // **********************************************************//
 // [[Rcpp::export]]
 double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda,double delta) {
-	double edges = Rcpp::as<double>(0);
+	double edges = 0;
 	for (int i = 0; i < iJi.nrow(); i++) {
 		for (int j = 0; j < iJi.ncol(); j++) {
 			if (i != j) {
@@ -482,12 +483,12 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda,double delta) {
 // **********************************************************//
 // [[Rcpp::export]]
 double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda,double delta) {
-	double edges = Rcpp::as<double>(0);
+	double edges = 0;
   arma::umat uinf = find(log(lambda) == -arma::datum::inf);
   lambda.elem(uinf).fill(exp(-700));
 	for (unsigned int i = 0; i < iJi.n_rows; i++) {
 		arma::vec normal = arma::zeros(iJi.n_rows - 1);
-		double prob = Rcpp::as<double>(0);
+		double prob = 0;
 		int iter = 0;
 		for (unsigned int j = 0; j < iJi.n_rows; j++) {
 			if (i != j) {
@@ -506,7 +507,7 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda,double delta) {
 		  }
 		}
 		double sumnorm = sum(normal);
-		double normalizer = Rcpp::as<double>(0);
+		double normalizer = 0;
 		if (sumnorm >= 13) {
 			normalizer = sumnorm;
 		} else {
@@ -529,7 +530,7 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
   lambda.elem(uinf).fill(exp(-700));
   for (unsigned int i = 0; i < iJi.n_rows; i++) {
     arma::vec normal = arma::zeros(iJi.n_rows - 1);
-   double prob = Rcpp::as<double>(0);
+   double prob = 0;
     int iter = 0;
     for (unsigned int j = 0; j < iJi.n_rows; j++) {
       if (i != j) {
@@ -548,7 +549,7 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
       }
     }
    double sumnorm = sum(normal);
-   double normalizer = Rcpp::as<double>(0);
+   double normalizer = 0;
     if (sumnorm >= 13) {
       normalizer = sumnorm;
     } else {
@@ -598,7 +599,7 @@ NumericVector lambdaiJi(NumericVector p_d, List XB, IntegerMatrix iJi) {
 	for (int IP = 0; IP < nIP; IP++) {
 		NumericMatrix XB_IP = XB[IP];
 		for (int i = 0; i < node; i++) {
-			double rowsums = Rcpp::as<double>(0);
+			double rowsums = 0;
 			for (int j = 0; j < node; j++) {
 				rowsums += XB_IP(i, j) * iJi(i, j);
 			}
