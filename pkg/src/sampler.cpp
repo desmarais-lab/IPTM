@@ -9,6 +9,7 @@ using std::max;
 using std::abs;
 using std::sqrt;
 using std::pow;
+using std::string;
 
 using namespace Rcpp; 
 
