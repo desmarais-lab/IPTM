@@ -568,7 +568,7 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda,double delta) {
 //               Time contribution in update of Z            //
 // **********************************************************//
 // [[Rcpp::export]]
-double TimeInEqZ(NumericVector LambdaiJi,doubleobservedtdiff) {
+double TimeInEqZ(NumericVector LambdaiJi,double observedtdiff) {
  double sumlambda = sum(LambdaiJi);
   if (sumlambda == arma::datum::inf) {
     sumlambda = exp(700);
@@ -628,7 +628,7 @@ arma::vec DataAug_cpp(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec 
 	int sumiJi0 =  sum(iJi_di0);
 	for (int IP = 0; IP < nIP; IP++) {
 		arma::vec XB_IP = XB[IP];
-			std::ouble rowsums1 = exp(sum(XB_IP % iJi_di1) / sum(iJi_di1));
+			double rowsums1 = exp(sum(XB_IP % iJi_di1) / sum(iJi_di1));
 			if (rowsums1 == arma::datum::inf) {
 			  rowsums1 = exp(700);
 			}
