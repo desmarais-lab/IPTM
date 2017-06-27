@@ -140,7 +140,7 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
 	    int sender = document2[0];
 	    IntegerVector receiver = document2[1];
 	    double time = Rcpp::as<double>(document2[2]);
-	    double time1 = Rcpp::as<double>(when - 384;)
+	    double time1 = Rcpp::as<double>(when - 384);
 	  	double time2 = Rcpp::as<double>(when - 96);
 		double time3 = Rcpp::as<double>(when - 24); 
 	    for (int r = 0; r < receiver.size(); r++){
