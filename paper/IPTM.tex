@@ -342,7 +342,7 @@ The next step in our work will be to either repair any bugs that exist in our $\
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 26, 2012 – October 30, 2012). Especially, Dare county geographically covers the Outer Banks (See Figure 4), one of the most critically affected area by the hurricane, thus we expect to see how the communication pattern changes during the time period surrounding Hurricane Sandy. In this section we apply IPTM to both county data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
  \subsection{Exploratory Data Analysis} \label{subsec: EDA}
  \subsubsection{Vance County}\label{subsubsec:VanceEDA}
- We conducted some expoloratory data analysis on Vance county email dataset, where the data spans October 10 to November 30, containing $D=185$ emails sent between $A=18$ actors with $W=620$ vocabularies in total. 
+ We conducted some expoloratory data analysis on Vance county email dataset, where the data spans September 4th to November 30th, containing $D=183$ emails sent between $A=17$ actors with $W=620$ vocabularies in total. 
  \begin{figure}[ht]
  	\centering
  	\includegraphics[width=0.49\textwidth]{plots/Vance.png} 
@@ -353,8 +353,8 @@ The next step in our work will be to either repair any bugs that exist in our $\
  First, we explored the temporal change in sending and receiving behavior of government managers, based on their departments.
   \begin{figure}[ht]
   	\centering
-  	  	\includegraphics[width=0.49\textwidth]{plots/DareSend2.pdf} 
-  	  	\includegraphics[width=0.49\textwidth]{plots/DareReceive2.pdf} 
+  	  	\includegraphics[width=0.49\textwidth]{plots/VanceSend.pdf} 
+  	  	\includegraphics[width=0.49\textwidth]{plots/VanceReceive.pdf} 
   	\label{fig:SendReceiveVance}
   	\caption{The number of emails sent (left) and received (right) for thecounty managers in each department in Vance county}
   \end{figure}
@@ -362,12 +362,12 @@ The next step in our work will be to either repair any bugs that exist in our $\
  Network plots, which are drawn upon 3 week period, 
    \begin{figure}[ht]
    	\centering
-   	\includegraphics[width=0.8\textwidth]{plots/NetworkDare2.pdf}  
+   	\includegraphics[width=0.8\textwidth]{plots/VanceNetwork.pdf}  
    	\label{fig:NetworkVance}
    	\caption{Network plot based on 3 week period, before Sandy, during Sandy, and after Sandy, in Vance county}
    \end{figure}
    \subsubsection{Dare County}\subsubsection{DareEDA}
-    and Dare county data spans October 1 to November 30 containing $D=1456$ emails between $A=27$ actor with $W=2907$ vocabularies in total
+    and Dare county data spans September 1st to November 30th containing $D=2210$ emails between $A=27$ actor with $W=2907$ vocabularies in total
      \begin{figure}[ht]
      	\centering
      	\includegraphics[width=0.49\textwidth]{plots/Dare.png} 
@@ -376,8 +376,8 @@ The next step in our work will be to either repair any bugs that exist in our $\
      \end{figure}
        \begin{figure}[ht]
        	\centering
-       	\includegraphics[width=0.49\textwidth]{plots/DareSend2.pdf} 
-       	\includegraphics[width=0.49\textwidth]{plots/DareReceive2.pdf} 
+       	\includegraphics[width=0.49\textwidth]{plots/SendDare3.pdf} 
+       	\includegraphics[width=0.49\textwidth]{plots/ReceiveDare3.pdf} 
        	\label{fig:SendReceiveDare}
        	\caption{The number of emails sent (left) and received (right) for thecounty managers in each department in Dare county}
        \end{figure}

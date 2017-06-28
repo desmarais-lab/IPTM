@@ -44,7 +44,7 @@ Dept2 = data.frame(Date = unique(Dept$Date), Send = ave)
 	f <- ggplot(Dept, aes(Date, Send, colour = Department), show.legend=FALSE)
 	f + geom_line(aes(group = Department)) + guides(col = guide_legend(nrow=22)) + scale_x_discrete(breaks = function(n) n[seq(0, length(n), by = length(n)/20)]) + theme(legend.text = element_text(size = 8)) +geom_vline(xintercept = 48, colour = "red", size = 1) +geom_vline(xintercept = 52, colour = "red", size = 1) + 
 	geom_vline(xintercept = 45, colour = "red", size = 0.5, linetype = "dashed")+ annotate("text", x =50, y = 21, label = "Sandy", colour= "red", size = 3 ) +
-	annotate("segment", x = 40, xend = 44, y = 15, yend = 14, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =40, y = 15.5, label = "First Sandy", colour= "red", size = 3)  +scale_colour_manual(values = getPalette(colourCount))
+	annotate("segment", x = 40, xend = 44, y = 15, yend = 14, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =40, y = 15.5, label = "First Sandy", colour= "red", size = 3)  +scale_colour_manual(values = getPalette(colourCount)) + theme_bw()
 #+ stat_summary(aes(group = 1), size = 1.2, fun.y=mean, geom="line", colour = "grey35") 
 
 
@@ -66,7 +66,7 @@ i = i + 1
 	f <- ggplot(Dept, aes(Date, Receive, colour = Department))
 	f + geom_line(aes(group = Department)) + guides(col = guide_legend(nrow=22)) + scale_x_discrete(breaks = function(n) n[seq(0, length(n), by = length(n)/20)]) + theme(legend.text = element_text(size = 8)) +geom_vline(xintercept = 48, colour = "red", size = 1) +geom_vline(xintercept = 52, colour = "red", size = 1) + 
 	geom_vline(xintercept = 45, colour = "red", size = 0.5, linetype = "dashed")+ annotate("text", x =50, y = 27, label = "Sandy", colour= "red", size = 3) + 
-	annotate("segment", x = 40, xend = 44, y = 15, yend = 14, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =40, y = 15.5, label = "First Sandy", colour= "red", size = 3) +scale_colour_manual(values = getPalette(colourCount))
+	annotate("segment", x = 40, xend = 44, y = 15, yend = 14, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =40, y = 15.5, label = "First Sandy", colour= "red", size = 3) +scale_colour_manual(values = getPalette(colourCount))+theme_bw()
 #+ stat_summary(aes(group = 1), size = 1.2, fun.y=mean, geom="line", colour = "grey35")+
 	
 
@@ -127,6 +127,128 @@ for (i in 1:3) {
 grid.arrange <- getFromNamespace("grid.arrange", asNamespace("gridExtra"))
 grid.arrange(grobs = g, nrow = 1)
 
+
+
+#Vance EDA
+load('/Users/bomin8319/Desktop/IPTM/paper/Vancenew.RData')
+# 762 - 
+attach(Vance)
+Vance$text = Vance$text[1:length(Vance$edge)]
+Vance$edge = Vance$edge[1:length(Vance$edge)]
+Vance$edge = Vance$edge[-which(sapply(Vance$text, function(d){length(d)})==0)]
+Vance$text = Vance$text[-which(sapply(Vance$text, function(d){length(d)})==0)]
+#mintime = Dare$edge[[1]][[3]]
+#for (n in 1:length(Dare$edge)){
+#  Dare$edge[[n]][3] = (Dare$edge[[n]][[3]] - mintime) / 3600
+#}
+
+sender = sapply(Vance$edge, function(d){d[[1]]})
+sender = data.frame(sender=sender, dept =Vance$node[sender, 3], time = sapply(Vance$edge, function(d){d[[3]]}), date = anydate(sapply(Vance$edge, function(d){d[[3]]})))
+sender$date = format(sender$date, format = "%m/%d")
+Dept = data.frame(Date = c(sapply(unique(sender$date), function(d){rep(as.character(d), 17)})), 
+				  Department = c(sapply(unique(sender$date), function(d){sort(unique(Vance$node[,3]))
+})), Send = NA)
+i = 1
+for (date in unique(sender$date)) {
+Dept[(17*(i-1)+1) : (17*i),3]= tabulate(sender[which(sender[,4] == date),2], 17)
+i = i + 1
+}
+ave = c()
+i = 1
+for (date in unique(Dept$Date)) {
+	ave[i] = mean(Dept[which(Dept$Date == date),3])
+	i = i + 1
+}
+colourCount = 17
+getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+
+Dept2 = data.frame(Date = unique(Dept$Date), Send = ave)
+	f <- ggplot(Dept, aes(Date, Send, colour = Department), show.legend=FALSE)
+	f + geom_line(aes(group = Department)) + guides(col = guide_legend(nrow=17)) + scale_x_discrete(breaks = function(n) n[seq(0, length(n), by = length(n)/10)]) + theme(legend.text = element_text(size = 8)) +geom_vline(xintercept = 33, colour = "red", size = 1) +geom_vline(xintercept = 31, colour = "red", size = 1) + theme_bw()+
+	geom_vline(xintercept = 30, colour = "red", size = 0.5, linetype = "dashed")+ annotate("text", x =32, y = 5, label = "Sandy", colour= "red", size = 3 ) +
+	annotate("segment", x = 29, xend = 30, y = 4.2, yend = 4, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =28, y = 4.3, label = "First Sandy", colour= "red", size = 3)  +scale_colour_manual(values = getPalette(colourCount))
+#+ stat_summary(aes(group = 1), size = 1.2, fun.y=mean, geom="line", colour = "grey35") 
+
+
+
+receiver = unlist(sapply(Vance$edge, function(d){d[[2]]}))
+time = unlist(sapply(Vance$edge, function(d){rep(d[[3]], length(d[[2]]))}))
+date = anydate(unlist(sapply(Vance$edge, function(d){rep(d[[3]], length(d[[2]]))})))
+receiver  = data.frame(receiver =receiver, dept = Vance$node[receiver , 3], time = time, date = date)
+receiver$date = format(receiver$date, format = "%m/%d")
+Dept = data.frame(Date = c(sapply(unique(receiver$date), function(d){rep(as.character(d), 17)})), 
+				  Department = c(sapply(unique(receiver$date), function(d){sort(unique(Vance$node[,3]))
+})), Receive = NA)
+i = 1
+for (date in unique(receiver$date)) {
+Dept[(17*(i-1)+1) : (17*i),3]= tabulate(receiver[which(receiver[,4] == date),2], 17)
+i = i + 1
+}
+
+	f <- ggplot(Dept, aes(Date, Receive, colour = Department))
+	f + geom_line(aes(group = Department)) + guides(col = guide_legend(nrow=17)) +scale_x_discrete(breaks = function(n) n[seq(0, length(n), by = length(n)/10)]) + theme(legend.text = element_text(size = 8)) +geom_vline(xintercept = 33, colour = "red", size = 1) +geom_vline(xintercept = 31, colour = "red", size = 1) + theme_bw()+
+	geom_vline(xintercept = 30, colour = "red", size = 0.5, linetype = "dashed")+ annotate("text", x =32, y = 6, label = "Sandy", colour= "red", size = 3 ) +
+	annotate("segment", x = 29, xend = 30, y = 5.2, yend = 5, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =28, y = 5.3, label = "First Sandy", colour= "red", size = 3)  +scale_colour_manual(values = getPalette(colourCount))
+
+#+ stat_summary(aes(group = 1), size = 1.2, fun.y=mean, geom="line", colour = "grey35")+
+	
+
+
+Sandy = sapply(Vance$text, function(d){sum(244 == d)})
+Sandy = data.frame(Sandy=Sandy, time = sapply(Vance$edge, function(d){d[[3]]}), date = anydate(sapply(Vance$edge, function(d){d[[3]]})))
+Sandy$date = format(Sandy$date, format = "%m/%d")
+Hurr = sapply(Vance$text, function(d){sum(243 == d)})
+Hurr = data.frame(Hurr =Hurr , time = sapply(Vance$edge, function(d){d[[3]]}), date = anydate(sapply(Vance$edge, function(d){d[[3]]})))
+Hurr $date = format(Hurr$date, format = "%m/%d")
+
+Dept = data.frame(Date = c(sapply(unique(Sandy$date), function(d){rep(as.character(d), 2)})), Word = c(sapply(unique(Sandy$date), function(d){c("Hurricane", "Sandy")})), Count = NA)
+i = 1
+for (date in unique(Sandy$date)) {
+Dept[(2*(i-1)+1) : (2*i),3]= c(sum(Hurr[which(Hurr[,3] == date),1]), sum(Sandy[which(Sandy[,3] == date),1]))
+i = i + 1
+}
+
+
+	f <- ggplot(Dept, aes(Date, Count, colour = Word))
+	f + geom_line(aes(group = Word))+ guides(col = guide_legend(nrow=2))+scale_x_discrete(breaks = function(n) n[seq(0, length(n), by = length(n)/10)]) + theme(legend.text = element_text(size = 8)) +geom_vline(xintercept = 33, colour = "red", size = 1) +geom_vline(xintercept = 31, colour = "red", size = 1) + theme_bw()+
+	geom_vline(xintercept = 30, colour = "red", size = 0.5, linetype = "dashed")+ annotate("text", x =32, y = 4.5, label = "Sandy", colour= "red", size = 3 ) +
+	annotate("segment", x = 29, xend = 30, y = 4.2, yend = 4, colour = "red", size = 0.1, arrow = arrow()) + annotate("text", x =28, y = 4.3, label = "First Sandy", colour= "red", size = 3)
+	#which(Dare$vocab == "sandy")
+#which(Dare$vocab == "hurricane")
+#Sandy = which(sapply(Dare$text, function(d) {49 %in% d})==TRUE)
+#Hurr = which(sapply(Dare$text, function(d) {81 %in% d})==TRUE)
+
+sapply(Sandy, function(d){sum(49 == Dare$text[[d]])})
+sapply(Hurr, function(d){sum(81== Dare$text[[d]])})
+
+
+
+library(GGally)
+library(network)
+library(sna)
+
+Network = list()
+Network[[1]]= Vance$edge[which(Sandy$date %in% unique(Sandy$date)[1:28])] #pre-sandy
+Network[[2]]= Vance$edge[which(Sandy$date %in% unique(Sandy$date)[29:35])] #sandy 
+Network[[3]]= Vance$edge[which(Sandy$date %in% unique(Sandy$date)[36:48])] #post-sandy
+ggplotColours <- function(n = 6, h = c(0, 360) + 15){
+  if ((diff(h) %% 360) < 1) h[2] <- h[2] - 360/n
+  hcl(h = (seq(h[1], h[2], length = n)), c = 100, l = 65)
+}
+titles = c("Pre-Sandy", "Sandy", "Post-Sandy")
+colors = getPalette(colourCount)
+names(colors) = (unique(sort(Vance$node[,3])))
+g= list()
+for (i in 1:3) {
+	edge= matrix(unlist(sapply(Network[[i]], function(d){cbind(rep(d[[1]], length(d[[2]])), d[[2]])})), ncol = 2)
+	net = as.network(edge, matrix.type = "edgelist", directed = TRUE)
+	network.vertex.names(net) = 1:27
+	net %v% "Dept" <- as.character(Vance$node[,3])
+	g[[i]] = ggnet2(net, size = "degree", arrow.size =8, color = colors[net %v% "Dept"],  color.legend = "Dept",label.color = colors[net %v% "Dept"], mode = "kamadakawai",legend.position = "none", size.min=1) + ggtitle(titles[i]) +  theme(panel.border = element_rect(color = "grey50", fill = NA),
+          aspect.ratio = 1)
+}
+grid.arrange <- getFromNamespace("grid.arrange", asNamespace("gridExtra"))
+grid.arrange(grobs = g, nrow = 1)
 
 
 
