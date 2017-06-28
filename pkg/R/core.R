@@ -358,6 +358,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 		observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
 		}	 
 	
+	  # Z update
     	  textlist.raw = unlist(textlist[edge2])
     	  table.W = lapply(1L:K, function(k) {
       			tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
@@ -397,7 +398,6 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
           		}
         		}
        	}		
-
       # C update given Z and B - withinning each document d
        for (k in sort(unique(unlist(currentZ[edge2])))) { 
          const.C = rep(NA, nIP)
@@ -664,46 +664,47 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
     }	 
     
-    textlist.raw = unlist(textlist[edge2])
-    table.W = lapply(1L:K, function(k) {
-      tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
-    })    
-    for (d in edge2) {
-      textlist.d = textlist[[d]]
-      if (length(textlist.d) > 0) {
-        topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
-        wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
-      } else {
-        topicpart.d = 0
-        wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
-      }
-      edgepart.d = EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
-      timepart.d = TimeInEqZ(LambdaiJi[[d]], timeinc[d])
-      observed.d = ObservedInEqZ(observediJi[[d]]) 
-      fixedpart = topicpart.d + edgepart.d + timepart.d + observed.d 
-      for (w in 1L:length(currentZ[[d]])) {
-        const.Z = fixedpart + wordpart.d[w, ]
-        const.Z = const.Z - max(const.Z)
-        expconst.Z = exp(const.Z)
-        zw.old = currentZ[[d]][w]
-        zw.new = multinom_vec(1, expconst.Z)
-        if (zw.new != zw.old) {
-          currentZ[[d]][w] = zw.new
-          topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
-          if (length(textlist.d) > 0) {	
-            wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
-          }
-          table.W = lapply(1L:K, function(k) {
-            tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
-          })
-          p.d[d, ] = vapply(1L:nIP, function(IP) {
-            sum(currentZ[[d]] %in% which(currentC == IP))
-          }, c(1)) / length(currentZ[[d]])
-          LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-          observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
-        }
-      }
-    }		
+    # Z update
+
+    	  textlist.raw = unlist(textlist[edge2])
+    	  table.W = lapply(1L:K, function(k) {
+      			tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
+      			})    
+      	for (d in edge2) {
+      		textlist.d = textlist[[d]]
+        		if (length(textlist.d) > 0) {
+        			topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
+       			wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
+        		} else {
+        			topicpart.d = 0
+        			wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
+        		}
+        		edgepart.d = EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
+        		timepart.d = TimeInEqZ(LambdaiJi[[d]], timeinc[d])
+        		observed.d = ObservedInEqZ(observediJi[[d]]) 
+        		fixedpart = topicpart.d + edgepart.d + timepart.d + observed.d 
+        		for (w in 1L:length(currentZ[[d]])) {
+          		const.Z = fixedpart + wordpart.d[w, ]
+          		const.Z = const.Z - max(const.Z)
+          		zw.old = currentZ[[d]][w]
+          		zw.new = multinom_vec(1, exp(const.Z))
+          		if (zw.new != zw.old) {
+            			currentZ[[d]][w] = zw.new
+            			topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
+            			if (length(textlist.d) > 0) {	
+            				wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
+            			}
+            			table.W = lapply(1L:K, function(k) {
+      				  tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
+      				})
+      				p.d[d, ] = vapply(1L:nIP, function(IP) {
+	 					sum(currentZ[[d]] %in% which(currentC == IP))
+	 				}, c(1)) / length(currentZ[[d]])
+      				LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+         			observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+          		}
+        		}
+       	}		
     # C update given Z and B - withinning each document d
     for (k in sort(unique(unlist(currentZ[edge2])))) { 
       const.C = rep(NA, nIP)
@@ -986,16 +987,18 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 		observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
 		}	 
 	
+    	  # Z update
+
     	  textlist.raw = unlist(textlist[edge2])
     	  table.W = lapply(1L:K, function(k) {
       			tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
       			})    
-      for (d in edge2) {
+      	for (d in edge2) {
       		textlist.d = textlist[[d]]
         		if (length(textlist.d) > 0) {
         			topicpart.d = TopicInEqZ(K, currentZ[[d]], alpha, mvec, d)
        			wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
-        	 	} else {
+        		} else {
         			topicpart.d = 0
         			wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
         		}
@@ -1025,7 +1028,6 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
           		}
         		}
        	}		
-
       # C update given Z and B - withinning each document d
       for (k in sort(unique(unlist(currentZ[edge2])))) { 
         const.C = rep(NA, nIP)
@@ -1163,7 +1165,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 	title("Traceplot of delta")
   }
      
-  chain.final = list(C = currentC, Z = currentZ[edge2], B = bmat, D = deltamat)
+  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat)
   return(chain.final)
 }
 

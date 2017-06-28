@@ -131,7 +131,7 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
   NumericVector timestamps(edge.size());
   for (int d = 0; d < edge.size(); d++) {
  	  List document = edge[d];
- 	  timestamps[d] = document[2];
+ 	  timestamps[d] = Rcpp::as<double>(document[2]);
   }
   int iter = which_num(when, timestamps);
  
@@ -140,7 +140,7 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
 	    List document2 = edge[i];
 	    int sender = document2[0];
 	    IntegerVector receiver = document2[1];
-	    double time = document2[2];
+	    double time = Rcpp::as<double>(document2[2]);
 	    double time1 = when - 384;
 	  	double time2 = when - 96;
 		double time3 = when - 24; 
@@ -187,12 +187,12 @@ List Degree(List history, IntegerVector node, int sender) {
     int receiver = node[b];
     for (int l = 0; l < 3; l++) {
     	NumericMatrix historyIP_l = historyIP[l];
-    	double send = historyIP_l(sender - 1, receiver - 1);
+    double send = historyIP_l(sender - 1, receiver - 1);
     	
    	NumericVector indegree(node.size());
     	for (int h = 0; h < node.size(); h++) {
      	 int third = node[h];
-     	 double htor = historyIP_l(third - 1, receiver - 1);
+     	double htor = historyIP_l(third - 1, receiver - 1);
     	 indegree[h] = htor;
      	}
     	degree[l + 3] = sum(indegree);			
@@ -259,10 +259,10 @@ List Triadic(List history, IntegerVector node, int sender) {
             NumericMatrix historyIP_m = historyIP[m];
        	    for (int h = 0; h < node.size(); h++) {
      	        int third = node[h];	
-     	        double stoh = historyIP_l(sender - 1, third - 1);
-      	        double htos = historyIP_l(third - 1, sender - 1); 
-     	        double rtoh = historyIP_m(receiver - 1, third - 1);
-      	        double htor = historyIP_m(third - 1, receiver - 1); 
+     	       double stoh = historyIP_l(sender - 1, third - 1);
+      	       double htos = historyIP_l(third - 1, sender - 1); 
+     	       double rtoh = historyIP_m(receiver - 1, third - 1);
+      	       double htor = historyIP_m(third - 1, receiver - 1); 
       	        twosend[h] = stoh * htor;
       	        tworeceive[h] = htos * rtoh;
       	        sibling[h] = htos * htor;
@@ -322,7 +322,7 @@ List Triadic_reduced(List triadic) {
 NumericVector MultiplyXB(NumericMatrix X, NumericVector B){
   NumericVector XB(X.nrow());
   for (int i = 0; i < X.nrow(); i++) {
-    double sum = 0;
+   double sum = 0;
     for (int j = 0; j < B.size(); j++) {
       sum = sum + X(i, j) * B[j];
     }
@@ -356,8 +356,8 @@ List MultiplyXBList(List X, List B){
 // **********************************************************//
 // [[Rcpp::export]]
 double UpdateDenom(double alpha, IntegerVector nwordtable){
-  double D = 0;
-  double S = 0;
+ double D = 0;
+ double S = 0;
   for (int n = 1; n < (nwordtable.size() + 1); n++) {
     D += 1 / (n - 1 + alpha);
     S += nwordtable[n - 1] * D;
@@ -372,7 +372,7 @@ double UpdateDenom(double alpha, IntegerVector nwordtable){
 NumericVector UpdateNum(NumericVector vec, List nKwordtable) {
   NumericVector s(vec.size());
   for (int k = 0; k < vec.size(); k++){
-    double d = 0;
+   double d = 0;
     IntegerVector newtable = nKwordtable[k];
     for (int n = 1; n < (newtable.size() + 1); n++) {
       d += 1 / (n - 1 + vec[k]);
@@ -386,7 +386,7 @@ NumericVector UpdateNum(NumericVector vec, List nKwordtable) {
 //                 C++ version of tabulate() in R            //
 // **********************************************************//
 // [[Rcpp::export]]
-IntegerVector tabulateC(const IntegerVector& x, const unsigned max) {
+IntegerVector tabulateC(const IntegerVector& x, const signed max) {
   IntegerVector counts(max);
   std::size_t n = x.size();
   for (std::size_t i=0; i < n; i++) {
@@ -423,7 +423,7 @@ arma::mat lambda_cpp(arma::vec p_d, List XB) {
 // **********************************************************//
 // [[Rcpp::export]]
 NumericVector TopicInEqZ(int K, IntegerVector currentZ_d, 
-                        double alpha, NumericVector mvec, int doc) {
+                       double alpha, NumericVector mvec, int doc) {
 	IntegerVector table_topics = tabulateC(currentZ_d, K);
 	NumericVector table_topic_adj(K);
 	NumericVector alphamvec(K);
@@ -442,7 +442,7 @@ NumericVector TopicInEqZ(int K, IntegerVector currentZ_d,
 // **********************************************************//
 // [[Rcpp::export]]
 NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW, 
-                        double beta, NumericVector nvec){
+                       double beta, NumericVector nvec){
   NumericMatrix consts(textlistd.size(), K);
 	for (int k = 0; k < K; k++){
 		NumericVector tablek = tableW[k];
@@ -462,12 +462,12 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 //               Edge contribution in update of Z            //
 // **********************************************************//
 // [[Rcpp::export]]
-double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
+double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda,double delta) {
 	double edges = 0;
 	for (int i = 0; i < iJi.nrow(); i++) {
 		for (int j = 0; j < iJi.ncol(); j++) {
 			if (i != j) {
-		  double deltalambda = delta * lambda(i, j);
+		 double deltalambda = delta * lambda(i, j);
 		 if (deltalambda < exp(-700)) {
 		deltalambda = exp(-700);
 		}
@@ -482,15 +482,15 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda, double delta) {
 //               Edge contribution in update of Z            //
 // **********************************************************//
 // [[Rcpp::export]]
-double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
+double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda,double delta) {
 	double edges = 0;
   arma::umat uinf = find(log(lambda) == -arma::datum::inf);
   lambda.elem(uinf).fill(exp(-700));
-	for (int i = 0; i < iJi.n_rows; i++) {
+	for (unsigned int i = 0; i < iJi.n_rows; i++) {
 		arma::vec normal = arma::zeros(iJi.n_rows - 1);
 		double prob = 0;
 		int iter = 0;
-		for (int j = 0; j < iJi.n_rows; j++) {
+		for (unsigned int j = 0; j < iJi.n_rows; j++) {
 			if (i != j) {
 				double pre = delta + log(lambda(i, j));
 				if (pre > 35) {
@@ -528,13 +528,13 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
   arma::vec edges = arma::zeros(iJi.n_rows);
   arma::umat uinf = find(log(lambda) == -arma::datum::inf);
   lambda.elem(uinf).fill(exp(-700));
-  for (int i = 0; i < iJi.n_rows; i++) {
+  for (unsigned int i = 0; i < iJi.n_rows; i++) {
     arma::vec normal = arma::zeros(iJi.n_rows - 1);
-    double prob = 0;
+   double prob = 0;
     int iter = 0;
-    for (int j = 0; j < iJi.n_rows; j++) {
+    for (unsigned int j = 0; j < iJi.n_rows; j++) {
       if (i != j) {
-        double pre = delta + log(lambda(i, j));
+       double pre = delta + log(lambda(i, j));
         if (pre > 35) {
           normal[iter] = pre;
         } else {
@@ -548,8 +548,8 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
         iter = iter + 1;
       }
     }
-    double sumnorm = sum(normal);
-    double normalizer = 0;
+   double sumnorm = sum(normal);
+   double normalizer = 0;
     if (sumnorm >= 13) {
       normalizer = sumnorm;
     } else {
@@ -569,8 +569,8 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
 //               Time contribution in update of Z            //
 // **********************************************************//
 // [[Rcpp::export]]
-double TimeInEqZ(NumericVector LambdaiJi, double observedtdiff) {
-  double sumlambda = sum(LambdaiJi);
+double TimeInEqZ(NumericVector LambdaiJi,double observedtdiff) {
+ double sumlambda = sum(LambdaiJi);
   if (sumlambda == arma::datum::inf) {
     sumlambda = exp(700);
   }
@@ -618,7 +618,7 @@ NumericVector lambdaiJi(NumericVector p_d, List XB, IntegerMatrix iJi) {
 //         Resampling the augmented data J_a (Sec 3.1)       //
 // **********************************************************//
 // [[Rcpp::export]]
-arma::vec DataAug_cpp(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d, double delta, double timeinc_d, int i, int j) {
+arma::vec DataAug_cpp(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d,double delta,double timeinc_d, int i, int j) {
 	arma::vec prob = arma::zeros(2);
 	arma::vec iJi_di1 = iJi_di;
 	arma::vec iJi_di0 = iJi_di;

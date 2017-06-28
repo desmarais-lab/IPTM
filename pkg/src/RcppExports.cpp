@@ -189,13 +189,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // tabulateC
-IntegerVector tabulateC(const IntegerVector& x, const unsigned max);
+IntegerVector tabulateC(const IntegerVector& x, const signed max);
 RcppExport SEXP IPTM_tabulateC(SEXP xSEXP, SEXP maxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const IntegerVector& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const unsigned >::type max(maxSEXP);
+    Rcpp::traits::input_parameter< const signed >::type max(maxSEXP);
     rcpp_result_gen = Rcpp::wrap(tabulateC(x, max));
     return rcpp_result_gen;
 END_RCPP
