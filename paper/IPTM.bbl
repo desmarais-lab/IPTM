@@ -72,11 +72,22 @@ Fahmy, C. and Young, J.~T. (2016).
   criminal justice.
 \newblock {\em Journal of Criminal Justice Education}, pages 1--21.
 
+\bibitem[Fellows and Handcock, 2017]{fellows2017removing}
+Fellows, I. and Handcock, M. (2017).
+\newblock Removing phase transitions from gibbs measures.
+\newblock In {\em Artificial Intelligence and Statistics}, pages 289--297.
+
 \bibitem[Geweke, 2004]{geweke2004getting}
 Geweke, J. (2004).
 \newblock Getting it right: Joint distribution tests of posterior simulators.
 \newblock {\em Journal of the American Statistical Association},
   99(467):799--804.
+
+\bibitem[Griffiths and Steyvers, 2004]{griffiths2004finding}
+Griffiths, T.~L. and Steyvers, M. (2004).
+\newblock Finding scientific topics.
+\newblock {\em Proceedings of the National academy of Sciences}, 101(suppl
+  1):5228--5235.
 
 \bibitem[Hammer, 1985]{hammer1985implications}
 Hammer, M. (1985).
