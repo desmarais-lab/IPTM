@@ -62,7 +62,7 @@
 	integrate a dynamic version of the exponential random graph model---a
 	generative model for ties that tend toward structural features such as
 	triangles---and latent Dirichlet allocation---a generative model for
-	topic-based content. The IPTM assigns each topic to an "interaction
+	topic-based content. The IPTM assigns each topic to an ``interaction
 	pattern"---a generative process for ties that is governed by a set of
 	dynamic network features. Each communication is then modeled as a
 	mixture of topics and their corresponding interaction patterns. We use
@@ -301,181 +301,29 @@ After integreting out $\Phi$ and $\Theta$ using Dirichlet-multinomial conjugacy 
  	}	Summarize the results with:\\
  	last sample of $\mathcal{C}$, last sample of $\mathcal{Z}$, last $n_2$ length chain of $\mathcal{B}$, last $n_3$ length chain of $\delta$ 
  \end{algorithm}
-   \section{Getting It Right (GiR)}
-        \subsection{Collapsed-time Tie Generating Process} \label{subsubsec: collapsed time Generative Process}
-        Considering that we integrated out latent time $\mathcal{T}_{\mbox{a}}$ in the inference, we develop the new generative process for (sender, recipients, timestamp) parts with latent time integrated out. Note that this is built upon the property of the minimum of independent Exponential random variables (the probability $\Delta T_{i{J_i}}$ being the minimum is $\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}$). Details are illustrated in Algorithm 7.
-        \begin{algorithm}[H]
-        	\SetAlgoLined
-        	\caption{Collapsed-time Tie Generating Process}
-        	\For{d=1 to D}{
-        		\For{i=1 to $A$}{
-        			\For{j=1 to $A$}{
-        				\If {j $\neq$ i} {
-        					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
-        					set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$}  
-        			}
-        			draw $J_i^{(d)} \sim \mbox{Gibbs measure}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)$\\
-        			calculate $\lambda_{i{J_i}}^{(d)}$\\
-        		}
-        		choose $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$\\
-        		set $J^{(d)} = J_{i^{(d)}}$\\
-        		draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{Exponential}(\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})$ and set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
-        	}
-        \end{algorithm}
-        \noindent With this generative process, the joint likelihood (comparable to Equation (12)) becomes:
-        \begin{equation}
-        \begin{aligned}
-        &P(\mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=P\Big(\mbox{latent receivers generation}\Big) \times P\Big(\mbox{choose the sender}\Big)\times P\Big(\mbox{observed minimum time generation}\Big) \\&
-        =\prod_{i\in \mathcal{A}}\Big(J_{i}^{(d)}\sim \mbox{Gibbs measure}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)\Big) \times \Big(i_o^{(d)} \sim \mbox{Multinom}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)\Big) \times\Big(\Delta T^{(d)}_{i^{(d)}{J^{(d)}}} \sim \mbox{Exp}(\sum\limits_{i \in \mathcal{A}}\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)})\Big)\\&
-        =\Big(\prod_{i\in \mathcal{A}}\frac{1}{Z(\delta, \log(\lambda^{(d)}_i)}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times \Big(\frac{\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)\times \Big((\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)
-        \\&
-        =\Big(\prod_{i\in \mathcal{A}}\frac{1}{Z(\delta, \log(\lambda^{(d)}_i)}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times\Big(\frac{\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)\times \Big( (\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)\\& \propto \Big(\prod_{i\in \mathcal{A}}\frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times\Big(\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)}\Big)\times \Big( e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big),
-        \end{aligned}
-        \end{equation}
-        which is exactly the same as Equation (14), thus we will use this collpased-time generative process as a forward/backward generative process in Geweke’s “Getting it Right” test \citep{geweke2004getting}.
-       \subsection{Backward Generating Process} \label{subsubsec: Backward Generative Process}
-   We need to define a “backward” generative process in order to perform Geweke’s “Getting it Right” (GiR) test because when we are generating our “backwards” samples, we only want to resample the token word types given the token-topic assignments (using Collapsed Gibbs sampling) and (sender, recipients, timestamp) pairs, and not any of
-   our latent variables. This means we take the latent variables we got by running our inference procedure (latent edges from data augmentation, token topic assignments, topic interaction pattern assignments, interaction pattern parameters, and receiver size parameter $\delta$) as inputs, and simply condition on these to draw new data. \\
+   \section{Getting It Right (GiR) Test}
+   \cite{geweke2004getting} introduced “Getting it Right” (GiR) test, the joint distribution test of posterior simulators which can detect the errors in sampling equations as well as coding errors. This test has been widely used by Bayesian investigators to demonstrate the reliability of fully-specified Bayesian models. There are two joint distribution simulators, which we call ``forward" and ``backward" samples. The forward sampler draws unobservable variables from the prior and then generate the observable data conditional on unobservables. The backward sampler alternates between the inference and an observables simulator, by running the inference code on observable data to obtain posterior estimates of the unobervable variables and the re-generate the observables given the inferred unobservables.
    
-For backward sampling, we let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. In addition, here we do not generate latent edges, instead, we use inferred ones from the inference as an input. Only the receivers for previously observed sender ($i_o^{(d)}$), which is not inferred, will be sampled according to the generative process, same as forward sampling (with inferred parameter values). This “backward” version of the generative process is detailed below in Algorithm 8.
-   \begin{algorithm}[H]
-   	\SetAlgoLined
-   	\caption{Generate data with backward sampling}
-   	Input:\\ 1) latent edges $\{\{iJ^{(d)}_i\}_{i \neq i_o^{(d)}}\}_{d=1}^D$ (where $\{i_o^{(d)}\}_{d=1}^D$ from previous backward sample),\\
-   	 2) token topic assignments $\{\{z_n^{(d)}\}_{n=1}^{N^{(d)}}\}_{d=1}^D$,\\
-   	 3) topic interaction pattern assignments, $\{C_k\}_{k=1}^K$,\\
-   	   4) interaction pattern parameters $\{\boldsymbol{b}^{(c)}\}_{c=1}^C$, \\
-   	   5) receiver size parameter $\delta$.\\\\
-   	\For{d=1 to D}{
-   		set $NKV = 0$ and $NK = 0$\\
-   		\For{n=1 to $\bar {N}^{(d)}$}{
-   				\For{v=1 to $V$}{
-   					$\mbox{token-word-type-distribution}_n^{(d)}[v] = \frac{NKV_{v, z_n^{(d)}}+\beta\boldsymbol{u}_v}{NK_{z_n^{(d)}} + \beta}$
-   				}
-   				draw $w_n^{(d)} \sim (\mbox{token-word-type-distribution}_n^{(d)})$\\
-   				$NKV_{w_n^{(d)}, z_n^{(d)}} += 1$\\
-   				$NK_{z_n^{(d)}} += 1$
-   		}
-   		only for the previously observed sender $i_o^{(d)}$,\\
-   				\For {j $\neq$ $i_o^{(d)}$} {
-   					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i_o^{(d)}, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
-   					set $\lambda^{(d)}_{i_o^{(d)}j}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i_o^{(d)}, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i_o^{(d)}}\}$\\
-   					}  
-   		draw $J_{i_o^{(d)}}^{(d)} \sim \mbox{Gibbs measure}(\{\lambda_{{i_o^{(d)}}j}^{(d)}\}_{j=1}^A,\delta)$\\			
-   		choose $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$ \\
-   		set $J^{(d)} = J_{i^{(d)}}$\\
-   		draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{Exponential}(\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})$ and set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
-   	}
-   \end{algorithm}
-      \subsection{Intitialization of History $\boldsymbol{x}_t^{(c)}$} \label{subsubsec: Initial history issue}
-      Considering that our network statistics $\boldsymbol{x}_t^{(c)}$ are generated by the network itself, it is necessary to use the same initial value of $\boldsymbol{x}_t^{(c)}$ across the forward and backward samples. If not, when we generate fixed number of documents (e.g. nDocs = 10), we cannot guarantee the same number of documents used for the inference, since only the documents with its timestamp greater than 384 hours (=16 days) are used in the inference. In the extreme cases, we may end up with two types of failure:
+   To perform GiR test on IPTM, we first define a “backward” generative process in order because when we are generating our backward samples, we only want to resample the word types given the token-topic assignments using collapsed Gibbs sampling \citep{griffiths2002gibbs} and the tie data representing (sender, recipients, timestamp) pairs using collapsed-time tie generating process in Section \ref{subsubsec: collapsed time Generative Process}, and not any of our latent variables. In other words, this means we take the latent variables we got by running our inference procedure (latent edges from data augmentation, token topic assignments, topic interaction pattern assignments, interaction pattern network effect parameters, and receiver size parameter) as inputs, and simply condition on these to draw new data. Pseudocode for backward generating process can be found in Section \ref{subsubsec: Backward Generative Process}.
+   
+   Next, we list out our selection of statistics we would like to compare between forward and backward samples, to test the consistency of a posterior simulator with the specified prior and data distributions. For each forward and backward sample that consists of $D$ number of documents, we save the statistics below:
       \begin{itemize}
-      	\item[1.] Zero document generated after 384 hours (i.e. $t^{(10)} < 384$), making no documents to be used for inference,
-      	\item[2.] Zero document generated before 384 hours (i.e. $t^{(1)} > 384$), making the estimate of $\mathcal{B}$ totally biased since $\forall  \boldsymbol{x}_t^{(c)}(i, j) = 0$. 
-      \end{itemize}
-      Therefore, we fix the initial state of $\boldsymbol{x}_t^{(c)}$ over the entire GiR process. Specifically, we fix 30 (for example) baseline documents where the timestamps are all smaller than 384 and use as an input for forward sampling, backward sampling, and the inference. Then, in the forward and backward generative process, we set the starting point of the timestamp as $t^{(0)} = 384$ and generate nDocs = 10 documents given the initial $\boldsymbol{x}_{t^{(0)} = 384}^{(c)}$ so that we can acheive consistency in the generated number of documents with $t^{(d)} > 384$.
-   \subsection{GiR Implementation Details} \label{subsubsec: GiR implementation}
-   While we tried a number of different parameter combinations in the course of testing, we outline our standard setup. We selected the following parameter values:
-   \begin{itemize}
-   	\begin{minipage}{0.5\textwidth}
-   		\item[-] nDocs (number of documents) = 5
-   		\item[-] nwords (tokens per document) = 4
-   		\item[-] node (number of actors)= 4
-   		\item[-] W (unique word types) = 5
-   		\item[-] nIP (number of interaction patterns) = 2
-   		\item[-] K (number of topics) = 4
-   		\item[-] $\alpha$ (Dirichlet concentration prior) = 2
-   		\item[-] $\boldsymbol{m}$ (Dirichlet base prior) = $\boldsymbol{u}$ 
-   		\item[-] $\beta$ (Dirichlet concentration prior)= 2
-   		\item[-] $\boldsymbol{n}$ (Dirichlet base prior) = $\boldsymbol{u}$
-   		\item[-] netstat = ``intercept" and ``dyadic"
-   	\end{minipage}
-   	\begin{minipage}{0.5\textwidth}
-   		\item[-] prior for $\boldsymbol{b}^{(c)}$: $\mu_{\boldsymbol{b}^{(c)}} = (-3,\boldsymbol{0}_6), \Sigma_{\boldsymbol{b}^{(c)}} = 0.005\times I_7$
-   		\item[-] prior for $\delta$: $\mu_\delta = 0$, $\sigma^2_\delta = 0.1$
-   		\item[-] $I$ (outer iteration) = 3
-   		\item[-] $n_1$ (iteration for hyperparamter optimization) = 0
-   		\item[-] $n_2$ (M-H sampling iteration of $\mathcal{B}$) = 330
-   		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 30
-   		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 3
-   		\item[-] $\sigma_{Q1}^2$ (proposal variance for $\mathcal{B}$) = 0.04
-   		\item[-] $n_3$ (M-H sampling iteration of $\delta$) = 10
-   		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 2
-   	\end{minipage}
-   \end{itemize}
-   Next, we list the selection of statistics we save for each forward and backward sample. Note that these statistics are not sensitive to the label swithches across the updates. Therefore, at each iteration, we calculate and save the statistics below:
-      \begin{itemize}
-      	\item[1.] Mean of interaction pattern parameters $(\boldsymbol{b}_p^{(1)},...,\boldsymbol{b}_p^{(C)})$ for every $p = 1,...,P$,
-      	      	\item[2.] Three istory statistic `send' calculated for the last document
+      	\item[1.] Mean of network effect parameters $(\boldsymbol{b}_p^{(1)},...,\boldsymbol{b}_p^{(C)})$ for every $p = 1,...,P$,
+      	      	\item[2.] Network statistic `send' calculated for the last $D^{th}$ document for every $l=1,...,3$
       	      	\item[3.] $\delta$ value used to generate the samples
-      	      	\item[4.] Mean number of recipients,
-      	\item[5.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ for every $d=2,...,\mbox{nDocs}$,
-      	\item[6.] Mean topic-interaction pattern assignment (for interaction patterns indexed by 1 and 2), 
+      	      	\item[4.] Mean of the recipient size $|J^{(d)}|$ across $d=1,...,D$,
+      	\item[5.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ across $d=1,...,D$,
+      	\item[6.] Mean topic-interaction pattern assignment $c_k$ across $k=1,...,K$, 
       	\item[7.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$,
       	\item[8.] Number of tokens assigned to each topic $k=1,...,K$, 
        \item[9.] Number of tokens assigned to each unique word type $w=1,...,W$.
       	      \end{itemize}
-\subsection{GiR Results}
-Having saved a set of samples, we generated PP (Probability-Probability)  plots for each of the 25 statistics we saved. We calculated 1,000 quantiles for each of the interaction pattern statistics (1.), and 50 quantiles for the rest of the statistics. Exactly follwoing CPME, we also calculated a t-test p-value for the equivalence
-of statistic means between forward and backward samples, and a Mann-Whitney test p-value for the equivalence of statistic
-distributions between forward and backward samples. Before we calculated these statistics, we first thinned our sample of
-statistics by taking every 90th sample starting at the 100,000th sample for a resulting sample size of 10,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each plot that we expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure below.
- \section{Appliction to North Carolina email data}  \label{sec: Application to North Carolina email data}
+For simplicity, we run GiR test using relatively small size of data using 5 documents, 4 tokens per document, 4 total number of actors, 5 unique word types, 2 interaction patterns, and 4 topics per each forward or backward samples. For detailed settings including the prior specifications, see APPENDIX \ref{subsubsec: GiR implementation}. 
+
+We calculated 1,000 quantiles for each of the network effect statistics (1.), and 50 quantiles for the rest of the statistics. We also calculated a t-test and Mann-Whitney test p-values for the equivalence of statistic means between forward and backward samples. Before we calculated these statistics, we first thinned our sample of
+statistics by taking every 90th sample starting at the 100,000th sample for a resulting sample size of 10,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each PP (Probability-Probability) plot that we expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure .
+ \section{Appliction to North Carolina Email Corpora}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
- \subsection{Vance county email data} \label{subsec: Vance county email data}
-Vance county data contains $D=185$ emails sent between $A=18$ actors, including $W=620$ vocabulary in total. We used $K=5$ topics and $C=2$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We set the outer iteration number as $I=500$, the inner iteration numbers as $n_1=1, n_2=1,$ and $n_3=3300$. First 50 outer iterations and first 300 iterations of third inner iteration were used as a burn-in, and every $20^{th}$ sample was taken as a thinning process of third inner iteration. In addition, after some experimentation, $\sigma_Q^2$ was set as 0.2, to ensure sufficient acceptance rate. MCMC diagnostic plots are attached in APPENDIX D, as well as the geweke test statistics. \\\newline
- Below are the summary of IP-topic-word assignments. Each interaction pattern is paired with (a) posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) the top 10 most likely words to be generated conditioned on the topic and their corresponding interaction pattern.
- \begin{figure}[ht]
- 	\centering
- 	 	\includegraphics[width=1\textwidth]{betaplot.pdf} 
- 	\caption{Posterior distribution of  $\boldsymbol{b}^{(c)}$ for Vance county emails}
- 	\label{fig:Vanceboxplot}
- \end{figure}
- \begin{table}[ht]
- 	\centering
- 	\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|}
- 		\hline
- 		covariate & 1&2 - 4&5 - 7& 8 - 10 & 11 - 13 & 14 - 16& 17 - 19 & 20 - 22&23 - 25\\
- 	\hline	name & intercept & outdegree & indegree & send & receive & 2-send & 2-receive & sibling & cosibling\\
- 	 		\hline
- 	\end{tabular}
- 	\caption {Network statistics}
- \end{table}
- \normalsize
-By examining the estimates in Figure 2 and their corresponding interpretation, it seems that there exist strong effects of dynamic network covariates. That is, whether the sender and receiver previously had dyadic or triangle interaction strongly increase the rate of their interactions. \textcolor{red}{What are the findings here?}\newpage
- \begin{figure}[ht]
- 	\centering
- 		\includegraphics[width=0.7\textwidth]{topicplot.pdf} 
- 	\caption{Posterior distribution of $\mathcal{Z}$ for Vance county emails}
- 	\label{fig:Vancebarplot}
- \end{figure} 
-\noindent Next, we scrutinize the topic distributions in Figure 3. There is some distinctive differences in the topic distributions $\mathcal{Z}$, given the assignment of interaction patterns to the documents $\mathcal{C}$. Specifically, each interaction pattern has different topics as the topic with highest probability.
- \normalsize
- \newline
- Furthermore, we look at the distribution of words given the topics, which corresponds to Algorithm 4 in the generative process. Since the topic-word distribution $\phi$ does not depend on the interaction patterns as previous cases, Table 3 lists top 10 topics with top 10 words that have the highest probability conditioned on the topic. In addition, this time we try to check the interaction pattern-word distribution by listing top 10 words that have the highest probability conditioned on the interaction pattern. It seems that the words are not significantly different, having several words like `director', `phones', `department', `description', or `henderson' (county seat of Vance county) appeared repetitively across the most of the topics or interaction patterns. The word 'will' was ranked the top in most of the lists, probably because it was not deleted during the text mining process while other similar type of words like `am', `is', `are', or `can' are all removed. \\
- \begin{table}[ht]
- 	\centering
- 	\begin{tabular}{|l||l||}
- 		\hline
- 		{\textbf{IP1} }&{\textbf{IP2} }\\
- 		\hline\hline
- 		K=5, K=2 & K=3, K=4, K=1\\
- 		\hline
- 	operations, description&emergency, electronic, will\\
- 	emergency, phase & operations, message, meeting\\
- 	henderson, planning& fax, request, director\\
- 	director, development & henderson, review, phone\\
- 	street, director & street, response, october\\
- 	church, henderson& center, records, extension\\
- 	suite, fax & director, manager, phones\\
- 	office, church & church, pursuant, latest\\ 
- 	center, phone & office, ncgs, directory\\
- 	communications, email & communications, chapter, attached\\
- 		\hline
- 	\end{tabular}
- 	\caption {Summary of top 10 words that have the highest probability conditioned on the topic}
- 	\label{table:VancewordsMCMC}
- \end{table}
  \subsection{Dare county email data} \label{subsec: Dare county email data}
  Dare county data contains $D=2247$ emails between $A=27$ actors, including $W=2907$ vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=1000$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. In addition, after some experimentation, $\sigma^2_Q$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{b}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every $10^{th}$ samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics.
  
@@ -513,84 +361,7 @@ By examining the estimates in Figure 2 and their corresponding interpretation, i
 \appendix
  \section*{APPENDIX}
  \renewcommand{\thesubsection}{\Alph{subsection}}
- \iffalse
- \subsection{Notations in IPTM}\label{subsec: notations}
-  \begin{table}[ht]
-  	\centering
-  	\scalebox{0.9}{ 	\begin{tabular}{ |c|c|c|} 
-  			\hline
-  			\hline
-  			  			Sender of the $d^{th}$ document&$i^{(d)}$ & Scalar\\
-  			  			\hline 
-  	  			Receivers of the $d^{th}$ document&$J^{(d)}$ & $|J^{(d)}|$-dimensional vector\\
-  	  			\hline 
-  	  			Individual receiver of the $d^{th}$ document&$j^{(d)}$ & Scalar\\
-  	  			\hline
-  			  Time of the $d^{th}$ document&$t^{(d)}$ & Scalar\\
-  			  			\hline 			
-  			Authors of the corpus &$\mathcal{A}$ & Set\\
-  			\hline
-  			Number of authors &$A$ & Scalar \\
-  			\hline
-  			Number of documents &$D$ & Scalar \\
-  			\hline
-  			Number of words in the $d^{th}$ document &$N^{(d)}$ & Scalar \\
-  			\hline
-  			Number of topics & $K$ & Scalar \\
-  			\hline
-  			Vocabulary size & $W$ & Scalar \\
-  			\hline
-  			Number of interaction patterns &$C$ & Scalar \\
-  			\hline
-  			Number of words assigned to word and topic&$N^{WK}$ & Scalar \\
-  			\hline
-  			Interaction pattern of the $k^{th}$ topic&$C_k$ & Scalar\\
-  			\hline 
-  			Tuning parameter in tie generative process& $\delta$ & Scalar\\
-  			\hline 
-  			Poisson parameter for number of words $N^{(d)}$& $\zeta$ & Scalar\\ \hline
-  			Words in the $d^{th}$ document&$\boldsymbol{w}^{(d)}$ & $N^{(d)}$-dimensional vector\\
-  			\hline 
-  			$n^{th}$ word in the $d^{th}$ document&${w}_n^{(d)}$ & $n^{th}$  component of $\boldsymbol{w}^{(d)}$\\
-  			\hline 	
-  			Topic assignments in the $d^{th}$ document&$\boldsymbol{z}^{(d)}$ & $N^{(d)}$-dimensional vector\\
-  			\hline 
-  			Topic assignments for $n^{th}$ word in the $d^{th}$ document&${z}_n^{(d)}$ & $n^{th}$ component of $\boldsymbol{z}^{(d)}$\\
-  			\hline 	
-  			Dirichlet concentration prior for document topic distribution&$\alpha$ & Scalar \\
-  			\hline	
-  			Dirichlet base prior for document topic distribution&$\boldsymbol{m}$ & $K$-dimensional vector \\
-  			\hline			
-  			Dirichlet concentration prior for topic word distribution&$\beta$ & Scalar \\
-  			\hline			 
-  			Dirichlet base prior for topic word distribution&$\boldsymbol{u}$ & $W$-dimensional vector  \\
-  			\hline				 	
-  			Variance of Normal prior&$\sigma^2$ & Scalar \\
-  			\hline		
-  			Probabilities of the words given topic $k$ &$\boldsymbol{\phi}^{(k)}$ & $W$-dimensional vector\\
-  			\hline
-  			Probabilities of the topics given the $d^{th}$ document &$\boldsymbol{\theta}^{(d)}$ & $K$-dimensional vector\\
-  			\hline		
-  			Coefficient of the intensity process given interaction pattern $c$ &$\boldsymbol{b}^{(c)}$ & $p$-dimensional vector\\
-  			\hline		
-  			Network statistics for $(i, j)$ at time $t$ given interaction pattern $c$ &$\boldsymbol{x}^{(c)}_t{(i,j)}$ & $p$-dimensional vector\\
-  			\hline		
-  			Stochastic intensity of document $d$ at time $t$ & $\boldsymbol{\lambda}^{(d)}(t)$ & $A\times A$ matrix\\
-  			\hline
-  		  	Stochastic intensity of $(i, j)$ in document $d$ at time $t$ & ${\lambda}_{ij}^{(d)}(t)$ & Scalar\\
-  		  	\hline	
-  		  	  		  	Proportion of topics in document $d$ corresponding to interaction pattern $c$ & $p_c^{(d)}$ & Scalar\\
-  		  	  		  	\hline
-  		  Time increments associated to $(i, J)$ pair & $\Delta T_{iJ}$ & Scalar\\
-  		  		\hline
-  			\hline
-  		\end{tabular}}
-  		\caption {Symbols associated with IPTM, as used in this paper}
-  		\label{table:SymbolsIPTM}
-  	\end{table}
-  	\normalsize
-  	\fi
-  	 \subsection{Normalizing constant of non-empty Gibbs measure}\label{subsec: non-empty Gibbs measure}
+   	 \subsection{Normalizing constant of non-empty Gibbs measure}\label{subsec: non-empty Gibbs measure}
   	 In Section \ref{subsec: Tie Generating Process}, we define the non-empty Gibbs measure such that 
  the probability of sender $i$ selecting the binary receiver vector of length $(A-1)$, $J_i^{(d)}$ is given by
   	 \begin{equation*} \text{P}(J_i^{(d)}) = \frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}.
@@ -691,7 +462,7 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
   	       \end{aligned}
   	       \end{equation}
   	       where $\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}$ is the observed time difference between $d^{th}$ and $(d-1)^{th}$ document.
-  	       Therefore, we can simplify Equation (12) as below:
+  	       Therefore, we can simplify Equation (11) as below:
   	       \begin{equation}
   	       \begin{aligned}
   	       &P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&\propto \Big(\prod_{i\in \mathcal{A}}\frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times \Big(\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times\Big( e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
@@ -888,5 +659,108 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
   \end{aligned}
   \end{equation*}
   \fi
+  \subsection{Details on Getting It Right Test}\label{subsec:Details on GiR}
+        \subsubsection{Collapsed-time Tie Generating Process} \label{subsubsec: collapsed time Generative Process}
+        Considering that we integrated out latent time $\mathcal{T}_{\mbox{a}}$ in the inference, we develop the new generative process for tie data with the latent time variable integrated out. Note that this is built upon the property of the minimum of independent Exponential random variables, where the probability $\Delta T_{i{J_i}}$ being the minimum is $\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}$. Details are illustrated in Algorithm 8.
+        \begin{algorithm}[H]
+        	\SetAlgoLined
+        	\caption{Collapsed-time Tie Generating Process}
+        	\For{d=1 to D}{
+        		\For{i=1 to $A$}{
+        			\For{j=1 to $A$}{
+        				\If {j $\neq$ i} {
+        					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
+        					set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$}  
+        			}
+        			draw $J_i^{(d)} \sim \mbox{Gibbs measure}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)$
+        		}
+        		draw $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$\\
+        		set $J^{(d)} = J_{i^{(d)}}$\\
+        		draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{Exponential}(\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})$ and set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
+        	}
+        \end{algorithm}
+        \noindent With this generative process, the joint likelihood (comparable to Equation (10)) becomes:
+        \begin{equation}
+        	\begin{aligned}
+        		&P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)\\&=P\Big(\mbox{latent receivers generation}\Big) \times P\Big(\mbox{choose the sender}\Big)\times P\Big(\mbox{observed minimum time generation}\Big) \\&
+        		=\prod_{i\in \mathcal{A}}\Big(J_{i}^{(d)}\sim \mbox{Gibbs measure}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)\Big) \times \Big(i_o^{(d)} \sim \mbox{Multinom}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)\Big) \times\Big(\Delta T^{(d)}_{i^{(d)}{J^{(d)}}} \sim \mbox{Exp}(\sum\limits_{i \in \mathcal{A}}\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)})\Big)\\&
+        		=\Big(\prod_{i\in \mathcal{A}}\frac{1}{Z(\delta, \log(\lambda^{(d)}_i)}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times \Big(\frac{\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)\times \Big((\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)
+        		\\&
+        		=\Big(\prod_{i\in \mathcal{A}}\frac{1}{Z(\delta, \log(\lambda^{(d)}_i)}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times\Big(\frac{\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)\times \Big( (\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)\\& \propto \Big(\prod_{i\in \mathcal{A}}\frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times\Big(\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)}\Big)\times \Big( e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big),
+        	\end{aligned}
+        \end{equation}
+        which is exactly the same as Equation (12), thus we will use this collpased-time generative process as a forward/backward generative process in Geweke’s “Getting it Right” test in Section \ref{subsubsec: Backward Generative Process}.
+            \subsubsection{Backward Generating Process} \label{subsubsec: Backward Generative Process}
+        For backward sampling, we let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. This “backward” version of the generative process is detailed below in Algorithm 9.
+        \begin{algorithm}[H]
+        	\SetAlgoLined
+        	\caption{Generate data with backward sampling}
+        	Input:\\
+        	1) token topic assignments $\{\{z_n^{(d)}\}_{n=1}^{N^{(d)}}\}_{d=1}^D$,\\
+        	2) topic interaction pattern assignments, $\{C_k\}_{k=1}^K$,\\
+        	3) interaction pattern parameters $\{\boldsymbol{b}^{(c)}\}_{c=1}^C$, \\
+        	4) receiver size parameter $\delta$.\\\\
+        	\For{d=1 to D}{
+        		set $NKV = 0$ and $NK = 0$\\
+        		\For{n=1 to $\bar {N}^{(d)}$}{
+        			\For{v=1 to $V$}{
+        				$\mbox{token-word-type-distribution}_n^{(d)}[v] = \frac{NKV_{v, z_n^{(d)}}+\beta\boldsymbol{u}_v}{NK_{z_n^{(d)}} + \beta}$
+        			}
+        			draw $w_n^{(d)} \sim (\mbox{token-word-type-distribution}_n^{(d)})$\\
+        			$NKV_{w_n^{(d)}, z_n^{(d)}} += 1$\\
+        			$NK_{z_n^{(d)}} += 1$
+        		}
+        			\For{i=1 to $A$}{
+        				\For{j=1 to $A$}{
+        					\If {j $\neq$ i} {
+        						calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
+        						set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda_0^{(c)}+\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$}  
+        				}
+        				draw $J_i^{(d)} \sim \mbox{Gibbs measure}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)$
+        			}
+        			draw $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$\\
+        			set $J^{(d)} = J_{i^{(d)}}$\\
+        			draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{Exponential}(\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})$ and set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
+        			 	}
+        \end{algorithm}
+        \iffalse
+        \subsubsection{Intitialization of History $\boldsymbol{x}_t^{(c)}$} \label{subsubsec: Initial history issue}
+        Considering that our network statistics $\boldsymbol{x}_t^{(c)}$ are generated as a function of the network history, it is necessary to use the same initial value of $\boldsymbol{x}_t^{(c)}$ across the forward and backward samples. If not, when we generate fixed number of documents, we cannot guarantee the same number of documents used for the inference, since only the documents with its timestamp greater than 384 hours are used in the inference. In the extreme cases, we may end up with two types of failure:
+        \begin{itemize}
+        	\item[1.] Zero document generated after 384 hours (i.e. $t^{(10)} < 384$), making no documents to be used for inference,
+        	\item[2.] Zero document generated before 384 hours (i.e. $t^{(1)} > 384$), making the estimate of $\mathcal{B}$ totally biased since $\forall  \boldsymbol{x}_t^{(c)}(i, j) = 0$. 
+        \end{itemize}
+        Therefore, we fix the initial state of $\boldsymbol{x}_t^{(c)}$ over the entire GiR process. Specifically, we fix some baseline documents where the timestamps are all smaller than 384 and use as an input for forward sampling, backward sampling, and the inference. Then, in the forward and backward generative process, we set the starting point of the timestamp as $t^{(0)} = 384$ and generate fixed number of documents given the initial $\boldsymbol{x}_{t^{(0)} = 384}^{(c)}$ so that we can acheive consistency in the generated number of documents with $t^{(d)} > 384$.
+        \fi
+        \subsubsection{GiR Implementation Details} \label{subsubsec: GiR implementation}
+        While we tried a number of different parameter combinations in the course of testing, we outline our standard setup. We selected the following parameter values:
+        \begin{itemize}
+        	\begin{minipage}{0.49\textwidth}
+        		\item[-] $D$ (number of documents) = 5
+        		\item[-] $N^{(d)}$ (tokens per document) = 4
+        		\item[-] $A$ (number of actors)= 4
+        		\item[-] $W$ (unique word types) = 5
+        		\item[-] $C$ (number of interaction patterns) = 2
+        		\item[-] $K$ (number of topics) = 4
+        		\item[-] $\alpha$ (Dirichlet concentration prior) = 2
+        		\item[-] $\boldsymbol{m}$ (Dirichlet base prior) = $\boldsymbol{u}$ 
+        		\item[-] $\beta$ (Dirichlet concentration prior)= 2
+        		\item[-] $\boldsymbol{n}$ (Dirichlet base prior) = $\boldsymbol{u}$
+        		\item[-] netstat = ``intercept" and ``dyadic"
+        	\end{minipage}
+        	\begin{minipage}{0.49\textwidth}
+        		\item[-] prior for $\boldsymbol{b}^{(c)}$: $\mu_{\boldsymbol{b}^{(c)}} = (-3,\boldsymbol{0}_6), \Sigma_{\boldsymbol{b}^{(c)}} = 0.005\times I_7$
+        		\item[-] prior for $\delta$: $\mu_\delta = 0$, $\sigma^2_\delta = 0.1$
+        		\item[-] $I$ (outer iteration) = 3
+        		\item[-] $n_1$ (hyperparamter optimization) = 0
+        		\item[-] $n_2$ (M-H sampling iteration of $\mathcal{B}$) = 330
+        		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 30
+        		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 3
+        		\item[-] $\sigma_{Q1}^2$ (proposal variance for $\mathcal{B}$) = 0.04
+        		\item[-] $n_3$ (M-H sampling iteration of $\delta$) = 10
+        		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 2
+        	\end{minipage}
+        \end{itemize}
+        \subsubsection{GiR Traceplot} \label{subsubsec: GiR Traceplot}
   \end{document}
 
