@@ -318,6 +318,7 @@ After integreting out $\Phi$ and $\Theta$ using Dirichlet-multinomial conjugacy 
       	\item[8.] Number of tokens assigned to each topic $k=1,...,K$, 
        \item[9.] Number of tokens assigned to each unique word type $w=1,...,W$.
       	      \end{itemize}
+<<<<<<< HEAD
       	      
 For simplicity, we run GiR test using relatively small size of data using 5 documents, 4 tokens per document, 4 total number of actors, 5 unique word types, 2 interaction patterns, and 4 topics per each forward or backward samples. For detailed settings including the prior specifications, see APPENDIX \ref{subsubsec: GiR implementation}. 
 We generated $5\times 10^4$ sets of forward and backward samples, and then calculated 1,000 quantiles for each of the network effect statistics (1.), and 50 quantiles for the rest of the statistics. We also calculated a t-test and Mann-Whitney test p-values for the equivalence of statistic means between forward and backward samples. Before we calculated these statistics, we thinned our sample 
@@ -349,6 +350,16 @@ The next step in our work will be to either repair any bugs that exist in our $\
  	\label{fig:Vance}
  	\caption{Geographical location of Vance county in North Carolina}
  \end{figure}
+=======
+For simplicity, we run GiR test using relatively small size of data using 5 documents, 4 tokens per document, 4 total number of actors, 5 unique word types, 2 interaction patterns, and 4 topics per each forward or backward samples. For detailed settings including the prior specifications, see APPENDIX \ref{subsubsec: GiR implementation}. 
+
+We calculated 1,000 quantiles for each of the network effect statistics (1.), and 50 quantiles for the rest of the statistics. We also calculated a t-test and Mann-Whitney test p-values for the equivalence of statistic means between forward and backward samples. Before we calculated these statistics, we first thinned our sample of
+statistics by taking every 90th sample starting at the 100,000th sample for a resulting sample size of 10,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each PP (Probability-Probability) plot that we expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure .
+ \section{Appliction to North Carolina Email Corpora}  \label{sec: Application to North Carolina email data}
+ To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 22, 2012 – November 2, 2012). Especially, Dare county geographically covers the Outer Banks, so we would like to see how the communication pattern changes during the time period surrounding Hurricane Sandy. Here we apply IPTM to both data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
+ \subsection{Dare county email data} \label{subsec: Dare county email data}
+ Dare county data contains $D=2247$ emails between $A=27$ actors, including $W=2907$ vocabulary in total. Again, we used $K=10$ topics and $C=3$ interaction patterns. MCMC sampling was implemented based on the order and scheme illustrated earlier. We set the outer iteration number as $I=1000$, and inner iteration numbers as $n_1=3, n_2=3,$ and $n_3=3300$. In addition, after some experimentation, $\sigma^2_Q$ was set as 0.02, to ensure sufficient acceptance rate. In our case, the average acceptance rate for $\boldsymbol{b}$ was 0.277. As demonstrated in Algorithm 5, the last value of $\mathcal{C}$, the last value of $\mathcal{Z}$, and the last $n_3$ length chain of $\mathcal{B}$ were taken as the final posterior samples. Among the $\mathcal{B}$ samples, 300 were discarded as a burn-in and every $10^{th}$ samples were taken. After these post-processing, MCMC diagnostic plots are attached in APPENDIX D, as well as geweke test statistics.
+>>>>>>> origin/master
  
  First, we explored the temporal change in sending and receiving behavior of government managers, based on their departments.
   \begin{figure}[ht]
@@ -832,5 +843,9 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
         		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 2
         	\end{minipage}
         \end{itemize}
+<<<<<<< HEAD
+=======
+        \subsubsection{GiR Traceplot} \label{subsubsec: GiR Traceplot}
+>>>>>>> origin/master
   \end{document}
 
