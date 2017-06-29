@@ -326,7 +326,7 @@ We generated $5\times 10^4$ sets of forward and backward samples, and then calcu
 statistics by taking every 40th sample starting at the 10,000th sample for a resulting sample size of 1,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each PP (Probability-Probability) plot that we expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure 2. 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.98\textwidth]{plots/Schein_C_50K.pdf} 
+	\includegraphics[width=0.99\textwidth]{plots/Schein_C_50K.pdf} 
 	\label{fig:PPplot_C}
 	\caption{Probability-Probability plot for the 25 GiR test statistics, with topic-interaction pattern being inferred.}
 \end{figure}
@@ -334,31 +334,30 @@ statistics by taking every 40th sample starting at the 10,000th sample for a res
 It has shown that all of LDA-related statistics passed the test in terms of visualization as well as the p-values from two different tests, while several tie-related statistics, (2.), (4.), (5.), (6.) and (7.), did not generate consistent distributions across forward and backward samplers. Some of these had high p-value, but the PP dots do not line up on the diagonal line which is still problematic. We investigated the possible bugs and realized that the failure comes from the convergence issue of topic-interaction pattern assignment $\mathcal{C}$ in the inference. Although our inference on topic-interaction pattern assignment seems fine in general since we succeeded passing the statistic (6.), we figured that even single incorrect assignment of topic-interaction pattern $c_k$ results in considerable bias in $\{p_c^{(d)}\}_{d=1}^D$. Since all of the statistics which failed the test are generated using the stochastic intensity $\{\boldsymbol{\lambda}^{(d)}\}_{d=1}^D$, a function of $p_c^{(d)}$, it is inevitable to see the failure on those variables when we cannot perfectly recover the true topic-interaction pattern assignment $\mathcal{C}$ from the inference. Therefore, we tried running the GiR test again without inferring the topic-interaction pattern assignment; instead, we used the same fixed set of $\{c_k\}_{k=1}^K$ for forward and backward samples such that we guarantee zero bias from $\{p_c^{(d)}\}_{d=1}^D$. As shown in Figure 3, now we pass the test on every single statistics.
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.98\textwidth]{plots/Schein_noC_50K.pdf} 
+	\includegraphics[width=0.99\textwidth]{plots/Schein_noC_50K.pdf} 
 	\label{fig:PPplot_noC}
 \caption{Probability-Probability plot for the 25 GiR test statistics, with topic-interaction pattern not being inferred.}
 \end{figure}
 
 The next step in our work will be to either repair any bugs that exist in our $\mathcal{C}$ inference code, so we currently do not infer topic-interaction pattern assignment when applying to real-world data, in the next section.
  \section{Appliction to North Carolina Email Corpora}  \label{sec: Application to North Carolina email data}
- To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 26, 2012 – October 30, 2012). Especially, Dare county geographically covers the Outer Banks (See Figure 4), one of the most critically affected area by the hurricane, thus we expect to see how the communication pattern changes during the time period surrounding Hurricane Sandy. In this section we apply IPTM to both county data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
+ To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 26, 2012 – October 30, 2012). Especially, as shown in Figure 4, Dare county geographically covers the Outer Banks, one of the most critically affected area by the hurricane, thus we expect to see how the communication pattern changes during the time period surrounding Hurricane Sandy. In this section we apply IPTM to both county data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
+  \begin{figure}[ht]
+  	\centering
+  	\includegraphics[width=0.49\textwidth]{plots/Vance.png} 
+  	     	\includegraphics[width=0.49\textwidth]{plots/Dare.png} 
+  	\label{fig:VanceDare}
+  	\caption{Geographical location of Vance county (left) and Dare county (right) in North Carolina}
+  \end{figure}
  \subsection{Exploratory Data Analysis} \label{subsec: EDA}
  \subsubsection{Vance County}\label{subsubsec:VanceEDA}
- We conducted some expoloratory data analysis on Vance county email dataset, where the data spans September 4th to November 30th, containing $D=183$ emails sent between $A=17$ actors with $W=620$ vocabularies in total. 
- \begin{figure}[ht]
- 	\centering
- 	\includegraphics[width=0.49\textwidth]{plots/Vance.png} 
- 	\label{fig:Vance}
- 	\caption{Geographical location of Vance county in North Carolina}
- \end{figure}
- 
- First, we explored the temporal change in sending and receiving behavior of government managers, based on their departments.
+ We first conducted some expoloratory data analysis on Vance county email dataset, where the data spans September 4th to November 30th, containing $D=183$ emails sent between $A=17$ actors with $W=620$ vocabularies in total. To see temporal trends in sending and receiving behavior in email exchanges, we plotted the number of emails sent and received between the county government managers based on their departments, which are shown in Figure 5. 
   \begin{figure}[ht]
   	\centering
   	  	\includegraphics[width=0.49\textwidth]{plots/VanceSend.pdf} 
   	  	\includegraphics[width=0.49\textwidth]{plots/VanceReceive.pdf} 
   	\label{fig:SendReceiveVance}
-  	\caption{The number of emails sent (left) and received (right) for thecounty managers in each department in Vance county}
+  	\caption{The number of emails sent (left) and received (right) for the county managers in each department in Vance county}
   \end{figure}
   
  Network plots, which are drawn upon 3 week period, 
@@ -368,15 +367,17 @@ The next step in our work will be to either repair any bugs that exist in our $\
    	\label{fig:NetworkVance}
    	\caption{Network plot based on 3 week period, before Sandy, during Sandy, and after Sandy, in Vance county}
    \end{figure}
-   \subsubsection{Dare County}\subsubsection{DareEDA}
+   
+   Lastly, we looked at how many times the word `hurricane' and `sandy' appeared.
+      \begin{figure}[ht]
+      	\centering
+      	\includegraphics[width=0.49\textwidth]{plots/Vanceword.pdf}  
+      	\label{fig:WordVance}
+      	\caption{Network plot based on 3 week period, before Sandy, during Sandy, and after Sandy, in Vance county}
+      \end{figure}
+   \subsubsection{Dare County}\label{subsubsec:DareEDA}
     and Dare county data spans September 1st to November 30th containing $D=2210$ emails between $A=27$ actor with $W=2907$ vocabularies in total
-     \begin{figure}[ht]
-     	\centering
-     	\includegraphics[width=0.49\textwidth]{plots/Dare.png} 
-     	\label{fig:Dare}
-     	\caption{Geographical location of Dare county in North Carolina}
-     \end{figure}
-       \begin{figure}[ht]
+        \begin{figure}[ht]
        	\centering
        	\includegraphics[width=0.49\textwidth]{plots/SendDare3.pdf} 
        	\includegraphics[width=0.49\textwidth]{plots/ReceiveDare3.pdf} 
@@ -391,6 +392,14 @@ The next step in our work will be to either repair any bugs that exist in our $\
          	\label{fig:NetworkDare}
          	\caption{Geographical location of Vance county and Dare county in North Carolina}
          \end{figure}
+         
+            Lastly, we looked at how many times the word `hurricane' and `sandy' appeared.
+            \begin{figure}[ht]
+            	\centering
+            	\includegraphics[width=0.49\textwidth]{plots/WordDare.pdf}  
+            	\label{fig:WordDare}
+            	\caption{Network plot based on 3 week period, before Sandy, during Sandy, and after Sandy, in Vance county}
+            \end{figure}
    \subsection{IPTM Results} \label{subsec: IPTM results}
  \section{Posterior Predictive Experiments} \label{sec:PosteriorPredictive}
  
@@ -830,9 +839,5 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
         		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 2
         	\end{minipage}
         \end{itemize}
-<<<<<<< HEAD
-=======
-        \subsubsection{GiR Traceplot} \label{subsubsec: GiR Traceplot}
->>>>>>> origin/master
   \end{document}
 

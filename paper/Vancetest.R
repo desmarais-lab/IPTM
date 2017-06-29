@@ -12,10 +12,10 @@ set.seed(1)
 #Vance$node = Vance$node[-c(5, 8, 16, 17)]
 #delete = sapply(1:length(Vance$edge), function(d){(unlist(Vance$edge[[d]][1:2]) %in% Vance$node)})
 #Vance$edge = Vance$edge[- which(sapply(1:length(delete), function(d){"FALSE" %in% delete[[d]]})>0)]
-Vancetest <- IPTM_inference.data(Vance$edge, Vance$node, Vance$text, Vance$vocab, nIP = 2, K = 5, sigma_Q = c(0.01, 1),
+Vancetest <- IPTM_inference.data(Vance$edge, Vance$node, Vance$text, Vance$vocab, nIP = 2, K = 6, sigma_Q = c(0.01, 1),
                        alpha = 2, mvec = rep(1/5, 5), betas = 2, nvec = rep(1/620, 620), prior.b.mean = c(-3, rep(0, 24)), 
-                       prior.b.var = 0.1 * diag(25), prior.delta = c(0, 1), out = 800, n_B = 5500, n_d = 500, burn = 500, 
-                       thinning = 10, netstat = c("intercept", "dyadic", "degree", "triadic"), plot = TRUE, optimize = TRUE)
+                       prior.b.var = 0.1 * diag(25), prior.delta = c(0, 1), out = 10, n_B = 5500, n_d = 550, burn = c(500, 50), 
+                       thinning = c(10, 1), netstat = c("intercept", "dyadic", "degree", "triadic"), plot = TRUE, optimize = TRUE)
 
 TablebetaIP(Vancetest)
 
@@ -31,10 +31,23 @@ TableWordIP(Vancetest, 5, text, vocab)
 set.seed(100)
 load('/Users/bomin8319/Desktop/IPTM/paper/Darenew.RData')
 # 762 - 
+#attach(Dare)
+#Dare$node = 1:nrow(Dare$node)
+#Dare$text = Dare$text[762:length(Dare$edge)]
+#Dare$edge = Dare$edge[762:length(Dare$edge)]
+#Dare$edge = Dare$edge[-which(sapply(Dare$text, function(d){length(d)})==0)]
+#Dare$text = Dare$text[-which(sapply(Dare$text, function(d){length(d)})==0)]
+#mintime = Dare$edge[[1]][[3]]
+#for (n in 1:length(Dare$edge)){
+#  Dare$edge[[n]][3] = (Dare$edge[[n]][[3]] - mintime) / 3600
+#}
+#Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
+
+
 attach(Dare)
 Dare$node = 1:nrow(Dare$node)
-Dare$text = Dare$text[762:length(Dare$edge)]
-Dare$edge = Dare$edge[762:length(Dare$edge)]
+Dare$text = Dare$text[1:length(Dare$edge)]
+Dare$edge = Dare$edge[1:length(Dare$edge)]
 Dare$edge = Dare$edge[-which(sapply(Dare$text, function(d){length(d)})==0)]
 Dare$text = Dare$text[-which(sapply(Dare$text, function(d){length(d)})==0)]
 mintime = Dare$edge[[1]][[3]]

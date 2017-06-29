@@ -589,7 +589,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     c(rmvnorm(1,  prior.b.mean, prior.b.var))
   })
   # initialize C, theta and Z
-  currentC = sample(1:nIP, K, replace = TRUE)
+  currentC = rep(1:nIP, K / nIP)
   theta = rdirichlet_cpp(length(edge), alpha * mvec)
   currentZ = lapply(seq(along = edge), function(d) {
     multinom_vec(max(1, length(textlist[[d]])), theta[d, ])
@@ -706,38 +706,38 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         		}
        	}		
     # C update given Z and B - withinning each document d
-    for (k in sort(unique(unlist(currentZ[edge2])))) { 
-      const.C = rep(NA, nIP)
-      for (IP in 1:nIP) {
-        currentC[k] = IP
-        p.d = t(vapply(seq(along = edge), function(d) {
-          vapply(1L:nIP, function(IP) {
-            sum(currentZ[[d]] %in% which(currentC == IP))
-          }, c(1)) / length(currentZ[[d]])
-        }, rep(1, nIP)))
-        for (d in edge2) {
-          history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
-          X = lapply(node, function(i) {
-            Netstats(history.t, node, i, netstat)
-          })
-          XB = MultiplyXBList(X, beta.old)    
-          lambda[[d]] = lambda_cpp(p.d[d,], XB)
-          LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-          observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
-        }
-        const.C[IP] = sum(vapply(edge2, function(d) {
-          EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + 
-            TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
-            ObservedInEqZ(observediJi[[d]]) 
-        }, c(1))) / length(edge2)
-      }
-      const.C = const.C - max(const.C)
-      expconst.C = exp(const.C)
-      if (Inf %in% expconst.C) {
-        expconst.C[which(expconst.C == Inf)] = exp(700)
-          }
-      currentC[k] = multinom_vec(1, expconst.C)
-    }
+    # for (k in sort(unique(unlist(currentZ[edge2])))) { 
+      # const.C = rep(NA, nIP)
+      # for (IP in 1:nIP) {
+        # currentC[k] = IP
+        # p.d = t(vapply(seq(along = edge), function(d) {
+          # vapply(1L:nIP, function(IP) {
+            # sum(currentZ[[d]] %in% which(currentC == IP))
+          # }, c(1)) / length(currentZ[[d]])
+        # }, rep(1, nIP)))
+        # for (d in edge2) {
+          # history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
+          # X = lapply(node, function(i) {
+            # Netstats(history.t, node, i, netstat)
+          # })
+          # XB = MultiplyXBList(X, beta.old)    
+          # lambda[[d]] = lambda_cpp(p.d[d,], XB)
+          # LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+          # observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+        # }
+        # const.C[IP] = sum(vapply(edge2, function(d) {
+          # EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + 
+            # TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
+            # ObservedInEqZ(observediJi[[d]]) 
+        # }, c(1))) / length(edge2)
+      # }
+      # const.C = const.C - max(const.C)
+      # expconst.C = exp(const.C)
+      # if (Inf %in% expconst.C) {
+        # expconst.C[which(expconst.C == Inf)] = exp(700)
+          # }
+      # currentC[k] = multinom_vec(1, expconst.C)
+    # }
     
     if (plot) {
       entropy.mat = c(entropy.mat, entropy.empirical(currentC))
