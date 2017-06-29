@@ -178,10 +178,6 @@ McCullough, B.~D. (2009).
 \newblock The accuracy of econometric software.
 \newblock {\em Handbook of computational econometrics}, pages 55--79.
 
-\bibitem[Minka, 2000]{minka2000estimating}
-Minka, T. (2000).
-\newblock Estimating a dirichlet distribution.
-
 \bibitem[Peng et~al., 2016]{peng2016follower}
 Peng, T.-Q., Liu, M., Wu, Y., and Liu, S. (2016).
 \newblock Follower-followee network, communication networks, and vote agreement
