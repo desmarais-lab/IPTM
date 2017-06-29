@@ -406,9 +406,50 @@ The next step in our work will be to either repair any bugs that exist in our $\
             	\label{fig:WordDare}
             	\caption{Frequency plot counting how many times the word `hurricane' and `sandy' appeared}
             \end{figure}
+            \clearpage
    \subsection{IPTM Results} \label{subsec: IPTM results}
       \subsubsection{Vance County}\label{subsubsec:VanceIPTM}
+      In this section, we present the IPTM result on Vance county email data with $C=2$, $K=6$ and $O= 500$. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We applied hyperparameter optimization with $n_1=5$, and the inner iterations for $\mathcal{B}$ and $\delta$ were set as $n_2=5500$ and $n_3 = 550$, respectively. First $500$ and $50$ iterations were discarded as a burn-in for inference on  $\mathcal{B}$ and $\delta$, and every $10^{th}$ sample was taken as a thinning process for $\mathcal{B}$. 
+      
+     Below are the summary of interaction pattern-topic-word assignments. Each interaction pattern is paired with (a) Figure 11: posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) Table 1: the top 15 most likely words to be generated conditioned on the topic and their corresponding interaction pattern.
+             \begin{figure}[ht]
+             	\centering
+             	\includegraphics[width=0.8\textwidth]{plots/VanceBplot.pdf} 
+             	\label{fig:VanceB}
+             	\caption{95\% credible intervals of posterior estimates of the network effects $\boldsymbol{b}^{(c)}$: $c=1$ (red) and $c=2$ (green), using Vance county data}
+             \end{figure}
+                   
+In general, Figure 11 does not show any significant difference between the two interaction patterns.
+      \begin{table}[ht]
+      	\centering
+      	\scalebox{0.8}{	 	\begin{tabular}{ |c||c|c|c||c|c|c|} 
+      		\hline
+      		\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
+      		\textbf{Topic} & \textbf{1} (0.078)&  \textbf{3} (0.224)& \textbf{5} (0.141) &\textbf{2} (0.139) &\textbf{4} (0.369) &\textbf{6} (0.038) \\ \hline\hline
+      		\textbf{Word}
+      		& directory & message & operations& phase& dropbox & phones\\
+      		&switch & electronic & emergency& description & cecd & october\\
+      		&network & ncgs & office &planning & henderson-vance & will\\
+      		&address &  chapter  &  communications&board& box& polycom\\
+      		&extension & response  & center& water & commission & intstructions\\
+      		&tax & public &lines &taps& economic & training\\
+      		&latest& manager & fax& keep & unemployment&conference\\
+      		&department & attachments &enp & phone& licensed & three\\
+      		&henderson&  siemens&cem & compliance& rural& finalized\\
+      		&january & pursuant & suite&  signups & development &room\\
+      		&young & subject & good&meter & reduced&cutover\\
+      		&wireless & review& asap& suite & financial& contact\\
+      		&installation & records& henderson&fax & private& thursday\\
+      		&cutting&jail & street &meeting& labor& folks\\
+      		&rest& hereto & church & tuesday& force& finishing\\
+      		\hline
+      	\end{tabular}}
+      	            	\label{table:TableVance}
+      	            	\caption{Summary of topic-token assignments: top 15 words assigned to each topic, corresponding to interaction pattern assignments}
+      \end{table}
+\newpage
    \subsubsection{Dare County}\label{subsubsec:DareIPTM}
+    In this section, we present the IPTM result on Vance county email data with $C=2$, $K=6$ and $O= 500$. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We applied hyperparameter optimization with $n_1=5$, and the inner iterations for $\mathcal{B}$ and $\delta$ were set as $n_2=5500$ and $n_3 = 550$, respectively. First $500$ and $50$ iterations were discarded as a burn-in for inference on  $\mathcal{B}$ and $\delta$, and every $10^{th}$ sample was taken as a thinning process for $\mathcal{B}$. 
  \section{Posterior Predictive Experiments} \label{sec:PosteriorPredictive}
  
  We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For documents $d=\{M,M+1,\hdots,D-1\}$, we fit the IPTM to the first $d$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$) for document $d+1$ conditional on the content in document $d+1$, ($\boldsymbol{w}^{(d+1)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set. The variables that need to be sampled are the token topic assignments, $\mathcal{Z}^{d+1}$, and the tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$). 
@@ -441,6 +482,7 @@ We have not implemented this posterior predictive experiments yet, so it will go
 - Possible application to various political science data
  - Developement of R package `IPTM'
   
+ \clearpage
 \bibliographystyle{apalike}
 \bibliography{IPTM}
 \newpage

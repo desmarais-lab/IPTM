@@ -396,3 +396,162 @@ DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( "intercept",
 "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3"))
 colnames(DareBnew) = c("Netstat", "Estimate", "IP")
 p <- ggplot(DareBnew, aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() + geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
+
+
+
+
+
+
+
+
+#IPTM model results
+load('/Users/bomin8319/Desktop/IPTM/paper/code/Vancenew.RData')
+# 762 - 
+attach(Vance)
+Vance$text = Vance$text[1:length(Vance$edge)]
+Vance$edge = Vance$edge[1:length(Vance$edge)]
+Vance$edge = Vance$edge[-which(sapply(Vance$text, function(d){length(d)})==0)]
+Vance$text = Vance$text[-which(sapply(Vance$text, function(d){length(d)})==0)]
+mintime = Vance$edge[[1]][[3]]
+for (n in 1:length(Vance$edge)){
+  Vance$edge[[n]][3] = (Vance$edge[[n]][[3]] - mintime) / 3600
+}
+
+load("/Users/bomin8319/Desktop/IPTM/paper/code/Vancetest.RData")
+Vancetest$C
+
+TableWord = function(Zchain, K, textlist, vocabulary) {
+  # Generate a table of token-topic assignments with high probabilities for each IP
+  #
+  # Args 
+  #  Zchain summary of Z obtained using MCMC function
+  #  K total number of topics specified by the user
+  #  textlist list of text containing the words in each document
+  #  vocabulary all vocabularies used over the corpus
+  #
+  # Returns
+  #  List of table that summarize token-topic assignments for each IP
+  W = length(vocabulary)
+    Zsummary = list()
+    topic.word = matrix(0, nrow = K, ncol = W)
+    colnames(topic.word) = vocabulary
+    iter = 1
+    for (d in seq(along = textlist)) {
+      if (length(Zchain[[d]]) > 0){
+        Zsummary[[iter]] = Zchain[[d]]
+        names(Zsummary[[iter]])<- vocabulary[textlist[[d]]]
+        iter = iter+1
+      }
+    }
+    topic.dist = t(tabulate(unlist(Zsummary), K)/length(unlist(Zsummary)))
+    colnames(topic.dist) = c(1L:K)
+    top.topic = topic.dist[, order(topic.dist, decreasing = TRUE)]
+    all.word = unlist(Zsummary)
+    for (i in seq(along = all.word)){
+      matchWZ = which(colnames(topic.word) == names(all.word[i]))
+      topic.word[all.word[i], matchWZ] = topic.word[all.word[i], matchWZ] + 1
+    }
+    table.word = top.topic.words(topic.word, num.words = 15, by.score = TRUE)
+    colnames(table.word) = names(top.topic)
+  return(table.word)
+}
+TableWord(Vancetest$Z, 6, Vance$text, Vance$vocab)
+table(unlist(Vancetest$Z)) / sum(table(unlist(Vancetest$Z)))
+
+which(Sandy$date %in% unique(Sandy$date)[20:27])
+TableWord(Daretest1$Z[72:418], 20, Dare$text[390:736], Dare$vocab)
+
+
+which(Sandy$date %in% unique(Sandy$date)[23:27])
+TableWord(Daretest1$Z[216:418], 20, Dare$text[534:736], Dare$vocab)
+table(unlist(Daretest1$Z[216:418])) / sum(table(unlist(Daretest1$Z[534:736])))
+
+
+
+
+TableWord(Daretest1$Z[1:47], 5, Dare$text[319:365], Dare$vocab)
+table(unlist(Daretest1$Z[1:47])) / sum(table(unlist(Daretest1$Z[1:47])))
+TableWord(Daretest1$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
+table(unlist(Daretest1$Z[48:764])) / sum(table(unlist(Daretest1$Z[48:764])))
+TableWord(Daretest1$Z[765:1138], 5, Dare$text[1083:1456], Dare$vocab)
+table(unlist(Daretest1$Z[765:1138])) / sum(table(unlist(Daretest1$Z[765:1138])))
+
+TableWord(Daretest1$Z[1:1138], 5, Dare$text[319:1456], Dare$vocab)
+table(unlist(Daretest1$Z[1:1138])) / sum(table(unlist(Daretest1$Z[319:1138])))
+
+TableWordIP = function(MCMCchainC, MCMCchainZ, K, textlist, vocabulary) {
+	W = length(vocabulary)
+	nIP = length(unique(MCMCchainC))
+	table.word = list()
+	for (IP in 1:nIP) {
+		Zsummary = list()
+		IP.word = matrix(0, nrow = nIP, ncol = W)
+		colnames(IP.word) = vocabulary
+		iter = 1
+		for (d in 1:length(MCMCchainZ)) {
+			if (length(MCMCchainZ[[d]]) > 0) {
+				Zsummary[[iter]] = MCMCchainC[MCMCchainZ[[d]]]
+				names(Zsummary[[iter]]) = vocabulary[textlist[[d]]]
+				iter = iter + 1
+			}
+		}
+		IP.dist = t(tabulate(unlist(Zsummary), nIP) / length(unlist(Zsummary)))
+		colnames(IP.dist) = c(1:nIP)
+		all.word = unlist(Zsummary)
+		for (i in seq(along = all.word)) {
+			matchWZ = which(c(colnames(IP.word))== names(all.word[i]))
+			IP.word[all.word[i], matchWZ] = IP.word[all.word[i], matchWZ] + 1
+		}
+		table.word[[IP]] = top.topic.words(IP.word, num.words = 15, by.score = TRUE)[,IP]
+			}
+			return(table.word)
+	
+}
+TableWordIP(Vancetest$C, Vancetest$Z,6, Vance$text, Vance$vocab)
+
+TableWordIP(Daretest1$C, Daretest1$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
+TableWordIP(Daretest1$C, Daretest1$Z[1:1138], 5, Dare$text[319:1456], Dare$vocab)
+TableWordIP(Daretest1$C, Daretest1$Z[72:418], 5, Dare$text[390:736], Dare$vocab)
+TableWordIP(Daretest1$C, Daretest1$Z[216:418], 5, Dare$text[534:736], Dare$vocab)
+
+lapply(Daretest1$B, function(IP) {rowMeans(IP)})
+
+library(reshape)
+
+DareB = matrix(NA, 500, 25)
+DareB[,1:25] = t(Vancetest$B[[1]])
+colnames(DareB)= c( "intercept",
+"outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
+"send1", "send2", "send3" ,"receive1", "receive2", "receive3",
+"2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
+"sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
+DareB = melt(DareB)
+
+DareB2 = matrix(NA, 500, 25)
+DareB2[,1:25] = t(Vancetest$B[[2]])
+colnames(DareB2)= c( "intercept",
+"outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
+"send1", "send2", "send3" ,"receive1", "receive2", "receive3",
+"2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
+"sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
+DareB2 = melt(DareB2)
+
+DareB$IP = 1
+DareB2$IP = 2
+DareBnew = rbind(DareB, DareB2)[,-1]
+DareBnew$IP = as.factor(DareBnew$IP)
+colnames(DareBnew) = c("Netstat", "Estimate", "IP")
+DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( "intercept",
+"outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
+"send1", "send2", "send3" ,"receive1", "receive2", "receive3",
+"2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
+"sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3"))
+colnames(DareBnew) = c("Netstat", "Estimate", "IP")
+p <- ggplot(DareBnew[-which(DareBnew$Netstat == "intercept"),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() + geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
+
+
+#traceplot
+par(mfrow = c(5,5))
+for (i in 1:25){
+	plot(Vancetest$B[[1]][i,], type = 'l')
+}
