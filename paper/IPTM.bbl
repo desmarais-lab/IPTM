@@ -6,6 +6,12 @@ Alem{\'a}n, E. and Calvo, E. (2013).
   of bill initiation data.
 \newblock {\em Political Studies}, 61(2):356--377.
 
+\bibitem[Altman et~al., 2004]{altman2004numerical}
+Altman, M., Gill, J., and McDonald, M.~P. (2004).
+\newblock {\em Numerical issues in statistical computing for the social
+  scientist}, volume 508.
+\newblock John Wiley \& Sons.
+
 \bibitem[Barab{\'a}si and Albert, 1999]{barabasi1999emergence}
 Barab{\'a}si, A.-L. and Albert, R. (1999).
 \newblock Emergence of scaling in random networks.
@@ -166,6 +172,11 @@ McCallum, A., Corrada-Emmanuel, A., and Wang, X. (2005).
   social networks, with application to enron and academic email.
 \newblock In {\em Workshop on Link Analysis, Counterterrorism and Security},
   page~33.
+
+\bibitem[McCullough, 2009]{mccullough2009accuracy}
+McCullough, B.~D. (2009).
+\newblock The accuracy of econometric software.
+\newblock {\em Handbook of computational econometrics}, pages 55--79.
 
 \bibitem[Minka, 2000]{minka2000estimating}
 Minka, T. (2000).
