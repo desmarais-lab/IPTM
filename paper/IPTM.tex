@@ -224,7 +224,7 @@ The algorithms we present in this section form the generative process for $D$ do
 	\SetAlgoLined
 	\caption{Topic Interaction Pattern Assginments}
 	\For{k=1 to K}{
-		draw $C_k$ $\sim$ Uniform(1, C)
+		draw $c_k$ $\sim$ Uniform(1, C)
 	}
 \end{algorithm}
 \begin{algorithm}[H]
@@ -292,7 +292,7 @@ After integrating out $\Phi$ and $\Theta$ using Dirichlet-multinomial conjugacy 
  					\For{n=1 to $N^{(d)}$}{
  						draw of $z_n^{(d)}\sim\mbox{Multinomial}(p^\mathcal{Z})$ following Section \ref{subsec: Resampling Z}}}
  			\For{k=1 to K}{
- 				draw $C_k\sim \mbox{Multinomial}(p^\mathcal{C})$ following Section \ref{subsec: Resampling C}
+ 				draw $c_k\sim \mbox{Multinomial}(p^\mathcal{C})$ following Section \ref{subsec: Resampling C}
  				}
 	\For{n=1 to $n_2$}{
  			sample $\mathcal{B}$ using Metropolis-Hastings following Section \ref{subsec: Resampling B}
