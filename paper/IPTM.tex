@@ -341,13 +341,13 @@ It has shown that all of LDA-related statistics passed the test in terms of visu
 \caption{Probability-Probability plot for the 25 GiR test statistics, with topic-interaction pattern not being inferred.}
 \end{figure}
 
-The next step in our work will be to either repair any bugs that exist in our $\mathcal{C}$ inference code, so we currently do not infer topic-interaction pattern assignment when applying to real-world data, in the next section.
+The next step in our work will be to either repair any bugs that exist in our $\mathcal{C}$ inference code. Due to this inference issue, we currently do not infer topic-interaction pattern assignment when applying to real-world data, in the next section.
  \section{Appliction to North Carolina Email Corpora}  \label{sec: Application to North Carolina email data}
  To see the applicability of the model, we used the North Carolina email data using two counties, Vance county and Dare county, which are the two counties whose email corpus cover the date of Hurricane Sandy (October 26, 2012 – October 30, 2012). Especially, as shown in Figure 4, Dare county geographically covers the Outer Banks, one of the most critically affected area by the hurricane, thus we expect to see how the communication pattern changes during the time period surrounding Hurricane Sandy. In this section we apply IPTM to both county data and demonstrate the effectiveness of the model at predicting and explaining continuous-time textual communications.
   \begin{figure}[ht]
   	\centering
-  	\includegraphics[width=0.49\textwidth]{plots/Vance.png} 
-  	     	\includegraphics[width=0.49\textwidth]{plots/Dare.png} 
+  	\includegraphics[width=0.45\textwidth]{plots/Vance.png} 
+  	     	\includegraphics[width=0.45\textwidth]{plots/Dare.png} 
   	\label{fig:VanceDare}
   	\caption{Geographical location of Vance county (left) and Dare county (right) in North Carolina}
   \end{figure}
@@ -358,8 +358,8 @@ The next step in our work will be to either repair any bugs that exist in our $\
  To see temporal trends in sending and receiving behavior in email exchanges, we plotted the number of emails sent and received between the county government managers based on their departments, which are shown in Figure 5. Since the data size is quite small, there are not many emails exchanged per day with three departments, social services, planning, and emergency services, mostly active over the three months. We have not found any distinctive difference during hurricane Sandy.
   \begin{figure}[ht]
   	\centering
-  	  	\includegraphics[width=0.65\textwidth]{plots/VanceSend.pdf} 
-  	  	\includegraphics[width=0.65\textwidth]{plots/VanceReceive.pdf} 
+  	  	\includegraphics[width=0.52\textwidth]{plots/VanceSend-1.png} 
+  	  	\includegraphics[width=0.52\textwidth]{plots/VanceReceive-1.png} 
   	\label{fig:SendReceiveVance}
   	\caption{The number of emails sent (upper) and received (lower) for the county managers in each department in Vance county}
   \end{figure}
@@ -367,7 +367,7 @@ The next step in our work will be to either repair any bugs that exist in our $\
  In the similar context, we also created the network plots for three separate time windows: pre-Sandy, Sandy, and post-Sandy. Sandy period includes October 19th to November 2nd, which covers the one week before and after the official period of Sandy. Figure 6 showed similar pattern as Figure 5, in that the same three department managers are placed in the center of each network. One noticeable thing is that during Sandy period, social services did not exchange any email while it went back to normal status after Sandy. In addition, emergency service department slightly interacted more actively during Sandy, compared to the other two time windows.
    \begin{figure}[ht]
    	\centering
-   	\includegraphics[width=0.78\textwidth]{plots/VanceNetwork.pdf}  
+   	\includegraphics[width=0.78\textwidth]{plots/VanceNetwork-1.png}  
    	\label{fig:NetworkVance}
    	\caption{Network plot for three time windows: before Sandy (September 4 - October 18), during Sandy (October 19 - November 2), and after Sandy (November 3 - November 30), in Vance county}
    \end{figure}
@@ -375,18 +375,18 @@ The next step in our work will be to either repair any bugs that exist in our $\
    Lastly, we moved to the content aspects of data and looked at how many times the word `hurricane' and `sandy' appeared. As shown in Figure 7, the two words were only used 4 times each during the Sandy period, and not used in any other times. This is not surprising given that Vance county is quite far from the shore, getting minimally affected by the hurricane.
       \begin{figure}[ht]
       	\centering
-      	\includegraphics[width=0.55\textwidth]{plots/Vanceword.pdf}  
+      	\includegraphics[width=0.55\textwidth]{plots/VanceWord-1.png}  
       	\label{fig:WordVance}
       	\caption{Frequency plot counting how many times the word `hurricane' and `sandy' appeared}
       \end{figure}
    \subsubsection{Dare County}\label{subsubsec:DareEDA}
-    We also tried exploratory data to Dare county data, which spans September 1st to November 30th containing $D=2210$ emails between $A=27$ actor from 22 departments, and with $W=2907$ vocabularies in total. Same as what we did for Vance county, we looked at three different plots, sending and receiving count plots, network plots, and word count plots, to briefly understand the network and content of the email data, with emphasis on the effect of hurricane Sandy.
+    We also tried exploratory data to Dare county data, which spans October 1st to November 30th containing $D=1456$ emails between $A=27$ actor from 22 departments, and with $W=2907$ vocabularies in total. Same as what we did for Vance county, we looked at three different plots, sending and receiving count plots, network plots, and word count plots, to briefly understand the network and content of the email data, with emphasis on the effect of hurricane Sandy.
     
     This time, we saw remarkable change in email sending/receiving behaviors during hurricane Sandy (See Figure 8). As the hurricane approaches on October 26th, the manager from emergency services department sent significantly more emails than before, and at the same time there was dramatic rise in the receiving counts for almost every department. Further analysis proved that emergency services department sent a lot of `multicast' emails with large number of receivers during Sandy. 
         \begin{figure}[ht]
        	\centering
-       	\includegraphics[width=0.65\textwidth]{plots/SendDare3.pdf} 
-       	\includegraphics[width=0.65\textwidth]{plots/ReceiveDare3.pdf} 
+       	\includegraphics[width=0.65\textwidth]{plots/DareSend-1.png} 
+       	\includegraphics[width=0.65\textwidth]{plots/DareReceive-1.png} 
        	\label{fig:SendReceiveDare}
        	\caption{The number of emails sent (upper) and received (lower) for thecounty managers in each department in Dare county}
        \end{figure}
@@ -394,33 +394,30 @@ The next step in our work will be to either repair any bugs that exist in our $\
     The network plots in Figure 9 illustrated same patterns we found in Figure 8. Again, the manager from emergency services department became highly central in the network during Sandy period, and it still maintained the pattern after Sandy. One thing we could expect is that hurricane conversations were continued even after Sandy passed the county, since there remained post-hurricane issues from the damage.
          \begin{figure}[ht]
          	\centering
-         	\includegraphics[width=0.78\textwidth]{plots/NetworkDare2.pdf} 
+         	\includegraphics[width=0.78\textwidth]{plots/DareNetwork-1.png} 
          	\label{fig:NetworkDare}
-         	\caption{Network plot for three time windows: before Sandy (September 1 - October 18), during Sandy (October 19- November 2), and after Sandy (November 3 - November 30), in Dare county}
+         	\caption{Network plot for three time windows: before Sandy (October 1 - October 18), during Sandy (October 19- November 2), and after Sandy (November 3 - November 30), in Dare county}
          \end{figure}
          
-        Figure 10 reflects the hurricane effects on email exchanges as well, and it matches our interpretations from the network aspects. Usage of the two words, `hurricane' and `sandy', exploded starting few days before Sandy arrived the area, and multiple emails used the words again after October, implying the continuous discussions on hurricane-related topics.
+        Figure 10 reflects the hurricane effects on email exchanges as well, and it matches our interpretations from the network aspects. Usage of the two words, `hurricane' and `sandy', exploded starting few days before Sandy arrived the area, and multiple emails used the words again in November, implying the continuous discussions on hurricane-related topics.
             \begin{figure}[ht]
             	\centering
-            	\includegraphics[width=0.55\textwidth]{plots/WordDare.pdf}  
+            	\includegraphics[width=0.55\textwidth]{plots/DareWord-1.png}  
             	\label{fig:WordDare}
             	\caption{Frequency plot counting how many times the word `hurricane' and `sandy' appeared}
             \end{figure}
-            \clearpage
    \subsection{IPTM Results} \label{subsec: IPTM results}
       \subsubsection{Vance County}\label{subsubsec:VanceIPTM}
       In this section, we present the IPTM result on Vance county email data with $C=2$, $K=6$ and $O= 500$. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We applied hyperparameter optimization with $n_1=5$, and the inner iterations for $\mathcal{B}$ and $\delta$ were set as $n_2=5500$ and $n_3 = 550$, respectively. First $500$ and $50$ iterations were discarded as a burn-in for inference on  $\mathcal{B}$ and $\delta$, and every $10^{th}$ sample was taken as a thinning process for $\mathcal{B}$. 
       
-     Below are the summary of interaction pattern-topic-word assignments. Each interaction pattern is paired with (a) Figure 11: posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) Table 1: the top 15 most likely words to be generated conditioned on the topic and their corresponding interaction pattern.
+     Below are the summary of interaction pattern-topic-word assignments. Each interaction pattern is paired with (a) Figure 11: posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) Table 1: the top 15 most likely words to be generated conditioned on the topic and their corresponding interaction pattern. In general, Figure 11 and Table 1 both do not show any strong difference between the two interaction patterns. When we look at the network effects (See Figure 11), the two boxplots representing each interaction pattern overlap, although the point estimates for some statistics had different signs (e.g. outdegree, 2-receive and sibling). Since the 95\% credible interval includes 0 for every statistic except intercept, we do not find any significant effect of past interactions on future email exchanges. Topic-token assignments for two interaction patterns also do not reveal obvious contrast, because the topics all contain words used for typical conversations between government officials. 
              \begin{figure}[ht]
              	\centering
-             	\includegraphics[width=0.8\textwidth]{plots/VanceBplot.pdf} 
+             	\includegraphics[width=0.8\textwidth]{plots/VanceBplot-1.png} 
              	\label{fig:VanceB}
              	\caption{95\% credible intervals of posterior estimates of the network effects $\boldsymbol{b}^{(c)}$: $c=1$ (red) and $c=2$ (green), using Vance county data}
              \end{figure}
-                   
-In general, Figure 11 does not show any significant difference between the two interaction patterns.
-      \begin{table}[ht]
+              \begin{table}[ht]
       	\centering
       	\scalebox{0.8}{	 	\begin{tabular}{ |c||c|c|c||c|c|c|} 
       		\hline
@@ -445,11 +442,46 @@ In general, Figure 11 does not show any significant difference between the two i
       		\hline
       	\end{tabular}}
       	            	\label{table:TableVance}
-      	            	\caption{Summary of topic-token assignments: top 15 words assigned to each topic, corresponding to interaction pattern assignments}
+      	            	\caption{Summary of topic-token assignments from Vance county data: top 15 words assigned to each topic, corresponding to interaction pattern assignments}
       \end{table}
-\newpage
    \subsubsection{Dare County}\label{subsubsec:DareIPTM}
-    In this section, we present the IPTM result on Vance county email data with $C=2$, $K=6$ and $O= 500$. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We applied hyperparameter optimization with $n_1=5$, and the inner iterations for $\mathcal{B}$ and $\delta$ were set as $n_2=5500$ and $n_3 = 550$, respectively. First $500$ and $50$ iterations were discarded as a burn-in for inference on  $\mathcal{B}$ and $\delta$, and every $10^{th}$ sample was taken as a thinning process for $\mathcal{B}$. 
+    In this section, we present the IPTM result on Dare county email data with $C=2$, $K=20$ and $O= 100$\footnote{Preliminary results with small number of outer iterations. Results subject to change.}. Again, we applied hyperparameter optimization with $n_1=5$, while the inner iterations for $\mathcal{B}$ and $\delta$ were set as $n_2=15000$ and $n_3 = 1500$, respectively. This time, first $10000$ and $500$ iterations were discarded as a burn-in for inference on  $\mathcal{B}$ and $\delta$, and every $10^{th}$ and $5^{th}$ samples were taken as a thinning process for $\mathcal{B}$ and $\delta$, respectively. 
+       \begin{figure}[ht]
+       	\centering
+       	\includegraphics[width=0.8\textwidth]{plots/VanceBplot-1.png} 
+       	\label{fig:DareB}
+       	\caption{95\% credible intervals of posterior estimates of the network effects $\boldsymbol{b}^{(c)}$: $c=1$ (red) and $c=2$ (green), using Dare county data}
+       \end{figure}
+               
+               In general, Figure 11 does not show any significant difference between the two interaction patterns.
+               \begin{table}[ht]
+               	\centering
+               	\scalebox{0.8}{	 	\begin{tabular}{ |c||c|c|c||c|c|c|} 
+               			\hline
+               			\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
+               			\textbf{Topic} & \textbf{1} (0.078)&  \textbf{3} (0.224)& \textbf{5} (0.141) &\textbf{2} (0.139) &\textbf{4} (0.369) &\textbf{6} (0.038) \\ \hline\hline
+               			\textbf{Word}
+               			& directory & message & operations& phase& dropbox & phones\\
+               			&switch & electronic & emergency& description & cecd & october\\
+               			&network & ncgs & office &planning & henderson-vance & will\\
+               			&address &  chapter  &  communications&board& box& polycom\\
+               			&extension & response  & center& water & commission & intstructions\\
+               			&tax & public &lines &taps& economic & training\\
+               			&latest& manager & fax& keep & unemployment&conference\\
+               			&department & attachments &enp & phone& licensed & three\\
+               			&henderson&  siemens&cem & compliance& rural& finalized\\
+               			&january & pursuant & suite&  signups & development &room\\
+               			&young & subject & good&meter & reduced&cutover\\
+               			&wireless & review& asap& suite & financial& contact\\
+               			&installation & records& henderson&fax & private& thursday\\
+               			&cutting&jail & street &meeting& labor& folks\\
+               			&rest& hereto & church & tuesday& force& finishing\\
+               			\hline
+               		\end{tabular}}
+               		\label{table:TableDare}
+               		\caption{Summary of topic-token assignments from Dare county data: top 15 words assigned to each topic, corresponding to interaction pattern assignments}
+               	\end{table}
+               	
  \section{Posterior Predictive Experiments} \label{sec:PosteriorPredictive}
  
  We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For documents $d=\{M,M+1,\hdots,D-1\}$, we fit the IPTM to the first $d$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$) for document $d+1$ conditional on the content in document $d+1$, ($\boldsymbol{w}^{(d+1)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set. The variables that need to be sampled are the token topic assignments, $\mathcal{Z}^{d+1}$, and the tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$). 

@@ -137,7 +137,7 @@ grid.arrange(grobs = g, nrow = 1)
 
 
 #IPTM model results
-load('/Users/bomin8319/Desktop/IPTM/paper/Darenew.RData')
+load('/Users/bomin8319/Desktop/IPTM/paper/code/Darenew.RData')
 # 762 - 
 attach(Dare)
 Dare$node = 1:nrow(Dare$node)
@@ -151,8 +151,8 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("/Users/bomin8319/Desktop/IPTM/presentations/polNet/data/Daretest.RData")
-Daretest1 = Daretest
+load("/Users/bomin8319/Desktop/IPTM/paper/code/Daretest.RData")
+Daretest1 = output
 Daretest1$C
 
 TableWord = function(Zchain, K, textlist, vocabulary) {
@@ -190,6 +190,7 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
     colnames(table.word) = names(top.topic)
   return(table.word)
 }
+TableWord(Daretest1$Z, 20, Dare$text, Dare$vocab)
 
 which(Sandy$date %in% unique(Sandy$date)[20:27])
 TableWord(Daretest1$Z[72:418], 20, Dare$text[390:736], Dare$vocab)
