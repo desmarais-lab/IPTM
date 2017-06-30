@@ -328,7 +328,7 @@ We generated $5\times 10^4$ sets of forward and backward samples, and then calcu
 statistics by taking every 40th sample starting at the 10,000th sample for a resulting sample size of 1,000, to reduce the autocorrection in the Markov chain. In each case, if we observe a large p-value, this gives us evidence that the statistics have the same mean and distribution respectively. We included a diagonal line in each PP (Probability-Probability) plot that we expect these PP dots to line up on if we are passing GiR. The PP-plots are depicted in Figure 2. 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.99\textwidth]{plots/Schein_C_50K.pdf} 
+	\includegraphics[width=0.99\textwidth]{plots/Schein_C_50K-1.png} 
 	\label{fig:PPplot_C}
 	\caption{Probability-Probability plot for the 25 GiR test statistics, with topic-interaction pattern being inferred.}
 \end{figure}
@@ -336,7 +336,7 @@ statistics by taking every 40th sample starting at the 10,000th sample for a res
 It has shown that all of LDA-related statistics passed the test in terms of visualization as well as the p-values from two different tests, while several tie-related statistics, (2.), (4.), (5.), (6.) and (7.), did not generate consistent distributions across forward and backward samplers. Some of these had high p-value, but the PP dots do not line up on the diagonal line which is still problematic. We investigated the possible bugs and realized that the failure comes from the convergence issue of topic-interaction pattern assignment $\mathcal{C}$ in the inference. Although our inference on topic-interaction pattern assignment seems fine in general since we succeeded passing the statistic (6.), we figured that even single incorrect assignment of topic-interaction pattern $c_k$ results in considerable bias in $\{p_c^{(d)}\}_{d=1}^D$. Since all of the statistics which failed the test are generated using the stochastic intensity $\{\boldsymbol{\lambda}^{(d)}\}_{d=1}^D$, a function of $p_c^{(d)}$, it is inevitable to see the failure on those variables when we cannot perfectly recover the true topic-interaction pattern assignment $\mathcal{C}$ from the inference. Therefore, we tried running the GiR test again without inferring the topic-interaction pattern assignment; instead, we used the same fixed set of $\{c_k\}_{k=1}^K$ for forward and backward samples such that we guarantee zero bias from $\{p_c^{(d)}\}_{d=1}^D$. As shown in Figure 3, now we pass the test on every single statistics.
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.99\textwidth]{plots/Schein_noC_50K.pdf} 
+	\includegraphics[width=0.99\textwidth]{plots/Schein_noC_50K-1.png} 
 	\label{fig:PPplot_noC}
 \caption{Probability-Probability plot for the 25 GiR test statistics, with topic-interaction pattern not being inferred.}
 \end{figure}
@@ -836,7 +836,8 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
         		}
         		draw $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$\\
         		set $J^{(d)} = J_{i^{(d)}}$\\
-        		draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{Exponential}(\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})$ and set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
+        		draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{Exponential}(\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})$ \\
+        		set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
         	}
         \end{algorithm}
         \noindent With this generative process, the joint likelihood (comparable to Equation (10)) becomes:
@@ -851,7 +852,7 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
         \end{equation}
         which is exactly the same as Equation (12), thus we will use this collpased-time generative process as a forward/backward generative process in Geweke’s “Getting it Right” test in Section \ref{subsubsec: Backward Generative Process}.
             \subsubsection{Backward Generating Process} \label{subsubsec: Backward Generative Process}
-        For backward sampling, we let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. This “backward” version of the generative process is detailed below in Algorithm 9.
+        For backward sampling, we let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. Word-assignments are implemented via collapsed Gibbs sampling \citep{griffiths2002gibbs}, while the generation of tie data directly follows the generating process in Section \ref{subsec: Tie Generating Process}, only with the latent time integrated out as following Algorithm 8 (in order to save computing time). This “backward” version of the generative process is detailed below in Algorithm 9.
         \begin{algorithm}[H]
         	\SetAlgoLined
         	\caption{Generate data with backward sampling}
@@ -880,10 +881,10 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
         			}
         			draw $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$\\
         			set $J^{(d)} = J_{i^{(d)}}$\\
-        			draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{Exponential}(\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})$ and set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
+        			draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{Exponential}(\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})$ \\
+        			set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
         			 	}
         \end{algorithm}
-        \iffalse
         \subsubsection{Intitialization of History $\boldsymbol{x}_t^{(c)}$} \label{subsubsec: Initial history issue}
         Considering that our network statistics $\boldsymbol{x}_t^{(c)}$ are generated as a function of the network history, it is necessary to use the same initial value of $\boldsymbol{x}_t^{(c)}$ across the forward and backward samples. If not, when we generate fixed number of documents, we cannot guarantee the same number of documents used for the inference, since only the documents with its timestamp greater than 384 hours are used in the inference. In the extreme cases, we may end up with two types of failure:
         \begin{itemize}
@@ -891,7 +892,6 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
         	\item[2.] Zero document generated before 384 hours (i.e. $t^{(1)} > 384$), making the estimate of $\mathcal{B}$ totally biased since $\forall  \boldsymbol{x}_t^{(c)}(i, j) = 0$. 
         \end{itemize}
         Therefore, we fix the initial state of $\boldsymbol{x}_t^{(c)}$ over the entire GiR process. Specifically, we fix some baseline documents where the timestamps are all smaller than 384 and use as an input for forward sampling, backward sampling, and the inference. Then, in the forward and backward generative process, we set the starting point of the timestamp as $t^{(0)} = 384$ and generate fixed number of documents given the initial $\boldsymbol{x}_{t^{(0)} = 384}^{(c)}$ so that we can acheive consistency in the generated number of documents with $t^{(d)} > 384$.
-        \fi
         \subsubsection{GiR Implementation Details} \label{subsubsec: GiR implementation}
         While we tried a number of different parameter combinations in the course of testing, we outline our standard setup. We selected the following parameter values:
         \begin{itemize}
