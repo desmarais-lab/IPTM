@@ -417,12 +417,21 @@ The next step in our work will be to either repair any bugs that exist in our $\
      In general, Figure 11 and Table 1 both do not show any strong difference between the two interaction patterns. When we look at the network effects (See Figure 11), the two boxplots representing each interaction pattern overlap, although the point estimates for some statistics had different signs (e.g. outdegree, 2-receive and sibling). Since the 95\% credible interval includes 0 for every statistic except intercept, we do not find any significant effect of past interactions on future email exchanges. 
      
      Topic-token assignments for two interaction patterns in Table 1 also do not reveal obvious contrast, because the topics all contain words used for typical conversations between government officials. 
-             \begin{figure}[ht]
-             	\centering
-             	\includegraphics[width=0.8\textwidth]{plots/VanceBplot-1.png} 
-             	\label{fig:VanceB}
-             	\caption{95\% credible intervals of posterior estimates of the network effects $\boldsymbol{b}^{(c)}$: $c=1$ (red) and $c=2$ (green), using Vance county data}
-             \end{figure}
+   \begin{table}[ht]
+   	  \begin{tabular}{lll}
+             	\includegraphics[width = 0.3\textwidth]{plots/VanceIntercept-1.png} &
+                         	\includegraphics[width = 0.3\textwidth]{plots/VanceOutdegree-1.png} &
+                         	\includegraphics[width = 0.3\textwidth]{plots/VanceIndegree-1.png} \\
+          	\includegraphics[width = 0.3\textwidth]{plots/VanceBsend-1.png} &
+          	\includegraphics[width = 0.3\textwidth]{plots/VanceBreceive-1.png} &
+          	\includegraphics[width = 0.3\textwidth]{plots/Vance2send-1.png}   \\ 
+          	          	\includegraphics[width = 0.3\textwidth]{plots/Vance2receive-1.png} &
+          	          	\includegraphics[width = 0.3\textwidth]{plots/Vancesibling-1.png} &
+          	          	\includegraphics[width = 0.3\textwidth]{plots/Vancecosibling-1.png}   \\         	
+             \end{tabular}
+                   	\label{fig:VanceB}
+                   	\caption{95\% credible intervals of posterior estimates of the network effects $\boldsymbol{b}^{(c)}$: $c=1$ (red) and $c=2$ (green), using Vance county data}
+                   	\end{table}
               \begin{table}[ht]
       	\centering
       	\scalebox{0.8}{	 	\begin{tabular}{ |c||c|c|c||c|c|c|} 

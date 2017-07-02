@@ -293,18 +293,19 @@ load('/Users/bomin8319/Desktop/IPTM/paper/code/Vancenew.RData')
 attach(Vance)
 Vance$node = 1:nrow(Vance$node)
 Vance$text = Vance$text[1:length(Vance$edge)]
-Vance$edge = Vance$edge[762:length(Vance$edge)]
-Vance$edge = Vance$edge[-which(sapply(Vance$text, function(d){length(d)})==0)]
-Vance$text = Vance$text[-which(sapply(Vance$text, function(d){length(d)})==0)]
+Vance$edge = Vance$edge[1:length(Vance$edge)]
+#Vance$edge = Vance$edge[-which(sapply(Vance$text, function(d){length(d)})==0)]
+#Vance$text = Vance$text[-which(sapply(Vance$text, function(d){length(d)})==0)]
 mintime = Vance$edge[[1]][[3]]
 for (n in 1:length(Vance$edge)){
   Vance$edge[[n]][3] = (Vance$edge[[n]][[3]] - mintime) / 3600
 }
 Vance$edge = lapply(Vance$edge, function(x){x[1:3]})
 
-load("/Users/bomin8319/Desktop/IPTM/presentations/polNet/data/Daretest.RData")
-Daretest1 = Daretest
-Daretest1$C
+
+
+load("/Users/bomin8319/Desktop/IPTM/paper/code/Vancetest.RData")
+Vancetest$C
 
 TableWord = function(Zchain, K, textlist, vocabulary) {
   # Generate a table of token-topic assignments with high probabilities for each IP
@@ -341,6 +342,10 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
     colnames(table.word) = names(top.topic)
   return(table.word)
 }
+
+TableWord(Vancetest$Z, 6, Vance$text, Vance$vocab)
+table(unlist(Vancetest$Z)) / sum(table(unlist(Vancetest$Z)))
+
 
 which(Sandy$date %in% unique(Sandy$date)[20:27])
 TableWord(Daretest1$Z[72:418], 20, Dare$text[390:736], Dare$vocab)
@@ -400,8 +405,8 @@ lapply(Daretest1$B, function(IP) {rowMeans(IP)})
 
 library(reshape)
 
-DareB = matrix(NA, 1000, 25)
-DareB[,1:25] = t(Daretest1$B[[1]])
+DareB = matrix(NA, 500, 25)
+DareB[,1:25] = t(Vancetest$B[[1]])
 colnames(DareB)= c( "intercept",
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
 "send1", "send2", "send3" ,"receive1", "receive2", "receive3",
@@ -409,8 +414,8 @@ colnames(DareB)= c( "intercept",
 "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
 DareB = melt(DareB)
 
-DareB2 = matrix(NA, 1000, 25)
-DareB2[,1:25] = t(Daretest1$B[[2]])
+DareB2 = matrix(NA, 500, 25)
+DareB2[,1:25] = t(Vancetest$B[[2]])
 colnames(DareB2)= c( "intercept",
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
 "send1", "send2", "send3" ,"receive1", "receive2", "receive3",
@@ -429,4 +434,11 @@ DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( "intercept",
 "2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
 "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3"))
 colnames(DareBnew) = c("Netstat", "Estimate", "IP")
-p <- ggplot(DareBnew, aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() + geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("cosibling1", "cosibling2", "cosibling3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() + geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
+
+
+#traceplot
+par(mfrow = c(5,5))
+for (i in 1:25){
+	plot(Vancetest$B[[1]][i,], type = 'l')
+}
