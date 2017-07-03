@@ -8,7 +8,7 @@ library(ggrepel)
 library(RColorBrewer)
 library(lda)
 
-load('/Users/bomin8319/Desktop/IPTM/paper/Darenew.RData')
+load('/Users/bomin8319/Desktop/IPTM/paper/code/Darenew.RData')
 # 762 - 
 attach(Dare)
 Dare$text = Dare$text[762:length(Dare$edge)]
@@ -194,13 +194,16 @@ TableWord(Daretest1$Z, 20, Dare$text, Dare$vocab)
 table(unlist(Daretest1$Z)) / sum(table(unlist(Daretest1$Z)))
 
 which(Sandy$date %in% unique(Sandy$date)[20:27])
-TableWord(Daretest1$Z[72:418], 20, Dare$text[390:736], Dare$vocab)
+TableWord(Daretest1$Z[390:736], 20, Dare$text[390:736], Dare$vocab)
 
 
 which(Sandy$date %in% unique(Sandy$date)[23:27])
 TableWord(Daretest1$Z[534:736], 20, Dare$text[534:736], Dare$vocab)
 table(unlist(Daretest1$Z[216:418])) / sum(table(unlist(Daretest1$Z[534:736])))
 
+which(Sandy$date %in% unique(Sandy$date)[17:30])
+TableWord(Daretest1$Z[351:878], 20, Dare$text[351:878], Dare$vocab)
+table(unlist(Daretest1$Z[351:878])) / sum(table(unlist(Daretest1$Z[351:878])))
 
 
 

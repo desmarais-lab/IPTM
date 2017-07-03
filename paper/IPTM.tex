@@ -360,7 +360,7 @@ Before discussing the IPTM results, we present a set of exploratory analyses in 
  
  \subsubsection{Vance County}\label{subsubsec:VanceEDA} 
 The Vance County email dataset spans September 4th to November 30th. It is also the smallest corpus in the NC overall dataset, containing $D=183$ emails sent between $A=17$ actors from 17 departments. The corpus has a vocabulary size of $W=620$. %[bd, here] 
-Our preliminary analysis was focused on comparing the email exchange patterns between non-Sandy period (not overlapping October 26-30) and Sandy period (October 26-30). 
+Our preliminary analysis was focused on comparing the email exchange patterns between non-Sandy period (not overlapping October 26---30) and Sandy period (October 26---30). 
  
  To see temporal trends in sending and receiving behavior in email exchanges, we plotted the number of emails sent and received between the county government managers based on their departments, which are shown in Figure 5. Since the data size is quite small, there are not many emails exchanged per day with three departments, social services, planning, and emergency services, mostly active over the three months. We have not found any distinctive difference during hurricane Sandy.
   \begin{figure}[ht]
@@ -376,7 +376,7 @@ Our preliminary analysis was focused on comparing the email exchange patterns be
    	\centering
    	\includegraphics[width=0.75\textwidth]{plots/VanceNetwork-1.png}  
    	\label{fig:NetworkVance}
-   	\caption{Network plot for three time windows: before Sandy (September 4 - October 18), during Sandy (October 19 - November 2), and after Sandy (November 3 - November 30), in Vance county}
+   	\caption{Network plot for three time windows: before Sandy (September 4---October 18), during Sandy (October 19---November 2), and after Sandy (November 3---November 30), in Vance county}
    \end{figure}
    
    Lastly, we moved to the content aspects of data and looked at how many times the word `hurricane' and `sandy' appeared. As shown in Figure 7, the two words were only used 4 times each during the Sandy period, and not used in any other times. This is not surprising given that Vance county is quite far from the shore, getting minimally affected by the hurricane.
@@ -404,7 +404,7 @@ Our preliminary analysis was focused on comparing the email exchange patterns be
          	\centering
          	\includegraphics[width=0.75\textwidth]{plots/DareNetwork-1.png} 
          	\label{fig:NetworkDare}
-         	\caption{Network plot for three time windows: before Sandy (October 1 - October 18), during Sandy (October 19- November 2), and after Sandy (November 3 - November 30), in Dare county}
+         	\caption{Network plot for three time windows: before Sandy (October 1---October 18), during Sandy (October 19---November 2), and after Sandy (November 3---November 30), in Dare county}
          \end{figure}
          
         Figure 10 reflects the hurricane effects on email exchanges as well, and it matches our interpretations from the network aspects. Usage of the two words, `hurricane' and `sandy', exploded starting few days before Sandy arrived the area, and multiple emails used the words again in November, implying the continuous discussions on hurricane-related topics.
@@ -537,6 +537,56 @@ Our preliminary analysis was focused on comparing the email exchange patterns be
           			\label{table:TableDare}
           			\caption{Summary of topic-token assignments from Dare county data: top 15 words assigned to each topic, corresponding to interaction pattern assignments}               			
           		\end{table} 
+          		
+          		We further look at the topic-token assignments on the subset of text that only includes documents during hurricane Sandy period, October 19---November 2 (from one week before Sandy to one week after Sandy) , which was used to generate the network plot for Sandy period in Figure 6 and Figure 9. This time, the we see more storm-related words in interaction pattern 2, thus the difference between two interaction patterns are more distinctive.
+          		     	\begin{table}[ht]
+          		     		\centering
+          		     		\scalebox{0.8}{	 	\begin{tabular}{ |c||c|c|c|c|c|}  
+          		     				\hline
+          		     				\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{1} &\textbf{1}   \\ \hline\hline
+          		     				\textbf{Topic} & \textbf{3} (0.090)&  \textbf{5} (0.090)& \textbf{13} (0.068) &\textbf{7} (0.056) &\textbf{19} (0.053)  \\ \hline\hline
+          		     				\textbf{Word} 
+          		     				& water & planning & collins & hours & manager \\
+          		     				& department & meter & marshall & time & law\\
+          		     				& hydrant &needed & phone & leave & manteo\\
+          		     				& skyco & asked & director & monday & public\\
+          		     				& road & sure & manteo & employees & department\\
+          		     				& relocation & cheryl & drive & day & email\\
+          		     				& location & johnson & human & administrative & carolina\\
+          		     				& kill & fema & box & october & talked\\
+          		     				& deivil & keeping & phr & employee & correspondence\\
+          		     				& hills & afternoon & resources & work & subject\\
+          		     				& utilities & -lsb- & fax & regular & box\\
+          		     				& mustian & room & -lsb- & hour& north\\
+          		     				& lane & case & personnel & scheduled & contract\\
+          		     				& soundside & unsafe & touch & friday & attorney\\
+          		     				& system & northeast & wanted & benefits & state \\
+          		     				\hline \hline
+          		     				\textbf{IP} & \textbf{2} &  \textbf{2} & \textbf{2}  &\textbf{2} &\textbf{2}   \\ \hline\hline
+          		     				\textbf{Topic} & \textbf{12} (0.062)&  \textbf{16} (0.042)& \textbf{18} (0.041) &\textbf{8} (0.037) &\textbf{10} (0.034) \\ \hline\hline
+          		     				\textbf{Word}
+          		     				& point & high & number & center & system \\
+          		     				& weekend & impacts & report & moving & forecast \\
+          		     				& change & saturday& office & radios & track \\
+          		     				& strong & night & cell & shore & south \\
+          		     				& potential & winds & finance & site & area\\
+          		     				& low/tc & bridge& project & expect & well\\
+          		     				& days & normal & fax & reports & opens\\
+          		     				&nanofiltration & storm & going & banks &  move \\
+          		     				& dss & dot & emergency & continues & obx \\
+          		     				& ordinances & sunday & well & november & operation \\
+          		     				& commissioners & head & exam & noon  & damage \\
+          		     				& sandy& gale & discuss & clarification/question & pay \\
+          		     				& oct & expressed & account & latest & north \\
+          		     				& unis &nags & 're & equipment & assessment \\
+          		     				& car & outer & hurricane & aware & ocean 
+          		     				\\
+          		     				\hline            				
+          		     			\end{tabular}}
+          		     			\label{table:TableDare2}
+          		     			\caption{Summary of topic-token assignments from Dare county data: top 15 words assigned to each topic, corresponding to interaction pattern assignments}               			
+          		     		\end{table} 
+  \newpage
      \section{Posterior Predictive Experiments} \label{sec:PosteriorPredictive}
  We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For documents $d=\{M,M+1,\hdots,D-1\}$, we fit the IPTM to the first $d$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$) for document $d+1$ conditional on the content in document $d+1$, ($\boldsymbol{w}^{(d+1)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set. The variables that need to be sampled are the token topic assignments, $\mathcal{Z}^{d+1}$, and the tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$). 
  
