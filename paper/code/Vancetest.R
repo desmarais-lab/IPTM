@@ -59,7 +59,7 @@ Daretest1 <- IPTM_inference.data2(Dare$edge, Dare$node, Dare$text, Dare$vocab, n
                        prior.b.var = 1 * diag(25), prior.delta = c(0, 1), out = 100, n_B = 20000, n_d = 1500, burn = c(10000,500), 
                        thinning =  c(20,5), netstat = c("intercept", "dyadic", "degree", "triadic"), plot = FALSE, optimize = TRUE, 
                        initial = initial)
-save(Daretest, file = "/Users/bomin8319/Desktop/IPTM/presentations/polNet/data/Daretest.RData")
+save(Daretest, file = "/Users/bomin8319/Desktop/Daretest.RData")
 save(Daretest1, file = "Daretest1.RData")
 
 PlotbetaIP(Daretest$B)

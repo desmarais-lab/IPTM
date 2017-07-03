@@ -359,7 +359,8 @@ In our application of the IPTM, we use a subset of the North Carolina county gov
 Before discussing the IPTM results, we present a set of exploratory analyses in which we examine characteristics of the data that are relevant to the prevalence of Hurricane Sandy in the two county government email networks. Based on this preliminary exploration, we see that Sandy received much more attention in Dare County. However, this basic descriptive finding does not shed light on whether, in one or both of the counties, the network structure of communication surrounding Sandy differed from the typical communication patterns. 
  
  \subsubsection{Vance County}\label{subsubsec:VanceEDA} 
-The Vance County email dataset spans September 4th to November 30th. It is also the smallest corpus in the NC overall dataset, containing $D=183$ emails sent between $A=17$ actors from 17 departments. The corpus has a vocabulary size of $W=620$. %[bd, here] Our preliminary analysis was focused on comparing the email exchange patterns between non-Sandy period (not overlapping October 26-30) and Sandy period (October 26-30). 
+The Vance County email dataset spans September 4th to November 30th. It is also the smallest corpus in the NC overall dataset, containing $D=183$ emails sent between $A=17$ actors from 17 departments. The corpus has a vocabulary size of $W=620$. %[bd, here] 
+Our preliminary analysis was focused on comparing the email exchange patterns between non-Sandy period (not overlapping October 26-30) and Sandy period (October 26-30). 
  
  To see temporal trends in sending and receiving behavior in email exchanges, we plotted the number of emails sent and received between the county government managers based on their departments, which are shown in Figure 5. Since the data size is quite small, there are not many emails exchanged per day with three departments, social services, planning, and emergency services, mostly active over the three months. We have not found any distinctive difference during hurricane Sandy.
   \begin{figure}[ht]
@@ -385,7 +386,7 @@ The Vance County email dataset spans September 4th to November 30th. It is also 
       	\label{fig:WordVance}
       	\caption{Frequency plot counting how many times the word `hurricane' and `sandy' appeared}
       \end{figure}
-      \clearpage
+      \newpage
    \subsubsection{Dare County}\label{subsubsec:DareEDA}
     We also tried exploratory data to Dare county data, which spans October 1st to November 30th containing $D=1456$ emails between $A=27$ actor from 22 departments, and with $W=2907$ vocabularies in total. Same as what we did for Vance county, we looked at three different plots, sending and receiving count plots, network plots, and word count plots, to briefly understand the network and content of the email data, with emphasis on the effect of hurricane Sandy.
     
@@ -414,115 +415,129 @@ The Vance County email dataset spans September 4th to November 30th. It is also 
             	\caption{Frequency plot counting how many times the word `hurricane' and `sandy' appeared}
             \end{figure}
    \subsection{IPTM Results} \label{subsec: IPTM results}
-      \subsubsection{Vance County}\label{subsubsec:VanceIPTM}
-      In this section, we present the IPTM result on Vance county email data with $C=2$, $K=6$ and $O= 500$. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We applied hyperparameter optimization with $n_1=5$, and the inner iterations for $\mathcal{B}$ and $\delta$ were set as $n_2=5500$ and $n_3 = 550$, respectively. First $500$ and $50$ iterations were discarded as a burn-in for inference on  $\mathcal{B}$ and $\delta$, and every $10^{th}$ sample was taken as a thinning process for $\mathcal{B}$. Below are the summary of interaction pattern-topic-word assignments. Each interaction pattern is paired with (a) Figure 11: posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) Table 1: the top 15 most likely words to be generated conditioned on the topic and their corresponding interaction pattern. 
-     
-     In general, Figure 11 and Table 1 both do not show any strong difference between the two interaction patterns. When we look at the network effects (See Figure 11), the two boxplots representing each interaction pattern overlap, although the point estimates for some statistics had different signs (e.g. outdegree, 2-receive and sibling). Since the 95\% credible interval includes 0 for every statistic except intercept, we do not find any significant effect of past interactions on future email exchanges. 
-     
-     Topic-token assignments for two interaction patterns in Table 1 also do not reveal obvious contrast, because the topics all contain words used for typical conversations between government officials. 
-   \begin{table}[ht]
-   	  \begin{tabular}{lll}
-             	\includegraphics[width = 0.3\textwidth]{plots/VanceIntercept-1.png} &
-                         	\includegraphics[width = 0.3\textwidth]{plots/VanceOutdegree-1.png} &
-                         	\includegraphics[width = 0.3\textwidth]{plots/VanceIndegree-1.png} \\
-          	\includegraphics[width = 0.3\textwidth]{plots/VanceBsend-1.png} &
-          	\includegraphics[width = 0.3\textwidth]{plots/VanceBreceive-1.png} &
-          	\includegraphics[width = 0.3\textwidth]{plots/Vance2send-1.png}   \\ 
-          	          	\includegraphics[width = 0.3\textwidth]{plots/Vance2receive-1.png} &
-          	          	\includegraphics[width = 0.3\textwidth]{plots/Vancesibling-1.png} &
-          	          	\includegraphics[width = 0.3\textwidth]{plots/Vancecosibling-1.png}   \\         	
-             \end{tabular}
-                   	\label{fig:VanceB}
-                   	\caption{95\% credible intervals of posterior estimates of the network effects $\boldsymbol{b}^{(c)}$: $c=1$ (red) and $c=2$ (green), using Vance county data}
-                   	\end{table}
-              \begin{table}[ht]
-      	\centering
-      	\scalebox{0.8}{	 	\begin{tabular}{ |c||c|c|c||c|c|c|} 
-      		\hline
-      		\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
-      		\textbf{Topic} & \textbf{1} (0.078)&  \textbf{3} (0.224)& \textbf{5} (0.141) &\textbf{2} (0.139) &\textbf{4} (0.369) &\textbf{6} (0.038) \\ \hline\hline
-      		\textbf{Word}
-      		& directory & message & operations& phase& dropbox & phones\\
-      		&switch & electronic & emergency& description & cecd & october\\
-      		&network & ncgs & office &planning & henderson-vance & will\\
-      		&address &  chapter  &  communications&board& box& polycom\\
-      		&extension & response  & center& water & commission & intstructions\\
-      		&tax & public &lines &taps& economic & training\\
-      		&latest& manager & fax& keep & unemployment&conference\\
-      		&department & attachments &enp & phone& licensed & three\\
-      		&henderson&  siemens&cem & compliance& rural& finalized\\
-      		&january & pursuant & suite&  signups & development &room\\
-      		&young & subject & good&meter & reduced&cutover\\
-      		&wireless & review& asap& suite & financial& contact\\
-      		&installation & records& henderson&fax & private& thursday\\
-      		&cutting&jail & street &meeting& labor& folks\\
-      		&rest& hereto & church & tuesday& force& finishing\\
-      		\hline
-      	\end{tabular}}
-      	            	\label{table:TableVance}
-      	            	\caption{Summary of topic-token assignments from Vance county data: top 15 words assigned to each topic, corresponding to interaction pattern assignments}
-      \end{table}
-   \subsubsection{Dare County}\label{subsubsec:DareIPTM}
-    In this section, we present the IPTM result on Dare county email data with $C=2$, $K=20$ and $O= 55$\footnote{Preliminary results with small number of outer iterations. Results subject to change.}. Again, we applied hyperparameter optimization with $n_1=5$, while the inner iterations for $\mathcal{B}$ and $\delta$ were set as $n_2=15000$ and $n_3 = 1500$, respectively. This time, first $10000$ and $500$ iterations were discarded as a burn-in for inference on  $\mathcal{B}$ and $\delta$, and every $10^{th}$ and $5^{th}$ samples were taken as a thinning process for $\mathcal{B}$ and $\delta$, respectively. 
-               
-   Same as Section \ref{subsubsec:DareIPTM}, we present the two model results representing the network aspects and contents. Each interaction pattern is paired with (a) Figure 12: posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) Table 2: the top 15 most likely words to be generated conditioned on the topic and their corresponding interaction pattern. This time, the two interaction patterns showed different structures in terms of networks, since the credible interval of many of network effects do not overlap. Interaction pattern 2 had more negative network effects while having much larger intercept compared to interaction pattern 1, implying that topics related to interaction pattern 2 are less affected by previous email exchanges. {\bf Fill out more analysis on the network plot when we get the results from O=100 iterations}
-                \begin{figure}[ht]
-                	\centering
-                	\includegraphics[width=0.8\textwidth]{plots/DareBplot-1.png} 
-                	\label{fig:DareB}
-                	\caption{95\% credible intervals of posterior estimates of the network effects $\boldsymbol{b}^{(c)}$: $c=1$ (red) and $c=2$ (green), using Dare county data}
-                \end{figure}
-                
-                There also exists significant difference in the contents related to each interaction pattern. Overall, 55.9\% of the words were assigned to the topics in interaction pattern 1, on the other hand, 44.1\% were assigned to the topics in interaction pattern 2. Some topics in interaction pattern 2 included words which seem to be related to hurricane, such as `hurricane', `sandy', `emergency', `forecast', `damage', and so on. {\bf Fill out the analysis on the word table when we get the results from O=100 iterations}
-                           \begin{table}[ht]
-               	\centering
-               	\scalebox{0.8}{	 	\begin{tabular}{ |c||c|c|c|c|c|c|} 
-               			\hline
-               			\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{1} &\textbf{1}  &\textbf{1}  \\ \hline\hline
-               			\textbf{Topic} & \textbf{3} (0.080)&  \textbf{5} (0.068)& \textbf{13} (0.062) &\textbf{2} (0.139) &\textbf{4} (0.369) &\textbf{6} (0.038) \\ \hline\hline
-               			\textbf{Word}
-               			& directory & message & operations& phase& dropbox & phones\\
-               			&switch & electronic & emergency& description & cecd & october\\
-               			&network & ncgs & office &planning & henderson-vance & will\\
-               			&address &  chapter  &  communications&board& box& polycom\\
-               			&extension & response  & center& water & commission & intstructions\\
-               			&tax & public &lines &taps& economic & training\\
-               			&latest& manager & fax& keep & unemployment&conference\\
-               			&department & attachments &enp & phone& licensed & three\\
-               			&henderson&  siemens&cem & compliance& rural& finalized\\
-               			&january & pursuant & suite&  signups & development &room\\
-               			&young & subject & good&meter & reduced&cutover\\
-               			&wireless & review& asap& suite & financial& contact\\
-               			&installation & records& henderson&fax & private& thursday\\
-               			&cutting&jail & street &meeting& labor& folks\\
-               			&rest& hereto & church & tuesday& force& finishing\\
-               			\hline
-               				\hline
-               				\textbf{IP} & \textbf{2} &  \textbf{2} & \textbf{2}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
-               				\textbf{Topic} & \textbf{3} (0.080)&  \textbf{5} (0.068)& \textbf{13} (0.062) &\textbf{2} (0.139) &\textbf{4} (0.369) &\textbf{6} (0.038) \\ \hline\hline
-               				\textbf{Word}
-               				& directory & message & operations& phase& dropbox & phones\\
-               				&switch & electronic & emergency& description & cecd & october\\
-               				&network & ncgs & office &planning & henderson-vance & will\\
-               				&address &  chapter  &  communications&board& box& polycom\\
-               				&extension & response  & center& water & commission & intstructions\\
-               				&tax & public &lines &taps& economic & training\\
-               				&latest& manager & fax& keep & unemployment&conference\\
-               				&department & attachments &enp & phone& licensed & three\\
-               				&henderson&  siemens&cem & compliance& rural& finalized\\
-               				&january & pursuant & suite&  signups & development &room\\
-               				&young & subject & good&meter & reduced&cutover\\
-               				&wireless & review& asap& suite & financial& contact\\
-               				&installation & records& henderson&fax & private& thursday\\
-               				&cutting&jail & street &meeting& labor& folks\\
-               				&rest& hereto & church & tuesday& force& finishing\\
-               				\hline            				
-               		\end{tabular}}
-               			\label{table:TableDare}
-               			\caption{Summary of topic-token assignments from Dare county data: top 15 words assigned to each topic, corresponding to interaction pattern assignments}               			
-               	               	\end{table}        
-     \clearpage    	              	
- \section{Posterior Predictive Experiments} \label{sec:PosteriorPredictive}
+          \subsubsection{Vance County}\label{subsubsec:VanceIPTM}
+          In this section, we present the IPTM result on Vance county email data with $C=2$, $K=6$ and $O= 500$. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We applied hyperparameter optimization with $n_1=5$, and the inner iterations for $\mathcal{B}$ and $\delta$ were set as $n_2=5500$ and $n_3 = 550$, respectively. First $500$ and $50$ iterations were discarded as a burn-in for inference on  $\mathcal{B}$ and $\delta$, and every $10^{th}$ sample was taken as a thinning process for $\mathcal{B}$. Below are the summary of interaction pattern-topic-word assignments. Each interaction pattern is paired with (a) Figure 11: posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) Table 1: the top 15 most likely words to be generated conditioned on the topic and their corresponding interaction pattern. 
+          
+          In general, Figure 11 and Table 1 both do not show any strong difference between the two interaction patterns. When we look at the network effects (See Figure 11), the two boxplots representing each interaction pattern mostly overlap, although the point estimates for few statistics had different signs (e.g. outdegree, 2-receive and sibling). Moreover, the 95\% credible intervals for most of statistics, except the intercept, include 0, thus we do not find any significant effect of past interactions on future email exchanges. Although \cite{PerryWolfe2012} found out significant recency effects in email interactions, in our cases, there is no distinctive recency effect since we do not see any increasing or decreasing trends over the three time intervals. 
+          \begin{table}[ht]
+          	\centering
+          	\begin{tabular}{lll}
+          		\includegraphics[width = 0.3\textwidth]{plots/VanceIntercept-1.png} &
+          		\includegraphics[width = 0.3\textwidth]{plots/VanceOutdegree-1.png} &
+          		\includegraphics[width = 0.3\textwidth]{plots/VanceIndegree-1.png} \\
+          		\includegraphics[width = 0.3\textwidth]{plots/VanceBSend-1.png} &
+          		\includegraphics[width = 0.3\textwidth]{plots/VanceBReceive-1.png} &
+          		\includegraphics[width = 0.3\textwidth]{plots/Vance2Send-1.png}   \\ 
+          		\includegraphics[width = 0.3\textwidth]{plots/Vance2Receive-1.png} &
+          		\includegraphics[width = 0.3\textwidth]{plots/VanceSibling-1.png} &
+          		\includegraphics[width = 0.3\textwidth]{plots/VanceCosibling-1.png}   \\         	
+          	\end{tabular}
+          	\label{fig:VanceB}
+          	\caption{95\% credible intervals of posterior estimates of the network effects $\boldsymbol{b}^{(c)}$: $c=1$ (red) and $c=2$ (green), using Vance county data}
+          \end{table}
+          
+          Topic-token assignments for two interaction patterns in Table 1 also do not reveal obvious contrast, because the topics all contain words used for typical conversations between government officials. 
+          \begin{table}[ht]
+          	\centering
+          	\scalebox{0.8}{	 	\begin{tabular}{ |c||c|c|c||c|c|c|} 
+          			\hline
+          			\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
+          			\textbf{Topic} & \textbf{1} (0.078)&  \textbf{3} (0.224)& \textbf{5} (0.141) &\textbf{2} (0.139) &\textbf{4} (0.369) &\textbf{6} (0.038) \\ \hline\hline
+          			\textbf{Word}
+          			& directory & message & operations& phase& dropbox & phones\\
+          			&switch & electronic & emergency& description & cecd & october\\
+          			&network & ncgs & office &planning & henderson-vance & will\\
+          			&address &  chapter  &  communications&board& box& polycom\\
+          			&extension & response  & center& water & commission & intstructions\\
+          			&tax & public &lines &taps& economic & training\\
+          			&latest& manager & fax& keep & unemployment&conference\\
+          			&department & attachments &enp & phone& licensed & three\\
+          			&henderson&  siemens&cem & compliance& rural& finalized\\
+          			&january & pursuant & suite&  signups & development &room\\
+          			&young & subject & good&meter & reduced&cutover\\
+          			&wireless & review& asap& suite & financial& contact\\
+          			&installation & records& henderson&fax & private& thursday\\
+          			&cutting&jail & street &meeting& labor& folks\\
+          			&rest& hereto & church & tuesday& force& finishing\\
+          			\hline
+          		\end{tabular}}
+          		\label{table:TableVance}
+          		\caption{Summary of topic-token assignments from Vance county data: top 15 words assigned to each topic, corresponding to interaction pattern assignments}
+          	\end{table}
+          	\clearpage
+          	\subsubsection{Dare County}\label{subsubsec:DareIPTM}
+          	We also present the IPTM result on Dare county email data with $C=2$, $K=20$ and $O= 100$\footnote{Preliminary results with small number of outer iterations. Results subject to change.}. Again, we applied hyperparameter optimization with $n_1=5$, while the inner iterations for $\mathcal{B}$ and $\delta$ were set as $n_2=15000$ and $n_3 = 1500$, respectively. This time, first $10000$ and $500$ iterations were discarded as a burn-in for inference on  $\mathcal{B}$ and $\delta$, and every $10^{th}$ and $5^{th}$ samples were taken as a thinning process for $\mathcal{B}$ and $\delta$, respectively. 
+          	
+          	Same as Section \ref{subsubsec:DareIPTM}, we present the two model results representing the network aspects and contents. Each interaction pattern is paired with (a) Figure 12: posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) Table 2: the top 15 most likely words to be generated conditioned on the topic and their corresponding interaction pattern. 
+          	
+          	This time, the two interaction patterns showed different structures in terms of networks, since the credible interval of many of network effects do not overlap. Interaction pattern 2 had more negative network effects while having much larger intercept compared to interaction pattern 1, implying that topics related to interaction pattern 2 are less affected by previous email exchanges.
+          	\begin{table}[ht]
+          		\centering
+          		\begin{tabular}{lll}
+          			\includegraphics[width = 0.3\textwidth]{plots/DareIntercept-1.png} &
+          			\includegraphics[width = 0.3\textwidth]{plots/DareOutdegree-1.png} &
+          			\includegraphics[width = 0.3\textwidth]{plots/DareIndegree-1.png} \\
+          			\includegraphics[width = 0.3\textwidth]{plots/DareBSend-1.png} &
+          			\includegraphics[width = 0.3\textwidth]{plots/DareBReceive-1.png} &
+          			\includegraphics[width = 0.3\textwidth]{plots/Dare2Send-1.png}   \\ 
+          			\includegraphics[width = 0.3\textwidth]{plots/Dare2Receive-1.png} &
+          			\includegraphics[width = 0.3\textwidth]{plots/DareSibling-1.png} &
+          			\includegraphics[width = 0.3\textwidth]{plots/DareCosibling-1.png}   \\         	
+          		\end{tabular}
+          		\label{fig:DareB}
+          		\caption{95\% credible intervals of posterior estimates of the network effects $\boldsymbol{b}^{(c)}$: $c=1$ (red) and $c=2$ (green), using Dare county data}
+          	\end{table}
+          	
+          	There also exists significant difference in the contents related to each interaction pattern. Overall, 55.2\% of the words were assigned to the topics in interaction pattern 1, on the other hand, 44.8\% were assigned to the topics in interaction pattern 2. Table 4 demonstrates 5 examples of topics from each interaction pattern, where each topic is summarized by top 15 words. It is interesting that interaction pattern 2 included several topics (e.g. topic 2 and topic 18) with hurricane related words, such as `storm', `impacts' `damage' and `ocean'. On the other hand, interaction pattern 1 seems to reperesent topics commonly used between government managers.
+          	\begin{table}[ht]
+          		\centering
+          		\scalebox{0.8}{	 	\begin{tabular}{ |c||c|c|c|c|c|}  
+          				\hline
+          				\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{1} &\textbf{1}   \\ \hline\hline
+          				\textbf{Topic} & \textbf{3} (0.078)&  \textbf{5} (0.065)& \textbf{19} (0.064) &\textbf{13} (0.057) &\textbf{15} (0.053)  \\ \hline\hline
+          				\textbf{Word} 
+          				& water & planning &phone &questions &contact\\
+          				& relocation & meter & collins & board & info \\
+          				& location & room & drive &december & problem\\
+          				& hills& asked &marshall & call & release \\
+          				& utilities &needed & director & sheets & check \\
+          				& mustian & sure & human & agenda & weather \\
+          				& hydrant &afternoon &resources & nov & priority \\
+          				& department &cheryl & manteo & hope & readings \\
+          				& skyco & johnson & phr & item & rodanthe \\
+          				& kill & issues & fax & weekly & top \\
+          				& devil & case & box & management & collection\\ 
+          				& road & letter & timesheets &internet & located \\
+          				& lane & antennas & -lsb- & told & health \\
+          				& tank & inspection & wanted & care & heads \\
+          				& map & keep & touch & comp & ahead\\
+          				\hline
+          				\hline
+          				\textbf{IP} & \textbf{2} &  \textbf{2} & \textbf{2}  &\textbf{2} &\textbf{2}   \\ \hline\hline
+          				\textbf{Topic} & \textbf{14} (0.058)&  \textbf{12} (0.047)& \textbf{2} (0.045) &\textbf{6} (0.044) &\textbf{18} (0.036) \\ \hline\hline
+          				\textbf{Word}
+          				& time & survey &  road & library & status \\
+          				& hours & voice & mirlo & week & system \\
+          				& leave & copy& storm &  working & area \\
+          				& monday & discovery & beach & place & south \\
+          				& administrative & regional & high & best & forecast \\
+          				& employees & parties & coastal & start & track \\
+          				& empoyee & disclosed & impacts & visit & pay \\
+          				& work & elections & saturday & year & move \\
+          				& day & pin & dot & albemarle & assessment \\
+          				& friday & sending & night & librarian & opens \\
+          				& october & prior & winds & web & damage\\
+          				& storm &editor & hold & learning & well\\
+          				& tomorrow & students & bridge & east& ocean\\
+          				& hour & cost & expressed & holiday &  operation\\
+          				& question & residents & normal & system & addition
+          				\\
+          				\hline            				
+          			\end{tabular}}
+          			\label{table:TableDare}
+          			\caption{Summary of topic-token assignments from Dare county data: top 15 words assigned to each topic, corresponding to interaction pattern assignments}               			
+          		\end{table} 
+     \section{Posterior Predictive Experiments} \label{sec:PosteriorPredictive}
  We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For documents $d=\{M,M+1,\hdots,D-1\}$, we fit the IPTM to the first $d$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$) for document $d+1$ conditional on the content in document $d+1$, ($\boldsymbol{w}^{(d+1)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set. The variables that need to be sampled are the token topic assignments, $\mathcal{Z}^{d+1}$, and the tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$). 
  
  \begin{algorithm}[H]
@@ -558,7 +573,7 @@ We have not implemented this posterior predictive experiments yet, so it will go
 \bibliography{IPTM}
 \newpage
 \appendix
- \section*{APPENDIX}
+ \section*{Appendix}
  \renewcommand{\thesubsection}{\Alph{subsection}}
    	 \subsection{Normalizing constant of non-empty Gibbs measure}\label{subsec: non-empty Gibbs measure}
   	 In Section \ref{subsec: Tie Generating Process}, we define the non-empty Gibbs measure such that 
@@ -924,6 +939,7 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
         			set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
         			 	}
         \end{algorithm}
+        \newpage
         \subsubsection{Intitialization of History $\boldsymbol{x}_t^{(c)}$} \label{subsubsec: Initial history issue}
         Considering that our network statistics $\boldsymbol{x}_t^{(c)}$ are generated as a function of the network history, it is necessary to use the same initial value of $\boldsymbol{x}_t^{(c)}$ across the forward and backward samples. If not, when we generate fixed number of documents, we cannot guarantee the same number of documents used for the inference, since only the documents with its timestamp greater than 384 hours are used in the inference. In the extreme cases, we may end up with two types of failure:
         \begin{itemize}

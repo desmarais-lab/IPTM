@@ -1012,6 +1012,7 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       observed.d = ObservedInEqZ(observediJi[[d]]) 
       fixedpart = topicpart.d + edgepart.d + timepart.d + observed.d 
       for (w in 1L:length(currentZ[[d]])) {
+        print(c(wordpart.d))
         const.Z = fixedpart + wordpart.d[w, ]
         const.Z = const.Z - max(const.Z)
         zw.old = currentZ[[d]][w]

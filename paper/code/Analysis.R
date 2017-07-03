@@ -152,7 +152,7 @@ for (n in 1:length(Dare$edge)){
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
 load("/Users/bomin8319/Desktop/IPTM/paper/code/Daretest.RData")
-Daretest1 = output
+Daretest1 = Daretest
 Daretest1$C
 
 TableWord = function(Zchain, K, textlist, vocabulary) {
@@ -198,7 +198,7 @@ TableWord(Daretest1$Z[72:418], 20, Dare$text[390:736], Dare$vocab)
 
 
 which(Sandy$date %in% unique(Sandy$date)[23:27])
-TableWord(Daretest1$Z[216:418], 20, Dare$text[534:736], Dare$vocab)
+TableWord(Daretest1$Z[534:736], 20, Dare$text[534:736], Dare$vocab)
 table(unlist(Daretest1$Z[216:418])) / sum(table(unlist(Daretest1$Z[534:736])))
 
 
@@ -252,7 +252,7 @@ lapply(Daretest1$B, function(IP) {rowMeans(IP)})
 library(reshape)
 
 DareB = matrix(NA, 500, 25)
-DareB[,1:25] = t(Daretest1$B[[1]])
+DareB[,1:25] = t(Daretest$B[[1]])
 colnames(DareB)= c( "intercept",
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
 "send1", "send2", "send3" ,"receive1", "receive2", "receive3",
@@ -261,7 +261,7 @@ colnames(DareB)= c( "intercept",
 DareB = melt(DareB)
 
 DareB2 = matrix(NA, 500, 25)
-DareB2[,1:25] = t(Daretest1$B[[2]])
+DareB2[,1:25] = t(Vancetest$B[[2]])
 colnames(DareB2)= c( "intercept",
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
 "send1", "send2", "send3" ,"receive1", "receive2", "receive3",
@@ -280,8 +280,12 @@ DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( "intercept",
 "2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
 "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3"))
 colnames(DareBnew) = c("Netstat", "Estimate", "IP")
-p <- ggplot(DareBnew, aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() + geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("intercept")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Intercept")+ scale_x_discrete(labels = c("               "))
 
+
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("cosibling1", "cosibling2", "cosibling3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Cosibling")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
 
 
 
@@ -434,9 +438,12 @@ DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( "intercept",
 "2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
 "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3"))
 colnames(DareBnew) = c("Netstat", "Estimate", "IP")
-p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("cosibling1", "cosibling2", "cosibling3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() + geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("intercept")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Intercept")+ scale_x_discrete(labels = c("               "))
 
 
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("cosibling1", "cosibling2", "cosibling3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Cosibling")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
 #traceplot
 par(mfrow = c(5,5))
 for (i in 1:25){
