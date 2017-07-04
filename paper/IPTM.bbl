@@ -119,6 +119,11 @@ Hunter, D.~R., Handcock, M.~S., Butts, C.~T., Goodreau, S.~M., and Morris, M.
   models for networks.
 \newblock {\em Journal of statistical software}, 24(3):nihpa54860.
 
+\bibitem[Iribarren and Moro, 2011]{iribarren2011branching}
+Iribarren, J.~L. and Moro, E. (2011).
+\newblock Branching dynamics of viral information spreading.
+\newblock {\em Physical Review E}, 84(4):046116.
+
 \bibitem[Jeong et~al., 2003]{jeong2003measuring}
 Jeong, H., N{\'e}da, Z., and Barab{\'a}si, A.-L. (2003).
 \newblock Measuring preferential attachment in evolving networks.
@@ -165,6 +170,12 @@ Lim, K.~W., Chen, C., and Buntine, W. (2013).
 \newblock Twitter-network topic model: A full bayesian treatment for social
   network and text modeling.
 \newblock In {\em NIPS2013 Topic Model workshop}, pages 1--5.
+
+\bibitem[Lin et~al., 2010]{lin2010measuring}
+Lin, Y., Desouza, K.~C., and Roy, S. (2010).
+\newblock Measuring agility of networked organizational structures via network
+  entropy and mutual information.
+\newblock {\em Applied Mathematics and Computation}, 216(10):2824--2836.
 
 \bibitem[Louch, 2000]{louch2000personal}
 Louch, H. (2000).
@@ -213,10 +224,22 @@ Robins, G., Pattison, P., Kalish, Y., and Lusher, D. (2007).
   networks.
 \newblock {\em Social networks}, 29(2):173--191.
 
+\bibitem[Roca et~al., 2010]{roca2010topological}
+Roca, C.~P., Lozano, S., Arenas, A., and S{\'a}nchez, A. (2010).
+\newblock Topological traps control flow on real networks: The case of
+  coordination failures.
+\newblock {\em PLoS One}, 5(12):e15210.
+
 \bibitem[Sz{\'o}stek, 2011]{szostek2011dealing}
 Sz{\'o}stek, A.~M. (2011).
 \newblock ?dealing with my emails?: Latent user needs in email management.
 \newblock {\em Computers in Human Behavior}, 27(2):723--729.
+
+\bibitem[Tadi{\'c} and Thurner, 2004]{tadic2004information}
+Tadi{\'c}, B. and Thurner, S. (2004).
+\newblock Information super-diffusion on structured networks.
+\newblock {\em Physica A: Statistical Mechanics and its Applications},
+  332:566--584.
 
 \bibitem[V{\'a}zquez, 2003]{vazquez2003growing}
 V{\'a}zquez, A. (2003).
