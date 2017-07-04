@@ -359,10 +359,9 @@ In our application of the IPTM, we use a subset of the North Carolina county gov
 Before discussing the IPTM results, we present a set of exploratory analyses in which we examine characteristics of the data that are relevant to the prevalence of Hurricane Sandy in the two county government email networks. Based on this preliminary exploration, we see that Sandy received much more attention in Dare County. However, this basic descriptive finding does not shed light on whether, in one or both of the counties, the network structure of communication surrounding Sandy differed from the typical communication patterns. 
  
  \subsubsection{Vance County}\label{subsubsec:VanceEDA} 
-The Vance County email dataset spans September 4th to November 30th. It is also the smallest corpus in the NC overall dataset, containing $D=183$ emails sent between $A=17$ actors from 17 departments. The corpus has a vocabulary size of $W=620$. %[bd, here] 
-Our preliminary analysis was focused on comparing the email exchange patterns between non-Sandy period (not overlapping October 26---30) and Sandy period (October 26---30). 
+The Vance County email dataset spans September 4th to November 30th. It is also the smallest corpus in the NC overall dataset, containing $D=183$ emails sent between $A=17$ actors from 17 departments. The corpus has a vocabulary size of $W=620$.  In our first descriptive analysis we compare the email exchange patterns between the non-Sandy period (not overlapping October 26---30) and the Sandy period (October 26---30). 
  
- To see temporal trends in sending and receiving behavior in email exchanges, we plotted the number of emails sent and received between the county government managers based on their departments, which are shown in Figure 5. Since the data size is quite small, there are not many emails exchanged per day with three departments, social services, planning, and emergency services, mostly active over the three months. We have not found any distinctive difference during hurricane Sandy.
+ To visualize temporal trends in sending and receiving behavior in email exchanges, we plotted the number of emails sent and received between the county government managers based on their departments, which are shown in Figure 5. Since the data size is quite small, there are not many emails exchanged per day.  Three departments---social services, planning, and emergency services---were the most active over the three months. We do not see any distinctive difference during hurricane Sandy in Vance county.
   \begin{figure}[ht]
   	\centering
   	  	\includegraphics[width=0.6\textwidth]{plots/VanceSend-1.png} 
@@ -371,7 +370,7 @@ Our preliminary analysis was focused on comparing the email exchange patterns be
   	\caption{Number of emails sent from (upper) and received by (lower) each department in Vance county}
   \end{figure}
   
- In the similar context, we also created the network plots for three separate time windows: pre-Sandy, Sandy, and post-Sandy. Sandy period includes October 19th to November 2nd, which covers the one week before and after the official period of Sandy. Figure 6 showed similar pattern as Figure 5, in that the same three department managers are placed in the center of each network. One noticeable thing is that during Sandy period, social services did not exchange any email while it went back to normal status after Sandy. In addition, emergency service department slightly interacted more actively during Sandy, compared to the other two time windows.
+To examine shifts in the patterns of connectivity surrounding Sandy we created network plots for three separate time windows: pre-Sandy, Sandy, and post-Sandy. The Sandy period includes October 19th to November 2nd, which covers the one week before and after the official period of Sandy. Figure 6 shows a similar pattern as that seen in Figure 5, in that the same three department managers are placed in the center of each network. One noticeable thing is that during the Sandy period, social services did not exchange any email, while it went back to its normal status after Sandy. In addition, the emergency service department interacted slightly more during Sandy, compared to the other two time windows.
    \begin{figure}[ht]
    	\centering
    	\includegraphics[width=0.75\textwidth]{plots/VanceNetwork-1.png}  
@@ -379,18 +378,18 @@ Our preliminary analysis was focused on comparing the email exchange patterns be
    	\caption{Network plot for three time windows: before Sandy (September 4---October 18), during Sandy (October 19---November 2), and after Sandy (November 3---November 30), in Vance county}
    \end{figure}
    
-   Lastly, we moved to the content aspects of data and looked at how many times the word `hurricane' and `sandy' appeared. As shown in Figure 7, the two words were only used 4 times each during the Sandy period, and not used in any other times. This is not surprising given that Vance county is quite far from the shore, getting minimally affected by the hurricane.
+   Lastly, we moved to the content aspects of data and looked at how many times the words `hurricane' and `Sandy' appeared. As shown in Figure 7, the two words were only used 4 times each during the Sandy period, and not used in any other times. This is not surprising given that Vance county is quite far from the shore, and was not in the main path of the storm.
       \begin{figure}[ht]
       	\centering
       	\includegraphics[width=0.6\textwidth]{plots/VanceWord-1.png}  
       	\label{fig:WordVance}
-      	\caption{Frequency plot counting how many times the word `hurricane' and `sandy' appeared}
+      	\caption{Frequency plot counting how many times the words `hurricane' and `Sandy' appeared.}
       \end{figure}
       \newpage
    \subsubsection{Dare County}\label{subsubsec:DareEDA}
-    We also tried exploratory data to Dare county data, which spans October 1st to November 30th containing $D=1456$ emails between $A=27$ actor from 22 departments, and with $W=2907$ vocabularies in total. Same as what we did for Vance county, we looked at three different plots, sending and receiving count plots, network plots, and word count plots, to briefly understand the network and content of the email data, with emphasis on the effect of hurricane Sandy.
+    We ran the same exploratory analyses using the Dare county data, which spans October 1st to November 30th containing $D=1,456$ emails between $A=27$ actors from 22 departments, and with a vocabulary of size $W=2907$. As we did with Vance county, we looked at three different plots---sending and receiving counts, networks, and word counts---to visualize the networks and content of the email data, with emphasis on the changes during hurricane Sandy.
     
-    This time, we saw remarkable change in email sending/receiving behaviors during hurricane Sandy (See Figure 8). As the hurricane approaches on October 26th, the manager from emergency services department sent significantly more emails than before, and at the same time there was dramatic rise in the receiving counts for almost every department. Further analysis proved that emergency services department sent a lot of `multicast' emails with large number of receivers during Sandy. 
+    In Dare County we saw considerable change in email sending/receiving behaviors during hurricane Sandy (See Figure 8). As the hurricane approaches on October 26th, the manager from the emergency services department sent significantly more emails than before, and at the same time there was dramatic rise in the receiving counts for almost every department. Further analysis demonstrated that emergency services department sent a lot of `multicast' emails with a large number of receivers during the Sandy period. 
         \begin{figure}[ht]
        	\centering
        	\includegraphics[width=0.6\textwidth]{plots/DareSend-1.png} 
@@ -399,7 +398,7 @@ Our preliminary analysis was focused on comparing the email exchange patterns be
        	\caption{The number of emails sent to (upper) and received by (lower) department in Dare county}
        \end{figure}
     
-    The network plots in Figure 9 illustrated same patterns we found in Figure 8. Again, the manager from emergency services department became highly central in the network during Sandy period, and it still maintained the pattern after Sandy. One thing we could expect is that hurricane conversations were continued even after Sandy passed the county, since there remained post-hurricane issues from the damage.
+    The network plots in Figure 9 illustrated same patterns we found in Figure 8. Again, the manager from the emergency services department became highly central in the network during the Sandy period, and it maintained this pattern after Sandy. Hurricane related conversations continued after Sandy passed the county, since there remained post-hurricane issues from the damage.
          \begin{figure}[ht]
          	\centering
          	\includegraphics[width=0.75\textwidth]{plots/DareNetwork-1.png} 
@@ -407,14 +406,14 @@ Our preliminary analysis was focused on comparing the email exchange patterns be
          	\caption{Network plot for three time windows: before Sandy (October 1---October 18), during Sandy (October 19---November 2), and after Sandy (November 3---November 30), in Dare county}
          \end{figure}
          
-        Figure 10 reflects the hurricane effects on email exchanges as well, and it matches our interpretations from the network aspects. Usage of the two words, `hurricane' and `sandy', exploded starting few days before Sandy arrived the area, and multiple emails used the words again in November, implying the continuous discussions on hurricane-related topics.
+        Figure 10 reflects the hurricane's effects on email exchanges as well, and it matches our interpretations from the network aspects. Usage of the two words, `hurricane' and `Sandy', exploded starting a few days before Sandy arrived in Dare County, and multiple emails used the words again in November, implying the continuous discussions on hurricane-related topics.
             \begin{figure}[ht]
             	\centering
             	\includegraphics[width=0.6\textwidth]{plots/DareWord-1.png}  
             	\label{fig:WordDare}
             	\caption{Frequency plot counting how many times the word `hurricane' and `sandy' appeared}
             \end{figure}
-   \subsection{IPTM Results} \label{subsec: IPTM results}
+   \subsection{IPTM Results} \label{subsec: IPTM results} %[bd, here]
           \subsubsection{Vance County}\label{subsubsec:VanceIPTM}
           In this section, we present the IPTM result on Vance county email data with $C=2$, $K=6$ and $O= 500$. MCMC sampling was implemented based on the order and scheme illustrated in Section \ref{sec: Inference}. We applied hyperparameter optimization with $n_1=5$, and the inner iterations for $\mathcal{B}$ and $\delta$ were set as $n_2=5500$ and $n_3 = 550$, respectively. First $500$ and $50$ iterations were discarded as a burn-in for inference on  $\mathcal{B}$ and $\delta$, and every $10^{th}$ sample was taken as a thinning process for $\mathcal{B}$. Below are the summary of interaction pattern-topic-word assignments. Each interaction pattern is paired with (a) Figure 11: posterior estimates of dynamic network effects $\boldsymbol{b}^{(c)}$ corresponding to the interaction pattern, and (b) Table 1: the top 15 most likely words to be generated conditioned on the topic and their corresponding interaction pattern. 
           
