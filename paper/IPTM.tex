@@ -173,15 +173,15 @@ We assume the following tie generating process for each document $d$ in a corpus
 	\item[1.] For each sender $i \in \{1,...,A\}$, we generate a binary receiver vector of length $A-1$, $J^{(d)}_i$, from the non-empty Gibbs measure \citep{fellows2017removing} for every $j \in \mathcal{A}_{\backslash i}$. 
 	\begin{equation} \text{P}(J_i^{(d)}) = \frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
 	\end{equation}
-	where $\delta$ is real-valued intercept used to model the number of recipients or the length of $J_{i}^{(d)}$. The prior distribution for $\delta$ is specified as Normal($\mu_\delta, \sigma^2_\delta)$. As defined in Section \ref{subsec: Stochastic Intensity}, $\lambda_{ij}^{(d)}$ is a positive dyad-specific stochastic intensity included in the model, and we use $\lambda_{i}^{(d)}=\{\lambda_{ij}^{(d)}\}_{j\in \mathcal{A}_\backslash i}$ to denote the vector of dyadic weights in which $i$ is the sender. Note that we omitted the notation $(t)$ from Equation (2) and used $\lambda_{ij}^{(d)}$ instead, since the stochastic intensity $\lambda_{ij}^{(d)}$ is always evaluated at time $t_+^{(d-1)}$. The $\lambda_{ij}$ for $d^{th}$ document is obtained using the history of interactions up to and including the time when the previous document was sent, $t^{(d-1)}$. %[bd, here]
+	where $\delta$ is real-valued intercept used to model the number of recipients or the length of $J_{i}^{(d)}$. The prior distribution for $\delta$ is specified as Normal($\mu_\delta, \sigma^2_\delta)$. As defined in Section \ref{subsec: Stochastic Intensity}, $\lambda_{ij}^{(d)}$ is a positive dyad-specific stochastic intensity included in the model, and we use $\lambda_{i}^{(d)}=\{\lambda_{ij}^{(d)}\}_{j\in \mathcal{A}_\backslash i}$ to denote the vector of dyadic weights in which $i$ is the sender. Note that we omitted the notation $(t)$ from Equation (2) and used $\lambda_{ij}^{(d)}$ instead, since the stochastic intensity $\lambda_{ij}^{(d)}$ is always evaluated at time $t_+^{(d-1)}$. The $\lambda_{ij}$ for $d^{th}$ document is obtained using the history of interactions up to and including the time when the previous document was sent, $t^{(d-1)}$. 
 	
-	To assure that the probabilities sum to unity, we use the normalizing constant $Z(\delta,\mbox{log}(\lambda_i^{(d)}))$, which is the sum of $P(J_i^{(d)})$ over the entire support, and it can be simplified as: 
+	The normalizing constant for the non-empty Gibbs measure $Z(\delta,\mbox{log}(\lambda_i^{(d)}))$, which is the sum of $P(J_i^{(d)})$ over the entire support, can be simplified as: 
 	\begin{equation}
 	\begin{aligned}
 	Z(\delta,\mbox{log}(\lambda_i^{(d)})) &=\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1.
 		\end{aligned}
 	\end{equation}
-	Details on how the normalizing constant ends up with this functional form are shown in Appendix\ref{subsec: non-empty Gibbs measure}.
+	Derivation of the normalizing constant is provided in Appendix\ref{subsec: non-empty Gibbs measure}.
 	\item[2.] For every sender $i \in \mathcal{A}$, generate the time increments given the latent ties from previous step: \begin{equation}
 \Delta T_{i{J_i}} \sim \mbox{Exponential}(\lambda_{i{J_i}}^{(d)}),
 	\end{equation}
@@ -189,9 +189,8 @@ We assume the following tie generating process for each document $d$ in a corpus
 	\begin{equation}
 	\lambda^{(d)}_{iJ_i}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\frac{1}{|J_i^{(d)}|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}.
 	\end{equation}
-	Note that Equation (6) reduces to the stochastic intensity $\lambda_{ij}^{(d)}$ in Equation (2) in case of single receiver documents (i.e. $|J_i^{(d)}| = 1$), so we can interpret this mean parameter as weighted stochastic intensity across the chosen recievers. When there are multiple chosen receivers (i.e. $|J_i^{(d)}| > 1$), we call it as multicast interactions—those involving a single sender but multiple
-	receivers.
-	 	 \item[3.] Set the observed sender, recipient, and time of the document simultaneously by choosing the sender who generated the minimum time in step 2 and the corresponding receipient and time increment (NOTE: $t^{(0)}=0$):
+	Note that Equation (6) reduces to the stochastic intensity $\lambda_{ij}^{(d)}$ in Equation (2) in the case of a single receiver (i.e. $|J_i^{(d)}| = 1$), so we can interpret this mean parameter as weighted stochastic intensity across the chosen receivers. When there are multiple chosen receivers (i.e. $|J_i^{(d)}| > 1$), we call it a multicast interaction.
+	 	 \item[3.] Set the observed sender, recipient, and time of the document simultaneously by choosing the sender who generated the minimum time in step 2 and the corresponding recipient and time increment (NOTE: $t^{(0)}=0$):
 	 	 \begin{equation}
 	 	 \begin{aligned}
 	 	  &i^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}, \\
@@ -199,7 +198,7 @@ We assume the following tie generating process for each document $d$ in a corpus
 	 	  	 &t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}}).
 	 	  \end{aligned}
 	 	 \end{equation}
-	 	 The intuition behind this choice is that all possible senders $i \in \mathcal{A}$ are competing against each other to send the document to their chosen receivers $\{J_i^{(d)}\}_{i=1}^A$, and the one with highest urgency (or highest importance) becomes the observed sender, jointly determining the observed recipient and timestamp of $d^{th}$ document.
+	 	 The intuition behind this choice is that all possible senders $i \in \mathcal{A}$ are competing against each other to send the next document, and correspondingly introduce the next modification to the history of interactions. Once that next document is sent, the actors in the network revise their plans for e-mail sending, considering the new entry in the history of interactions.
 \end{itemize}
 
  \subsection{Joint Generative Process} \label{subsec: Joint Generative Process of Document}
