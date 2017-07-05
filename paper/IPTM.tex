@@ -565,10 +565,10 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
 \end{algorithm}
 We have not implemented this posterior predictive experiments yet, so it will go to the next step of this project.
 \section{Conclusion} 
-- Joint modeling of ties (sender, receiver, time) and contents
-- Allowance of multicast -- single sender and multiple receivers
-- Possible application to various political science data
- - Developement of R package `IPTM'
+The IPTM is, to our knowledge, the first model to be capable of jointly modeling sender, receivers, time and contents in time stamped text valued networks. The IPTM incorporates innovative components, including the modeling of multicast tie formation and the conditioning of ERGM style network generative features on topic-based content. The application to North Carolina county government email data demonstrates, among other capabilities, the effectiveness at the IPTM in separating out both the content and relational structure underlying the normal day-to-day function of an organization and the management of a highly time-sensitive event---Hurricane Sandy. The IPTM is applicable to a variety of networks in which ties are attributed with textual documents. These include, for example, economic sanctions sent between countries and legislation attributed with sponsors and co-sponsors. 
+
+Three major tasks remain in finalizing our work with the IPTM. First, we will either correct the code and/or sampling equations for the full model, in which interaction pattern assignments are inferred, or revise the model to reflect fixed interaction pattern assignments. Second, we will run posterior predictive experiments to evaluate model fit in comparison with other methods. Third, we will complete our implementation of IPTM as a publicly distributed R package.
+
   
  \clearpage
 \bibliographystyle{apalike}
