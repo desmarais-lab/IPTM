@@ -166,13 +166,11 @@ where $l_1 \in \{1,...,3\}$ and $l_2 \in \{1,...,3\}$.
 	\label{fig:triadtable}
 	\caption{Example of 2-send statistic defined for each interval $l=1,...,3$. Cells with same shades sum up to one statistic, based on when the triads are ``closed".}
 \end{figure}
-\subsection{Tie Generating Process}\label{subsec: Tie Generating Process} %[bd, here]
-Given the contents and stochastic intensity, we then move to tie generating process which determines the sender, recipients, and time ($i^{(d)}, J^{(d)}, t^{(d)}$) of the document.
-We assume the following generative process for each document $d$ in a corpus $D$:
-\begin{itemize}
-	\item[1.] Assume anyone can be the sender of document $d$, and the receiver/receivers are dependent on the sender, based on ``who might be the recipient $J^{(d)}$ if the sender of document $d$ was $i$". Under this assumption, we use data augmentation scheme and first generate latent ties or sender-recipient pairs.
-	
-	For each sender $i \in \{1,...,A\}$, we create binary receiver vector of length $A-1$, $J^{(d)}_i$, by applying the non-empty Gibbs measure \citep{fellows2017removing} to every $j \in \mathcal{A}_{\backslash i}$, since we exclude self-loop.  
+\subsection{Tie Generating Process}\label{subsec: Tie Generating Process} 
+The tie generating process determines the sender, recipients, and timing ($i^{(d)}, J^{(d)}, t^{(d)}$) of the document.
+We assume the following tie generating process for each document $d$ in a corpus of $D$ documents:
+\begin{itemize} %[bd, here]
+	\item[1.] For each sender $i \in \{1,...,A\}$, we create binary receiver vector of length $A-1$, $J^{(d)}_i$, by applying the non-empty Gibbs measure \citep{fellows2017removing} to every $j \in \mathcal{A}_{\backslash i}$, since we exclude self-loop.  
 	\begin{equation} \text{P}(J_i^{(d)}) = \frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
 	\end{equation}
 	where $\delta$ is real-valued intercept that controls the overall recipient size or the length of $J_{i}^{(d)}$, with its prior distribution specified as Normal($\mu_\delta, \sigma^2_\delta)$. As defined in Section \ref{subsec: Stochastic Intensity}, $\lambda_{ij}^{(d)}$ is a positive dyad-specific stochastic inensity included in the model, and we use $\lambda_{i}^{(d)}=\{\lambda_{ij}^{(d)}\}_{j\in \mathcal{A}_\backslash i}$ to denote the vector of dyadic weights in which $i$ is the sender. Note that we omitted the notation $(t)$ from Equation (2) and used $\lambda_{ij}^{(d)}$ instead, since the stochastic intensity $\lambda_{ij}^{(d)}$ is always evaluated at time $t_+^{(d-1)}$, implying that $\lambda_{ij}$ for $d^{th}$ document is obtained using the history of interactions up to and including the time when the previous document was sent, $t^{(d-1)}$.
