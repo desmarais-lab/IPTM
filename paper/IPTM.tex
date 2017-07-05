@@ -55,7 +55,7 @@
 \begin{abstract}
 	
 	\noindent In this paper, we introduce the interaction-partitioned topic model
-	(IPTM)---a probabilistic model of who communicates with whom about
+	(IPTM)---a probabilistic model for who communicates with whom about
 	what, and when. Broadly speaking, the IPTM partitions time-stamped
 	textual communications, such as emails, according to both the network
 	dynamics that they reflect and their content. To define the IPTM, we
@@ -67,7 +67,7 @@
 	dynamic network features. Each communication is then modeled as a
 	mixture of topics and their corresponding interaction patterns. We use
 	the IPTM to analyze emails sent between department managers in two
-	county governments in North Carolina; one of these email corpora
+	county governments in North Carolina; one these email corpora
 	covers the Outer Banks during the time period surrounding Hurricane
 	Sandy. Via this application, we demonstrate that the IPTM is effective
 	at predicting and explaining continuous-time textual communications.
@@ -537,7 +537,7 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
           	\end{table}
 \newpage
      \section{Posterior Predictive Experiments} \label{sec:PosteriorPredictive}
- We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For documents $d=\{M,M+1,\hdots,D-1\}$, we fit the IPTM to the first $d$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$) for document $d+1$ conditional on the content in document $d+1$, ($\boldsymbol{w}^{(d+1)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set. The variables that need to be sampled are the token topic assignments, $\mathcal{Z}^{d+1}$, and the tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$). 
+ We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For documents $d=\{M,M+1,\hdots,D-1\}$, we fit the IPTM to the first $d$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$) for document $d+1$ conditional on the content in document $d+1$, ($\boldsymbol{w}^{(d+1)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set for the first document in the test set. The variables that need to be sampled are the token topic assignments, $\mathcal{Z}^{d+1}$, and the tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$). 
  
  \begin{algorithm}[H]
 	\SetAlgoLined
@@ -560,7 +560,7 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
 		store $i^{(d+1)}$, $J^{(d+1)}$, $t^{(d+1)}$, and $\mathcal{Z}^{d+1}$
 	}
 \end{algorithm}
-We have not implemented this posterior predictive experiments yet, so it will go to the next step of this project.
+We have not implemented this posterior predictive experiments yet, but will do so in the next phase of this project.
 \section{Conclusion} 
 The IPTM is, to our knowledge, the first model to be capable of jointly modeling sender, receivers, time and contents in time stamped text valued networks. The IPTM incorporates innovative components, including the modeling of multicast tie formation and the conditioning of ERGM style network generative features on topic-based content. The application to North Carolina county government email data demonstrates, among other capabilities, the effectiveness at the IPTM in separating out both the content and relational structure underlying the normal day-to-day function of an organization and the management of a highly time-sensitive event---Hurricane Sandy. The IPTM is applicable to a variety of networks in which ties are attributed with textual documents. These include, for example, economic sanctions sent between countries and legislation attributed with sponsors and co-sponsors. 
 
