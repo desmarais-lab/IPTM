@@ -89,15 +89,28 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 
 
 \begin{frame}{Motivation}
+\Large
 \begin{itemize}
-\item Network methods incorporate increasingly complex information about ties
-\item Common structure in social, especially polisci, is text
-\item Alliance ties, sanctions, Amici Brief collaboration, cosponsorship of legislation. 
-\item Behavior, individual communication of all sorts
+\item In many networks, ties are attributed with text
+\begin{itemize}
+\item International treaties
+\item International sanctions
+\item Legislative cosponsorship
+\item Discussion networks on social media
+\end{itemize}
+\vspace{.2cm}
+\item Network models can't model text
+\vspace{.3cm}
+\item Models for text either...
+\begin{itemize}
+\item Are not designed for networks
+\item Include simplistic network structure
+\end{itemize}
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Interaction-Partitioned Topic Model (IPTM)}
+\large
 	\bni
 	\item Probablistic model for time-stamped textual communications \\
 	\vspace{0.2cm}
@@ -148,26 +161,10 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \end{frame}
 
 
-\begin{frame}{Dynamic Network Features (Perry and Wolfe, 2012)}
+\begin{frame}{Network Model Components}
 
-{\bf  Model accounts for dyadic, node, structural tendencies to form ties via e-mail sending}
 
-	\bni
-	\item Partition the past 384 hours (=16 days) into 3 sub-intervals
-	\footnotesize
-	\begin{equation*}
-	[t-384h,t) = [t-384h, t-96h) \cup [t-96h, t-24h)\cup [t-24h, t),
-	\end{equation*}
-	\normalsize
-	then define the interval-based dynamic network statistics $(l = 1, 2, 3)$\\ \vspace{0.4cm}
-	 \item $\boldsymbol{x}^{(c)}_{t, l}(i, j)$ is the network statistics at time $t$, for interaction pattern $c$ \\\vspace{0.1cm}
-	- Degree: outdegree and  indegree\\\vspace{0.1cm}
- - Dyadic: send and receive \\\vspace{0.1cm}
- - Triadic: 2-send, 2-receive, sibling and cosibling\\\vspace{0.2cm}
-	 \begin{figure}
-	 	\includegraphics[width=0.9\textwidth]{figures/netstats.pdf}
-	 \end{figure}	
-	 \ei
+
 \end{frame}
 
 \begin{frame}{Dynamic Network Features (Perry and Wolfe, 2012)}
