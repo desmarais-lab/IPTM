@@ -86,6 +86,17 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \end{frame}
 
 
+
+
+\begin{frame}{Motivation}
+\begin{itemize}
+\item Network methods incorporate increasingly complex information about ties
+\item Common structure in social, especially polisci, is text
+\item Alliance ties, sanctions, Amici Brief collaboration, cosponsorship of legislation. 
+\item Behavior, individual communication of all sorts
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Interaction-Partitioned Topic Model (IPTM)}
 	\bni
 	\item Probablistic model for time-stamped textual communications \\
@@ -299,6 +310,20 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 	 		\ei
 \end{frame}
 
+
+\begin{frame} \frametitle{Getting it Right}
+
+\end{frame}
+
+\begin{frame} \frametitle{GiR: Results with full model}
+
+\end{frame}
+
+\begin{frame} \frametitle{GiR: Results with fixed C}
+
+\end{frame}
+
+
 \begin{frame}{Data: North Carolina Dare county email data}
  \bni \item $D = 1456$ emails between $A = 27$ county government managers, covering 2 month periods (October 1 - November 30) in 2012
  \begin{figure}
@@ -309,7 +334,13 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
  \ei
 \end{frame}
 
-\begin{frame}{Exploratory Data Analysis: Effect of Sandy}
+
+\begin{frame}{Theoretical expectations}
+
+\end{frame}
+
+
+\begin{frame}{Exploratory Data Analysis: SMALL COUNTY}
 	\begin{minipage}{0.85\linewidth}
 	 	 \begin{figure}
 	 	 	\includegraphics[width=0.5\textwidth]{figures/Sendplot.pdf}	 	
@@ -326,6 +357,28 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 	 \end{figure}	
 	\end{minipage}
 \end{frame}
+
+
+\begin{frame}{Exploratory Data Analysis: DARE COUNTY}
+	\begin{minipage}{0.85\linewidth}
+	 	 \begin{figure}
+	 	 	\includegraphics[width=0.5\textwidth]{figures/Sendplot.pdf}	 	
+	 	 	\includegraphics[width=0.5\textwidth]{figures/Receiveplot.pdf}
+	 	 \end{figure}	
+	 \begin{figure}
+	 %	\includegraphics[width=0.5\textwidth]{Wordplot.pdf}	 
+	 		 	\includegraphics[width=1\textwidth]{figures/Networkplot.pdf}
+	 		 		 \end{figure}	
+\end{minipage}
+\begin{minipage}{0.13\linewidth}
+		 \begin{figure}
+	 		 		 	\includegraphics[width=1.25\textwidth]{figures/Dept2.jpg}
+	 \end{figure}	
+	\end{minipage}
+\end{frame}
+
+
+
  \begin{frame}{IPTM Result: Contents}
  	\bni \item IPTM result with $C=2$, $K=20$ and $O= 20$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
  	\ei
@@ -357,6 +410,8 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \end{table}
 \normalsize
 \end{frame}
+
+
 \begin{frame}{IPTM Result: Dynamic Network Effects}
 	\bni \item IPTM result with $C=2$, $K=20$ and $O= 20$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
 	\ei
@@ -364,6 +419,61 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 		\includegraphics[width=1\textwidth]{figures/DareBplot2.pdf}
 	\end{figure}	
 \end{frame}
+
+
+ \begin{frame}{IPTM Result: Contents DARE}
+ 	\bni \item IPTM result with $C=2$, $K=20$ and $O= 20$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
+ 	\ei
+ 	\scriptsize
+\centering	\begin{table}[ht]
+	\centering
+	\begin{tabular}{ |c||c|c|c||c|c|c|} 
+		\hline
+		\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
+			\textbf{Topic} & \textbf{2} &  \textbf{13} & \textbf{7}  &\textbf{10} &\textbf{9}  &\textbf{12}  \\ \hline\hline
+			\textbf{Word}& winds & track & offices & sanitation & marshall & morning\\
+			&flooding & offices & hurricane & billed & human & fema\\
+			&policy & obx & sandy & long & collins & weather\\
+			&mph & shore &  update & bill & phone & ems\\
+			&moving & winds & force & question & resources & risks \\
+			&outer & exam & reading & staff & phr & sure\\
+			&banks & area &  contact & vehicles & drive & tomorrow\\
+			&rain & change & updates & additional & box & opening\\
+			&will & continues & amount & form & fax & address\\
+			&duration & expect & northwest &  estimate & bridge &  elections\\
+			&monday & curves & tuesday &  total & director & thought\\
+			&ocean & side & expected & doors & monday & minutes \\
+			&open & east & good & services & manteo & starting\\
+			&heads & better &  well & tomorrow & summary & wrote\\
+			&late & mile & night & haterras & october & operation\\
+			
+				\hline
+	\end{tabular}
+\end{table}
+\normalsize
+\end{frame}
+
+
+\begin{frame}{IPTM Result: Dynamic Network Effects DARE}
+	\bni \item IPTM result with $C=2$, $K=20$ and $O= 20$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
+	\ei
+	\begin{figure}
+		\includegraphics[width=1\textwidth]{figures/DareBplot2.pdf}
+	\end{figure}	
+\end{frame}
+
+\begin{frame}
+
+Showing MCMC convergence
+
+\end{frame}
+
+
+\begin{frame}
+Predictive experiment design
+\end{frame}
+
+
 \begin{frame}{Conclusion}
  \bni
  \item Joint modeling of ties (sender, receiver, time) and contents
