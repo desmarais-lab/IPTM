@@ -349,20 +349,45 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \end{frame}
 
 
-\begin{frame}{Theoretical expectations}
+\begin{frame}{Theoretical considerations}
+\large
+\begin{itemize}
+\item Personal/friendship topics exhibit reciprocity and transitivity \vspace{.4cm}
+\item Professional communications avoid loops  \vspace{.4cm}
+\item Sandy communications represent pattern breakdowns
+\end{itemize}
 
 \end{frame}
 
 
-\begin{frame}{Exploratory Data Analysis: SMALL COUNTY}
+\begin{frame}{Exploratory Data Analysis: Vance County}
 	\begin{minipage}{0.85\linewidth}
 	 	 \begin{figure}
-	 	 	\includegraphics[width=0.5\textwidth]{figures/Sendplot.pdf}	 	
-	 	 	\includegraphics[width=0.5\textwidth]{figures/Receiveplot.pdf}
-	 	 \end{figure}	
+	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 5cm 0cm, clip=true]{figures/VanceSend.pdf}	 	
+	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 5cm 0cm, clip=true]{figures/VanceReceive.pdf}
+	 	 \end{figure}	\vspace{-.5cm}
 	 \begin{figure}
 	 %	\includegraphics[width=0.5\textwidth]{Wordplot.pdf}	 
-	 		 	\includegraphics[width=1\textwidth]{figures/Networkplot.pdf}
+	 		 	\includegraphics[width=1\textwidth]{figures/VanceNetwork.pdf}
+	 		 		 \end{figure}	
+\end{minipage} 
+\begin{minipage}{0.13\linewidth}
+		 \begin{figure}
+	 		 		 	\includegraphics[width=1.25\textwidth]{figures/Dept2.jpg}
+	 \end{figure}	
+	\end{minipage}
+\end{frame}
+
+
+\begin{frame}{Exploratory Data Analysis: Dare County}
+	\begin{minipage}{0.85\linewidth}
+	 	 \begin{figure}
+	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 5cm 0cm, clip=true]{figures/DareSend.pdf}	 	
+	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 5cm 0cm, clip=true]{figures/DareReceive.pdf}
+	 	 \end{figure}	\vspace{-.5cm}
+	 \begin{figure}
+	 %	\includegraphics[width=0.5\textwidth]{Wordplot.pdf}	 
+	 		 	\includegraphics[width=1\textwidth]{figures/DareNetwork.pdf}
 	 		 		 \end{figure}	
 \end{minipage}
 \begin{minipage}{0.13\linewidth}
@@ -373,56 +398,33 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \end{frame}
 
 
-\begin{frame}{Exploratory Data Analysis: DARE COUNTY}
-	\begin{minipage}{0.85\linewidth}
-	 	 \begin{figure}
-	 	 	\includegraphics[width=0.5\textwidth]{figures/Sendplot.pdf}	 	
-	 	 	\includegraphics[width=0.5\textwidth]{figures/Receiveplot.pdf}
-	 	 \end{figure}	
-	 \begin{figure}
-	 %	\includegraphics[width=0.5\textwidth]{Wordplot.pdf}	 
-	 		 	\includegraphics[width=1\textwidth]{figures/Networkplot.pdf}
-	 		 		 \end{figure}	
-\end{minipage}
-\begin{minipage}{0.13\linewidth}
-		 \begin{figure}
-	 		 		 	\includegraphics[width=1.25\textwidth]{figures/Dept2.jpg}
-	 \end{figure}	
-	\end{minipage}
-\end{frame}
 
-
-
- \begin{frame}{IPTM Result: Contents}
- 	\bni \item IPTM result with $C=2$, $K=20$ and $O= 20$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
- 	\ei
- 	\scriptsize
-\centering	\begin{table}[ht]
-	\centering
-	\begin{tabular}{ |c||c|c|c||c|c|c|} 
-		\hline
-		\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
-			\textbf{Topic} & \textbf{2} &  \textbf{13} & \textbf{7}  &\textbf{10} &\textbf{9}  &\textbf{12}  \\ \hline\hline
-			\textbf{Word}& winds & track & offices & sanitation & marshall & morning\\
-			&flooding & offices & hurricane & billed & human & fema\\
-			&policy & obx & sandy & long & collins & weather\\
-			&mph & shore &  update & bill & phone & ems\\
-			&moving & winds & force & question & resources & risks \\
-			&outer & exam & reading & staff & phr & sure\\
-			&banks & area &  contact & vehicles & drive & tomorrow\\
-			&rain & change & updates & additional & box & opening\\
-			&will & continues & amount & form & fax & address\\
-			&duration & expect & northwest &  estimate & bridge &  elections\\
-			&monday & curves & tuesday &  total & director & thought\\
-			&ocean & side & expected & doors & monday & minutes \\
-			&open & east & good & services & manteo & starting\\
-			&heads & better &  well & tomorrow & summary & wrote\\
-			&late & mile & night & haterras & october & operation\\
-			
-				\hline
-	\end{tabular}
-\end{table}
-\normalsize
+ \begin{frame}{IPTM Result: Topics, Vance County}
+ 	  $C=2$, $K=20$ and $O= 500$
+ 
+               	\centering
+               	\scalebox{0.75}{	 	\begin{tabular}{ |c||c|c|c||c|c|c|} 
+               			\hline
+               			\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
+               			\textbf{Topic} & \textbf{1} (0.078)&  \textbf{3} (0.224)& \textbf{5} (0.141) &\textbf{2} (0.139) &\textbf{4} (0.369) &\textbf{6} (0.038) \\ \hline\hline
+               			\textbf{Word}
+               			& directory & message & operations& phase& dropbox & phones\\
+               			&switch & electronic & emergency& description & cecd & october\\
+               			&network & ncgs & office &planning & henderson-vance & will\\
+               			&address &  chapter  &  communications&board& box& polycom\\
+               			&extension & response  & center& water & commission & intstructions\\
+               			&tax & public &lines &taps& economic & training\\
+               			&latest& manager & fax& keep & unemployment&conference\\
+               			&department & attachments &enp & phone& licensed & three\\
+               			&henderson&  siemens&cem & compliance& rural& finalized\\
+               			&january & pursuant & suite&  signups & development &room\\
+               			&young & subject & good&meter & reduced&cutover\\
+               			&wireless & review& asap& suite & financial& contact\\
+               			&installation & records& henderson&fax & private& thursday\\
+               			&cutting&jail & street &meeting& labor& folks\\
+               			&rest& hereto & church & tuesday& force& finishing\\
+               			\hline
+               		\end{tabular}}
 \end{frame}
 
 
@@ -435,37 +437,62 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \end{frame}
 
 
- \begin{frame}{IPTM Result: Contents DARE}
- 	\bni \item IPTM result with $C=2$, $K=20$ and $O= 20$\footnote{Preliminary results with small outer iterations. Model results subject to change.}:
- 	\ei
- 	\scriptsize
-\centering	\begin{table}[ht]
-	\centering
-	\begin{tabular}{ |c||c|c|c||c|c|c|} 
-		\hline
-		\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{2} &\textbf{2}  &\textbf{2}  \\ \hline\hline
-			\textbf{Topic} & \textbf{2} &  \textbf{13} & \textbf{7}  &\textbf{10} &\textbf{9}  &\textbf{12}  \\ \hline\hline
-			\textbf{Word}& winds & track & offices & sanitation & marshall & morning\\
-			&flooding & offices & hurricane & billed & human & fema\\
-			&policy & obx & sandy & long & collins & weather\\
-			&mph & shore &  update & bill & phone & ems\\
-			&moving & winds & force & question & resources & risks \\
-			&outer & exam & reading & staff & phr & sure\\
-			&banks & area &  contact & vehicles & drive & tomorrow\\
-			&rain & change & updates & additional & box & opening\\
-			&will & continues & amount & form & fax & address\\
-			&duration & expect & northwest &  estimate & bridge &  elections\\
-			&monday & curves & tuesday &  total & director & thought\\
-			&ocean & side & expected & doors & monday & minutes \\
-			&open & east & good & services & manteo & starting\\
-			&heads & better &  well & tomorrow & summary & wrote\\
-			&late & mile & night & haterras & october & operation\\
-			
-				\hline
-	\end{tabular}
-\end{table}
-\normalsize
+ \begin{frame}{IPTM Result: Topics, Dare County (IP 1)}
+ \centering
+ 	 $C=2$, $K=20$ and $O= 100$
+          			\scalebox{0.85}{	 	\begin{tabular}{ |c||c|c|c|c|c|}  
+          					\hline
+          					\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{1} &\textbf{1}   \\ \hline\hline
+          					\textbf{Topic} & \textbf{3} (0.078)&  \textbf{5} (0.065)& \textbf{19} (0.064) &\textbf{13} (0.057) &\textbf{15} (0.053)  \\ \hline\hline
+          					\textbf{Word} 
+          					& water & planning &phone &questions &contact\\
+          					& relocation & meter & collins & board & info \\
+          					& location & room & drive &december & problem\\
+          					& hills& asked &marshall & call & release \\
+          					& utilities &needed & director & sheets & check \\
+          					& mustian & sure & human & agenda & weather \\
+          					& hydrant &afternoon &resources & nov & priority \\
+          					& department &cheryl & manteo & hope & readings \\
+          					& skyco & johnson & phr & item & rodanthe \\
+          					& kill & issues & fax & weekly & top \\
+          					& devil & case & box & management & collection\\ 
+          					& road & letter & timesheets &internet & located \\
+          					& lane & antennas & -lsb- & told & health \\
+          					& tank & inspection & wanted & care & heads \\
+          					& map & keep & touch & comp & ahead\\
+          					\hline       				
+          				\end{tabular}}
 \end{frame}
+
+
+\begin{frame}{IPTM Result: Topics, Dare County (IP 2)}
+ \centering
+ 	 $C=2$, $K=20$ and $O= 100$
+          			\scalebox{0.85}{	 	\begin{tabular}{ |c||c|c|c|c|c|}  
+          					\hline
+          			          					\textbf{IP} & \textbf{2} &  \textbf{2} & \textbf{2}  &\textbf{2} &\textbf{2}   \\ \hline\hline
+          					\textbf{Topic} & \textbf{14} (0.058)&  \textbf{12} (0.047)& \textbf{2} (0.045) &\textbf{6} (0.044) &\textbf{18} (0.036) \\ \hline\hline
+          					\textbf{Word}
+          					& time & survey &  road & library & status \\
+          					& hours & voice & mirlo & week & system \\
+          					& leave & copy& storm &  working & area \\
+          					& monday & discovery & beach & place & south \\
+          					& administrative & regional & high & best & forecast \\
+          					& employees & parties & coastal & start & track \\
+          					& empoyee & disclosed & impacts & visit & pay \\
+          					& work & elections & saturday & year & move \\
+          					& day & pin & dot & albemarle & assessment \\
+          					& friday & sending & night & librarian & opens \\
+          					& october & prior & winds & web & damage\\
+          					& storm &editor & hold & learning & well\\
+          					& tomorrow & students & bridge & east& ocean\\
+          					& hour & cost & expressed & holiday &  operation\\
+          					& question & residents & normal & system & addition
+          					\\
+          					\hline            				
+          				\end{tabular}}
+\end{frame}
+
 
 
 \begin{frame}{IPTM Result: Dynamic Network Effects DARE}
@@ -476,15 +503,37 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 	\end{figure}	
 \end{frame}
 
-\begin{frame}
 
-Showing MCMC convergence
+\begin{frame} \frametitle{Model fit evaluation}
+\begin{itemize}
+\item Forecast topics, ties, and timing of next document
+\item Compare to one or more models that can generate same predictions
+\end{itemize}
+\scalebox{.8}{
+ \begin{minipage}{1\linewidth}\begin{algorithm}[H]
+	\SetAlgoLined
+	\caption{Predicting tie data for the next document}
+	
+	Input
+	\begin{enumerate}
+	\item $O$, number of outer iterations of inference from which to generate predictions
+	\item $d$, the last document to use in inference
+	\item $R$, the number of iterations to sample predicted data within each outer iteration
+	\end{enumerate}
+	Run burnin iterations\\
+	\For{o=1 to O}{
+		run an outer iteration of inference on documents $1$ through $d$\\
+		initialize values for $i^{(d+1)}$, $J^{(d+1)}$, $t^{(d+1)}$, and $\mathcal{Z}^{d+1}$ \\
+		\For{r=1 to R}{
+		sample  $i^{(d+1)}$, $J^{(d+1)}$, and $t^{(d+1)}$ conditional on $\mathcal{Z}^{d+1}$, via the generative process \\
+		sample $\mathcal{Z}^{d+1}$ via Equation 24
+		}
+		store $i^{(d+1)}$, $J^{(d+1)}$, $t^{(d+1)}$, and $\mathcal{Z}^{d+1}$
+	}
+\end{algorithm}
+\end{minipage}
+}
 
-\end{frame}
-
-
-\begin{frame}
-Predictive experiment design
 \end{frame}
 
 
@@ -499,4 +548,13 @@ Predictive experiment design
  	\item Developement of R package `IPTM'
  \ei
 \end{frame}
+
+
+
+\begin{frame} \frametitle{Convergence of Markov Chains}
+
+
+
+\end{frame}
+
 \end{document}
