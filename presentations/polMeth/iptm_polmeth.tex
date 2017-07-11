@@ -182,7 +182,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \begin{frame}{Dynamic Network Features (Perry and Wolfe, 2012)}
 
 \large
-Current network features model
+Current network features modeled
 \begin{itemize}
 \item memory
 \item reciprocity
@@ -197,26 +197,20 @@ Current network features model
 
 \end{frame}
 
-\begin{frame}{Dynamic Network Features (Perry and Wolfe, 2012)}
+\begin{frame}{Conditioning feagures on recency}
 
-{\bf Conditioning statistics on recency}
 
-	\bni
-	\item Partition the past 384 hours (=16 days) into 3 sub-intervals
-	\footnotesize
+\begin{itemize}
+\item Network features conditioned on degree of recency
+\item Partition the past 384 hours (=16 days) into 3 sub-intervals
 	\begin{equation*}
 	[t-384h,t) = [t-384h, t-96h) \cup [t-96h, t-24h)\cup [t-24h, t),
 	\end{equation*}
-	\normalsize
-	then define the interval-based dynamic network statistics $(l = 1, 2, 3)$\\ \vspace{0.4cm}
-	 \item $\boldsymbol{x}^{(c)}_{t, l}(i, j)$ is the network statistics at time $t$, for interaction pattern $c$ \\\vspace{0.1cm}
-	- Degree: outdegree and  indegree\\\vspace{0.1cm}
- - Dyadic: send and receive \\\vspace{0.1cm}
- - Triadic: 2-send, 2-receive, sibling and cosibling\\\vspace{0.2cm}
-	 \begin{figure}
-	 	\includegraphics[width=2\textwidth]{figures/netstats.pdf}
-	 \end{figure}	
-	 \ei
+\item $\boldsymbol{x}^{(c)}_{t, l}(i, j)$ is the network statistics at time $t$, for interaction pattern $c$
+\end{itemize}
+\centering
+\includegraphics[scale=.2]{./figures/triadtable}
+
 \end{frame}
 
 \begin{frame}{Tie Generating Process: Receivers}
@@ -263,14 +257,22 @@ Current network features model
 \end{frame}
 
 \begin{frame}{Joint Generating Process}
-		\bni 
-		\item Joint Generating Process
+
 	\begin{figure}
-		\includegraphics[width=0.6\textwidth]{figures/summary.pdf}
+		\includegraphics[width=0.9\textwidth]{figures/summary.pdf}
 	\end{figure}	\vspace{0.1cm}
-\item Bayesian Inference using Markov Chain Monte Carlo (MCMC)
+
+\end{frame}
+
+
+\begin{frame}{Inference}
+
+\begin{itemize}
+\item Take a Bayesian approach to inference
+\item $\mathcal{B}$ and $\delta$ interpreted at fixed $\mathcal{Z}$ and  $\mathcal{C}$
+\end{itemize}
   	\begin{center}
-  		\scalebox{0.65}{	 
+  		\scalebox{.9}{	 
  	 \begin{minipage}{1\linewidth}\begin{algorithm}[H]
 \SetAlgoLined
 	 	\caption{MCMC}
@@ -285,38 +287,30 @@ Current network features model
 	 \end{algorithm}
 	\end{minipage}}
 	 	\end{center}
-	 		\ei
 \end{frame}
 
 
-\begin{frame}{Bayesian Inference}
-		\bni 
-		\item Joint Generating Process
-	\begin{figure}
-		\includegraphics[width=0.6\textwidth]{figures/summary.pdf}
-	\end{figure}	\vspace{0.1cm}
-\item Bayesian Inference using Markov Chain Monte Carlo (MCMC)
-  	\begin{center}
-  		\scalebox{0.65}{	 
- 	 \begin{minipage}{1\linewidth}\begin{algorithm}[H]
-\SetAlgoLined
-	 	\caption{MCMC}
-	 	Set initial values $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, $ and $(\mathcal{B}^{(0)}, \delta^{(0)})$\\
-	 	\For{o=1 to O}{
-	 				Sample the \textcolor{blue}{latent receivers} $J^{(d)}_{ij}$ via Gibbs sampling\\
-	 				Sample the \textcolor{blue}{topic assignments} $\mathcal{Z}$ via Gibbs sampling\\
-	 			Sample the \textcolor{blue}{interaction pattern assignments} $\mathcal{C}$ via Gibbs sampling\\
-	 		 				Sample the \textcolor{blue}{network effect parameters} $\mathcal{B}$  via Metropolis-Hastings \\
-	 			Sample the \textcolor{blue}{receiver size parameter} $\delta$ via Metropolis-Hastings
-	 	}
-	 \end{algorithm}
-	\end{minipage}}
-	 	\end{center}
-	 		\ei
-\end{frame}
+\begin{frame} \frametitle{Getting it Right: Jointly testing math and code}
 
+Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
+\begin{itemize}
+\item {\em Forward samples}: 
+\begin{enumerate}
+\item Draw parameters from prior
+\item Draw data conditional on parameters
+\item Repeat
+\end{enumerate} \vspace{.2cm}
+\item {\em Backward samples}: 
+\begin{enumerate}
+\item Start with a forward sample of data
+\item Run inference on data
+\item Generate new data conditioned on inferred parameters
+\item Run inference on new data
+\item Repeat
+\end{enumerate} \vspace{.2cm}
+\item Forward samples and backward samples should match
+\end{itemize}
 
-\begin{frame} \frametitle{Getting it Right}
 
 \end{frame}
 
