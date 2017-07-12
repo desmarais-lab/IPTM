@@ -4,7 +4,7 @@ Good afternoon, I am Bomin Kim from the statistics department of Penn state, and
 
 Slide 2.
 
-Motivation
+We study many networks in which ties are attributed with text. Some examples include international treaties, international sanctions, cosponsorship of bills, and online discussions. However, methods designed to model complex network structure cannot currently handle text-valued tie data. Models for text either cannot incorporate information about ties or do so in a fairly simple and dyadic manner. We develop a new model for text valued networks that incorporates complex network structure.
 
 
 Slide 3.
@@ -23,15 +23,9 @@ Finally, the content will be summarized as a distribution of interaction pattern
 
 Slide 5. 
 
-Before we move to tie generating process, I would like to briefly mention how we defined our dynamic network statistics. Considering that document sending/receiving behavior is highly influenced by the previous interactions, we track the history of interactions back to 16 days ago, and divide the past 16 days into 3 intervals: now to 1 day ago, 1 day to 3 days ago, and 3 days to 16 days ago, such that they have equal space in log-scale. Then we define the interval-based network statistics, as below.
-
-So, X is the network statistic, and we use three types of network statistics to measure popularity, centrality, reciprocity, and transitivity. We first use outdegree and in degree statistics, how many times i sent a document to anyone or received from anyone; then we use two dyadic statistics, send and receive, which simply means how many times i sent to or received from j. Lastly we use 4 triadic statistics, which are analogous to common 2-star or 2-path statistics in network studies. Details on these statistics are illustrated in Perry and Wolfe, 2012 paper.
 
 Slide 6. 
 
-Before we move to tie generating process, I would like to briefly mention how we defined our dynamic network statistics. Considering that document sending/receiving behavior is highly influenced by the previous interactions, we track the history of interactions back to 16 days ago, and divide the past 16 days into 3 intervals: now to 1 day ago, 1 day to 3 days ago, and 3 days to 16 days ago, such that they have equal space in log-scale. Then we define the interval-based network statistics, as below.
-
-So, X is the network statistic, and we use three types of network statistics to measure popularity, centrality, reciprocity, and transitivity. We first use outdegree and in degree statistics, how many times i sent a document to anyone or received from anyone; then we use two dyadic statistics, send and receive, which simply means how many times i sent to or received from j. Lastly we use 4 triadic statistics, which are analogous to common 2-star or 2-path statistics in network studies. Details on these statistics are illustrated in Perry and Wolfe, 2012 paper.
 
 Slide 7. 
 
