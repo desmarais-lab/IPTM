@@ -66,29 +66,29 @@ Geweke proposed a very broad and general framework for testing whether both the 
 
 Slide 13.
 
-GiR with full model
+Our GiR results are presented in this grid of probability-probability plots. If the points fall perfectly along the 45-degree lines in these plots, that indicates that our model and code pass the GiR test. In each plot, we also print a t-test and Mann-Whitney rank test in which we compare the forward and backward sample. We include a plot for every parameter and data type generated. Some of the plots exhibit substantial discrepancies between the 45-degree lines and the points, and several hypothesis tests indicate significant differences between samples. The larger plot to your right presents the number of recipients simulated. 
 
 Slide 14.
 
-GiR with fixed C
+In troubleshooting the model and code we noticed that the backwards samples tended to exhibit higher numbers of topics assigned to one interaction pattern than we observed in the forward samples. We believe that we likely have a math error in our handling of the documents that represent the initial history (i.e., the first sixteen days) in our data. We have not been able to correct this yet, but we are able to verify that once we fix C---associating each topic with a fixed interaction pattern---we pass GiR. So that is the model we use in our application. 
 
 Slide 15.
 
-We applied the IPTM to a real dataset, which is North Carolina Dare county email data. We analyzed 1456 emails between 27 county government managers, from October to November 2013. Interestingly, this includes the time period where Hurricane Sandy passed by NC, and Dare county here includes Outer Banks, one of the most significantly affected area. We hoped to see if our model can capture any changes in emails during the hurricane period.
+We applied the IPTM to two counties from the North Carolina County Government e-mail dataset. The larger dataset comes from Dare county---a coastal county that includes the Outer Banks. We analyzed 1456 emails between 27 county government managers, from October to November 2013. This includes the time period where Hurricane Sandy passed by NC. We look to see if our model can capture any changes in email content and/or network structure during the hurricane period. We also study a smaller and more inland county---Vance county. We have just 183 e0mails exchanged between 17 managers. 
 
 Slide 16.
 
-Theoretical expectations for organizational communication networks
+We can apply a few theoretical insights from communication network theory to derive expectations regarding the structures we observe. First, for interaction patterns populated mostly by personal discussion topics, we should see reciprocity and transitivity in tie formation. Second, if an interaction pattern that contains mostly proffessional information dissemination topics (e.g., the meeting agenda, reports on the county commission, etc.) we should observe a lack of looping---a negative effect of looping variables. We are not sure what to expect with communication focused on Hurricane Sandy. We may see a general breakdown in the typical network tendencies.  
 
 Slide 17.
 
-This is an exploratory analysis on the effect of Sandy on county government managers’ email exchange pattern. Starting October 23, where the word “Sandy” was first appeared in the email corpus, Emergency Services department had sent large number of emails until the end of hurricane on October 30th, and when you look at the receive plot on the right, it seems that those emergent emails were sent to almost everyone. Also, even after hurricane passed, managers from Emergency services often sent emails to every county government managers, since the peaks in both plots match each other.
+We first present an exploratory analysis on the effect of Sandy on county government managers’ email exchange patterns. The plots on the top give the number of e-mails sent and received by each manager, colored according to department, over time in the corpus. The vertical red lines enclose the period during which Hurricane Sandy affected North Carolina. 
 
-Below are the network plots based on 3-weeks period before Sandy, during Sandy, and after Sandy. Previously county manager was in the center of network sending the largest number of emails, but it changed during hurricane Sandy, dominated by Emergency Services department. After Sandy, there still remains the effect of hurricane.
+Below are the network plots based on 3-weeks period before Sandy, during Sandy, and after Sandy. We do not see any notable effects of the hurricane on Vance county from this simple exploratory analysis. This is not overly surprising since it is a relatively small corpus of e-mails and it is a fairly inland county.
 
 Slide 18.
 
-This is an exploratory analysis on the effect of Sandy on county government managers’ email exchange pattern. Starting October 23, where the word “Sandy” was first appeared in the email corpus, Emergency Services department had sent large number of emails until the end of hurricane on October 30th, and when you look at the receive plot on the right, it seems that those emergent emails were sent to almost everyone. Also, even after hurricane passed, managers from Emergency services often sent emails to every county government managers, since the peaks in both plots match each other.
+We This is an exploratory analysis on the effect of Sandy on county government managers’ email exchange pattern. Starting October 23, where the word “Sandy” was first appeared in the email corpus, Emergency Services department had sent large number of emails until the end of hurricane on October 30th, and when you look at the receive plot on the right, it seems that those emergent emails were sent to almost everyone. Also, even after hurricane passed, managers from Emergency services often sent emails to every county government managers, since the peaks in both plots match each other.
 
 Below are the network plots based on 3-weeks period before Sandy, during Sandy, and after Sandy. Previously county manager was in the center of network sending the largest number of emails, but it changed during hurricane Sandy, dominated by Emergency Services department. After Sandy, there still remains the effect of hurricane.
 
