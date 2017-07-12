@@ -534,7 +534,9 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 	title("Traceplot of delta")
   }
      
-  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat)
+  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat,
+                     iJi = iJi, sigma_Q =sigma_Q, alpha = alpha, mvec = mvec, 
+                     proposal.var= proposal.var)
   return(chain.final)
 }
 
@@ -864,7 +866,9 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     title("Traceplot of delta")
   }
   
-  chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat)
+  chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat,
+                     iJi = iJi, sigma_Q =sigma_Q, alpha = alpha, mvec = mvec, 
+                     proposal.var= proposal.var)
   return(chain.final)
 }
 
@@ -1191,7 +1195,9 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     title("Traceplot of delta")
   }
   
-  chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat)
+  chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat, 
+                     iJi = iJi, sigma_Q =sigma_Q, alpha = alpha, mvec = mvec, 
+                     proposal.var= proposal.var)
   return(chain.final)
 }
 
@@ -1492,7 +1498,9 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 	title("Traceplot of delta")
   }
      
-  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat)
+  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat,
+                     iJi = iJi, sigma_Q =sigma_Q, alpha = alpha, mvec = mvec, 
+                     proposal.var= proposal.var)
   return(chain.final)
 }
 
