@@ -2,7 +2,7 @@
 %\usetheme{Boadilla}
 %\usecolortheme{beaver}
 %\usepackage[latin1]{inputenc}
-\useoutertheme{split}
+%\useoutertheme{split}
 \setbeamertemplate{navigation symbols}{}
 \usefonttheme[onlymath]{serif}
 \usepackage[export]{adjustbox}
@@ -20,13 +20,13 @@
 \usepackage{mathrsfs}
 %\usepackage{epstopdf}
 \usepackage{graphicx}
-\mode<presentation>
-{
-	\usetheme{CambridgeUS}
-	\usecolortheme{dolphin}
-	\usecolortheme{rose}
-	\setbeamercovered{transparent}
-}
+%\mode<presentation>
+%{
+%	\usetheme{CambridgeUS}
+%	\usecolortheme{dolphin}
+%	\usecolortheme{rose}
+%	\setbeamercovered{transparent}
+%}
 \newcommand{\mrel}{\mathrel{\bigcirc}}
 %\usepackage[onehalfspacing]{setspace}
 %\setbeamertemplate{footline}[frame number]
@@ -72,6 +72,17 @@ Bomin Kim\textsuperscript{1}\and
 \institute{\textsuperscript{1} The Pennsylvania State University \and \textsuperscript{2} Microsoft Research NYC \and \textsuperscript{3} University of Massachusetts Amherst}
 
 
+\newenvironment{changemargin}[2]{%
+  \begin{list}{}{%
+    \setlength{\topsep}{0pt}%
+    \setlength{\leftmargin}{#1}%
+    \setlength{\rightmargin}{#2}%
+    \setlength{\listparindent}{\parindent}%
+    \setlength{\itemindent}{\parindent}%
+    \setlength{\parsep}{\parskip}%
+  }%
+  \item[]}{\end{list}} 
+
 \begin{document}
  
 \begin{frame}
@@ -113,12 +124,13 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \begin{frame}{Interaction-Partitioned Topic Model (IPTM)}
 \large
 	\bni
-	\item Probablistic model for time-stamped textual communications \\
+	\item Probablistic model for time-stamped textual communications 
 	\vspace{0.2cm}
-	\item Integration of two generative models:\\
-		\vspace{0.1cm}
-	 - Latent Dirichlet allocation (LDA) for topic-based contents\\	\vspace{0.2cm}
-	 - Dynamic exponential random graph model (ERGM) for ties \\
+	\item Integration of two generative models:
+	\begin{itemize}
+	 \item Latent Dirichlet allocation (LDA) for topic-based contents
+	  \item Dynamic exponential random graph model (ERGM) for ties 
+	  \end{itemize}
 	\ei
 		\vspace{0.4cm}
 \centering \large\textit{``who communicates with whom about what, and when?"}
@@ -198,7 +210,7 @@ Current network features modeled
 
 \end{frame}
 
-\begin{frame}{Conditioning feagures on recency}
+\begin{frame}{Conditioning features on recency}
 
 
 \begin{itemize}
@@ -316,14 +328,17 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \end{frame}
 
 \begin{frame} \frametitle{GiR: Results with full model}
+\begin{changemargin}{-1cm}{-.5cm}
 \vspace{-1.5cm}
-\includegraphics[scale=.475, left]{./figures/Schein_C_50k.pdf} \\  \vspace{-6cm} \includegraphics[height=4cm, right]{./figures/ScheinFocus}
-
+\includegraphics[scale=.5, left]{./figures/Schein_C_50k.pdf} \\  \vspace{-6cm} \includegraphics[height=4cm, right]{./figures/ScheinFocus}
+\end{changemargin}
 \end{frame}
 
 \begin{frame} \frametitle{GiR: Results with fixed C}
+\begin{changemargin}{-1cm}{-.5cm}
  \vspace{-1.5cm}
-\includegraphics[scale=.475, left]{./figures/Schein_NoC_50k.pdf} \\  \vspace{-6cm} \includegraphics[height=4cm, right]{./figures/ScheinFocusNoC}
+\includegraphics[scale=.5, left]{./figures/Schein_NoC_50k.pdf} \\  \vspace{-6cm} \includegraphics[height=4cm, right]{./figures/ScheinFocusNoC}
+\end{changemargin}
 \end{frame}
 
 
@@ -382,8 +397,8 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \begin{frame}{Exploratory Data Analysis: Dare County}
 	\begin{minipage}{0.85\linewidth}
 	 	 \begin{figure}
-	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 5cm 0cm, clip=true]{figures/DareSend.pdf}	 	
-	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 5cm 0cm, clip=true]{figures/DareReceive.pdf}
+	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 6cm 0cm, clip=true]{figures/DareSend.pdf}	 	
+	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 6cm 0cm, clip=true]{figures/DareReceive.pdf}
 	 	 \end{figure}	\vspace{-.5cm}
 	 \begin{figure}
 	 %	\includegraphics[width=0.5\textwidth]{Wordplot.pdf}	 
@@ -400,6 +415,9 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 
 
  \begin{frame}{IPTM Result: Topics, Vance County}
+ \centering
+ \begin{changemargin}{-1cm}{-1cm}
+ \centering
  	  $C=2$, $K=20$ and $O= 500$
  
                	\centering
@@ -425,14 +443,18 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
                			&rest& hereto & church & tuesday& force& finishing\\
                			\hline
                		\end{tabular}}
+		\end{changemargin}
 \end{frame}
 
 
 \begin{frame}{IPTM Result: Dynamic Network Effects, Vance County}
+\begin{changemargin}{-1cm}{-1cm}
 
 	\begin{figure}
-		\includegraphics[width=.5\textwidth]{figures/VanceBReceive-1.png} \includegraphics[width=.5\textwidth]{figures/Vance2Receive-1.png}
+		\includegraphics[width=.55\textwidth]{figures/VanceBReceive-1.png} \includegraphics[width=.55\textwidth]{figures/Vance2Receive-1.png}
 	\end{figure}	
+	
+\end{changemargin}
 \end{frame}
 
 
@@ -495,10 +517,11 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 
 
 \begin{frame}{IPTM Result: Dynamic Network Effects, Dare County}
-
+\begin{changemargin}{-1cm}{-1cm}
 	\begin{figure}
-		\includegraphics[width=.5\textwidth]{figures/DareBReceive-1.png} \includegraphics[width=.5\textwidth]{figures/Dare2Receive-1.png}
+		\includegraphics[width=.55\textwidth]{figures/DareBReceive-1.png} \includegraphics[width=.55\textwidth]{figures/Dare2Receive-1.png}
 	\end{figure}	
+	\end{changemargin}
 \end{frame}
 
 
