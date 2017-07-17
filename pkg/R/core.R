@@ -1280,16 +1280,8 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
   LambdaiJi = list()
   observediJi = list()
   for (d in edge2) {
-    history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + 10^(-10))
-    X = lapply(node, function(i) {
-      Netstats(history.t, node, i, netstat)
-    })
-    XB = MultiplyXBList(X, beta.old)     
-    lambda[[d]] = lambda_cpp(p.d[d,], XB)
-    iJi[[d]] = matrix(rbinom(length(node)^2, 1, 0.5), nrow =length(node), ncol = length(node))
-    diag(iJi[[d]]) = 0
+    iJi[[d]] = initial$iJi[[d]]
   }
-
 
     #start outer iteration
     for (o in 1L:out) {
@@ -2091,11 +2083,11 @@ GenerateDocs.Schein = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, m
        			})
      		 })  
   word_type_topic_counts = matrix(0, W, K)
-  iJi = matrix(0, length(node), length(node))
+  iJi = list()
   for (d in 1:nDocs) {
     N.d = nwords
     text[[base.length + d]] = rep(NA, N.d)
-    
+     iJi[[base.length + d]] = matrix(0, length(node), length(node))
     if (!backward) {
       theta.d = rdirichlet_cpp(1, alpha * mvec)	
       topic.d = multinom_vec(max(1, N.d), theta.d)
@@ -2129,11 +2121,11 @@ GenerateDocs.Schein = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     lambda = lambda_cpp(p.d[base.length + d,], XB)
     
     	for (i in node) {
-    		iJi[i, -i] = r.gibbs.measure(1, lambda[i, -i], delta, support)
+    		iJi[[base.length + d]][i, -i] = r.gibbs.measure(1, lambda[i, -i], delta, support)
     	}
-    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
+    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi[[base.length + d]])
     i.d = multinom_vec(1, LambdaiJi)
-    j.d = which(iJi[i.d,] == 1)
+    j.d = which(iJi[[base.length + d]][i.d,] == 1)
     t.d = t.d + rexp(1, sum(LambdaiJi))
     edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
   }
@@ -2142,7 +2134,7 @@ GenerateDocs.Schein = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     edge = edge[1:cutoff]
     text = text[1:cutoff]
   }
-  return(list(edge = edge, text = text, base = base.length, b = b, d = delta, X = X))							
+  return(list(edge = edge, text = text, base = base.length, b = b, d = delta, X = X, iJi = iJi))							
 } 
 
 
@@ -2497,7 +2489,8 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     cmat1[i, ] = currentC
 
     if (i %% 100 == 0) {cat("Sampling", i, "\n")}
-    initial = list(C = currentC, D = delta, B = b, Z = lapply(Forward_sample$text, function(d){as.numeric(names(d))}))
+    initial = list(C = currentC, D = delta, B = b, Z = lapply(Forward_sample$text, function(d){as.numeric(names(d))}),
+    				iJi = Forward_sample$iJi)
     Inference_samp = IPTM_inference.Schein(Forward_sample$edge, node, Forward_sample$text, vocabulary, nIP, K,
     										  sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
                                			  out = niters[1], n_B = niters[2], n_d = niters[3], burn = niters[4], 
@@ -2533,3 +2526,72 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
   return(list(Forward = Forward_stats, Backward = Backward_stats, b1 = bmat1, b2= bmat2, c1 = cmat1, c2 = cmat2,
   			  accept.rate = accept.rate, geweke1 = geweke.diag1, geweke2 = geweke.diag2))
 }                   
+
+
+
+
+#' @title Comparison.Gibbs
+#' @description Comparison test for IPTM
+#'
+#' @param Nsamp number of GiR samples to be generated 
+#' @param nDocs number of documents to be generated per each sample
+#' @param node nodelist containing the ID of nodes (ID starting from 1)
+#' @param vocabulary all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns specified by the user
+#' @param K total number of topics specified by the user
+#' @param nwords number of words in a document (fixed constant for now)
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param betas Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
+#' @param prior.b.mean mean vector of b in multivariate normal distribution
+#' @param prior.b.var covairance matrix of b in multivariate normal distribution
+#' @param prior.delta parameter of delta in Normal prior
+#' @param sigma_Q proposal distribution variance parameter for beta and delta
+#' @param niters (out, n_B, n_d, burn, thinning) in the inference
+#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
+#' @param base.edge artificial collection of documents to be used as initial state of history
+#' @param base.text artificial collection of documents to be used as initial state of history
+#' @param generate_PP_plots Logical indicating whether to draw PP plots
+#' @param generate_trace_plots Logical indicating whether to draw trace plots for each inference
+#' @param seed an integer value which controls random number generation
+#'
+#' @return Forward and Backward samples and corresponding test results
+#'
+#' @export
+Comparison.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+               prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat = c("dyadic"), 
+               base.edge, base.text, generate_PP_plots = TRUE, generate_trace_plots = FALSE, seed = 1) {
+               	
+  set.seed(seed)
+  P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 
+  	  4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
+  supportD = gibbs.measure.support(length(node) - 1)
+
+  #Forward sampling
+  Forward = list()
+  Backward = list()
+  for (i in 1:Nsamp) { 
+    b = lapply(1:nIP, function(IP) {
+      c(rmvnorm(1, prior.b.mean, prior.b.var))
+    })
+    delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
+    currentC = sample(1L:nIP, K, replace = TRUE)
+    Forward_sample = GenerateDocs.Schein(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b,
+    		 								delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
+    		 								forward = TRUE, base = FALSE, support = supportD) 
+    Forward[[i]] = Forward_sample$iJi[(length(base.edge)+1):length(Forward_sample$iJi)]
+    initial = list(C = currentC, D = delta, B = b, Z = lapply(Forward_sample$text, function(d){as.numeric(names(d))}), 
+    					iJi = Forward_sample$iJi)
+    Backward_sample = IPTM_inference.Schein(Forward_sample$edge, node, Forward_sample$text, vocabulary, nIP, K,
+    										  sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
+                               			  out = niters[1], n_B = niters[2], n_d = niters[3], burn = niters[4], 
+                               			  thinning = niters[5], netstat, plot = generate_trace_plots, initial = initial)
+    Backward[[i]] = Backward_sample$iJi[(length(base.edge)+1):length(Backward_sample$iJi)]
+     }
+return(list(Forward = Forward, Backward = Backward))
+}                   
+
+
+  			          	
+               	

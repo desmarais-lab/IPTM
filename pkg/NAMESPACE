@@ -2,6 +2,7 @@
 
 export(AlphamvecOpt)
 export(CollapsedGenerateDocs)
+export(Comparison.Gibbs)
 export(GenerateDocs)
 export(GenerateDocs.Gibbs)
 export(GenerateDocs.Schein)
