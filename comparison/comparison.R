@@ -1,7 +1,7 @@
 library(IPTM)
 library(mvtnorm)
 library(MCMCpack)
-set.seed(1234)
+set.seed(100)
 nDocs = 5
 node = 1:4
 vocabulary = c("hi", "hello", "fine", "bye", "what")
@@ -30,7 +30,90 @@ base.edge = base.data$edge
 base.text = base.data$text
 
 sigma_Q = c(0.1, 1)
-niters = c(1, 2, 2, 0, 1)
 nDocs = 1
-iJicompare<- Comparison.Gibbs(1000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+
+#one update of iJi
+set.seed(1)
+niters = c(1, 2, 2, 0, 1)
+iJicompare<- Comparison.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 100, generate_trace_plots = FALSE)
+
+Frowsums = matrix(NA, nrow = 500, ncol = 4)
+Fcolsums = matrix(NA, nrow = 500, ncol = 4)
+Browsums = matrix(NA, nrow = 500, ncol = 4)
+Bcolsums = matrix(NA, nrow = 500, ncol = 4)
+for (iter in 1:500) {
+	Frowsums[iter,] = rowSums(iJicompare$Forward[[iter]][[1]])
+	Fcolsums[iter,] = colSums(iJicompare$Forward[[iter]][[1]])
+	Browsums[iter,] = rowSums(iJicompare$Backward[[iter]][[1]])
+	Bcolsums[iter,] = colSums(iJicompare$Backward[[iter]][[1]])
+}
+sapply(1:4, function(k){round(t.test(Frowsums[,k], Browsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(wilcox.test(Frowsums[,k], Browsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(t.test(Fcolsums[,k], Bcolsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(wilcox.test(Fcolsums[,k], Bcolsums[,k])$p.value, 4)})
+
+#three update of iJi
+set.seed(1)
+niters = c(3, 2, 2, 0, 1)
+iJicompare<- Comparison.Gibbs(500, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 100, generate_trace_plots = FALSE)
+
+Frowsums = matrix(NA, nrow = 500, ncol = 4)
+Fcolsums = matrix(NA, nrow = 500, ncol = 4)
+Browsums = matrix(NA, nrow = 500, ncol = 4)
+Bcolsums = matrix(NA, nrow = 500, ncol = 4)
+for (iter in 1:500) {
+	Frowsums[iter,] = rowSums(iJicompare$Forward[[iter]][[1]])
+	Fcolsums[iter,] = colSums(iJicompare$Forward[[iter]][[1]])
+	Browsums[iter,] = rowSums(iJicompare$Backward[[iter]][[1]])
+	Bcolsums[iter,] = colSums(iJicompare$Backward[[iter]][[1]])
+}
+sapply(1:4, function(k){round(t.test(Frowsums[,k], Browsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(wilcox.test(Frowsums[,k], Browsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(t.test(Fcolsums[,k], Bcolsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(wilcox.test(Fcolsums[,k], Bcolsums[,k])$p.value, 4)})
+
+
+#five update of iJi
+set.seed(1)
+niters = c(5, 2, 2, 0, 1)
+iJicompare<- Comparison.Gibbs(500, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 100, generate_trace_plots = FALSE)
+
+Frowsums = matrix(NA, nrow = 500, ncol = 4)
+Fcolsums = matrix(NA, nrow = 500, ncol = 4)
+Browsums = matrix(NA, nrow = 500, ncol = 4)
+Bcolsums = matrix(NA, nrow = 500, ncol = 4)
+for (iter in 1:500) {
+	Frowsums[iter,] = rowSums(iJicompare$Forward[[iter]][[1]])
+	Fcolsums[iter,] = colSums(iJicompare$Forward[[iter]][[1]])
+	Browsums[iter,] = rowSums(iJicompare$Backward[[iter]][[1]])
+	Bcolsums[iter,] = colSums(iJicompare$Backward[[iter]][[1]])
+}
+sapply(1:4, function(k){round(t.test(Frowsums[,k], Browsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(wilcox.test(Frowsums[,k], Browsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(t.test(Fcolsums[,k], Bcolsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(wilcox.test(Fcolsums[,k], Bcolsums[,k])$p.value, 4)})
+
+
+#ten update of iJi
+set.seed(1)
+niters = c(10, 2, 2, 0, 1)
+iJicompare<- Comparison.Gibbs(500, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 100, generate_trace_plots = FALSE)
+
+Frowsums = matrix(NA, nrow = 500, ncol = 4)
+Fcolsums = matrix(NA, nrow = 500, ncol = 4)
+Browsums = matrix(NA, nrow = 500, ncol = 4)
+Bcolsums = matrix(NA, nrow = 500, ncol = 4)
+for (iter in 1:500) {
+	Frowsums[iter,] = rowSums(iJicompare$Forward[[iter]][[1]])
+	Fcolsums[iter,] = colSums(iJicompare$Forward[[iter]][[1]])
+	Browsums[iter,] = rowSums(iJicompare$Backward[[iter]][[1]])
+	Bcolsums[iter,] = colSums(iJicompare$Backward[[iter]][[1]])
+}
+sapply(1:4, function(k){round(t.test(Frowsums[,k], Browsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(wilcox.test(Frowsums[,k], Browsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(t.test(Fcolsums[,k], Bcolsums[,k])$p.value, 4)})
+sapply(1:4, function(k){round(wilcox.test(Fcolsums[,k], Bcolsums[,k])$p.value, 4)})
