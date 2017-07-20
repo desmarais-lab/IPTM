@@ -19,6 +19,7 @@ prior.b.var = 0.05 * diag(P)
 prior.delta = c(2.5, 0.0001)
 sigma_Q = c(0.01, 0.001)
 niters = c(1, 3300, 100, 300, 5)
+
 b = lapply(1:nIP, function(IP) {
     prior.b.mean
     })
@@ -34,9 +35,9 @@ TryGiR2<- GiR.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, 
 par(mfrow=c(5,8), oma = c(1,1,1,1), mar = c(1,1,1,1))
 GiR_PP_Plots(TrySchein$Forward, TrySchein$Backward)
 
-
+set.seed(1)
 sigma_Q = c(0.1, 1)
-niters = c(1, 2, 2, 0, 1)
+niters = c(3, 2, 2, 0, 1)
 nDocs = 5
 TrySchein<- Schein.Gibbs(50000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 100, generate_trace_plots = FALSE)
