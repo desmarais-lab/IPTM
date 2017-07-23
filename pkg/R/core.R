@@ -449,10 +449,9 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 	prior.old1 = sum(vapply(1L:nIP, function(IP) {
 		  		 dmvnorm(beta.old[[IP]], prior.b.mean, prior.b.var, log = TRUE)
 		  		 }, c(1))) 
-	post.old1 = sum(vapply(edge2, function(d) {
-	     	    EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) +
-    			 	ObservedInEqZ(observediJi[[d]])
-    			 	}, c(1))) / length(edge2)
+	post.old1 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta) + 
+				TimeInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)]) +
+    			 	ObservedInEqZ(observediJi[[max(edge2)]])
   
     if (o != 1) {
     		accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
@@ -476,10 +475,9 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
         prior.new1 = sum(vapply(1L:nIP, function(IP) {
         				 dmvnorm(beta.new[[IP]], prior.b.mean, prior.b.var, log = TRUE)
         				 }, c(1))) 
-        post.new1 = sum(vapply(edge2, function(d) {
-    			   		EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
-    			    	ObservedInEqZ(observediJi[[d]])
-    			    	}, c(1))) / length(edge2)
+        post.new1 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta) + 
+        				TimeInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)]) + 
+    			    	ObservedInEqZ(observediJi[[max(edge2)]])
     		loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
         if (log(runif(1, 0, 1)) < loglike.diff) {
         		for (IP in 1L:nIP) {
@@ -505,15 +503,15 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
      	lambda[[d]] = lambda_cpp(p.d[d,], XB)  
     }
     prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-    post.old2 = sum(vapply(edge2, function(d) {
+    post.old2 = sum(vapply(max(edge2), function(d) {
     				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
-    				}, c(1))) / length(edge2)
+    				}, c(1))) 
  	for (i4 in 1L:n_d) {
         delta.new = rnorm(1, delta, sqrt(sigma_Q[2]))
         prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-        post.new2 = sum(vapply(edge2, function(d) {
+        post.new2 = sum(vapply(max(edge2), function(d) {
         				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta.new)
-        				}, c(1))) / length(edge2)
+        				}, c(1))) 
         loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 
         if (log(runif(1, 0, 1)) < loglike.diff2) {
         		delta = delta.new
@@ -768,10 +766,9 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     prior.old1 = sum(vapply(1L:nIP, function(IP) {
       dmvnorm(beta.old[[IP]], prior.b.mean, prior.b.var, log = TRUE)
     }, c(1))) 
-    post.old1 = sum(vapply(edge2, function(d) {
-      EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) +
-        ObservedInEqZ(observediJi[[d]])
-    }, c(1))) / length(edge2)
+    post.old1 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta) + 
+    				TimeInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)]) +
+        			ObservedInEqZ(observediJi[[max(edge2)]])
     
     if (o != 1) {
       accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / length(deltamat))
@@ -795,10 +792,9 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       prior.new1 = sum(vapply(1L:nIP, function(IP) {
         dmvnorm(beta.new[[IP]], prior.b.mean, prior.b.var, log = TRUE)
       }, c(1))) 
-      post.new1 = sum(vapply(edge2, function(d) {
-        EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
-          ObservedInEqZ(observediJi[[d]])
-      }, c(1))) / length(edge2)
+      post.new1 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta) + 
+      			  TimeInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)]) + 
+          		  ObservedInEqZ(observediJi[[max(edge2)]])
       loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
       if (log(runif(1, 0, 1)) < loglike.diff) {
         for (IP in 1L:nIP) {
@@ -824,15 +820,11 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       lambda[[d]] = lambda_cpp(p.d[d,], XB)  
     }
     prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-    post.old2 = sum(vapply(edge2, function(d) {
-      EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
-    }, c(1))) / length(edge2)
+    post.old2 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta)
     for (i4 in 1L:n_d) {
       delta.new = rnorm(1, delta, sqrt(sigma_Q[2]))
       prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-      post.new2 = sum(vapply(edge2, function(d) {
-        EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta.new)
-      }, c(1))) / length(edge2)
+      post.new2 =  EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta.new)
       loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 
       if (log(runif(1, 0, 1)) < loglike.diff2) {
         delta = delta.new
@@ -1095,10 +1087,9 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     prior.old1 = sum(vapply(1L:nIP, function(IP) {
       dmvnorm(beta.old[[IP]], prior.b.mean, prior.b.var, log = TRUE)
     }, c(1))) 
-    post.old1 = sum(vapply(edge2, function(d) {
-      EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) +
-        ObservedInEqZ(observediJi[[d]])
-    }, c(1))) / length(edge2)
+    post.old1 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta) + 
+    				TimeInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)]) +
+        			ObservedInEqZ(observediJi[[max(edge2)]])
     
     if (o != 1) {
       accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / length(deltamat))
@@ -1122,10 +1113,9 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       prior.new1 = sum(vapply(1L:nIP, function(IP) {
         dmvnorm(beta.new[[IP]], prior.b.mean, prior.b.var, log = TRUE)
       }, c(1))) 
-      post.new1 = sum(vapply(edge2, function(d) {
-        EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
-          ObservedInEqZ(observediJi[[d]])
-      }, c(1))) / length(edge2)
+      post.new1 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta) + 
+      			  TimeInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)]) + 
+          			ObservedInEqZ(observediJi[[max(edge2)]])
       loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
       if (log(runif(1, 0, 1)) < loglike.diff) {
         for (IP in 1L:nIP) {
@@ -1151,15 +1141,11 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       lambda[[d]] = lambda_cpp(p.d[d,], XB)  
     }
     prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-    post.old2 = sum(vapply(edge2, function(d) {
-      EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
-    }, c(1))) / length(edge2)
+    post.old2 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta)
     for (i4 in 1L:n_d) {
       delta.new = rnorm(1, delta, sqrt(sigma_Q[2]))
       prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-      post.new2 = sum(vapply(edge2, function(d) {
-        EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta.new)
-      }, c(1))) / length(edge2)
+      post.new2 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta.new)
       loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 
       if (log(runif(1, 0, 1)) < loglike.diff2) {
         delta = delta.new
@@ -1400,10 +1386,9 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 	prior.old1 = sum(vapply(1L:nIP, function(IP) {
 		  		 dmvnorm(beta.old[[IP]], prior.b.mean, prior.b.var, log = TRUE)
 		  		 }, c(1))) 
-	post.old1 = sum(vapply(edge2, function(d) {
-	     	    EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) +
-    			 	ObservedInEqZ(observediJi[[d]])
-    			 	}, c(1))) / length(edge2)
+	post.old1 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta) + 
+				TimeInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)]) +
+    			 	ObservedInEqZ(observediJi[[max(edge2)]])
   
     if (o != 1) {
     		accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
@@ -1415,7 +1400,6 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
       }
    }
     for (i3 in 1L:n_B) {
-    	if (i3 %% 500 == 0 ){print(i3)}
     		beta.new = lapply(1L:nIP, function(IP) {
           		   rmvnorm(1, beta.old[[IP]], sigma_Q[1] * proposal.var[[IP]])
          		   }) 
@@ -1428,10 +1412,10 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
         prior.new1 = sum(vapply(1L:nIP, function(IP) {
         				 dmvnorm(beta.new[[IP]], prior.b.mean, prior.b.var, log = TRUE)
         				 }, c(1))) 
-        post.new1 = sum(vapply(edge2, function(d) {
-    			   	EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
-    			    	ObservedInEqZ(observediJi[[d]])
-    			    	}, c(1))) / length(edge2)
+        post.new1 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta) + 
+        				TimeInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)]) + 
+    			    	ObservedInEqZ(observediJi[[max(edge2)]])
+    			   
     	loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
         if (log(runif(1, 0, 1)) < loglike.diff) {
         		for (IP in 1L:nIP) {
@@ -1457,15 +1441,12 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
      	lambda[[d]] = lambda_cpp(p.d[d,], XB)  
     }
     prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-    post.old2 = sum(vapply(edge2, function(d) {
-    				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta)
-    				}, c(1))) / length(edge2)
+    post.old2 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta)
+
  	for (i4 in 1L:n_d) {
         delta.new = rnorm(1, delta, sqrt(sigma_Q[2]))
         prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-        post.new2 = sum(vapply(edge2, function(d) {
-        				EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta.new)
-        				}, c(1))) / length(edge2)
+        post.new2 = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta.new)
         loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 
         if (log(runif(1, 0, 1)) < loglike.diff2) {
         	delta = delta.new
@@ -2382,7 +2363,7 @@ GiR.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec
   cmat2 = matrix(NA, nrow = Nsamp, ncol = K)
   
   for (i in 1:Nsamp) { 
-    if (i %% 500 == 0) {cat("Backward sampling", i, "\n")}
+     if (i %% 100 == 0) {cat("Backward Sampling", i, "\n")}
     Inference_samp = IPTM_inference.Gibbs(Backward_sample$edge, node, Backward_sample$text, vocabulary, nIP, K,
     										  sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
                                			  out = niters[1], n_B = niters[2], n_d = niters[3], burn = niters[4], 
