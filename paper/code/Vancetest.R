@@ -45,7 +45,7 @@ for (n in 1:length(Dare$edge)){
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
 
-Daretest <- IPTM_inference.data(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP = 2, K = 20, sigma_Q = c(0.0005, 0.01),
+Daretest <- IPTM_inference.data(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP = 3, K = 20, sigma_Q = c(0.0005, 0.01),
                         alpha = 2, mvec = rep(1/20, 20), betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), 
                         prior.b.mean = c(-3, rep(0, 24)), 
                        prior.b.var = 1 * diag(25), prior.delta = c(0, 1), out = 100, n_B = 15000, n_d = 1500, burn = c(10000,500), 
@@ -54,7 +54,7 @@ load("/Users/bomin8319/Desktop/IPTM/paper/code/Daretest.RData")
 output = Daretest
 initial = list(C = output$C, D = output$D[200], B = lapply(1:2, function(IP){output$B[[IP]][,500]}), Z =output$Z)
 
-Daretest1 <- IPTM_inference.data2(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP = 2, K = 20, sigma_Q = c(0.00005, 0.0075),
+Daretest1 <- IPTM_inference.data2(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP = 3, K = 20, sigma_Q = c(0.00005, 0.0075),
                         alpha = 2, mvec = rep(1/20, 20), betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), 
                         prior.b.mean = c(-3, rep(0, 24)), 
                        prior.b.var = 1 * diag(25), prior.delta = c(0, 1), out = 1, n_B = 500000, n_d = 50000, burn = c(0,0), 
