@@ -2707,10 +2707,8 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
 }                   
 
 
-
-
-#' @title Comparison.Gibbs
-#' @description Comparison test for IPTM
+#' @title Schein.Gibbs2
+#' @description Getting it Right test for IPTM
 #'
 #' @param Nsamp number of GiR samples to be generated 
 #' @param nDocs number of documents to be generated per each sample
@@ -2729,8 +2727,6 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
 #' @param sigma_Q proposal distribution variance parameter for beta and delta
 #' @param niters (out, n_B, n_d, burn, thinning) in the inference
 #' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
-#' @param base.edge artificial collection of documents to be used as initial state of history
-#' @param base.text artificial collection of documents to be used as initial state of history
 #' @param generate_PP_plots Logical indicating whether to draw PP plots
 #' @param generate_trace_plots Logical indicating whether to draw trace plots for each inference
 #' @param seed an integer value which controls random number generation
@@ -2738,39 +2734,81 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
 #' @return Forward and Backward samples and corresponding test results
 #'
 #' @export
-Comparison.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+Schein.Gibbs2 = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
                prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat = c("dyadic"), 
-               base.edge, base.text, generate_PP_plots = TRUE, generate_trace_plots = FALSE, seed = 1) {
-               	
+               generate_PP_plots = TRUE, generate_trace_plots = FALSE, seed = 1) {
+  
   set.seed(seed)
   P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 
   	  4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
   supportD = gibbs.measure.support(length(node) - 1)
 
   #Forward sampling
-  Forward = list()
-  Backward = list()
+  Forward_stats = matrix(NA, nrow = Nsamp, ncol = P + (P - 1) / 2 + 4 + nIP + K + length(vocabulary))
+  colnames(Forward_stats) = c(paste0("B_",1:P), paste0("Send_",1:3), "delta", "Mean_recipients", "Mean_timediff", 
+  							  "Mean_TopicIP", paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), paste0("Tokens_in_Word",1:length(vocabulary)))
+  bmat1 = matrix(NA, nrow = Nsamp, ncol = nIP * P)
+  cmat1 = matrix(NA, nrow = Nsamp, ncol = K)
+  
+  accept.rate = matrix(NA, nrow = Nsamp, ncol = 2)
+  geweke.diag1 = matrix(NA, nrow = Nsamp, ncol = P)
+  geweke.diag2 = matrix(NA, nrow = Nsamp, ncol = P)
+  bmat2 = matrix(NA, nrow = Nsamp, ncol = nIP * P)		
+  cmat2 = matrix(NA, nrow = Nsamp, ncol = K)
+  Backward_stats = matrix(NA, nrow = Nsamp, ncol = ncol(Forward_stats))
+
   for (i in 1:Nsamp) { 
     b = lapply(1:nIP, function(IP) {
       c(rmvnorm(1, prior.b.mean, prior.b.var))
     })
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     currentC = sample(1L:nIP, K, replace = TRUE)
+    base.data = GenerateDocs.Gibbs(200, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE, support = supportD) 
+	base.edge = base.data$edge	   
+	base.text = base.data$text
     Forward_sample = GenerateDocs.Schein(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b,
     		 								delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
     		 								forward = TRUE, base = FALSE, support = supportD) 
-    Forward[[i]] = Forward_sample$iJi[(length(base.edge)+1):length(Forward_sample$iJi)]
-    initial = list(C = currentC, D = delta, B = b, Z = lapply(Forward_sample$text, function(d){as.numeric(names(d))}), 
-    					iJi = Forward_sample$iJi)
-    Backward_sample = IPTM_inference.Schein(Forward_sample$edge, node, Forward_sample$text, vocabulary, nIP, K,
+    Forward_stats[i, ] = GiR_stats(Forward_sample, K, currentC, vocabulary, forward = FALSE, backward = TRUE)
+    bmat1[i, ] = unlist(b)
+    cmat1[i, ] = currentC
+
+    if (i %% 100 == 0) {cat("Sampling", i, "\n")}
+    initial = list(C = currentC, D = delta, B = b, Z = lapply(Forward_sample$text, function(d){as.numeric(names(d))}),
+    				iJi = Forward_sample$iJi)
+    Inference_samp = IPTM_inference.Schein(Forward_sample$edge, node, Forward_sample$text, vocabulary, nIP, K,
     										  sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
                                			  out = niters[1], n_B = niters[2], n_d = niters[3], burn = niters[4], 
                                			  thinning = niters[5], netstat, plot = generate_trace_plots, initial = initial)
-    Backward[[i]] = Backward_sample$iJi[(length(base.edge)+1):length(Backward_sample$iJi)]
-     }
-return(list(Forward = Forward, Backward = Backward))
+    b = lapply(1:nIP, function(IP) {
+        Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
+    })
+    delta = Inference_samp$D[length(Inference_samp$D)]
+    currentC = Inference_samp$C
+    topic_token_assignments = Inference_samp$Z
+    for (d in 1:length(topic_token_assignments)) {
+      names(topic_token_assignments[[d]]) = Forward_sample$text[[d + length(base.text)]]
+    }
+    
+    Backward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, 
+    										 delta, currentC, netstat, base.edge = base.edge, base.text = base.text,
+    										 topic_token_assignments = topic_token_assignments, 
+                             			 forward = FALSE, backward = TRUE, base = FALSE, support = supportD)
+    Backward_stats[i, ] = GiR_stats(Backward_sample, K, currentC, vocabulary, forward = FALSE, backward = TRUE)
+    
+    accept.rate[i, 1] = length(unique(Inference_samp$B[[1]][1,])) / ((niters[2] - niters[4]) / niters[5])
+    accept.rate[i, 2] = length(unique(Inference_samp$D)) / niters[3]    
+    geweke.diag1[i, ] = geweke.diag(t(Inference_samp$B[[1]]))[[1]]
+    geweke.diag2[i, ] = geweke.diag(t(Inference_samp$B[[2]]))[[1]]
+    bmat2[i, ] = unlist(b)
+    cmat2[i, ] = currentC
+  }
+  				
+  if (generate_PP_plots) {
+    par(mfrow=c(5,5), oma = c(2,2,2,2), mar = c(1,1,1,1))
+    GiR_PP_Plots(Forward_stats, Backward_stats)
+  }			
+  return(list(Forward = Forward_stats, Backward = Backward_stats, b1 = bmat1, b2= bmat2, c1 = cmat1, c2 = cmat2,
+  			  accept.rate = accept.rate, geweke1 = geweke.diag1, geweke2 = geweke.diag2))
 }                   
 
-
-  			          	
-               	

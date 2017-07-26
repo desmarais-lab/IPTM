@@ -44,6 +44,12 @@ nDocs = 5
 TrySchein<- Schein.Gibbs(20000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, base.edge, base.text, seed = 100, generate_trace_plots = FALSE)
 
+
+TrySchein<- Schein.Gibbs2(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, seed = 100, generate_trace_plots = FALSE)
+
+
+
 TryGiR = TryGiR2
 Nsamp = nrow(TryGiR$Forward)
 thin = seq(from = floor(Nsamp / 10), to = Nsamp, length.out = 500)
