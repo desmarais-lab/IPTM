@@ -151,7 +151,7 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("/Users/bomin8319/Desktop/IPTM/paper/code/Daretest.RData")
+load("/Users/bomin8319/Desktop/IPTM/paper/code/Daretest_IP3.RData")
 Daretest1 = Daretest
 Daretest1$C
 
@@ -245,7 +245,7 @@ TableWordIP = function(MCMCchainC, MCMCchainZ, K, textlist, vocabulary) {
 			return(table.word)
 	
 }
-TableWordIP(Daretest1$C, Daretest1$Z[48:764], 5, Dare$text[366:1082], Dare$vocab)
+TableWordIP(Daretest1$C, Daretest1$Z[48:764], 20, Dare$text[366:1082], Dare$vocab)
 TableWordIP(Daretest1$C, Daretest1$Z[1:1138], 5, Dare$text[319:1456], Dare$vocab)
 TableWordIP(Daretest1$C, Daretest1$Z[72:418], 5, Dare$text[390:736], Dare$vocab)
 TableWordIP(Daretest1$C, Daretest1$Z[216:418], 5, Dare$text[534:736], Dare$vocab)
@@ -264,7 +264,7 @@ colnames(DareB)= c( "intercept",
 DareB = melt(DareB)
 
 DareB2 = matrix(NA, 500, 25)
-DareB2[,1:25] = t(Vancetest$B[[2]])
+DareB2[,1:25] = t(Daretest$B[[2]])
 colnames(DareB2)= c( "intercept",
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
 "send1", "send2", "send3" ,"receive1", "receive2", "receive3",
@@ -272,9 +272,19 @@ colnames(DareB2)= c( "intercept",
 "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
 DareB2 = melt(DareB2)
 
+DareB3 = matrix(NA, 500, 25)
+DareB3[,1:25] = t(Daretest$B[[3]])
+colnames(DareB3)= c( "intercept",
+                     "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
+                     "send1", "send2", "send3" ,"receive1", "receive2", "receive3",
+                     "2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
+                     "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
+DareB3 = melt(DareB3)
+
 DareB$IP = 1
 DareB2$IP = 2
-DareBnew = rbind(DareB, DareB2)[,-1]
+DareB3$IP = 3
+DareBnew = rbind(DareB, DareB2, DareB3)[,-1]
 DareBnew$IP = as.factor(DareBnew$IP)
 colnames(DareBnew) = c("Netstat", "Estimate", "IP")
 DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( "intercept",
@@ -290,11 +300,29 @@ p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("intercept")),], aes(Netstat,
 p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("cosibling1", "cosibling2", "cosibling3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
         axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Cosibling")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
 
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("sibling1", "sibling2", "sibling3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Sibling")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
 
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("2-receive1", "2-receive2", "2-receive3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("2-Receive")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
 
-
-
-
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("2-send1", "2-send2", "2-send3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("2-Send")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
+        
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("receive1", "receive2", "receive3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Receive")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)        
+        
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("send1", "send2", "send3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Send")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
+        
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("indegree1", "indegree2", "indegree3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Indegree")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
+       
+p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("outdegree1", "outdegree2", "outdegree3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
+        axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Outdegree")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
+        
+        
+        
 #IPTM model results
 load('/Users/bomin8319/Desktop/IPTM/paper/code/Vancenew.RData')
 attach(Vance)

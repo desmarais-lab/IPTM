@@ -6,7 +6,7 @@
 \usage{
 Schein.Gibbs(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
   nvec, prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters,
-  netstat = c("dyadic"), base.edge, base.text, generate_PP_plots = TRUE,
+  netstat = c("dyadic"), generate_PP_plots = TRUE,
   generate_trace_plots = FALSE, seed = 1)
 }
 \arguments{
@@ -43,10 +43,6 @@ Schein.Gibbs(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
 \item{niters}{(out, n_B, n_d, burn, thinning) in the inference}
 
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
-
-\item{base.edge}{artificial collection of documents to be used as initial state of history}
-
-\item{base.text}{artificial collection of documents to be used as initial state of history}
 
 \item{generate_PP_plots}{Logical indicating whether to draw PP plots}
 
