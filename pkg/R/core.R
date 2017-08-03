@@ -1704,7 +1704,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 	title("Traceplot of delta")
   }
      
-  chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat,
+  chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat,
                      iJi = iJi, sigma_Q =sigma_Q, alpha = alpha, mvec = mvec, 
                      proposal.var= proposal.var)
   return(chain.final)
@@ -2295,8 +2295,14 @@ GenerateDocs.Schein = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, m
         	 	 lapply(1:3, function(l){
          		matrix(0, length(node), length(node))
        			})
-     		 })  
-  word_type_topic_counts = matrix(0, W, K)
+     		 }) 
+  if (backward) {
+  textlist.raw = unlist(base.text)
+  word_type_topic_counts  = t(sapply(1L:K, function(k) {
+      			tabulateC(textlist.raw[which(unlist(topic_token_assignments[1:base.length]) == k)], W)
+     			}))
+  }   			
+  #word_type_topic_counts = matrix(0, W, K)
   iJi = list()
   for (d in 1:nDocs) {
     N.d = nwords
@@ -2371,7 +2377,7 @@ GiR_stats = function(GiR_sample, K, currentC, vocabulary, forward = FALSE, backw
   text = GiR_sample$text
   if (backward) {
     edge = edge[-(1:GiR_sample$base)]
-    #text = text[-(1:GiR_sample$base)]
+    text = text[-(1:GiR_sample$base)]
   }
   
   GiR_stats = c()
@@ -2392,7 +2398,7 @@ GiR_stats = function(GiR_sample, K, currentC, vocabulary, forward = FALSE, backw
     edge[[d]][[3]] - edge[[d-1]][[3]]
   }, c(1)))) 			
   GiR_stats[P + 7] = mean(currentC)
-  Tokens_in_Topic = tabulate(vapply(1:length(text), function(d){
+  Tokens_in_Topic = tabulate(vapply(1:nDocs, function(d){
     as.numeric(names(text[[d]]))
   }, rep(0, nwords)), K)
   GiR_stats[(P + 8):(P + 7 + nIP)] = vapply(1:nIP, function(IP) {
@@ -2717,7 +2723,7 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
     currentC = Inference_samp$C
     topic_token_assignments = Inference_samp$Z
     for (d in 1:length(topic_token_assignments)) {
-      names(topic_token_assignments[[d]]) = Forward_sample$text[[d + length(base.text)]]
+      names(topic_token_assignments[[d]]) = Forward_sample$text[[d]]
     }
     
     Backward_sample = GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, 
