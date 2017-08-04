@@ -321,7 +321,42 @@ p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("indegree1", "indegree2", "in
 p <- ggplot(DareBnew[which(DareBnew$Netstat %in% c("outdegree1", "outdegree2", "outdegree3")),], aes(Netstat, Estimate, colour = IP)) + geom_boxplot(aes(colour = factor(IP)), position = position_dodge()) + coord_flip() +theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14), axis.text=element_text(size=12),
         axis.title=element_text(size=12)) + labs(y = "Estimates",x ="") + ggtitle("Outdegree")+ scale_x_discrete(labels = c("[t-24h, t)", "[t-96h, t-24h)", "[t-384h, t-96h)"))+ geom_hline(yintercept = 0.0, colour = "black", size = 0.5)
         
+
+IPdist = t(sapply(1:1456, function(d){tabulate(Daretest$C[Daretest$Z[[d]]],3)/ length(Daretest$Z[[d]])}))
+mainIP = sapply(1:1456, function(d){which(IPdist[d,]==max(IPdist[d,]))})
+table(unlist(mainIP[which(Sandy$date %in% unique(Sandy$date)[1:19])]))
+table(unlist(mainIP[which(Sandy$date %in% unique(Sandy$date)[20:27])]))
+table(unlist(mainIP[which(Sandy$date %in% unique(Sandy$date)[28:55])]))
+
+IPs = matrix(0, nrow = length(unique(Sandy$date)), ncol = 3)
+i = 1
+for (date in unique(Sandy$date)) {
+	if (length(which(Sandy$date %in% date)) > 1) {
+IPs[i, ]= colMeans(IPdist[which(Sandy$date %in% date),])
+} else {
+	IPs[i, ]= IPdist[which(Sandy$date %in% date),]
+}
+i = i + 1
+}
+
+plot(IPs[,2], type = 'l', col = 'red', ylim = c(0, 0.8))
+lines(IPs[,1], col = "blue")
+lines(IPs[,3], col = "green")        
         
+
+
+
+IPdist = t(sapply(1:1456, function(d){tabulate(Daretest$C[Daretest$Z[[d]]],3)}))
+colSums(IPdist[which(Sandy$date %in% unique(Sandy$date)[1:19]),])/sum(colSums(IPdist[which(Sandy$date %in% unique(Sandy$date)[1:19]),]))
+colSums(IPdist[which(Sandy$date %in% unique(Sandy$date)[20:27]),])/sum(colSums(IPdist[which(Sandy$date %in% unique(Sandy$date)[20:27]),]))
+colSums(IPdist[which(Sandy$date %in% unique(Sandy$date)[28:55]),])/sum(colSums(IPdist[which(Sandy$date %in% unique(Sandy$date)[28:55]),]))
+
+plot(IPdist[,1], type = 'l', col = 'red')
+lines(IPdist[,2], col = "blue")
+lines(IPdist[,3], col = "green")        
+        
+
+
         
 #IPTM model results
 load('/Users/bomin8319/Desktop/IPTM/paper/code/Vancenew.RData')
