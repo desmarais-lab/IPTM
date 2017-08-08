@@ -1,7 +1,7 @@
 library(IPTM)
 library(mvtnorm)
 library(MCMCpack)
-set.seed(1234)
+set.seed(100)
 nDocs = 5
 node = 1:4
 vocabulary = c("hi", "hello", "fine", "bye", "what")
@@ -14,7 +14,7 @@ betas = 2
 nvec = rep(1/5, 5)
 netstat = c("intercept", "dyadic", "triadic", "degree")
 P = 1 * ("intercept" %in% netstat) + 3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
-prior.b.mean = c(-3, rep(0, P-1))
+prior.b.mean = c(0, rep(0, P-1))
 prior.b.var = 0.05 * diag(P)
 prior.delta = c(2.5, 0.0001)
 sigma_Q = c(0.01, 0.001)
@@ -31,15 +31,15 @@ base.edge = base.data$edge
 base.text = base.data$text
 
 D = 81
-O = 10
-R = 100
+O = 5
+R = 10
 edge = base.edge
 textlist = base.text
-out = 5
-n_B = 1500
-n_d = 150
+out = 10
+n_B = 5500
+n_d = 550
 burn = c(500, 50)
-thinning = c(10, 1)
+thinning = c(10, 5)
 try = IPTM_predict.data(D, O, R, edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, 
 							 prior.b.mean, prior.b.var, prior.delta, 
                                 out, n_B, n_d, burn, thinning, netstat, plot = FALSE, optimize = FALSE)

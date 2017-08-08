@@ -690,3 +690,46 @@ arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma
 	prob = prob - max(prob);
 	return exp(prob);
 }
+
+// **********************************************************//
+//         Resampling the augmented data J_a (Sec 3.1)       //
+// **********************************************************//
+// [[Rcpp::export]]
+arma::vec DataAug_cpp_Gibbs_noObs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d, double delta, int j) {
+	arma::vec prob = arma::zeros(2);
+	arma::vec iJi_di1 = iJi_di;
+	arma::vec iJi_di0 = iJi_di;
+	int nIP = p_d.size();
+	arma::vec out = arma::zeros(2);
+	iJi_di1[j - 1] = 1;
+	iJi_di0[j - 1] = 0;
+	double sumiJi0 = sum(iJi_di0);
+	for (int IP = 0; IP < nIP; IP++) {
+			if (p_d[IP] > 0) {
+			arma::vec XB_IP = XB[IP];
+			double rowsums1 = exp(sum(XB_IP % iJi_di1) / sum(iJi_di1));
+			if (rowsums1 == arma::datum::inf) {
+			  rowsums1 = exp(700);
+			}
+			out[1] += p_d[IP] * rowsums1;
+			if (sumiJi0 > 0) {
+			double rowsums0 = exp(sum(XB_IP % iJi_di0) / sumiJi0);
+			  if (rowsums0 == arma::datum::inf) {
+			    rowsums0 = exp(700);
+			  }
+			out[0] += p_d[IP] * rowsums0;
+				}
+			}
+	}
+	if (lambda_di[j - 1] < exp(-700)) {
+	  lambda_di[j - 1] = exp(-700);
+	}
+		prob[1] = delta + log(lambda_di[j - 1]);
+	if (sumiJi0 > 0) {
+		prob[0] = 0;
+	} else {
+		prob[0] = -arma::datum::inf;
+	}
+	prob = prob - max(prob);
+	return exp(prob);
+}

@@ -352,6 +352,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// DataAug_cpp_Gibbs_noObs
+arma::vec DataAug_cpp_Gibbs_noObs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma::vec p_d, double delta, int j);
+RcppExport SEXP _IPTM_DataAug_cpp_Gibbs_noObs(SEXP iJi_diSEXP, SEXP lambda_diSEXP, SEXP XBSEXP, SEXP p_dSEXP, SEXP deltaSEXP, SEXP jSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type iJi_di(iJi_diSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type lambda_di(lambda_diSEXP);
+    Rcpp::traits::input_parameter< List >::type XB(XBSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type p_d(p_dSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< int >::type j(jSEXP);
+    rcpp_result_gen = Rcpp::wrap(DataAug_cpp_Gibbs_noObs(iJi_di, lambda_di, XB, p_d, delta, j));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_callRMultinom", (DL_FUNC) &_IPTM_callRMultinom, 1},
@@ -381,6 +397,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_lambdaiJi", (DL_FUNC) &_IPTM_lambdaiJi, 3},
     {"_IPTM_DataAug_cpp", (DL_FUNC) &_IPTM_DataAug_cpp, 8},
     {"_IPTM_DataAug_cpp_Gibbs", (DL_FUNC) &_IPTM_DataAug_cpp_Gibbs, 7},
+    {"_IPTM_DataAug_cpp_Gibbs_noObs", (DL_FUNC) &_IPTM_DataAug_cpp_Gibbs_noObs, 6},
     {NULL, NULL, 0}
 };
 

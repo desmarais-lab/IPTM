@@ -4,9 +4,9 @@
 \alias{GenerateDocs.predict}
 \title{GenerateDocs.predict}
 \usage{
-GenerateDocs.predict(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec,
-  betas, nvec, b, delta, currentC, netstat, base.edge, base.text,
-  topic_token_assignments = NULL, support)
+GenerateDocs.predict(nDocs = 1, node, vocabulary, nIP, K, owords, alpha, mvec,
+  b, delta, currentC, netstat, initial_iJi, base.edge, base.text,
+  topic_token_assignments = NULL, table.W)
 }
 \arguments{
 \item{nDocs}{number of documents to be generated}
@@ -19,15 +19,11 @@ GenerateDocs.predict(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec,
 
 \item{K}{total number of topics specified by the user}
 
-\item{nwords}{number of words in a document (fixed constant for now)}
+\item{owords}{observed words in a document}
 
 \item{alpha}{Dirichlet concentration prior for document-topic distribution}
 
 \item{mvec}{Dirichlet base prior for document-topic distribution}
-
-\item{betas}{Dirichlet concentration prior for topic-word distribution}
-
-\item{nvec}{Dirichlet base prior for topic-word distribution}
 
 \item{b}{List of coefficients estimating the history effect for each IP}
 
@@ -37,13 +33,15 @@ GenerateDocs.predict(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec,
 
 \item{netstat}{which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")}
 
+\item{initial_iJi}{initial value of iJi from emprical summary of inferred latent receivers}
+
 \item{base.edge}{edges before 384 hours that is used to calculate initial history of interactions}
 
 \item{base.text}{texts corresponding to base.edge}
 
 \item{topic_token_assignments}{matrix of topic-token assignments}
 
-\item{support}{support of latent edge vector Ji}
+\item{table.W}{table of word-topic assignments}
 }
 \value{
 generated edge and text, parameter b used to generate those, and base (if base == TRUE)
