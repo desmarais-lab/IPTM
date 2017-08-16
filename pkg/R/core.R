@@ -1381,7 +1381,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
     	vapply(1:nIP, function(IP) {
       	sum(currentZ[[d]] %in% which(currentC == IP))
   	 		 }, c(1)) / length(currentZ[[d]])
- 		 }, rep(1, nIP)), ncol = nIP)
+ 		 }, rep(1, nIP)), ncol = nIP, byrow = TRUE)
 
     # initialize beta
     L = 3
@@ -1471,13 +1471,14 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
        	 	p.d[d, ] = vapply(1L:nIP, function(IP) {
              sum(currentZ[[d]] %in% which(currentC == IP))
            }, c(1)) / length(currentZ[[d]])
+           
            history.t = History(edge, p.d, node, as.numeric(edge[[hist.d-1]][3]) + exp(-745))
-    	   X = lapply(node, function(i) {
+    	    X = lapply(node, function(i) {
            	  Netstats(history.t, node, i, netstat)
        		  })
     	    XB = MultiplyXBList(X, beta.old)   
     	    lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
-	    		LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
+	    	LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
         	observediJi[[hist.d]] = LambdaiJi[[hist.d]][as.numeric(edge[[hist.d]][1])]
         	edgepart.d[k] = EdgeInEqZ_Gibbs(iJi[[hist.d]], lambda[[hist.d]], delta)
         	timepart.d[k] = TimeInEqZ(LambdaiJi[[hist.d]], timeinc[hist.d])
@@ -1498,11 +1499,11 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
          }
        }
      }
-       p.d = matrix(vapply(seq(along = edge), function(d) {
+ 	p.d = matrix(vapply(seq(along = edge), function(d) {
     	vapply(1:nIP, function(IP) {
       	sum(currentZ[[d]] %in% which(currentC == IP))
   	 		 }, c(1)) / length(currentZ[[d]])
- 		 }, rep(1, nIP)), ncol = nIP) 
+ 		 }, rep(1, nIP)), ncol = nIP, byrow = TRUE)
     for (d in edge2) {
         	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
     	    X = lapply(node, function(i) {
@@ -1510,7 +1511,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
        		})
     	    XB = MultiplyXBList(X, beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
-	    		LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+	    LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
         	observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
 	}
 	 	
@@ -1519,11 +1520,11 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
          const.C = rep(NA, nIP)
          for (IP in 1:nIP) {
           	 currentC[k] = IP
-          	 p.d = matrix(vapply(seq(along = edge), function(d) {
-    	vapply(1:nIP, function(IP) {
-      	sum(currentZ[[d]] %in% which(currentC == IP))
+          	  	p.d = matrix(vapply(seq(along = edge), function(d) {
+    		vapply(1:nIP, function(IP) {
+      		sum(currentZ[[d]] %in% which(currentC == IP))
   	 		 }, c(1)) / length(currentZ[[d]])
- 		 }, rep(1, nIP)), ncol = nIP) 
+ 		 	}, rep(1, nIP)), ncol = nIP, byrow = TRUE)
           	 for (d in max(edge2)) {
            		 history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
     	   	   		 X = lapply(node, function(i) {
@@ -1534,11 +1535,12 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 		       	 LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
            		 observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
            		 prob = EdgeInEqZ_Gibbs(iJi[[d]], lambda[[d]], delta) + 
-          				 TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
-    					 ObservedInEqZ(observediJi[[d]]) 
+          				TimeInEqZ(LambdaiJi[[d]], timeinc[d]) + 
+    					 	ObservedInEqZ(observediJi[[d]]) 
           	 }
            const.C[IP] = prob
       	 }
+
          const.C = const.C - max(const.C)
          expconst.C = exp(const.C)
 		 if (Inf %in% expconst.C) {
@@ -1547,11 +1549,12 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
          currentC[k] = multinom_vec(1, expconst.C)
 	}
      
-    p.d = matrix(vapply(seq(along = edge), function(d) {
+ 	p.d = matrix(vapply(seq(along = edge), function(d) {
     	vapply(1:nIP, function(IP) {
       	sum(currentZ[[d]] %in% which(currentC == IP))
   	 		 }, c(1)) / length(currentZ[[d]])
- 		 }, rep(1, nIP)), ncol = nIP) 
+ 		 }, rep(1, nIP)), ncol = nIP, byrow = TRUE)
+ 
     for (d in edge2) {
         	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
     	    X = lapply(node, function(i) {

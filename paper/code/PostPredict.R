@@ -36,9 +36,9 @@ R = 1
 edge = base.edge
 textlist = base.text
 out = 5
-n_B = 5500
-n_d = 550
-burn = c(500, 50)
+n_B = 500
+n_d = 50
+burn = c(50, 5)
 thinning = c(10, 5)
 try = IPTM_predict.data(D, O, R, edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, 
 							 prior.b.mean, prior.b.var, prior.delta, 
