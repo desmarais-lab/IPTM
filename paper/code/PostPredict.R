@@ -31,7 +31,7 @@ base.edge = base.data$edge
 base.text = base.data$text
 
 D = 381
-O = 5
+O = 10
 R = 1
 edge = base.edge
 textlist = base.text
