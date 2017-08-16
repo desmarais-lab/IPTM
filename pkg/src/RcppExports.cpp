@@ -213,8 +213,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // TopicInEqZ
-NumericVector TopicInEqZ(int K, IntegerVector currentZ_d, double alpha, NumericVector mvec, int doc);
-RcppExport SEXP _IPTM_TopicInEqZ(SEXP KSEXP, SEXP currentZ_dSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP docSEXP) {
+NumericVector TopicInEqZ(int K, IntegerVector currentZ_d, double alpha, NumericVector mvec);
+RcppExport SEXP _IPTM_TopicInEqZ(SEXP KSEXP, SEXP currentZ_dSEXP, SEXP alphaSEXP, SEXP mvecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -222,8 +222,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type currentZ_d(currentZ_dSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type mvec(mvecSEXP);
-    Rcpp::traits::input_parameter< int >::type doc(docSEXP);
-    rcpp_result_gen = Rcpp::wrap(TopicInEqZ(K, currentZ_d, alpha, mvec, doc));
+    rcpp_result_gen = Rcpp::wrap(TopicInEqZ(K, currentZ_d, alpha, mvec));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -387,7 +386,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_UpdateNum", (DL_FUNC) &_IPTM_UpdateNum, 2},
     {"_IPTM_tabulateC", (DL_FUNC) &_IPTM_tabulateC, 2},
     {"_IPTM_lambda_cpp", (DL_FUNC) &_IPTM_lambda_cpp, 2},
-    {"_IPTM_TopicInEqZ", (DL_FUNC) &_IPTM_TopicInEqZ, 5},
+    {"_IPTM_TopicInEqZ", (DL_FUNC) &_IPTM_TopicInEqZ, 4},
     {"_IPTM_WordInEqZ", (DL_FUNC) &_IPTM_WordInEqZ, 5},
     {"_IPTM_EdgeInEqZ", (DL_FUNC) &_IPTM_EdgeInEqZ, 3},
     {"_IPTM_EdgeInEqZ_Gibbs", (DL_FUNC) &_IPTM_EdgeInEqZ_Gibbs, 3},

@@ -329,7 +329,7 @@ table(unlist(mainIP[which(Sandy$date %in% unique(Sandy$date)[20:27])]))
 table(unlist(mainIP[which(Sandy$date %in% unique(Sandy$date)[28:55])]))
 
 IPs = matrix(0, nrow = length(unique(Sandy$date)), ncol = 3)
-i = 1
+i = 52
 for (date in unique(Sandy$date)) {
 	if (length(which(Sandy$date %in% date)) > 1) {
 IPs[i, ]= colMeans(IPdist[which(Sandy$date %in% date),])
@@ -339,10 +339,10 @@ IPs[i, ]= colMeans(IPdist[which(Sandy$date %in% date),])
 i = i + 1
 }
 
-plot(IPs[,2], type = 'l', col = 'red', ylim = c(0, 0.8))
-lines(IPs[,1], col = "blue")
-lines(IPs[,3], col = "green")        
-        
+plot(IPs[,2], type = 'l', col = 'red', ylim = c(0, 0.8), lwd = 3)
+lines(IPs[,1], col = "blue", lwd = 3)
+lines(IPs[,3], col = "black", lwd = 3)        
+lines(v = 48)        
 
 
 

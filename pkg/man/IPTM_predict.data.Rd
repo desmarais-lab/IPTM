@@ -6,7 +6,8 @@
 \usage{
 IPTM_predict.data(D, O, R, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
   alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n_B,
-  n_d, burn, thinning, netstat, plot = FALSE, optimize = FALSE)
+  n_d, burn, thinning, netstat, plot = FALSE, optimize = FALSE,
+  niter = c(1, 1))
 }
 \arguments{
 \item{D}{Dth document the user wants to predict}
@@ -58,6 +59,8 @@ IPTM_predict.data(D, O, R, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
 \item{plot}{to plot the convergence diagnostics or not (TRUE/FALSE)}
 
 \item{optimize}{to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)}
+
+\item{niter}{number of iterations for Gibbs update of topic assignments and latent receivers}
 }
 \value{
 prediction output

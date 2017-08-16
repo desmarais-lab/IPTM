@@ -69,8 +69,8 @@ lambda_cpp <- function(p_d, XB) {
     .Call('_IPTM_lambda_cpp', PACKAGE = 'IPTM', p_d, XB)
 }
 
-TopicInEqZ <- function(K, currentZ_d, alpha, mvec, doc) {
-    .Call('_IPTM_TopicInEqZ', PACKAGE = 'IPTM', K, currentZ_d, alpha, mvec, doc)
+TopicInEqZ <- function(K, currentZ_d, alpha, mvec) {
+    .Call('_IPTM_TopicInEqZ', PACKAGE = 'IPTM', K, currentZ_d, alpha, mvec)
 }
 
 WordInEqZ <- function(K, textlistd, tableW, beta, nvec) {

@@ -5,8 +5,8 @@
 \title{GenerateDocs.predict}
 \usage{
 GenerateDocs.predict(nDocs = 1, node, vocabulary, nIP, K, owords, alpha, mvec,
-  b, delta, currentC, netstat, initial_iJi, base.edge, base.text,
-  topic_token_assignments = NULL, table.W)
+  betas, nvec, b, delta, currentC, netstat, initial_iJi, base.edge, base.text,
+  topic_token_assignments = NULL, edge2, niter)
 }
 \arguments{
 \item{nDocs}{number of documents to be generated}
@@ -25,6 +25,10 @@ GenerateDocs.predict(nDocs = 1, node, vocabulary, nIP, K, owords, alpha, mvec,
 
 \item{mvec}{Dirichlet base prior for document-topic distribution}
 
+\item{betas}{Dirichlet concentration prior for topic-word distribution}
+
+\item{nvec}{Dirichlet base prior for topic-word distribution}
+
 \item{b}{List of coefficients estimating the history effect for each IP}
 
 \item{delta}{tuning parameter controlling the number of recipients}
@@ -41,7 +45,9 @@ GenerateDocs.predict(nDocs = 1, node, vocabulary, nIP, K, owords, alpha, mvec,
 
 \item{topic_token_assignments}{matrix of topic-token assignments}
 
-\item{table.W}{table of word-topic assignments}
+\item{edge2}{index of documents after initial history}
+
+\item{niter}{number of iterations for Gibbs update of topic assignments and latent receivers}
 }
 \value{
 generated edge and text, parameter b used to generate those, and base (if base == TRUE)

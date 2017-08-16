@@ -423,14 +423,12 @@ arma::mat lambda_cpp(arma::vec p_d, List XB) {
 // **********************************************************//
 // [[Rcpp::export]]
 NumericVector TopicInEqZ(int K, IntegerVector currentZ_d, 
-                       double alpha, NumericVector mvec, int doc) {
+                       double alpha, NumericVector mvec) {
 	IntegerVector table_topics = tabulateC(currentZ_d, K);
 	NumericVector table_topic_adj(K);
 	NumericVector alphamvec(K);
 	for (int i = 0; i < K; i++) {
-		if (table_topics[i] > 0) {
-			table_topic_adj[i] = table_topics[i] - 1;
-		}
+		table_topic_adj[i] = table_topics[i];
 		alphamvec[i] = alpha * mvec[i];
 	} 
 	return log(table_topic_adj + alphamvec);
@@ -449,9 +447,8 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 		NumericVector num(textlistd.size());
 		NumericVector denom(textlistd.size());
 		for (int w = 0; w < textlistd.size(); w++){
-			num[w] = log(tablek[textlistd[w] - 1] - (tablek[textlistd[w] - 1] > 0) + 
-			         beta * nvec[textlistd[w] - 1]);  
-	 		denom[w] = log(sum(tablek) - (tablek[textlistd[w] - 1] > 0) + beta);
+			num[w] = log(tablek[textlistd[w] - 1] + beta * nvec[textlistd[w] - 1]);  
+	 		denom[w] = log(sum(tablek) + beta);
 		}
 		consts(_,k) = num - denom;
 	}
