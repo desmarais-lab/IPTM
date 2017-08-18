@@ -39,24 +39,10 @@ GiR_PP_Plots(TrySchein$Forward, TrySchein$Backward)
 set.seed(1)
 sigma_Q = c(0.1, 5)
 niters = c(5, 2, 2, 0, 1)
+sigma_Q = c(0.1, 0.0002)
+
 niters = c(5, 5500, 500, 500, 5)
 
-TrySchein<- Schein.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
-					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, generate_trace_plots = FALSE)
+TrySchein<- Schein.Gibbs(10, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, generate_trace_plots = TRUE)
 
-TrySchein<- Schein.Gibbs(50000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
-                         prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, generate_trace_plots = FALSE)
-
-
-TryGiR = TryGiR2
-Nsamp = nrow(TryGiR$Forward)
-thin = seq(from = floor(Nsamp / 10), to = Nsamp, length.out = 500)
-par(mfrow = c(3, 8))
-for (p in 1:24){
-matplot(cbind(TryGiR$Forward[thin,p], TryGiR$Backward[thin,p]), type = 'l', col = 1:2, lty = 1, main = colnames(TryGiR$Forward)[p], xlab = 'iter', ylab ='')
-}
-
-par(mfrow = c(3, 8))
-for (p in 1:24){
-matplot(cbind(TryGiR$Backward[thin,p],TryGiR$Forward[thin,p]), type = 'l', col = 2:1, lty = 1, main = colnames(TryGiR$Forward)[p], xlab = 'iter', ylab ='')
-}
