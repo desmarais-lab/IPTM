@@ -757,5 +757,6 @@ RCPP_MODULE(IPTM){
 	function ("ObservedInEqZ", &ObservedInEqZ);
 	function ("lambdaiJi", &lambdaiJi);
 	function ("DataAug_cpp", &DataAug_cpp);
+	function ("DataAug_cpp_Gibbs", &DataAug_cpp_Gibbs);
 	function ("DataAug_cpp_Gibbs_noObs", &DataAug_cpp_Gibbs_noObs);
 }

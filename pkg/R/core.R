@@ -1885,11 +1885,11 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     edge = edge[-(1:base.length)]
     text = text[-(1:base.length)]
   }
-  # if (base == TRUE & t.d > 384) {
-  # cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
-    # edge = edge[1:cutoff]
-    # text = text[1:cutoff]
-  # }
+   if (base == TRUE & t.d > 384) {
+   cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
+    edge = edge[1:cutoff]
+    text = text[1:cutoff]
+   }
   return(list(edge = edge, text = text, base = base.length, b = b, d = delta, X = X))							
 } 
 
