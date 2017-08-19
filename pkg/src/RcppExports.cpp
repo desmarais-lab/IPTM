@@ -368,6 +368,8 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP _rcpp_module_boot_IPTM();
+
 static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_callRMultinom", (DL_FUNC) &_IPTM_callRMultinom, 1},
     {"_IPTM_multinom_vec", (DL_FUNC) &_IPTM_multinom_vec, 2},
@@ -397,6 +399,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_DataAug_cpp", (DL_FUNC) &_IPTM_DataAug_cpp, 8},
     {"_IPTM_DataAug_cpp_Gibbs", (DL_FUNC) &_IPTM_DataAug_cpp_Gibbs, 7},
     {"_IPTM_DataAug_cpp_Gibbs_noObs", (DL_FUNC) &_IPTM_DataAug_cpp_Gibbs_noObs, 6},
+    {"_rcpp_module_boot_IPTM", (DL_FUNC) &_rcpp_module_boot_IPTM, 0},
     {NULL, NULL, 0}
 };
 

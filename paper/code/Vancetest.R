@@ -1,33 +1,33 @@
 library(IPTM)
-load('/Users/bomin8319/Desktop/IPTM/VanceServer/Vancenew.RData')
+load('/Users/bomin8319/Desktop/IPTM/paper/code/Vancenew.RData')
 attach(Vance)
 Vance$node = 1:nrow(Vance$node)
 mintime = Vance$edge[[1]][[3]]
 for (n in 1:length(Vance$edge)){
   Vance$edge[[n]][3] = (Vance$edge[[n]][[3]] - mintime) / 3600
 }
+Vance$edge = Vance$edge[-which(sapply(Vance$text, function(d){length(d)})==0)]
+Vance$text = Vance$text[-which(sapply(Vance$text, function(d){length(d)})==0)]
+
 Vance$edge = lapply(Vance$edge, function(x){x[1:3]})
 set.seed(1)
 
 #Vance$node = Vance$node[-c(5, 8, 16, 17)]
 #delete = sapply(1:length(Vance$edge), function(d){(unlist(Vance$edge[[d]][1:2]) %in% Vance$node)})
 #Vance$edge = Vance$edge[- which(sapply(1:length(delete), function(d){"FALSE" %in% delete[[d]]})>0)]
-Vancetest <- IPTM_inference.data(Vance$edge, Vance$node, Vance$text, Vance$vocab, nIP = 2, K = 6, sigma_Q = c(0.01, 1),
-                       alpha = 2, mvec = rep(1/5, 5), betas = 2, nvec = rep(1/620, 620), prior.b.mean = c(-3, rep(0, 24)), 
-                       prior.b.var = 0.1 * diag(25), prior.delta = c(0, 1), out = 10, n_B = 5500, n_d = 550, burn = c(500, 50), 
-                       thinning = c(10, 1), netstat = c("intercept", "dyadic", "degree", "triadic"), plot = TRUE, optimize = TRUE)
-save(Vancetest, file = "/Users/bomin8319/Desktop/IPTM/paper/Vancetest.RData")
+Vancetest <- IPTM_inference.data(Vance$edge, Vance$node, Vance$text, Vance$vocab, nIP = 2, K = 10, sigma_Q = c(0.01, 1),
+                       alpha = 2, mvec = rep(1/10, 10), betas = 2, nvec = rep(1/620, 620), prior.b.mean = c(-5, rep(0, 24)), 
+                       prior.b.var = 0.1 * diag(25), prior.delta = c(0, 1), out = 200, n_B = 5500, n_d = 550, burn = c(500, 50), 
+                       thinning = c(10, 1), netstat = c("intercept", "dyadic", "degree", "triadic"), plot = FALSE, optimize = TRUE)
+save(Vancetest, file = "/Users/bomin8319/Desktop/IPTM/paper/code/Vancetest2.RData")
 
 TablebetaIP(Vancetest)
 
 PlotbetaIP(Vancetest$B)
 
-par(mfrow = c(1,2))
-PlotTopicIP(Vancetest, 10)
 
-PlotTopic(Vancetest, 5)
+PlotTopic(Vancetest, 10)
 
-TableWordIP(Vancetest, 5, text, vocab)
 
 set.seed(100)
 load('/Users/bomin8319/Desktop/IPTM/paper/code/Darenew.RData')

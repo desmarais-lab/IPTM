@@ -730,3 +730,32 @@ arma::vec DataAug_cpp_Gibbs_noObs(arma::vec iJi_di, arma::vec lambda_di, List XB
 	prob = prob - max(prob);
 	return exp(prob);
 }
+
+
+RCPP_MODULE(IPTM){
+	function ("multinom_vec", &multinom_vec);
+	function ("which_int", &which_int);
+	function ("which_num", &which_num);
+	function ("rdirichlet_cpp", &rdirichlet_cpp);
+	function ("rbinom_mat", &rbinom_mat);
+	function ("History", &History);
+	function ("Degree", &Degree);
+	function ("Dyadic", &Dyadic);
+	function ("Triadic", &Triadic);
+	function ("Triadic_reduced", &Triadic_reduced);
+	function ("MultiplyXB", &MultiplyXB);
+	function ("MultiplyXBList", &MultiplyXBList);
+	function ("UpdateDenom", &UpdateDenom);
+	function ("UpdateNum", &UpdateNum);
+	function ("tabulateC", &tabulateC);
+	function ("lambda_cpp", &lambda_cpp);
+	function ("TopicInEqZ", &TopicInEqZ);
+	function ("WordInEqZ", &WordInEqZ);
+	function ("EdgeInEqZ", &EdgeInEqZ);
+	function ("EdgeInEqZ_Gibbs", &EdgeInEqZ_Gibbs);
+	function ("TimeInEqZ", &TimeInEqZ);
+	function ("ObservedInEqZ", &ObservedInEqZ);
+	function ("lambdaiJi", &lambdaiJi);
+	function ("DataAug_cpp", &DataAug_cpp);
+	function ("DataAug_cpp_Gibbs_noObs", &DataAug_cpp_Gibbs_noObs);
+}

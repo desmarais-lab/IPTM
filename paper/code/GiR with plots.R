@@ -43,6 +43,6 @@ sigma_Q = c(0.1, 0.0002)
 
 niters = c(5, 5500, 500, 500, 5)
 
-TrySchein<- Schein.Gibbs(10, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
-					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, generate_trace_plots = TRUE)
+TrySchein<- Schein.Gibbs(1000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, generate_trace_plots = FALSE)
 
