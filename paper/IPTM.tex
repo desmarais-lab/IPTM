@@ -528,8 +528,7 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
           	\end{table}
 \newpage
      \section{Posterior Predictive Experiments} \label{sec:PosteriorPredictive}
- We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For documents $d=\{M,M+1,\hdots,D-1\}$, we fit the IPTM to the first $d$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$) for document $d+1$ conditional on the content in document $d+1$, ($\boldsymbol{w}^{(d+1)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set for the first document in the test set. The variables that need to be sampled are the token topic assignments, $\mathcal{Z}^{d+1}$, and the tie data ($i^{(d+1)}, J^{(d+1)}, t^{(d+1)}$). 
- 
+ We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For a randomly chosen document $D^* \in \{M,M+1,\hdots,D\}$, we fit the IPTM to the corpus consisting of the first $d = \{1,\hdots,D^*-1\}$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(D^*)}, J^{(D^*)}, t^{(D^*)}$) for document $D^*$ conditional on the content in document $D^*$, ($\boldsymbol{w}^{(D^*)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set for the first document in the test set. The variables that need to be sampled are the token topic assignments, $\mathcal{Z}^{D^*}$, and the tie data ($i^{(D^*)}, J^{(D^*)}, t^{(D^*)}$). 
  \begin{algorithm}[H]
 	\SetAlgoLined
 	\caption{Predicting tie data for the next document}
@@ -537,17 +536,20 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
 	Input
 	\begin{enumerate}
 	\item $O$, number of outer iterations of inference from which to generate predictions
-	\item $d$, the last document to use in inference
+	\item $D^*$, the document to make a prediction
 	\item $R$, the number of iterations to sample predicted data within each outer iteration
+	\item $\boldsymbol{w}^{D^*}$, the observed words in the document to predict ($D^*$)
 	\end{enumerate}
 	Run burnin iterations\\
 	\For{o=1 to O}{
-		run an outer iteration of inference on documents $1$ through $d$\\
+		run an outer iteration of inference on documents $1$ through $(D^*-1)$\\
 		\For{r=1 to R}{
-				sample $\mathcal{Z}^{d+1}$ via Equation 24\\
-		sample  $i^{(d+1)}$, $J^{(d+1)}$, and $t^{(d+1)}$ conditional on $\mathcal{Z}^{d+1}$, via the generative process
+		initialize latent receivers $\{J_i^{D^*}\}_{i=1}^A$ and $\mathcal{Z}^{D^*}$ using empirical estimates from the infernece\\
+		update $\{J_i^{D^*}\}_{i=1}^A$ using Gibbs update -- Equation (15) without edge information\\
+		update $\mathcal{Z}^{D^*}$ using Gibbs update -- Equation (24)without edge information \\
+		sample  $i^{(D^*)}$, $J^{(D^*)}$, and $t^{(D^*)}$ conditional on $\{J_i^{D^*}\}_{i=1}^A$ and $\mathcal{Z}^{D^*}$, via the generative process
 		}
-		store $i^{(d+1)}$, $J^{(d+1)}$, $t^{(d+1)}$, and $\mathcal{Z}^{d+1}$
+		store $i^{(D^*)}$, $J^{(D^*)}$, $t^{(D^*)}$, and $\mathcal{Z}^{D^*}$
 	}
 \end{algorithm}
 We have not implemented this posterior predictive experiments yet, but will do so in the next phase of this project.
@@ -911,16 +913,16 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
         		\item[-] netstat = ``intercept" and ``dyadic"
         	\end{minipage}
         	\begin{minipage}{0.49\textwidth}
-        		\item[-] prior for $\boldsymbol{b}^{(c)}$: $\mu_{\boldsymbol{b}^{(c)}} = (-3,\boldsymbol{0}_6), \Sigma_{\boldsymbol{b}^{(c)}} = 0.005\times I_7$
-        		\item[-] prior for $\delta$: $\mu_\delta = 0$, $\sigma^2_\delta = 0.1$
-        		\item[-] $I$ (outer iteration) = 3
+        		\item[-] prior for $\boldsymbol{b}^{(c)}$: $\mu_{\boldsymbol{b}^{(c)}} = (-3,\boldsymbol{0}_6), \Sigma_{\boldsymbol{b}^{(c)}} = 0.05\times I_7$
+        		\item[-] prior for $\delta$: $\mu_\delta = 2.5$, $\sigma^2_\delta = 0.0001$
+        		\item[-] $I$ (outer iteration) = 5
         		\item[-] $n_1$ (hyperparamter optimization) = 0
-        		\item[-] $n_2$ (M-H sampling iteration of $\mathcal{B}$) = 330
-        		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 30
-        		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 3
-        		\item[-] $\sigma_{Q1}^2$ (proposal variance for $\mathcal{B}$) = 0.04
-        		\item[-] $n_3$ (M-H sampling iteration of $\delta$) = 10
-        		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 2
+        		\item[-] $n_2$ (M-H sampling iteration of $\mathcal{B}$) = 5500
+        		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 500
+        		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 5
+        		\item[-] $\sigma_{Q1}^2$ (proposal variance for $\mathcal{B}$) = 0.1
+        		\item[-] $n_3$ (M-H sampling iteration of $\delta$) = 500
+        		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 0.0002
         	\end{minipage}
         \end{itemize}
   \end{document}
