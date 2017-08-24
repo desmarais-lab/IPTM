@@ -1255,6 +1255,171 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 }
 
 
+#' @title IPTM_inference.LDA
+#' @description Iterate Markov Chain Monte Carlo (MCMC) algorithm using Gibbs measure to sequentially update the assignments of Z, C and B
+#'
+#' @param edge list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)
+#' @param node nodelist containing the ID of nodes (ID starting from 1)
+#' @param textlist list of text (length=number of documents in total) containing the words in each document
+#' @param vocabulary all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns specified by the user
+#' @param K total number of topics specified by the user
+#' @param sigma_Q proposal distribution variance parameter for beta and delta
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param betas Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
+#' @param prior.b.mean mean vector of b in multivariate normal distribution
+#' @param prior.b.var covairance matrix of b in multivariate normal distribution
+#' @param prior.delta parameter of delta in Normal prior
+#' @param out size of outer iterations 
+#' @param n_B size of third inner iteration for updates of B
+#' @param n_d size of third inner iteration for updates of delta
+#' @param burn iterations to be discarded at the beginning of beta and delta chain 
+#' @param thinning the thinningning interval of beta and delta chain
+#' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
+#' @param optimize to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)
+#'
+#' @return MCMC output containing IP assignment, topic assignment, and (beta, mu, delta) chain 
+#'
+#' @export
+IPTM_inference.LDA = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, 
+                               out, n_B, n_d, burn, thinning, netstat, optimize = FALSE) {
+  
+  # trim the edge so that we only model edges after 384 hours
+  timestamps = vapply(edge, function(d) {
+    d[[3]]
+  }, c(1))
+  
+  edge2 = which_int(384, timestamps) : length(edge)
+  timeinc = c(timestamps[1], timestamps[-1] - timestamps[-length(timestamps)])
+  
+  # initialize alpha, mvec, delta, nvec, delta, lvec, and gammas
+  W = length(vocabulary)
+  phi = lapply(1:K, function(k) {
+    rdirichlet_cpp(1, betas * nvec)
+  })
+  delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
+  beta.old = lapply(1:nIP, function(IP) {
+    prior.b.mean
+  })
+  # initialize C, theta and Z
+  currentC = sample(1:nIP, K, replace = TRUE)
+  theta = rdirichlet_cpp(length(edge), alpha * mvec)
+  currentZ = lapply(seq(along = edge), function(d) {
+    multinom_vec(max(1, length(textlist[[d]])), theta[d, ])
+  })
+  p.d = pdmat(currentZ, currentC, nIP) 
+  
+  # initialize beta
+  netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
+  L = 3
+  P = netstat[1] + L * (2 * netstat[2] + 2 * netstat[3] + 4 * netstat[4])
+  
+  bmat = list()
+  for (IP in 1:nIP) {
+    bmat[[IP]] = matrix(beta.old[[IP]], nrow = P, ncol = (n_B - burn[1]) / thinning[1])
+  }
+  deltamat = rep(delta,  (n_d - burn[2]) / thinning[2])
+  proposal.var = lapply(1:nIP, function(IP){diag(P)})
+  
+  #initialize the latent sender-receiver pairs
+  iJi = lapply(seq(along = edge), function(d) {
+    matrix(0, nrow = length(node), ncol = length(node))
+  })
+  lambda = list()
+  LambdaiJi = list()
+  observediJi = list()
+  for (d in edge2) {
+    iJi[[d]] = matrix(rbinom(length(node)^2, 1, 0.5), nrow =length(node), ncol = length(node))
+    diag(iJi[[d]]) = 0
+  }
+  #start outer iteration
+  for (o in 1:out) {
+    print(o)
+    if (optimize) {
+      #update the hyperparameter alpha and mvec
+      vec = AlphamvecOpt(K, currentZ[edge2], alpha, mvec, 5)
+      alpha = sum(vec)
+      mvec = vec / alpha
+    }
+ 
+    # Z update
+    textlist.raw = unlist(textlist)
+    table.W = lapply(1:K, function(k) {
+      tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+    })    
+    for (d in 1:(edge2[1] - 1)) {
+      textlist.d = textlist[[d]]        		 
+      for (w in 1:length(currentZ[[d]])) {         	 	
+        zw.old = currentZ[[d]][w]             	 	      	 	
+        if (length(textlist.d) > 0) {
+          table.W2 = table.W
+          table.W2[[zw.old]][textlist.d[w]] = table.W2[[zw.old]][textlist.d[w]] - 1
+          topicpart.d = TopicInEqZ(K, currentZ[[d]][-w], alpha, mvec)
+          wordpart.d = WordInEqZ(K, textlist.d, table.W2, betas, nvec)
+        } else {
+          topicpart.d = 0
+          wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
+        }
+        const.Z = topicpart.d + wordpart.d[w, ]
+        const.Z = const.Z - max(const.Z)
+        expconst.Z = exp(const.Z)
+        if (0 %in% expconst.Z) {
+          expconst.Z[which(expconst.Z == 0)] = exp(-745)
+        }
+        zw.new = multinom_vec(1, expconst.Z)
+        if (zw.new != zw.old) {
+          currentZ[[d]][w] = zw.new
+          table.W = lapply(1:K, function(k) {
+            tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+          })            			             			
+          p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP) 
+        } 
+      }
+    }
+    textlist.raw = unlist(textlist[edge2])
+    table.W = lapply(1:K, function(k) {
+      tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
+    })
+    for (d in edge2) {
+      textlist.d = textlist[[d]]        		 
+      for (w in 1:length(currentZ[[d]])) {         	 	
+        zw.old = currentZ[[d]][w] 
+        if (zw.old ==0) {browser()}
+        if (length(textlist.d) > 0) {
+          table.W2 = table.W
+          table.W2[[zw.old]][textlist.d[w]] = table.W2[[zw.old]][textlist.d[w]] - 1
+          topicpart.d = TopicInEqZ(K, currentZ[[d]][-w], alpha, mvec)
+          wordpart.d = WordInEqZ(K, textlist.d, table.W2, betas, nvec)
+        } else {
+          topicpart.d = 0
+          wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
+        }
+        const.Z = topicpart.d + wordpart.d[w, ]
+        const.Z = const.Z - max(const.Z)
+        expconst.Z = exp(const.Z)
+        if (0 %in% expconst.Z) {
+          expconst.Z[which(expconst.Z == 0)] = exp(-745)
+        }
+        zw.new = multinom_vec(1, expconst.Z)
+        if (zw.new != zw.old) {
+          currentZ[[d]][w] = zw.new
+          table.W = lapply(1:K, function(k) {
+            tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+          })            			             			
+          p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP) 
+        } 
+      }
+    }
+  }
+  
+  chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat,
+                     iJi = iJi[edge2], sigma_Q =sigma_Q, alpha = alpha, mvec = mvec, 
+                     proposal.var= proposal.var, edge2 = edge2)
+  return(chain.final)
+}
+
 #' @title TablebetaIP
 #' @description Generate a table summary of the MCMC chain of network statistics coefficients (beta) for each interaction pattern
 #'
