@@ -6,8 +6,7 @@
 \usage{
 Schein.Gibbs(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
   nvec, prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters,
-  netstat = c("dyadic"), generate_PP_plots = TRUE,
-  generate_trace_plots = FALSE)
+  netstat = c("dyadic"), generate_PP_plots = TRUE)
 }
 \arguments{
 \item{Nsamp}{number of GiR samples to be generated}
@@ -45,8 +44,6 @@ Schein.Gibbs(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 
 \item{generate_PP_plots}{Logical indicating whether to draw PP plots}
-
-\item{generate_trace_plots}{Logical indicating whether to draw trace plots for each inference}
 }
 \value{
 Forward and Backward samples and corresponding test results

@@ -76,6 +76,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// which_cpp
+Rcpp::IntegerVector which_cpp(int value, Rcpp::NumericVector x);
+RcppExport SEXP _IPTM_which_cpp(SEXP valueSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type value(valueSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(which_cpp(value, x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pdmat
+NumericMatrix pdmat(List currentZ, NumericVector currentC, int nIP);
+RcppExport SEXP _IPTM_pdmat(SEXP currentZSEXP, SEXP currentCSEXP, SEXP nIPSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type currentZ(currentZSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type currentC(currentCSEXP);
+    Rcpp::traits::input_parameter< int >::type nIP(nIPSEXP);
+    rcpp_result_gen = Rcpp::wrap(pdmat(currentZ, currentC, nIP));
+    return rcpp_result_gen;
+END_RCPP
+}
 // History
 List History(List edge, NumericMatrix p_d, IntegerVector node, double when);
 RcppExport SEXP _IPTM_History(SEXP edgeSEXP, SEXP p_dSEXP, SEXP nodeSEXP, SEXP whenSEXP) {
@@ -137,6 +162,19 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type triadic(triadicSEXP);
     rcpp_result_gen = Rcpp::wrap(Triadic_reduced(triadic));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Netstats_cpp
+List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat);
+RcppExport SEXP _IPTM_Netstats_cpp(SEXP historyIPSEXP, SEXP nodeSEXP, SEXP netstatSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type historyIP(historyIPSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type netstat(netstatSEXP);
+    rcpp_result_gen = Rcpp::wrap(Netstats_cpp(historyIP, node, netstat));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -280,26 +318,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// TimeInEqZ
-double TimeInEqZ(NumericVector LambdaiJi, double observedtdiff);
-RcppExport SEXP _IPTM_TimeInEqZ(SEXP LambdaiJiSEXP, SEXP observedtdiffSEXP) {
+// TimeObsInEqZ
+double TimeObsInEqZ(NumericVector LambdaiJi, double observedtdiff, double observediJi);
+RcppExport SEXP _IPTM_TimeObsInEqZ(SEXP LambdaiJiSEXP, SEXP observedtdiffSEXP, SEXP observediJiSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type LambdaiJi(LambdaiJiSEXP);
     Rcpp::traits::input_parameter< double >::type observedtdiff(observedtdiffSEXP);
-    rcpp_result_gen = Rcpp::wrap(TimeInEqZ(LambdaiJi, observedtdiff));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ObservedInEqZ
-double ObservedInEqZ(double observediJi);
-RcppExport SEXP _IPTM_ObservedInEqZ(SEXP observediJiSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type observediJi(observediJiSEXP);
-    rcpp_result_gen = Rcpp::wrap(ObservedInEqZ(observediJi));
+    rcpp_result_gen = Rcpp::wrap(TimeObsInEqZ(LambdaiJi, observedtdiff, observediJi));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -377,11 +405,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_which_num", (DL_FUNC) &_IPTM_which_num, 2},
     {"_IPTM_rdirichlet_cpp", (DL_FUNC) &_IPTM_rdirichlet_cpp, 2},
     {"_IPTM_rbinom_mat", (DL_FUNC) &_IPTM_rbinom_mat, 1},
+    {"_IPTM_which_cpp", (DL_FUNC) &_IPTM_which_cpp, 2},
+    {"_IPTM_pdmat", (DL_FUNC) &_IPTM_pdmat, 3},
     {"_IPTM_History", (DL_FUNC) &_IPTM_History, 4},
     {"_IPTM_Degree", (DL_FUNC) &_IPTM_Degree, 3},
     {"_IPTM_Dyadic", (DL_FUNC) &_IPTM_Dyadic, 3},
     {"_IPTM_Triadic", (DL_FUNC) &_IPTM_Triadic, 3},
     {"_IPTM_Triadic_reduced", (DL_FUNC) &_IPTM_Triadic_reduced, 1},
+    {"_IPTM_Netstats_cpp", (DL_FUNC) &_IPTM_Netstats_cpp, 3},
     {"_IPTM_MultiplyXB", (DL_FUNC) &_IPTM_MultiplyXB, 2},
     {"_IPTM_MultiplyXBList", (DL_FUNC) &_IPTM_MultiplyXBList, 2},
     {"_IPTM_UpdateDenom", (DL_FUNC) &_IPTM_UpdateDenom, 2},
@@ -393,8 +424,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_EdgeInEqZ", (DL_FUNC) &_IPTM_EdgeInEqZ, 3},
     {"_IPTM_EdgeInEqZ_Gibbs", (DL_FUNC) &_IPTM_EdgeInEqZ_Gibbs, 3},
     {"_IPTM_EdgeInEqZ_Gibbs2", (DL_FUNC) &_IPTM_EdgeInEqZ_Gibbs2, 3},
-    {"_IPTM_TimeInEqZ", (DL_FUNC) &_IPTM_TimeInEqZ, 2},
-    {"_IPTM_ObservedInEqZ", (DL_FUNC) &_IPTM_ObservedInEqZ, 1},
+    {"_IPTM_TimeObsInEqZ", (DL_FUNC) &_IPTM_TimeObsInEqZ, 3},
     {"_IPTM_lambdaiJi", (DL_FUNC) &_IPTM_lambdaiJi, 3},
     {"_IPTM_DataAug_cpp", (DL_FUNC) &_IPTM_DataAug_cpp, 8},
     {"_IPTM_DataAug_cpp_Gibbs", (DL_FUNC) &_IPTM_DataAug_cpp_Gibbs, 7},

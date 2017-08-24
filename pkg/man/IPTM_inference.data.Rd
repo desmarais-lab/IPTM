@@ -6,7 +6,7 @@
 \usage{
 IPTM_inference.data(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha,
   mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n_B, n_d,
-  burn, thinning, netstat, plot = FALSE, optimize = FALSE)
+  burn, thinning, netstat, optimize = FALSE)
 }
 \arguments{
 \item{edge}{list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)}
@@ -48,8 +48,6 @@ IPTM_inference.data(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha,
 \item{thinning}{the thinningning interval of beta and delta chain}
 
 \item{netstat}{which type of network statistics to use ("intercept", dyadic", "triadic", "degree")}
-
-\item{plot}{to plot the convergence diagnostics or not (TRUE/FALSE)}
 
 \item{optimize}{to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)}
 }

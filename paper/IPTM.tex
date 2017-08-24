@@ -325,7 +325,7 @@ In the forward samples, both observable and unobservable variables are generated
       	      
 To keep the computational burden of re-running thousands of rounds of inference manageable, we run GiR using a relatively small artificial sample, consisting of 5 documents, 4 tokens per document, 4 actors, 5 unique word types, 2 interaction patterns, and 4 topics per each forward or backward samples. For detailed settings including the prior specifications, see Appendix \ref{subsubsec: GiR implementation}. 
 We generated $10^5$ sets of forward and backward samples, and then calculated 1,000 quantiles for each of the network effect statistics (1.), and 50 quantiles for the rest of the statistics. We also calculated t-test and Mann-Whitney test p-values in order to test for differences in the distributions generated in the forward and backward samples. Before we calculated these statistics, we thinned our samples 
-by taking every 40th sample starting at the 10,000th sample for a resulting sample size of 1,000. Thinning reduces the autocorrelation in the Markov chains. In each case, if we observe a large p-value, this gives us evidence that the distributions generated under forward and backward sampling have the same locations. We depict the GiR results using probability-probability (PP) plots. To compare two samples with a PP-plot we calculate the empirical quantile in each sample of a set of values observed across the two samples, then plot the sets of quantiles in the two samples against each other. If the two samples are from equivalent distributions, the quantiles should line up on a line with zero $y$-intercept, and unit slope (i.e., a 45-degree line). The GiR results are depicted in Figure 2, which show that we pass the test on every statistic.. 
+by taking every 40th sample starting at the 10,000th sample for a resulting sample size of 1,000. Thinning reduces the autocorrelation in the Markov chains. In each case, if we observe a large p-value, this gives us evidence that the distributions generated under forward and backward sampling have the same locations. We depict the GiR results using probability-probability (PP) plots. To compare two samples with a PP-plot we calculate the empirical quantile in each sample of a set of values observed across the two samples, then plot the sets of quantiles in the two samples against each other. If the two samples are from equivalent distributions, the quantiles should line up on a line with zero $y$-intercept, and unit slope (i.e., a 45-degree line). The GiR results are depicted in Figure 2, which show that we pass the test on every statistic.
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=1\textwidth]{plots/Schein.png} 
@@ -546,7 +546,7 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
 		\For{r=1 to R}{
 		initialize latent receivers $\{J_i^{D^*}\}_{i=1}^A$ and $\mathcal{Z}^{D^*}$ using empirical estimates from the infernece\\
 		update $\{J_i^{D^*}\}_{i=1}^A$ using Gibbs update -- Equation (15) without edge information\\
-		update $\mathcal{Z}^{D^*}$ using Gibbs update -- Equation (24)without edge information \\
+		update $\mathcal{Z}^{D^*}$ using Gibbs update -- Equation (24) without edge information \\
 		sample  $i^{(D^*)}$, $J^{(D^*)}$, and $t^{(D^*)}$ conditional on $\{J_i^{D^*}\}_{i=1}^A$ and $\mathcal{Z}^{D^*}$, via the generative process
 		}
 		store $i^{(D^*)}$, $J^{(D^*)}$, $t^{(D^*)}$, and $\mathcal{Z}^{D^*}$
@@ -924,6 +924,16 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
         		\item[-] $n_3$ (M-H sampling iteration of $\delta$) = 500
         		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 0.0002
         	\end{minipage}
+        \end{itemize}        
+        \subsection{Things to do for AISTATS}
+        \begin{itemize}
+        	\item parallelize the code and improve the efficiency
+        	\item running on Enron data
+        	\item comparison with LDA in terms of topic coherence by shutting down network part of model
+        	\item comparison with other (sender, receiver time) generating models (e.g. duration or regression style model, survival model)
+        	\item shutting down topic component (which reduces to parametric network dynamics) and compare with Perry and Wolfe model?	
+        	\item random forest or SVM
+        	\item multinomial-logit model for selecting sender or receiver given the same network statistics we use
         \end{itemize}
   \end{document}
 

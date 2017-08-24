@@ -25,6 +25,14 @@ rbinom_mat <- function(probmat) {
     .Call('_IPTM_rbinom_mat', PACKAGE = 'IPTM', probmat)
 }
 
+which_cpp <- function(value, x) {
+    .Call('_IPTM_which_cpp', PACKAGE = 'IPTM', value, x)
+}
+
+pdmat <- function(currentZ, currentC, nIP) {
+    .Call('_IPTM_pdmat', PACKAGE = 'IPTM', currentZ, currentC, nIP)
+}
+
 History <- function(edge, p_d, node, when) {
     .Call('_IPTM_History', PACKAGE = 'IPTM', edge, p_d, node, when)
 }
@@ -43,6 +51,10 @@ Triadic <- function(history, node, sender) {
 
 Triadic_reduced <- function(triadic) {
     .Call('_IPTM_Triadic_reduced', PACKAGE = 'IPTM', triadic)
+}
+
+Netstats_cpp <- function(historyIP, node, netstat) {
+    .Call('_IPTM_Netstats_cpp', PACKAGE = 'IPTM', historyIP, node, netstat)
 }
 
 MultiplyXB <- function(X, B) {
@@ -89,12 +101,8 @@ EdgeInEqZ_Gibbs2 <- function(iJi, lambda, delta) {
     .Call('_IPTM_EdgeInEqZ_Gibbs2', PACKAGE = 'IPTM', iJi, lambda, delta)
 }
 
-TimeInEqZ <- function(LambdaiJi, observedtdiff) {
-    .Call('_IPTM_TimeInEqZ', PACKAGE = 'IPTM', LambdaiJi, observedtdiff)
-}
-
-ObservedInEqZ <- function(observediJi) {
-    .Call('_IPTM_ObservedInEqZ', PACKAGE = 'IPTM', observediJi)
+TimeObsInEqZ <- function(LambdaiJi, observedtdiff, observediJi) {
+    .Call('_IPTM_TimeObsInEqZ', PACKAGE = 'IPTM', LambdaiJi, observedtdiff, observediJi)
 }
 
 lambdaiJi <- function(p_d, XB, iJi) {

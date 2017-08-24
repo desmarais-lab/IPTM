@@ -114,6 +114,35 @@ IntegerMatrix rbinom_mat(NumericMatrix probmat) {
 }
 
 // **********************************************************//
+//                            which in Rcpp                  //
+// **********************************************************//
+// [[Rcpp::export]]
+Rcpp::IntegerVector which_cpp(int value, Rcpp::NumericVector x) {
+  Rcpp::IntegerVector v = Rcpp::seq(1, x.size());
+  return v[x==value];
+}
+// **********************************************************//
+//                       Construct p.d matrix                //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericMatrix pdmat(List currentZ, NumericVector currentC, int nIP) {
+	int nDocs = currentZ.size();
+	NumericMatrix pd(nDocs, nIP);
+	for (int IP = 1; IP < (nIP+1); IP++) {
+		  IntegerVector IPvec = which_cpp(IP, currentC);
+		for (int d = 0; d < nDocs; d++) {
+			IntegerVector currentZ_d = currentZ[d];
+		  for (int k = 0; k < IPvec.size(); k++) {
+			pd(d, IP-1) += sum(currentZ_d == IPvec[k]); 
+		  }
+		  pd(d, IP-1) = pd(d, IP-1)/currentZ_d.size();
+		}
+	}
+	return pd;
+}
+
+
+// **********************************************************//
 //              Construct the history of interaction         //
 // **********************************************************//
 // [[Rcpp::export]]
@@ -314,6 +343,83 @@ List Triadic_reduced(List triadic) {
   }
   return IPmat;
 }
+
+
+// **********************************************************//
+//                    Network statistics                     //
+// **********************************************************//
+// [[Rcpp::export]]
+List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
+	int A = node.size();
+	int P = netstat[0] + 3 * (2 * netstat[1] + 2 * netstat[2] + 4 * netstat[3]);
+	int nIP = historyIP.size();
+	List out(A);	
+	for (int a = 0; a < A; a++) {
+		List aout(nIP);
+		for (int IP = 0; IP < nIP; IP++) {
+		arma::mat netstatIP(A, P);
+		aout[IP] = netstatIP;
+		}
+		int iter = 0;
+		if (netstat[0] == 1) {
+			arma::vec intercept(A);
+			intercept.fill(1);
+			for (int IP = 0; IP < nIP; IP++){
+				arma::mat aoutIP = aout[IP];
+			    aoutIP.col(iter) = intercept;
+			    aout[IP] = aoutIP;
+			}
+			iter += 1;
+		}
+		if (netstat[1] == 1) {
+			List degree = Degree(historyIP, node, a + 1);
+			for (int IP = 0; IP < nIP; IP++){
+				arma::mat aoutIP = aout[IP];
+				arma::mat degreeIP = degree[IP];
+				int k = 0;
+				for (int c = iter; c < iter + 6; c++) {
+			    	aoutIP.col(c) = degreeIP.col(k);
+			    	k += 1;
+			    }
+			    aout[IP] = aoutIP;
+			}
+			iter += 6;
+		}
+		if (netstat[2] == 1) {
+			List dyadic = Dyadic(historyIP, node, a + 1);
+			for (int IP = 0; IP < nIP; IP++){
+				arma::mat aoutIP = aout[IP];
+				arma::mat dyadicIP = dyadic[IP];
+				int k = 0;
+				for (int c = iter; c < iter + 6; c++) {
+			    	aoutIP.col(c) = dyadicIP.col(k);
+			    	k += 1;
+			    }
+			    aout[IP] = aoutIP;
+			}
+			iter += 6;			
+		}	
+		if (netstat[3] == 1) {
+			List triadic0 = Triadic(historyIP, node, a + 1);
+			List triadic = Triadic_reduced(triadic0);
+			for (int IP = 0; IP < nIP; IP++){
+				arma::mat aoutIP = aout[IP];
+				arma::mat triadicIP = triadic[IP];
+				int k = 0;
+				for (int c = iter; c < iter + 12; c++) {
+			    	aoutIP.col(c) = triadicIP.col(k);
+			    	k += 1;
+			    }
+			    aout[IP] = aoutIP;
+			}		
+		}
+		out[a] = aout;
+	}
+	return out;
+}
+
+
+
 
 // **********************************************************//
 //                Multiply matrix X and vector B             //
@@ -563,26 +669,18 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
 
 
 // **********************************************************//
-//               Time contribution in update of Z            //
+//    Time and observed Edge contribution in update of Z     //
 // **********************************************************//
 // [[Rcpp::export]]
-double TimeInEqZ(NumericVector LambdaiJi,double observedtdiff) {
+double TimeObsInEqZ(NumericVector LambdaiJi, double observedtdiff, double observediJi) {
  double sumlambda = sum(LambdaiJi);
   if (sumlambda == arma::datum::inf) {
     sumlambda = exp(700);
   }
-	return - observedtdiff * sumlambda;
-}
-
-// **********************************************************//
-//          Observed Edge contribution in update of Z        //
-// **********************************************************//
-// [[Rcpp::export]]
-double ObservedInEqZ(double observediJi) {
-	if (observediJi < exp(-700)) {
+  if (observediJi < exp(-700)) {
 		observediJi = exp(-700);
 	}
-	return log(observediJi);
+	return  -observedtdiff * sumlambda + log(observediJi);
 }
 
 // **********************************************************//
@@ -753,8 +851,7 @@ RCPP_MODULE(IPTM){
 	function ("WordInEqZ", &WordInEqZ);
 	function ("EdgeInEqZ", &EdgeInEqZ);
 	function ("EdgeInEqZ_Gibbs", &EdgeInEqZ_Gibbs);
-	function ("TimeInEqZ", &TimeInEqZ);
-	function ("ObservedInEqZ", &ObservedInEqZ);
+	function ("TimeObsInEqZ", &TimeObsInEqZ);
 	function ("lambdaiJi", &lambdaiJi);
 	function ("DataAug_cpp", &DataAug_cpp);
 	function ("DataAug_cpp_Gibbs", &DataAug_cpp_Gibbs);
