@@ -18,8 +18,19 @@ set.seed(1)
 Vancetest <- IPTM_inference.data(Vance$edge, Vance$node, Vance$text, Vance$vocab, nIP = 2, K = 10, sigma_Q = c(0.01, 1),
                        alpha = 2, mvec = rep(1/10, 10), betas = 2, nvec = rep(1/620, 620), prior.b.mean = c(-5, rep(0, 24)), 
                        prior.b.var = 0.1 * diag(25), prior.delta = c(0, 1), out = 200, n_B = 5500, n_d = 550, burn = c(500, 50), 
-                       thinning = c(10, 1), netstat = c("intercept", "dyadic", "degree", "triadic"), plot = FALSE, optimize = TRUE)
-save(Vancetest, file = "/Users/bomin8319/Desktop/IPTM/paper/code/Vancetest2.RData")
+                       thinning = c(10, 1), netstat = c("intercept", "dyadic", "degree", "triadic"), optimize = TRUE)
+Vancetest_new = Vancetest
+save(Vancetest_new, file = "/Users/bomin8319/Desktop/IPTM/paper/code/Vancetest_new.RData")
+
+Vancetest <- IPTM_inference.LDA(Vance$edge, Vance$node, Vance$text, Vance$vocab, nIP = 2, K = 10, sigma_Q = c(0.01, 1),
+                                 alpha = 2, mvec = rep(1/10, 10), betas = 2, nvec = rep(1/620, 620), prior.b.mean = c(-5, rep(0, 24)), 
+                                 prior.b.var = 0.1 * diag(25), prior.delta = c(0, 1), out = 200, n_B = 5500, n_d = 550, burn = c(500, 50), 
+                                 thinning = c(10, 1), netstat = c("intercept", "dyadic", "degree", "triadic"), optimize = TRUE)
+Vancetest_LDA = Vancetest
+save(Vancetest_LDA, file = "/Users/bomin8319/Desktop/IPTM/paper/code/Vancetest_LDA.RData")
+
+
+
 
 TablebetaIP(Vancetest)
 

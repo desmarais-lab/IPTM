@@ -117,8 +117,8 @@ IntegerMatrix rbinom_mat(NumericMatrix probmat) {
 //                            which in Rcpp                  //
 // **********************************************************//
 // [[Rcpp::export]]
-Rcpp::IntegerVector which_cpp(int value, Rcpp::NumericVector x) {
-  Rcpp::IntegerVector v = Rcpp::seq(1, x.size());
+IntegerVector which_cpp(int value, NumericVector x) {
+  IntegerVector v = seq(1, x.size());
   return v[x==value];
 }
 // **********************************************************//

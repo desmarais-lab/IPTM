@@ -19,4 +19,5 @@ Daretest <- IPTM_inference.LDA(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP 
                         prior.b.mean = c(-3, rep(0, 24)), 
                        prior.b.var = 1 * diag(25), prior.delta = c(0, 1), out = 100, n_B = 15000, n_d = 1500, burn = c(10000,500), 
                        thinning = c(10,5), netstat = c("intercept", "dyadic", "degree", "triadic"), optimize = TRUE)
-save(Daretest, file = "Daretest.RData")
+Daretest_LDA = Daretest
+save(Daretest_LDA, file = "Daretest_LDA.RData")

@@ -14,7 +14,7 @@ Description: Functions jointly analyze the history of interaction (between
 License: MIT + file LICENSE
 LazyData: true
 Imports:
-    mvtnorm,
+    FastGP,
     MCMCpack,
     entropy,
     Rcpp,

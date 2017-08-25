@@ -77,13 +77,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // which_cpp
-Rcpp::IntegerVector which_cpp(int value, Rcpp::NumericVector x);
+IntegerVector which_cpp(int value, NumericVector x);
 RcppExport SEXP _IPTM_which_cpp(SEXP valueSEXP, SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type value(valueSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(which_cpp(value, x));
     return rcpp_result_gen;
 END_RCPP
