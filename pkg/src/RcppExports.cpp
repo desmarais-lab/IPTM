@@ -395,6 +395,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// expconst
+NumericVector expconst(NumericVector consts);
+RcppExport SEXP _IPTM_expconst(SEXP constsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type consts(constsSEXP);
+    rcpp_result_gen = Rcpp::wrap(expconst(consts));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 RcppExport SEXP _rcpp_module_boot_IPTM();
 
@@ -429,6 +440,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_DataAug_cpp", (DL_FUNC) &_IPTM_DataAug_cpp, 8},
     {"_IPTM_DataAug_cpp_Gibbs", (DL_FUNC) &_IPTM_DataAug_cpp_Gibbs, 7},
     {"_IPTM_DataAug_cpp_Gibbs_noObs", (DL_FUNC) &_IPTM_DataAug_cpp_Gibbs_noObs, 6},
+    {"_IPTM_expconst", (DL_FUNC) &_IPTM_expconst, 1},
     {"_rcpp_module_boot_IPTM", (DL_FUNC) &_rcpp_module_boot_IPTM, 0},
     {NULL, NULL, 0}
 };

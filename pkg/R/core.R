@@ -208,6 +208,11 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     		iJi[[d]][i, -i] = r.gibbs.measure(1, lambda[[d]][i, -i], delta, support)
     		}
     	}
+     textlist.raw = unlist(textlist[edge2])
+     table.W = lapply(1:K, function(k) {
+      			 tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
+      			 })	
+     table.W2 = table.W
     #start outer iteration
     for (o in 1:out) {
       
@@ -221,12 +226,13 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       for (d in edge2) {
    	 	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
    	 	X = Netstats_cpp(history.t, node, netstat)
-   	 	XB = MultiplyXBList(X, beta.old)     
+   	 	XB = MultiplyXBList(X, beta.old)   
 		lambda[[d]] = lambda_cpp(p.d[d,], XB)
 		#calculate the resampling probability	
 		for (i in node[-as.numeric(edge[[d]][1])]) {
+			XB_IP = lapply(XB, function(IP) {IP[i,]}) 
 			for (j in sample(node[-i], length(node) - 1)) {
-				probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], j)
+				probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], XB_IP, p.d[d, ], delta, timeinc[d], j)
 				iJi[[d]][i, j] = multinom_vec(1, probij) - 1		
 				}
 		}
@@ -236,11 +242,6 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 		}	 
 
      # Z update
-	 textlist.raw = unlist(textlist[edge2])
-     table.W = lapply(1:K, function(k) {
-      			 tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
-      			 })
-     table.W2 = table.W
    	 for (d in edge2) {
        textlist.d = textlist[[d]]
        if (as.numeric(edge[[d]][3]) + 384 > as.numeric(edge[[max(edge2)]][3])) {
@@ -275,8 +276,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
         }
        	 fixedpart = edgepart.d + timepart.d
          const.Z = fixedpart + topicpart.d + wordpart.d[w, ]
-         const.Z = const.Z - max(const.Z)
-         zw.new = multinom_vec(1, exp(const.Z))
+         zw.new = multinom_vec(1, expconst(const.Z))
       
          if (zw.new != zw.old) {
            currentZ[[d]][w] = zw.new
@@ -304,14 +304,8 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
            	prob = EdgeInEqZ_Gibbs(iJi[[max(edge2)]], lambda[[max(edge2)]], delta) + 
           		   TimeObsInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)], observediJi[[max(edge2)]]) 
            	const.C[IP] = prob
-      	 }
-
-         const.C = const.C - max(const.C)
-         expconst.C = exp(const.C)
-		 if (Inf %in% expconst.C) {
-		 	expconst.C[which(expconst.C == Inf)] = exp(700)
-		 	}		 	
-         currentC[k] = multinom_vec(1, expconst.C)
+      	 }	
+         currentC[k] = multinom_vec(1, expconst(const.C))
 	}
      
  	p.d = pdmat(currentZ, currentC, nIP)
@@ -474,6 +468,11 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     iJi[[d]] = matrix(rbinom(length(node)^2, 1, 0.5), nrow =length(node), ncol = length(node))
     diag(iJi[[d]]) = 0
   }
+  textlist.raw = unlist(textlist)
+  table.W = lapply(1:K, function(k) {
+      			tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+      			})
+  table.W2 = table.W  
   #start outer iteration
   for (o in 1:out) {
 	print(o)
@@ -491,8 +490,9 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       lambda[[d]] = lambda_cpp(p.d[d,], XB)
       #calculate the resampling probability	
       for (i in node[-as.numeric(edge[[d]][1])]) {
+      	XB_IP = lapply(XB, function(IP) {IP[i,]}) 
         for (j in sample(node[-i], length(node) - 1)) {
-          probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], j)
+          probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], XB_IP, p.d[d, ], delta, timeinc[d], j)
           iJi[[d]][i, j] = multinom_vec(1, probij) - 1
         }
       }
@@ -501,12 +501,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
     }	 
 
-    # Z update
-	  textlist.raw = unlist(textlist)
-      table.W = lapply(1:K, function(k) {
-      			tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
-      			})
-      table.W2 = table.W    
+    # Z update    
 	   for (d in 1:(edge2[1] - 1)) {
       		 textlist.d = textlist[[d]]        		 
           	 for (w in 1:length(currentZ[[d]])) {         	 	
@@ -521,12 +516,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         			wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
         		 }
           		 const.Z = topicpart.d + wordpart.d[w, ]
-          		 const.Z = const.Z - max(const.Z)
-          		 expconst.Z = exp(const.Z)
-          		 if (0 %in% expconst.Z) {
-		 			expconst.Z[which(expconst.Z == 0)] = exp(-745)
-		 		}
-          		 zw.new = multinom_vec(1, expconst.Z)
+          		 zw.new = multinom_vec(1, expconst(const.Z))
           		 if (zw.new != zw.old) {
             		 currentZ[[d]][w] = zw.new
             		 table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
@@ -569,13 +559,8 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         	timepart.d[currentCK] = TimeObsInEqZ(LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
         }
          fixedpart = edgepart.d + timepart.d 
-         const.Z = fixedpart + topicpart.d + wordpart.d[w, ]
-         const.Z = const.Z - max(const.Z)
-         expconst.Z = exp(const.Z)
-          		 if (0 %in% expconst.Z) {
-		 			expconst.Z[which(expconst.Z == 0)] = exp(-745)
-		 		}
-         zw.new = multinom_vec(1, expconst.Z)
+         const.Z = fixedpart + topicpart.d + wordpart.d[w, ] 
+         zw.new = multinom_vec(1, expconst(const.Z))
          if (zw.new != zw.old) {
            currentZ[[d]][w] = zw.new
            table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
@@ -603,13 +588,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
           		   TimeObsInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)], observediJi[[max(edge2)]])
            	 const.C[IP] = prob
       	 }
-
-         const.C = const.C - max(const.C)
-         expconst.C = exp(const.C)
-		 if (Inf %in% expconst.C) {
-		 	expconst.C[which(expconst.C == Inf)] = exp(700)
-		 	}		 	
-         currentC[k] = multinom_vec(1, expconst.C)
+         currentC[k] = multinom_vec(1,  expconst(const.C))
 	}
  	p.d = pdmat(currentZ, currentC, nIP) 
  
@@ -766,14 +745,19 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
   LambdaiJi = list()
   observediJi = list()
   for (d in edge2) {
-    history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
+    history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + (exp)(-745))
     X = Netstats_cpp(history.t, node, netstat)
     XB = MultiplyXBList(X, beta.old)     
     lambda[[d]] = lambda_cpp(p.d[d,], XB)
     iJi[[d]] = matrix(rbinom(length(node)^2, 1, 0.5), nrow =length(node), ncol = length(node))
     diag(iJi[[d]]) = 0
   }
-
+	textlist.raw = unlist(textlist)
+    table.W = lapply(1:K, function(k) {
+      			tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+      			})
+    table.W2 = table.W
+      
   #start outer iteration
   for (o in 1:out) {
     output = list(C = currentC, Z = currentZ, B = bmat, D = deltamat)
@@ -793,8 +777,9 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       lambda[[d]] = lambda_cpp(p.d[d,], XB)
       #calculate the resampling probability	
       for (i in node[-as.numeric(edge[[d]][1])]) {
+      	XB_IP = lapply(XB, function(IP) {IP[i,]})
         for (j in sample(node[-i], length(node) - 1)) {
-          probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], j)
+          probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], XB_IP, p.d[d, ], delta, timeinc[d], j)
           iJi[[d]][i, j] = multinom_vec(1, probij) - 1
         }
       }
@@ -803,12 +788,7 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
     }	 
     
-    # Z update
-	  textlist.raw = unlist(textlist)
-      table.W = lapply(1:K, function(k) {
-      			tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
-      			})
-      table.W2 = table.W			    
+    # Z update			    
 	   for (d in 1:(edge2[1] - 1)) {
       		 textlist.d = textlist[[d]]        		 
           	 for (w in 1:length(currentZ[[d]])) {
@@ -823,8 +803,7 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
         			wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
         		 }
           		 const.Z = topicpart.d + wordpart.d[w, ]
-          		 const.Z = const.Z - max(const.Z)
-          		 zw.new = multinom_vec(1, exp(const.Z))
+          		 zw.new = multinom_vec(1, expconst(const.Z))
           		 if (zw.new != zw.old) {
             			 currentZ[[d]][w] = zw.new
             		     table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
@@ -832,7 +811,7 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
            				 table.W2 = table.W                 			             			
       				 	 p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP) 	
                	 }
-        		}
+        	 }
        	 }
  	 for (d in edge2) {
        textlist.d = textlist[[d]]
@@ -868,9 +847,7 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
         }
        	 fixedpart = edgepart.d + timepart.d
          const.Z = fixedpart + topicpart.d + wordpart.d[w, ]
-         const.Z = const.Z - max(const.Z)
-         
-         zw.new = multinom_vec(1, exp(const.Z))
+         zw.new = multinom_vec(1, expconst(const.Z))
          if (zw.new != zw.old) {
            currentZ[[d]][w] = zw.new
            table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
@@ -898,13 +875,7 @@ IPTM_inference.data2 = function(edge, node, textlist, vocabulary, nIP, K, sigma_
           		   TimeObsInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)], observediJi[[max(edge2)]])
            	const.C[IP] = prob
       	 }
-
-         const.C = const.C - max(const.C)
-         expconst.C = exp(const.C)
-		 if (Inf %in% expconst.C) {
-		 	expconst.C[which(expconst.C == Inf)] = exp(700)
-		 	}		 	
-         currentC[k] = multinom_vec(1, expconst.C)
+         currentC[k] = multinom_vec(1, expconst(const.C))
 	}
      
  	p.d = pdmat(currentZ, currentC, nIP)  
@@ -1058,6 +1029,11 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
   for (d in edge2) {
     iJi[[d]] = initial$iJi[[d]]
   }
+	 textlist.raw = unlist(textlist[edge2])
+     table.W = lapply(1:K, function(k) {
+      			 tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
+      			 })
+     table.W2 = table.W 			 
 
     #start outer iteration
     for (o in 1:out) {
@@ -1076,8 +1052,9 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 		  lambda[[d]] = lambda_cpp(p.d[d,], XB)
 		#calculate the resampling probability	
 		 for (i in node[-as.numeric(edge[[d]][1])]) {
+		 	XB_IP = lapply(XB, function(IP) {IP[i,]})
 			for (j in sample(node[-i], length(node) - 1)) {
-			 probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], lapply(XB, function(IP) {IP[i,]}), p.d[d, ], delta, timeinc[d], j)
+			 probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], XB_IP, p.d[d, ], delta, timeinc[d], j)
 			 iJi[[d]][i, j] = multinom_vec(1, probij) - 1		
 			}
 		 }
@@ -1087,11 +1064,6 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
 		}	 
 	
      # Z update
-	 textlist.raw = unlist(textlist[edge2])
-     table.W = lapply(1:K, function(k) {
-      			 tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
-      			 })
-     table.W2 = table.W 			 
    	 for (d in edge2) {
        textlist.d = textlist[[d]]
        if (as.numeric(edge[[d]][3]) + 384 > as.numeric(edge[[max(edge2)]][3])) {
@@ -1125,10 +1097,8 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
         	timepart.d[currentCK] = TimeObsInEqZ(LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[max(edge2)]])
         }
          fixedpart = edgepart.d + timepart.d          
-         const.Z = fixedpart + topicpart.d + wordpart.d[w, ]
-         const.Z = const.Z - max(const.Z)
-         
-         zw.new = multinom_vec(1, exp(const.Z))
+         const.Z = fixedpart + topicpart.d + wordpart.d[w, ] 
+         zw.new = multinom_vec(1, expconst(const.Z))
          if (zw.new != zw.old) {
            currentZ[[d]][w] = zw.new
            table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
@@ -1155,13 +1125,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
           		   TimeObsInEqZ(LambdaiJi[[max(edge2)]], timeinc[max(edge2)], observediJi[[max(edge2)]])
            	const.C[IP] = prob
       	 }
-
-         const.C = const.C - max(const.C)
-         expconst.C = exp(const.C)
-		 if (Inf %in% expconst.C) {
-		 	expconst.C[which(expconst.C == Inf)] = exp(700)
-		 	}		 	
-         currentC[k] = multinom_vec(1, expconst.C)
+         currentC[k] = multinom_vec(1, expconst(const.C))
 	}
      
  	p.d = pdmat(currentZ, currentC, nIP) 
@@ -1325,6 +1289,11 @@ IPTM_inference.LDA = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q,
     iJi[[d]] = matrix(rbinom(length(node)^2, 1, 0.5), nrow =length(node), ncol = length(node))
     diag(iJi[[d]]) = 0
   }
+    textlist.raw = unlist(textlist)
+    table.W = lapply(1:K, function(k) {
+      tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+    })
+    table.W2 = table.W    
   #start outer iteration
   for (o in 1:out) {
     print(o)
@@ -1335,12 +1304,7 @@ IPTM_inference.LDA = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q,
       mvec = vec / alpha
     }
  
-    # Z update
-    textlist.raw = unlist(textlist)
-    table.W = lapply(1:K, function(k) {
-      tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
-    })
-    table.W2 = table.W    
+    # Z update  
     for (d in 1:max(edge2)) {
       textlist.d = textlist[[d]]        		 
       for (w in 1:length(currentZ[[d]])) {         	 	
@@ -1354,12 +1318,7 @@ IPTM_inference.LDA = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q,
           wordpart.d = matrix(0, nrow = length(currentZ[[d]]), ncol = K)
         }
         const.Z = topicpart.d + wordpart.d[w, ]
-        const.Z = const.Z - max(const.Z)
-        expconst.Z = exp(const.Z)
-        if (0 %in% expconst.Z) {
-          expconst.Z[which(expconst.Z == 0)] = exp(-745)
-        }
-        zw.new = multinom_vec(1, expconst.Z)
+        zw.new = multinom_vec(1, expconst(const.Z))
         if (zw.new != zw.old) {
            currentZ[[d]][w] = zw.new
            table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
@@ -2108,13 +2067,8 @@ GenerateDocs.predict = function(nDocs = 1, node, vocabulary, nIP, K, owords, alp
         topicpart.d = 0
         wordpart.d = matrix(0, nrow = N.d, ncol = K)
       }
-        const.Z = topicpart.d + wordpart.d[w, ]
-        const.Z = const.Z - max(const.Z)
-        expconst.Z = exp(const.Z)
-        if (0 %in% expconst.Z) {
-        		expconst.Z[which(expconst.Z == 0)] = exp(-745)
-        }
-        zw.new = multinom_vec(1, expconst.Z)
+        const.Z = topicpart.d + wordpart.d[w, ] 
+        zw.new = multinom_vec(1, expconst(const.Z))
         if (zw.new != zw.old) {
           topic_token_assignments[[base.length + d]][w] = zw.new
           table.W = lapply(1:K, function(k) {

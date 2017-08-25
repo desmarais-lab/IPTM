@@ -121,3 +121,7 @@ DataAug_cpp_Gibbs_noObs <- function(iJi_di, lambda_di, XB, p_d, delta, j) {
     .Call('_IPTM_DataAug_cpp_Gibbs_noObs', PACKAGE = 'IPTM', iJi_di, lambda_di, XB, p_d, delta, j)
 }
 
+expconst <- function(consts) {
+    .Call('_IPTM_expconst', PACKAGE = 'IPTM', consts)
+}
+

@@ -571,8 +571,8 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda,double delta) {
 		for (int j = 0; j < iJi.ncol(); j++) {
 			if (i != j) {
 		 double deltalambda = delta * lambda(i, j);
-		 if (deltalambda < exp(-700)) {
-		deltalambda = exp(-700);
+		 if (deltalambda < exp(-745)) {
+             deltalambda = exp(-745);
 		}
 			edges = edges + iJi(i, j) * log(deltalambda) - log(deltalambda + 1);
 			}
@@ -588,7 +588,7 @@ double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda,double delta) {
 double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda,double delta) {
 	double edges = 0;
   arma::umat uinf = find(log(lambda) == -arma::datum::inf);
-  lambda.elem(uinf).fill(exp(-700));
+  lambda.elem(uinf).fill(exp(-745));
 	for (unsigned int i = 0; i < iJi.n_rows; i++) {
 		arma::vec normal = arma::zeros(iJi.n_rows - 1);
 		double prob = 0;
@@ -615,7 +615,7 @@ double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda,double delta) {
 			normalizer = sumnorm;
 		} else {
 		  if (exp(sumnorm) <= 1) {
-		    normalizer = -700;
+		    normalizer = -745;
 		  } else {
 			normalizer = log(exp(sumnorm) - 1);
 		}
@@ -657,7 +657,7 @@ arma::vec EdgeInEqZ_Gibbs2(arma::mat iJi, arma::mat lambda, double delta) {
       normalizer = sumnorm;
     } else {
       if (exp(sumnorm) <= 1) {
-        normalizer = -700;
+        normalizer = -745;
       } else {
         normalizer = log(exp(sumnorm) - 1);
       }
@@ -677,8 +677,8 @@ double TimeObsInEqZ(NumericVector LambdaiJi, double observedtdiff, double observ
   if (sumlambda == arma::datum::inf) {
     sumlambda = exp(700);
   }
-  if (observediJi < exp(-700)) {
-		observediJi = exp(-700);
+  if (observediJi < exp(-745)) {
+		observediJi = exp(-745);
 	}
 	return  -observedtdiff * sumlambda + log(observediJi);
 }
@@ -773,8 +773,8 @@ arma::vec DataAug_cpp_Gibbs(arma::vec iJi_di, arma::vec lambda_di, List XB, arma
 				}
 			}
 	}
-	if (lambda_di[j - 1] < exp(-700)) {
-	  lambda_di[j - 1] = exp(-700);
+	if (lambda_di[j - 1] < exp(-745)) {
+	  lambda_di[j - 1] = exp(-745);
 	}
 		prob[1] = delta + log(lambda_di[j - 1]) - timeinc_d * out[1];
 	if (sumiJi0 > 0) {
@@ -816,8 +816,8 @@ arma::vec DataAug_cpp_Gibbs_noObs(arma::vec iJi_di, arma::vec lambda_di, List XB
 				}
 			}
 	}
-	if (lambda_di[j - 1] < exp(-700)) {
-	  lambda_di[j - 1] = exp(-700);
+	if (lambda_di[j - 1] < exp(-745)) {
+	  lambda_di[j - 1] = exp(-745);
 	}
 		prob[1] = delta + log(lambda_di[j - 1]);
 	if (sumiJi0 > 0) {
@@ -829,31 +829,19 @@ arma::vec DataAug_cpp_Gibbs_noObs(arma::vec iJi_di, arma::vec lambda_di, List XB
 	return exp(prob);
 }
 
-
-RCPP_MODULE(IPTM){
-	function ("multinom_vec", &multinom_vec);
-	function ("which_int", &which_int);
-	function ("which_num", &which_num);
-	function ("rdirichlet_cpp", &rdirichlet_cpp);
-	function ("rbinom_mat", &rbinom_mat);
-	function ("History", &History);
-	function ("Degree", &Degree);
-	function ("Dyadic", &Dyadic);
-	function ("Triadic", &Triadic);
-	function ("Triadic_reduced", &Triadic_reduced);
-	function ("MultiplyXB", &MultiplyXB);
-	function ("MultiplyXBList", &MultiplyXBList);
-	function ("UpdateDenom", &UpdateDenom);
-	function ("UpdateNum", &UpdateNum);
-	function ("tabulateC", &tabulateC);
-	function ("lambda_cpp", &lambda_cpp);
-	function ("TopicInEqZ", &TopicInEqZ);
-	function ("WordInEqZ", &WordInEqZ);
-	function ("EdgeInEqZ", &EdgeInEqZ);
-	function ("EdgeInEqZ_Gibbs", &EdgeInEqZ_Gibbs);
-	function ("TimeObsInEqZ", &TimeObsInEqZ);
-	function ("lambdaiJi", &lambdaiJi);
-	function ("DataAug_cpp", &DataAug_cpp);
-	function ("DataAug_cpp_Gibbs", &DataAug_cpp_Gibbs);
-	function ("DataAug_cpp_Gibbs_noObs", &DataAug_cpp_Gibbs_noObs);
+// **********************************************************//
+//          Calculate multinomial sampling probability       //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericVector expconst(NumericVector consts) {
+	NumericVector expconsts = exp(consts - max(consts));
+	LogicalVector zeros = (expconsts == 0);
+	LogicalVector infs = (expconsts == arma::datum::inf);
+	if (sum(zeros) > 0) {
+	expconsts[zeros] = exp(-745);
+	}
+	if (sum(infs) > 0) {
+	expconsts[infs] = exp(700);
+	}
+	return expconsts;
 }
