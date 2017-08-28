@@ -213,6 +213,8 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       			 tabulateC(textlist.raw[which(unlist(currentZ[edge2]) == k)], W)
       			 })	
      table.W2 = table.W
+	alphamat = matrix(NA, nrow = 0, ncol = 1)
+	mvecmat = matrix(NA, nrow = 0, ncol = K)
     #start outer iteration
     for (o in 1:out) {
       
@@ -221,6 +223,8 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       vec = AlphamvecOpt(K, currentZ[edge2], alpha, mvec, 5)
       alpha = sum(vec)
       mvec = vec / alpha
+      alphamat = rbind(alphamat, alpha)
+      mvecmat = rbind(mvecmat, mvec)
       }
      # Data augmentation
       for (d in edge2) {
@@ -383,7 +387,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
  }
      
   chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat,
-                     iJi = iJi, sigma_Q =sigma_Q, alpha = alpha, mvec = mvec, 
+                     iJi = iJi, sigma_Q =sigma_Q, alpha = alphamat, mvec = mvecmat, 
                      proposal.var= proposal.var)
   return(chain.final)
 }
@@ -480,17 +484,20 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       			tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
       			})
   table.W2 = table.W  
-      
-  #start outer iteration
-  for (o in 1:out) {
-  	print(o)
-    if (optimize) {
+	alphamat = matrix(NA, nrow = 0, ncol = 1)
+	mvecmat = matrix(NA, nrow = 0, ncol = K)
+    #start outer iteration
+    for (o in 1:out) {
+      print(o)
+      if (optimize) {
       #update the hyperparameter alpha and mvec
       vec = AlphamvecOpt(K, currentZ[edge2], alpha, mvec, 5)
       alpha = sum(vec)
       mvec = vec / alpha
-    }
-    # Data augmentation
+      alphamat = rbind(alphamat, alpha)
+      mvecmat = rbind(mvecmat, mvec)
+      }
+      # Data augmentation
     for (d in edge2) {
       history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
       X = Netstats_cpp(history.t, node, netstat)
@@ -674,7 +681,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   }
  
   chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat, 
-                     iJi = iJi, sigma_Q =sigma_Q, alpha = alpha, mvec = mvec, 
+                     iJi = iJi, sigma_Q =sigma_Q, alpha = alphamat, mvec = mvecmat, 
                      proposal.var= proposal.var)
   return(chain.final)
 }

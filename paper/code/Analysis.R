@@ -151,8 +151,10 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("/Users/bomin8319/Desktop/IPTM/paper/code/AISTAT_version/Daretest_IP2.RData")
-Daretest1 = Daretest
+load("/Users/bomin8319/Desktop/IPTM/paper/code/AISTAT_version/Daretest_IP3.RData")
+load("/Users/bomin8319/Desktop/IPTM/paper/code/AISTAT_version/Daretest_LDA.RData")
+
+Daretest1 = Daretest_LDA
 Daretest1$C
 
 TableWord = function(Zchain, K, textlist, vocabulary) {
