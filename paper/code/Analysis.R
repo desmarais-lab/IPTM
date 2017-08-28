@@ -151,7 +151,7 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("/Users/bomin8319/Desktop/IPTM/paper/code/Daretest_IP3.RData")
+load("/Users/bomin8319/Desktop/IPTM/paper/code/AISTAT_version/Daretest_IP2.RData")
 Daretest1 = Daretest
 Daretest1$C
 
@@ -190,7 +190,7 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
     colnames(table.word) = names(top.topic)
   return(table.word)
 }
-TableWord(Daretest1$Z, 20, Dare$text, Dare$vocab)
+TableWord(Daretest1$Z[Daretest1$edge2], 20, Dare$text[Daretest1$edge2], Dare$vocab)
 table(unlist(Daretest1$Z)) / sum(table(unlist(Daretest1$Z)))
 
 which(Sandy$date %in% unique(Sandy$date)[20:27])
@@ -474,7 +474,7 @@ TableWordIP(Daretest1$C, Daretest1$Z[216:418], 5, Dare$text[534:736], Dare$vocab
 lapply(Daretest1$B, function(IP) {rowMeans(IP)})
 
 library(reshape)
-
+Vancetest = Daretest
 DareB = matrix(NA, 500, 25)
 DareB[,1:25] = t(Vancetest$B[[1]])
 colnames(DareB)= c( "intercept",

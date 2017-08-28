@@ -6,7 +6,7 @@
 \usage{
 IPTM_inference.data(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha,
   mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n_B, n_d,
-  burn, thinning, netstat, optimize = FALSE)
+  burn, thinning, netstat, optimize = FALSE, initial = NULL)
 }
 \arguments{
 \item{edge}{list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)}
@@ -50,6 +50,8 @@ IPTM_inference.data(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha,
 \item{netstat}{which type of network statistics to use ("intercept", dyadic", "triadic", "degree")}
 
 \item{optimize}{to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)}
+
+\item{initial}{list of initial values user wants to assign}
 }
 \value{
 MCMC output containing IP assignment, topic assignment, and (beta, mu, delta) chain
