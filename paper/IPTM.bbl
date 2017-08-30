@@ -195,6 +195,13 @@ McCullough, B.~D. (2009).
 \newblock The accuracy of econometric software.
 \newblock {\em Handbook of computational econometrics}, pages 55--79.
 
+\bibitem[Mimno et~al., 2011]{mimno2011optimizing}
+Mimno, D., Wallach, H.~M., Talley, E., Leenders, M., and McCallum, A. (2011).
+\newblock Optimizing semantic coherence in topic models.
+\newblock In {\em Proceedings of the conference on empirical methods in natural
+  language processing}, pages 262--272. Association for Computational
+  Linguistics.
+
 \bibitem[Peng et~al., 2016]{peng2016follower}
 Peng, T.-Q., Liu, M., Wu, Y., and Liu, S. (2016).
 \newblock Follower-followee network, communication networks, and vote agreement

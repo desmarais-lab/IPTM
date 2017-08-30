@@ -21,3 +21,33 @@ Daretest <- IPTM_inference.LDA(Dare$edge, Dare$node, Dare$text, Dare$vocab, nIP 
                        thinning = c(10,5), netstat = c("intercept", "dyadic", "degree", "triadic"), optimize = TRUE)
 Daretest_LDA = Daretest
 save(Daretest_LDA, file = "Daretest_LDA.RData")
+
+
+
+library(lda)
+library(SpeedReader)
+load('~/Desktop/IPTM/paper/code/AISTAT_version/Vancetest_LDA_K5.RData')
+K = 5
+top.words = TableWord(Vancetest_LDA$Z, K, Vance$text, Vance$vocab)
+topic.word = matrix(0, nrow = length(Vancetest_LDA$Z), ncol = length(Vance$vocab))
+rownames(topic.word) = 1:length(Vance$text)
+colnames(topic.word) = Vance$vocab
+for (d in seq(along = Vance$text)) {
+	topic.word[d, ] = tabulate(Vance$text[[d]], length(Vance$vocab))
+}
+sapply(1:K, function(k) {
+topic_coherence(top.words[,k], topic.word,Vance$vocab)	
+})
+
+load('~/Desktop/IPTM/paper/code/AISTAT_version/Vancetest_LDA_K5.RData')
+K = 10
+top.words = TableWord(Vancetest_LDA$Z, K, Vance$text, Vance$vocab)
+topic.word = matrix(0, nrow = length(Vancetest_LDA$Z), ncol = length(Vance$vocab))
+rownames(topic.word) = 1:length(Vance$text)
+colnames(topic.word) = Vance$vocab
+for (d in seq(along = Vance$text)) {
+	topic.word[d, ] = tabulate(Vance$text[[d]], length(Vance$vocab))
+}
+sapply(1:K, function(k) {
+topic_coherence(top.words[,k], topic.word,Vance$vocab)	
+})
