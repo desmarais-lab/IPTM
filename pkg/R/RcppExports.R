@@ -89,8 +89,8 @@ WordInEqZ <- function(K, textlistd, tableW, beta, nvec) {
     .Call('_IPTM_WordInEqZ', PACKAGE = 'IPTM', K, textlistd, tableW, beta, nvec)
 }
 
-EdgeInEqZ <- function(iJi, lambda, delta) {
-    .Call('_IPTM_EdgeInEqZ', PACKAGE = 'IPTM', iJi, lambda, delta)
+converge_ZW <- function(currentZ, textlist, tableW, K, alpha, mvec, beta, nvec) {
+    .Call('_IPTM_converge_ZW', PACKAGE = 'IPTM', currentZ, textlist, tableW, K, alpha, mvec, beta, nvec)
 }
 
 EdgeInEqZ_Gibbs <- function(iJi, lambda, delta) {
@@ -123,5 +123,9 @@ DataAug_cpp_Gibbs_noObs <- function(iJi_di, lambda_di, XB, p_d, delta, j) {
 
 expconst <- function(consts) {
     .Call('_IPTM_expconst', PACKAGE = 'IPTM', consts)
+}
+
+converge_all <- function(currentZ, textlist, tableW, K, alpha, mvec, beta, nvec, iJi, lambda, delta, LambdaiJi, observedtdiff, observediJi) {
+    .Call('_IPTM_converge_all', PACKAGE = 'IPTM', currentZ, textlist, tableW, K, alpha, mvec, beta, nvec, iJi, lambda, delta, LambdaiJi, observedtdiff, observediJi)
 }
 

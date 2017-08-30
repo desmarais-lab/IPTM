@@ -455,7 +455,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   currentZ = initial$Z  
   }
   p.d = pdmat(currentZ, currentC, nIP) 
-  
+  convergence = c()
   # initialize beta
   netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
   L = 3
@@ -532,9 +532,10 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         		 }
           		 const.Z = topicpart.d + wordpart.d[w, ]
           		 zw.new = multinom_vec(1, expconst(const.Z))
+          		 if (zw.new == 0) {browser()}
           		 if (zw.new != zw.old) {
             			 currentZ[[d]][w] = zw.new
-            		     table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
+            		   table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
            				 table.W[[zw.new]][textlist.d[w]] = table.W[[zw.new]][textlist.d[w]] + 1
            				 table.W2 = table.W                 			             			
       				 	 p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP) 	
@@ -677,6 +678,16 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       if (i4 > burn[2] & i4 %% (thinning[2]) == 0) {
         deltamat[(i4 - burn[2]) / thinning[2]] = delta
       }
+    }
+   if (o >= floor(0.2 * out)) {
+   	  for (d in max(edge2)) {
+        XB = MultiplyXBList(X, beta.old)
+        lambda[[d]] = lambda_cpp(p.d[d,], XB)    
+        LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+        observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+      }
+    convergence = c(convergence, converge_all(currentZ, textlist, table.W, K, alpha, mvec, betas, nvec, 
+    			  iJi[[max(edge2)]], lambda[[max(edge2)]], delta, LambdaiJi[[max(edge2)]], timeinc[max(edge2)], observediJi[[max(edge2)]]))
     }
   }
  
@@ -991,7 +1002,7 @@ IPTM_inference.LDA = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q,
     multinom_vec(max(1, length(textlist[[d]])), theta[d, ])
   })
   p.d = pdmat(currentZ, currentC, nIP) 
-  
+  convergence = c()
   # initialize beta
   netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
   L = 3
@@ -1053,8 +1064,11 @@ IPTM_inference.LDA = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q,
         } 
       }
     }
+    if (o >= floor(0.2 * out)) {
+    convergence = c(convergence, converge_ZW(currentZ, textlist, table.W, K, alpha, mvec, betas, nvec))
+    }
   }
-  chain.final = list(Z = currentZ, alpha = alpha, mvec = mvec, edge2 = edge2)
+  chain.final = list(Z = currentZ, alpha = alpha, mvec = mvec, edge2 = edge2, convergence = convergence)
   return(chain.final)
 }
 

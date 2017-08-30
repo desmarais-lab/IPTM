@@ -561,31 +561,35 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 	return consts;
 }
 
+
 // **********************************************************//
-//               Edge contribution in update of Z            //
+//      Likelihood evaluation of ZW for convergence check    //
 // **********************************************************//
 // [[Rcpp::export]]
-double EdgeInEqZ(IntegerMatrix iJi, NumericMatrix lambda,double delta) {
-	double edges = 0;
-	for (int i = 0; i < iJi.nrow(); i++) {
-		for (int j = 0; j < iJi.ncol(); j++) {
-			if (i != j) {
-		 double deltalambda = delta * lambda(i, j);
-		 if (deltalambda < exp(-745)) {
-             deltalambda = exp(-745);
-		}
-			edges = edges + iJi(i, j) * log(deltalambda) - log(deltalambda + 1);
-			}
-		}
-	}
-	return edges;
+double converge_ZW(List currentZ, List textlist, List tableW, int K, 
+                       double alpha, NumericVector mvec, double beta, NumericVector nvec){
+  double consts = 0;
+  for (int d = 0; d < currentZ.size(); d++) {
+  	IntegerVector topic_d = currentZ[d];
+  	IntegerVector text_d = textlist[d];
+  	IntegerVector table_topics = tabulateC(topic_d, K);
+  	for (int n = 0; n < topic_d.size(); n++) {
+  		int topic_dn = topic_d[n] - 1;
+  		int text_dn = text_d[n] - 1;
+  		NumericVector tablek = tableW[topic_dn];
+  		double wordpart = log(tablek[text_dn] - 1 + beta * nvec[text_dn]) - log(sum(tablek) - 1 + beta); 
+  		double topicpart = table_topics[topic_dn] - 1 + alpha * mvec[topic_dn];
+  		consts += log(topicpart) + wordpart;  	
+  		}
+  }
+	return consts;
 }
 
 // **********************************************************//
 //               Edge contribution in update of Z            //
 // **********************************************************//
 // [[Rcpp::export]]
-double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda,double delta) {
+double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
 	double edges = 0;
   arma::umat uinf = find(log(lambda) == -arma::datum::inf);
   lambda.elem(uinf).fill(exp(-745));
@@ -845,3 +849,31 @@ NumericVector expconst(NumericVector consts) {
 	}
 	return expconsts;
 }
+
+// **********************************************************//
+// Likelihood evaluation of entire func for convergence check//
+// **********************************************************//
+// [[Rcpp::export]]
+double converge_all(List currentZ, List textlist, List tableW, int K, 
+                       double alpha, NumericVector mvec, double beta, NumericVector nvec,
+                       arma::mat iJi, arma::mat lambda, double delta,
+                       NumericVector LambdaiJi, double observedtdiff, double observediJi){
+  double consts = 0;
+  for (int d = 0; d < currentZ.size(); d++) {
+  	IntegerVector topic_d = currentZ[d];
+  	IntegerVector text_d = textlist[d];
+  	IntegerVector table_topics = tabulateC(topic_d, K);
+  	for (int n = 0; n < topic_d.size(); n++) {
+  		int topic_dn = topic_d[n] - 1;
+  		int text_dn = text_d[n] - 1;
+  		NumericVector tablek = tableW[topic_dn];
+  		double wordpart = log(tablek[text_dn] - 1 + beta * nvec[text_dn]) - log(sum(tablek) - 1 + beta); 
+  		double topicpart = table_topics[topic_dn] - 1 + alpha * mvec[topic_dn];
+  		consts += log(topicpart) + wordpart;  	
+  		}
+  }
+  double edgepart =  EdgeInEqZ_Gibbs(iJi, lambda, delta);
+  double timepart =  TimeObsInEqZ(LambdaiJi, observedtdiff, observediJi);
+  return consts + edgepart + timepart;
+}
+
