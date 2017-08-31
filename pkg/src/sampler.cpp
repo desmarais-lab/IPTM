@@ -481,8 +481,10 @@ NumericVector UpdateNum(NumericVector vec, List nKwordtable) {
    double d = 0;
     IntegerVector newtable = nKwordtable[k];
     for (int n = 1; n < (newtable.size() + 1); n++) {
+      if (vec[k] > 0) { 
       d += 1 / (n - 1 + vec[k]);
       s[k] += newtable[n - 1] * d;
+      }
     }
   }
   return s;

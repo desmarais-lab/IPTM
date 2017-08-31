@@ -110,13 +110,13 @@ AlphamvecOpt =  function(K, currentZ, alpha, mvec, niter) {
 	for (d in seq(along = currentZ)) {
 		nK.word.list[d, ] = tabulateC(currentZ[[d]], K)
 	}
-		nK.word.table = lapply(1:K, function(k){
+	nK.word.table = lapply(1:K, function(k){
 			  tabulate(nK.word.list[,k])
 			  })
 	for (i in 1:niter) {
 	alpha = sum(current.vec)
 	S = UpdateDenom(alpha, n.word.table)		
-	s = UpdateNum(current.vec, nK.word.table)	
+	s = UpdateNum(current.vec, nK.word.table)
 	current.vec = current.vec * s / S
 	}
 	final.vec = current.vec	
@@ -532,7 +532,6 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         		 }
           		 const.Z = topicpart.d + wordpart.d[w, ]
           		 zw.new = multinom_vec(1, expconst(const.Z))
-          		 if (zw.new == 0) {browser()}
           		 if (zw.new != zw.old) {
             			 currentZ[[d]][w] = zw.new
             		   table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
@@ -1056,6 +1055,7 @@ IPTM_inference.LDA = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q,
         }
         const.Z = topicpart.d + wordpart.d[w, ]
         zw.new = multinom_vec(1, expconst(const.Z))
+        if (zw.new == 0) {browser()}
         if (zw.new != zw.old) {
            currentZ[[d]][w] = zw.new
            table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
