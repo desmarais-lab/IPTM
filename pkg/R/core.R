@@ -1819,7 +1819,7 @@ GenerateDocs.predict = function(nDocs = 1, node, vocabulary, nIP, K, owords, alp
     names(text[[base.length + d]]) = topic_token_assignments[[base.length + d]]
     p.d = pdmat(topic_token_assignments[1:(base.length + nDocs)] , currentC, nIP) 
   	if (t.d >= 384) {
-      history.t = History(edge, p.d[1:base.length, ], node, t.d + exp(-745))
+      history.t = History(edge, matrix(p.d[1:base.length, ], ncol = nIP), node, t.d + exp(-745))
     }
     X = Netstats_cpp(history.t, node, netstat)
     XB = MultiplyXBList(X, b)
@@ -1880,7 +1880,6 @@ IPTM_predict.data = function(D, O, R, edge, node, textlist, vocabulary, nIP, K, 
 							 prior.b.mean, prior.b.var, prior.delta, out, n_B, n_d, burn, thinning, netstat, optimize = FALSE, niter = c(1,1)) {
    New_sample = list()
    for (o in 1:O) {
-   	print(o)
    	New_sample[[o]] = list()
     Inference_samp = IPTM_inference.data(edge[1:(D-1)], node, textlist[1:(D-1)], vocabulary, nIP, K,
     									 sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
@@ -1892,10 +1891,15 @@ IPTM_predict.data = function(D, O, R, edge, node, textlist, vocabulary, nIP, K, 
     currentC = Inference_samp$C
     topic_token_assignments = Inference_samp$Z
     initial_iJi = matrix(rbinom(length(node)^2, 1, c(Reduce('+', Inference_samp$iJi) / (length(Inference_samp$iJi)))), nrow =length(node), ncol = length(node))
-	alpha = ifelse(optimize == TRUE, c(Inference_samp$alpha), alpha)
+	alpha = ifelse(optimize == TRUE, Inference_samp$alpha[out,], alpha)
+	if (optimize == TRUE) {
+		mvec = Inference_samp$mvec[out,]
+		} else {
+			mvec = tabulate(unlist(Inference_samp$Z), K) / length(unlist(Inference_samp$Z))
+			}
 	for (r in 1:R) {
 	New_sample[[o]][[r]] = GenerateDocs.predict(1, node, vocabulary, nIP, K, owords = textlist[[D]],
-										alpha = alpha, mvec = tabulate(unlist(Inference_samp$Z)) / length(unlist(Inference_samp$Z)), 
+										alpha = alpha, mvec = mvec, 
 										betas, nvec, b, 
     										 delta, currentC, netstat, initial_iJi = initial_iJi, base.edge = edge[1:(D-1)], base.text = textlist[1:(D-1)],
     										 topic_token_assignments = topic_token_assignments, edge2 = Inference_samp$edge2, niter = niter)

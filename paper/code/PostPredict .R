@@ -5,7 +5,7 @@ set.seed(100)
 nDocs = 5
 node = 1:4
 vocabulary = c("hi", "hello", "fine", "bye", "what")
-nIP = 2
+nIP = 1
 K = 4
 nwords = 5
 alpha = 2
@@ -30,12 +30,12 @@ base.data = GenerateDocs.Gibbs(100, node, vocabulary, nIP, K, nwords, alpha, mve
 base.edge = base.data$edge	   
 base.text = base.data$text
 
-D = 31
-O = 10
+D = 21
+O = 100
 R = 1
 edge = base.edge
 textlist = base.text
-out = 1
+out = 50
 n_B = 500
 n_d = 50
 burn = c(50, 5)
