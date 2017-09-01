@@ -692,7 +692,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
  
   chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat, 
                      iJi = iJi, sigma_Q =sigma_Q, alpha = alphamat, mvec = mvecmat, 
-                     proposal.var= proposal.var)
+                     proposal.var= proposal.var, convergence = convergence)
   return(chain.final)
 }
 
