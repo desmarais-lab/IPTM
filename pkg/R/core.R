@@ -437,7 +437,6 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     rdirichlet_cpp(1, betas * nvec)
   })
   theta = rdirichlet_cpp(length(edge), alpha * mvec)
-  
   if (length(initial) == 0) {
   delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
   beta.old = lapply(1:nIP, function(IP) {
@@ -524,7 +523,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
           	 	if (length(textlist.d) > 0) {
           	 	 table.W2 = table.W
        	 		 table.W2[[zw.old]][textlist.d[w]] = table.W2[[zw.old]][textlist.d[w]] - 1
-        		 topicpart.d = TopicInEqZ(K, currentZ[[d]][-w], alpha, mvec)
+        			 topicpart.d = TopicInEqZ(K, currentZ[[d]][-w], alpha, mvec)
        		 	 wordpart.d = WordInEqZ(K, textlist.d, table.W2, betas, nvec)
         		 } else {
         			topicpart.d = 0
@@ -534,7 +533,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
           		 zw.new = multinom_vec(1, expconst(const.Z))
           		 if (zw.new != zw.old) {
             			 currentZ[[d]][w] = zw.new
-            		   table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
+            		   	 table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
            				 table.W[[zw.new]][textlist.d[w]] = table.W[[zw.new]][textlist.d[w]] + 1
            				 table.W2 = table.W                 			             			
       				 	 p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP) 	
@@ -691,7 +690,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   }
  
   chain.final = list(C = currentC, Z = currentZ, B = bmat, D = deltamat, 
-                     iJi = iJi, sigma_Q =sigma_Q, alpha = alphamat, mvec = mvecmat, 
+                     iJi = iJi, sigma_Q =sigma_Q, alpha = alphamat, mvec = mvecmat, edge2 = edge2,
                      proposal.var= proposal.var, convergence = convergence)
   return(chain.final)
 }
@@ -1318,11 +1317,11 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     edge = edge[-(1:base.length)]
     text = text[-(1:base.length)]
   }
-   if (base == TRUE & t.d > 384) {
-   cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
-    edge = edge[1:cutoff]
-    text = text[1:cutoff]
-   }
+   #if (base == TRUE & t.d > 384) {
+   #cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
+   # edge = edge[1:cutoff]
+   # text = text[1:cutoff]
+   #}
   return(list(edge = edge, text = text, base = base.length, b = b, d = delta, X = X))							
 } 
 
@@ -1893,10 +1892,10 @@ IPTM_predict.data = function(D, O, R, edge, node, textlist, vocabulary, nIP, K, 
     currentC = Inference_samp$C
     topic_token_assignments = Inference_samp$Z
     initial_iJi = matrix(rbinom(length(node)^2, 1, c(Reduce('+', Inference_samp$iJi) / (length(Inference_samp$iJi)))), nrow =length(node), ncol = length(node))
-
+	alpha = ifelse(optimize == TRUE, c(Inference_samp$alpha), alpha)
 	for (r in 1:R) {
 	New_sample[[o]][[r]] = GenerateDocs.predict(1, node, vocabulary, nIP, K, owords = textlist[[D]],
-										alpha = Inference_samp$alpha, mvec = tabulate(unlist(Inference_samp$Z)) / length(unlist(Inference_samp$Z)), 
+										alpha = alpha, mvec = tabulate(unlist(Inference_samp$Z)) / length(unlist(Inference_samp$Z)), 
 										betas, nvec, b, 
     										 delta, currentC, netstat, initial_iJi = initial_iJi, base.edge = edge[1:(D-1)], base.text = textlist[1:(D-1)],
     										 topic_token_assignments = topic_token_assignments, edge2 = Inference_samp$edge2, niter = niter)

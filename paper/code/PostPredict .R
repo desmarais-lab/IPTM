@@ -26,11 +26,11 @@ b = lapply(1:nIP, function(IP) {
 delta = prior.delta[1]
 currentC = sample(1L:nIP, K, replace = TRUE)
 supportD = gibbs.measure.support(length(node) - 1)
-base.data = GenerateDocs.Gibbs(400, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE, support = supportD) 
+base.data = GenerateDocs.Gibbs(100, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE, support = supportD) 
 base.edge = base.data$edge	   
 base.text = base.data$text
 
-D = 181
+D = 31
 O = 10
 R = 1
 edge = base.edge
@@ -42,5 +42,5 @@ burn = c(50, 5)
 thinning = c(10, 5)
 try = IPTM_predict.data(D, O, R, edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, 
 							 prior.b.mean, prior.b.var, prior.delta, 
-                                out, n_B, n_d, burn, thinning, netstat, plot = FALSE, optimize = FALSE, niter = c(5,1))
+                                out, n_B, n_d, burn, thinning, netstat, optimize = TRUE, niter = c(5,1))
 save(try, file = "try.RData")                              
