@@ -1249,7 +1249,6 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
     L = 3
     P = netstat[1] + L * (2 * netstat[2] + 2 * netstat[3] + 4 * netstat[4])
-  
   if (base) {
     t.d = 0
   } else {
@@ -1271,6 +1270,7 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
      		 })  
   word_type_topic_counts = matrix(0, W, K)
   iJi = matrix(0, length(node), length(node))
+  iJis = list()
   for (d in 1:nDocs) {
     N.d = nwords
     text[[base.length + d]] = rep(NA, N.d)
@@ -1303,26 +1303,29 @@ GenerateDocs.Gibbs = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mv
     X = Netstats_cpp(history.t, node, netstat)
     XB = MultiplyXBList(X, b)     
     lambda = lambda_cpp(p.d[base.length + d,], XB)
-    
     	for (i in node) {
     		iJi[i, -i] = r.gibbs.measure(1, lambda[i, -i], delta, support)
     	}
+    	iJis[[d]] = iJi
     LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi)
-    i.d = multinom_vec(1, LambdaiJi)
+    Time.inc = t.d + vapply(LambdaiJi, function(lambda) {
+      rexp(1, lambda)
+    }, c(1))
+    i.d = which(Time.inc == min(Time.inc[!is.na(Time.inc)]))
     j.d = which(iJi[i.d,] == 1)
-    t.d = t.d + rexp(1, sum(LambdaiJi))
+    t.d = Time.inc[i.d]
     edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
   }
   if (forward) {
     edge = edge[-(1:base.length)]
     text = text[-(1:base.length)]
   }
-   #if (base == TRUE & t.d > 384) {
-   #cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
-   # edge = edge[1:cutoff]
-   # text = text[1:cutoff]
-   #}
-  return(list(edge = edge, text = text, base = base.length, b = b, d = delta, X = X))							
+   if (base == TRUE & t.d > 384) {
+   cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1))) - 1
+    edge = edge[1:cutoff]
+    text = text[1:cutoff]
+   }
+  return(list(edge = edge, text = text, base = base.length, b = b, d = delta, X = X, iJis = iJis))							
 } 
 
 #' @title GenerateDocs.Schein
@@ -1539,8 +1542,8 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
            cex.main = 0.5)
     abline(0, 1, lty = 1, col = "red", lwd = 1)
     
-      if (nrow(Forward_stats) > 1000) {
-       thinning2 = seq(from = floor(nrow(Forward_stats) / 10), to = nrow(Forward_stats), length.out = 1000)
+      if (nrow(Forward_stats) > 10000) {
+       thinning2 = seq(from = floor(nrow(Forward_stats) / 10), to = nrow(Forward_stats), length.out = 10000)
        Forward_test2 = Forward_stats[thinning2, i]
        Backward_test2 = Backward_stats[thinning2, i]
        } else {

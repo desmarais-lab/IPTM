@@ -30,16 +30,16 @@ base.data = GenerateDocs.Gibbs(100, node, vocabulary, nIP, K, nwords, alpha, mve
 base.edge = base.data$edge	   
 base.text = base.data$text
 
-D = 21
-O = 100
-R = 1
+D = 91
+O = 10
+R = 100
 edge = base.edge
 textlist = base.text
-out = 50
-n_B = 500
-n_d = 50
+out = 100
+n_B = 550
+n_d = 55
 burn = c(50, 5)
-thinning = c(10, 5)
+thinning = c(1, 1)
 try = IPTM_predict.data(D, O, R, edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, 
 							 prior.b.mean, prior.b.var, prior.delta, 
                                 out, n_B, n_d, burn, thinning, netstat, optimize = TRUE, niter = c(5,1))
