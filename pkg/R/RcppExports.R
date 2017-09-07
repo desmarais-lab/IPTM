@@ -89,10 +89,6 @@ WordInEqZ <- function(K, textlistd, tableW, beta, nvec) {
     .Call('_IPTM_WordInEqZ', PACKAGE = 'IPTM', K, textlistd, tableW, beta, nvec)
 }
 
-converge_ZW <- function(currentZ, textlist, tableW, K, alpha, mvec, beta, nvec) {
-    .Call('_IPTM_converge_ZW', PACKAGE = 'IPTM', currentZ, textlist, tableW, K, alpha, mvec, beta, nvec)
-}
-
 EdgeInEqZ_Gibbs <- function(iJi, lambda, delta) {
     .Call('_IPTM_EdgeInEqZ_Gibbs', PACKAGE = 'IPTM', iJi, lambda, delta)
 }
@@ -125,7 +121,7 @@ expconst <- function(consts) {
     .Call('_IPTM_expconst', PACKAGE = 'IPTM', consts)
 }
 
-converge_all <- function(currentZ, textlist, tableW, K, alpha, mvec, beta, nvec, iJi, lambda, delta, LambdaiJi, observedtdiff, observediJi) {
-    .Call('_IPTM_converge_all', PACKAGE = 'IPTM', currentZ, textlist, tableW, K, alpha, mvec, beta, nvec, iJi, lambda, delta, LambdaiJi, observedtdiff, observediJi)
+EdgeTime <- function(iJi, lambda, delta, LambdaiJi, observedtdiff, observediJi) {
+    .Call('_IPTM_EdgeTime', PACKAGE = 'IPTM', iJi, lambda, delta, LambdaiJi, observedtdiff, observediJi)
 }
 

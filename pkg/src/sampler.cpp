@@ -41,7 +41,6 @@ IntegerVector multinom_vec (int nSample, NumericVector props) {
 		for (int j = 0; j < props.size(); j++) {
 			if (multinom_i[j] == 1) {
 				multinom_vec[i] = j + 1;
-			  // add + 1 to work in R. If work in C++, delete +1.
 			}
 		}
 	}
@@ -564,35 +563,13 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 }
 
 
-// **********************************************************//
-//      Likelihood evaluation of ZW for convergence check    //
-// **********************************************************//
-// [[Rcpp::export]]
-double converge_ZW(List currentZ, List textlist, List tableW, int K, 
-                       double alpha, NumericVector mvec, double beta, NumericVector nvec){
-  double consts = 0;
-  for (int d = 0; d < currentZ.size(); d++) {
-  	IntegerVector topic_d = currentZ[d];
-  	IntegerVector text_d = textlist[d];
-  	IntegerVector table_topics = tabulateC(topic_d, K);
-  	for (int n = 0; n < topic_d.size(); n++) {
-  		int topic_dn = topic_d[n] - 1;
-  		int text_dn = text_d[n] - 1;
-  		NumericVector tablek = tableW[topic_dn];
-  		double wordpart = log(tablek[text_dn] - 1 + beta * nvec[text_dn]) - log(sum(tablek) - 1 + beta); 
-  		double topicpart = table_topics[topic_dn] - 1 + alpha * mvec[topic_dn];
-  		consts += log(topicpart) + wordpart;  	
-  		}
-  }
-	return consts;
-}
 
 // **********************************************************//
 //               Edge contribution in update of Z            //
 // **********************************************************//
 // [[Rcpp::export]]
 double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta) {
-	double edges = 0;
+  double edges = 0;
   arma::umat uinf = find(log(lambda) == -arma::datum::inf);
   lambda.elem(uinf).fill(exp(-745));
 	for (unsigned int i = 0; i < iJi.n_rows; i++) {
@@ -856,26 +833,52 @@ NumericVector expconst(NumericVector consts) {
 // Likelihood evaluation of entire func for convergence check//
 // **********************************************************//
 // [[Rcpp::export]]
-double converge_all(List currentZ, List textlist, List tableW, int K, 
-                       double alpha, NumericVector mvec, double beta, NumericVector nvec,
-                       arma::mat iJi, arma::mat lambda, double delta,
+double EdgeTime(arma::mat iJi, arma::mat lambda, double delta,
                        NumericVector LambdaiJi, double observedtdiff, double observediJi){
-  double consts = 0;
-  for (int d = 0; d < currentZ.size(); d++) {
-  	IntegerVector topic_d = currentZ[d];
-  	IntegerVector text_d = textlist[d];
-  	IntegerVector table_topics = tabulateC(topic_d, K);
-  	for (int n = 0; n < topic_d.size(); n++) {
-  		int topic_dn = topic_d[n] - 1;
-  		int text_dn = text_d[n] - 1;
-  		NumericVector tablek = tableW[topic_dn];
-  		double wordpart = log(tablek[text_dn] - 1 + beta * nvec[text_dn]) - log(sum(tablek) - 1 + beta); 
-  		double topicpart = table_topics[topic_dn] - 1 + alpha * mvec[topic_dn];
-  		consts += log(topicpart) + wordpart;  	
-  		}
+  double edges = 0;
+  arma::umat uinf = find(log(lambda) == -arma::datum::inf);
+  lambda.elem(uinf).fill(exp(-745));
+	for (unsigned int i = 0; i < iJi.n_rows; i++) {
+		arma::vec normal = arma::zeros(iJi.n_rows - 1);
+		double prob = 0;
+		int iter = 0;
+		for (unsigned int j = 0; j < iJi.n_rows; j++) {
+			if (i != j) {
+				double pre = delta + log(lambda(i, j));
+				if (pre > 35) {
+					normal[iter] = pre;
+				} else {
+					if (pre < -10) {
+						normal[iter] = exp(pre);
+					} else {
+						normal[iter] = log(exp(pre) + 1);
+					}
+				}
+				prob += (delta + log(lambda(i, j))) * iJi(i, j);
+				iter = iter + 1;
+		  }
+		}
+		double sumnorm = sum(normal);
+		double normalizer = 0;
+		if (sumnorm >= 13) {
+			normalizer = sumnorm;
+		} else {
+		  if (exp(sumnorm) <= 1) {
+		    normalizer = -745;
+		  } else {
+			normalizer = log(exp(sumnorm) - 1);
+		}
+		}
+		edges += prob - normalizer;
+	}
+  
+  double sumlambda = sum(LambdaiJi);
+  if (sumlambda == arma::datum::inf) {
+    sumlambda = exp(700);
   }
-  double edgepart =  EdgeInEqZ_Gibbs(iJi, lambda, delta);
-  double timepart =  TimeObsInEqZ(LambdaiJi, observedtdiff, observediJi);
-  return consts + edgepart + timepart;
+  if (observediJi < exp(-745)) {
+		observediJi = exp(-745);
+	}
+	return  edges -observedtdiff * sumlambda + log(observediJi);
 }
 

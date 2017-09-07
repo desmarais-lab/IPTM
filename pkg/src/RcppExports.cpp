@@ -279,24 +279,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// converge_ZW
-double converge_ZW(List currentZ, List textlist, List tableW, int K, double alpha, NumericVector mvec, double beta, NumericVector nvec);
-RcppExport SEXP _IPTM_converge_ZW(SEXP currentZSEXP, SEXP textlistSEXP, SEXP tableWSEXP, SEXP KSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP betaSEXP, SEXP nvecSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type currentZ(currentZSEXP);
-    Rcpp::traits::input_parameter< List >::type textlist(textlistSEXP);
-    Rcpp::traits::input_parameter< List >::type tableW(tableWSEXP);
-    Rcpp::traits::input_parameter< int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mvec(mvecSEXP);
-    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type nvec(nvecSEXP);
-    rcpp_result_gen = Rcpp::wrap(converge_ZW(currentZ, textlist, tableW, K, alpha, mvec, beta, nvec));
-    return rcpp_result_gen;
-END_RCPP
-}
 // EdgeInEqZ_Gibbs
 double EdgeInEqZ_Gibbs(arma::mat iJi, arma::mat lambda, double delta);
 RcppExport SEXP _IPTM_EdgeInEqZ_Gibbs(SEXP iJiSEXP, SEXP lambdaSEXP, SEXP deltaSEXP) {
@@ -411,27 +393,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// converge_all
-double converge_all(List currentZ, List textlist, List tableW, int K, double alpha, NumericVector mvec, double beta, NumericVector nvec, arma::mat iJi, arma::mat lambda, double delta, NumericVector LambdaiJi, double observedtdiff, double observediJi);
-RcppExport SEXP _IPTM_converge_all(SEXP currentZSEXP, SEXP textlistSEXP, SEXP tableWSEXP, SEXP KSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP betaSEXP, SEXP nvecSEXP, SEXP iJiSEXP, SEXP lambdaSEXP, SEXP deltaSEXP, SEXP LambdaiJiSEXP, SEXP observedtdiffSEXP, SEXP observediJiSEXP) {
+// EdgeTime
+double EdgeTime(arma::mat iJi, arma::mat lambda, double delta, NumericVector LambdaiJi, double observedtdiff, double observediJi);
+RcppExport SEXP _IPTM_EdgeTime(SEXP iJiSEXP, SEXP lambdaSEXP, SEXP deltaSEXP, SEXP LambdaiJiSEXP, SEXP observedtdiffSEXP, SEXP observediJiSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type currentZ(currentZSEXP);
-    Rcpp::traits::input_parameter< List >::type textlist(textlistSEXP);
-    Rcpp::traits::input_parameter< List >::type tableW(tableWSEXP);
-    Rcpp::traits::input_parameter< int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mvec(mvecSEXP);
-    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type nvec(nvecSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type iJi(iJiSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type LambdaiJi(LambdaiJiSEXP);
     Rcpp::traits::input_parameter< double >::type observedtdiff(observedtdiffSEXP);
     Rcpp::traits::input_parameter< double >::type observediJi(observediJiSEXP);
-    rcpp_result_gen = Rcpp::wrap(converge_all(currentZ, textlist, tableW, K, alpha, mvec, beta, nvec, iJi, lambda, delta, LambdaiJi, observedtdiff, observediJi));
+    rcpp_result_gen = Rcpp::wrap(EdgeTime(iJi, lambda, delta, LambdaiJi, observedtdiff, observediJi));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -459,7 +433,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_lambda_cpp", (DL_FUNC) &_IPTM_lambda_cpp, 2},
     {"_IPTM_TopicInEqZ", (DL_FUNC) &_IPTM_TopicInEqZ, 4},
     {"_IPTM_WordInEqZ", (DL_FUNC) &_IPTM_WordInEqZ, 5},
-    {"_IPTM_converge_ZW", (DL_FUNC) &_IPTM_converge_ZW, 8},
     {"_IPTM_EdgeInEqZ_Gibbs", (DL_FUNC) &_IPTM_EdgeInEqZ_Gibbs, 3},
     {"_IPTM_EdgeInEqZ_Gibbs2", (DL_FUNC) &_IPTM_EdgeInEqZ_Gibbs2, 3},
     {"_IPTM_TimeObsInEqZ", (DL_FUNC) &_IPTM_TimeObsInEqZ, 3},
@@ -468,7 +441,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_DataAug_cpp_Gibbs", (DL_FUNC) &_IPTM_DataAug_cpp_Gibbs, 7},
     {"_IPTM_DataAug_cpp_Gibbs_noObs", (DL_FUNC) &_IPTM_DataAug_cpp_Gibbs_noObs, 6},
     {"_IPTM_expconst", (DL_FUNC) &_IPTM_expconst, 1},
-    {"_IPTM_converge_all", (DL_FUNC) &_IPTM_converge_all, 14},
+    {"_IPTM_EdgeTime", (DL_FUNC) &_IPTM_EdgeTime, 6},
     {NULL, NULL, 0}
 };
 
