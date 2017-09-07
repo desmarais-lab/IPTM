@@ -312,8 +312,6 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
        }
      }
 
-<<<<<<< HEAD
-=======
       # C update given Z and B - withinning each document d
        for (k in sort(unique(unlist(currentZ[edge2])))) { 
          const.C = rep(NA, nIP)
@@ -332,7 +330,6 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
          currentC[k] = multinom_vec(1, expconst(const.C))
 	}
      
->>>>>>> parent of 5ccfb7f... bug fixed in inference code
  	p.d = pdmat(currentZ, currentC, nIP)
  
     for (d in maxedge2) {
