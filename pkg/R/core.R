@@ -1041,10 +1041,6 @@ IPTM_inference.LDA = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q,
     diag(iJi[[d]]) = 0
   }
     textlist.raw = unlist(textlist)
-    table.W = lapply(1:K, function(k) {
-      tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
-    })
-    table.W2 = table.W    
   #start outer iteration
   for (o in 1:out) {
     print(o)
@@ -1054,7 +1050,11 @@ IPTM_inference.LDA = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q,
       alpha = sum(vec)
       mvec = vec / alpha
     }
- 
+     table.W = lapply(1:K, function(k) {
+      tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+    })
+    table.W2 = table.W    
+
     # Z update  
     for (d in 1:maxedge2) {
       textlist.d = textlist[[d]]        		 
