@@ -1829,15 +1829,15 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
       	}
      #Z update 	
         textlist.d = text[[base.length +d]]
-       if (as.numeric(edge[[base.length + d]][3]) + 384 > as.numeric(edge[[maxedge2]][3])) {
+       if (edge[[base.length + d]][[3]] + 384 > edge[[maxedge2]][[3]]) {
       	 hist.d = maxedge2
        } else {
-      	 hist.d = which_num(as.numeric(edge[[base.length + d]][3]) + 384, timestamps)
+      	 hist.d = which_num(edge[[base.length + d]][[3]] + 384, timestamps)
        }
        edgetime.d = rep(NA, K)
        for (w in 1:length(currentZ[[base.length + d]])) {
        	 zw.old = currentZ[[base.length + d]][w]
-       	 if (length(textlist.d) > 0) {       	 
+       	 if (length(textlist.d) > 0) { 
        	 table.W2[[zw.old]][textlist.d[w]] = table.W2[[zw.old]][textlist.d[w]] - 1
          topicpart.d = TopicInEqZ(K, currentZ[[base.length + d]][-w], alpha, mvec)
          wordpart.d = WordInEqZ(K, textlist.d, table.W2, betas, nvec)
@@ -1848,19 +1848,20 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
  	 for (IP in unique(currentC)) {
        	  	currentCK = which(currentC == IP)
        		currentZ[[base.length + d]][w] = min(currentCK)
-       	 	p.d[d, ] = pdmat(list(currentZ[[base.length + d]]), currentC, nIP)           
+       	 	p.d[base.length + d, ] = pdmat(list(currentZ[[base.length + d]]), currentC, nIP)          
             history.t = History(edge, p.d, node, as.numeric(edge[[hist.d-1]][3]) + exp(-745))
-    	    X = Netstats_cpp(history.t, node, netstat)
-    	    XB = MultiplyXBList(X, b)   
-    	    lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
-	   	 	LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
-        	observediJi[[hist.d]] = LambdaiJi[[hist.d]][as.numeric(edge[[hist.d]][1])]
-        	edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])   
-              }
-          const.Z = edgetime.d + topicpart.d + wordpart.d[w, ] 
-          zw.new = multinom_vec(1, expconst(const.Z))
+    	    		X = Netstats_cpp(history.t, node, netstat)
+    	    		XB = MultiplyXBList(X, b)   
+    	    		lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
+	   	 	LambdaiJi = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
+        		observediJi = LambdaiJi[as.numeric(edge[[hist.d]][1])]
+        		edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi, timeinc[hist.d], observediJi)   
+            }
+          	const.Z = edgetime.d + topicpart.d + wordpart.d[w, ] 
+          	zw.new = multinom_vec(1, expconst(const.Z))
+          	if (zw.new == 0) {browser()}
          if (zw.new != zw.old) {
-           currentZ[[d]][w] = zw.new
+           currentZ[[base.length + d]][w] = zw.new
            table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
            table.W[[zw.new]][textlist.d[w]] = table.W[[zw.new]][textlist.d[w]] + 1 
            table.W2 = table.W        
