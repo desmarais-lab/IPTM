@@ -4,6 +4,10 @@ load("netstats.RData")
 # names of these statistics?
 
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 # For each model below... The model will be fit up to document d, then
 ## 1,000 values will be simulated conditional on the input values from document d+1
 

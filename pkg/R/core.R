@@ -445,7 +445,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   }, c(1))
   
   edge2 = which_int(384, timestamps) : length(edge)
-  maxedge2 = maxedge2
+  maxedge2 = max(edge2)
   timeinc = c(timestamps[1], timestamps[-1] - timestamps[-length(timestamps)])
   
   # initialize alpha, mvec, delta, nvec, delta, lvec, and gammas
@@ -569,8 +569,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
        } else {
       	 hist.d = which_num(as.numeric(edge[[d]][3]) + 384, timestamps)
        }
-       edgepart.d = rep(NA, K)
-       timepart.d = rep(NA, K)
+       edgetime.d = rep(NA, K)
        for (w in 1:length(currentZ[[d]])) {
        	 zw.old = currentZ[[d]][w]
        	 if (length(textlist.d) > 0) {
@@ -586,12 +585,12 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
        		currentZ[[d]][w] = min(currentCK)
        	 	p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP)           
             history.t = History(edge, p.d, node, as.numeric(edge[[hist.d-1]][3]) + exp(-745))
-    	    X = Netstats_cpp(history.t, node, netstat)
-    	    XB = MultiplyXBList(X, beta.old)   
-    	    lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
-	    	LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
-        	observediJi[[hist.d]] = LambdaiJi[[hist.d]][as.numeric(edge[[hist.d]][1])]
-        	edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
+    	    		X = Netstats_cpp(history.t, node, netstat)
+    	    		XB = MultiplyXBList(X, beta.old)   
+    	    		lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
+	    		LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
+       	 	observediJi[[hist.d]] = LambdaiJi[[hist.d]][as.numeric(edge[[hist.d]][1])]
+        		edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
         }
          const.Z = edgetime.d + topicpart.d + wordpart.d[w, ]
          zw.new = multinom_vec(1, expconst(const.Z))
@@ -1740,6 +1739,75 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats))
 }                   
+
+
+#' @title GenerateDocs.PPC
+#' @description Generate a collection of documents according to the generative process of IPTM using Gibbs measure
+#'
+#' @param nDocs number of documents to be generated
+#' @param node nodelist containing the ID of nodes (ID starting from 1)
+#' @param vocabulary all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns specified by the user
+#' @param K total number of topics specified by the user
+#' @param nwords number of words in a document (fixed constant for now)
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param betas Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
+#' @param iJi inferred latent receivers
+#' @param b List of coefficients estimating the history effect for each IP 
+#' @param delta tuning parameter controlling the number of recipients
+#' @param currentC topic-IP assignment
+#' @param netstat which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")
+#' @param base.edge edges before 384 hours that is used to calculate initial history of interactions
+#' @param base.text texts corresponding to base.edge
+#' @param topic_token_assignments matrix of topic-token assignments
+#'
+#' @return generated edge and text, parameter b used to generate those, and base (if base == TRUE)
+#'
+#' @export
+GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, iJi,
+                        b, delta, currentC, netstat, base.edge, base.text, topic_token_assignments = NULL) {
+  W = length(vocabulary)
+  phi = lapply(1:K, function(k) {
+    rdirichlet_cpp(1, betas * nvec)
+  })
+    netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
+    L = 3
+    P = netstat[1] + L * (2 * netstat[2] + 2 * netstat[3] + 4 * netstat[4])
+  
+  edge = base.edge
+  text = base.text
+  base.length = length(edge)
+  t.d = base.edge[[base.length]][3] 
+  p.d = pdmat(topic_token_assignments, currentC, nIP)  		  
+  word_type_topic_counts = matrix(0, W, K)
+  for (d in 1:nDocs) {
+    N.d = nwords
+    text[[base.length + d]] = rep(NA, N.d)
+      phi.k = rep(NA, K)
+      topic.d = topic_token_assignments[[base.length + d]]
+        for (n in 1:N.d){
+          for (w in 1:W) {
+            phi.k[w] = (word_type_topic_counts[w, topic.d[n]] + betas * nvec[w]) / (sum(word_type_topic_counts[, topic.d[n]]) + betas)
+          } 
+          text[[base.length + d]][n] = multinom_vec(1, phi.k)
+          word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] = word_type_topic_counts[text[[d]][n], topic.d[n]] + 1
+        }
+        names(text[[base.length + d]]) = topic.d
+
+    history.t = History(edge, p.d, node, t.d + exp(-745))
+    X = Netstats_cpp(history.t, node, netstat)
+    XB = MultiplyXBList(X, b)     
+    lambda = lambda_cpp(p.d[base.length + d,], XB)
+    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi[[d]])
+    i.d = multinom_vec(1, LambdaiJi)
+    j.d = which(iJi[[base.length + d]][i.d,] == 1)
+    t.d = t.d + rexp(1, sum(LambdaiJi))
+    edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
+  }
+  return(list(edge = edge, text = text, iJi = iJi))							
+} 
 
 #' @title GenerateDocs.predict
 #' @description Generate a collection of documents according to the generative process of IPTM using Gibbs measure

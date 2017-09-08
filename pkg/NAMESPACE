@@ -2,6 +2,7 @@
 
 export(AlphamvecOpt)
 export(GenerateDocs.Gibbs)
+export(GenerateDocs.PPC)
 export(GenerateDocs.Schein)
 export(GenerateDocs.predict)
 export(GiR.Gibbs)
