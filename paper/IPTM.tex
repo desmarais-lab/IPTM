@@ -559,7 +559,40 @@ We have not implemented this posterior predictive experiments yet, but will do s
 
 \section{Posterior Predictive Checks}
 
-We perform posterior predictive checks \cite{rubin1984bayesianly} in order to evaluate the appropriateness of the model specification for Dare county. If the model is appropriate, the observed data should not be an outlier with respect to distributions of new data drawn from the posterior predictive distribution. To draw these comparisons, we first consider how to draw from the posterior predictive distribution. We produce a sample from the posterior predictive distribution by drawing new data conditional upon the parameters inferred in a single draw from the posterior distribution of the parameters, repeated over many draws from the posterior distribution. We already know how to generate new data conditional upon a set of inferred parameter values---that process is given by Algorithm 9, which describes how to generate data with backward sampling.
+We perform posterior predictive checks \cite{rubin1984bayesianly} in order to evaluate the appropriateness of the model specification for Dare county. If the model is appropriate, the observed data should not be an outlier with respect to distributions of new data drawn from the posterior predictive distribution. To draw these comparisons, we first consider how to draw from the posterior predictive distribution. We produce a sample from the posterior predictive distribution by drawing new data conditional upon the parameters inferred in a single draw from the posterior distribution of the parameters, repeated over many draws from the posterior distribution. We already know how to generate new data conditional upon a set of inferred parameter values---that process is given by Algorithm 10, which describes how to generate data with backward sampling.
+
+Formally, Algorithm 9 is used to draw new data, which we denote ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$).
+\begin{equation}
+P(\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^* |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta).
+\label{eqn:backwardssample}
+\end{equation}
+
+This is nearly the distribution of data that we require for posterior predictive checking, but we do not want to condition on $\mathcal{Z}$, as they represent document-specific (i.e., `local') latent variables on which $\mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}$, and $\mathcal{W}$ are highly dependent. We need to marginalize out $\mathcal{Z}$. This can be done via MCMC by iteratively drawing the  new data, then the new latent recipients conditional upon the new data using Equations 18 and 15---which are required to draw token topic assignments, then the new token topic assignments conditional upon the new data and the new latent recipients. To recap what these equations give, Equation 25 is used to sample from $$P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta).$$ Equations 17 and 18 are used to sample from $$  P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, \mathcal{Z}, \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*,  \mathcal{J}_{\mbox{a}, -i}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta). $$ We will need to run this procedure longer than we would if we marginalized the document-specific variables out of the big joint distribution, but its an empirical question how long that would need to be run, and there is more than something to be said for re-using the math and code that we have already vetted so heavily. Algorithm 8
+
+ \begin{algorithm}[H]
+	\SetAlgoLined
+	\caption{Predicting tie data for the next document}
+	
+	Input
+	\begin{enumerate}
+	\item $O$, number of outer iterations of inference from which to generate predictions
+	\item $D^*$, the document to make a prediction
+	\item $R$, the number of iterations to sample predicted data within each outer iteration
+	\item $\boldsymbol{w}^{D^*}$, the observed words in the document to predict ($D^*$)
+	\end{enumerate}
+	Run burnin iterations\\
+	\For{o=1 to O}{
+		run an outer iteration of inference on documents $1$ through $(D^*-1)$\\
+		\For{r=1 to R}{
+		initialize latent receivers $\{J_i^{D^*}\}_{i=1}^A$ and $\mathcal{Z}^{D^*}$ using empirical estimates from the infernece\\
+		update $\{J_i^{D^*}\}_{i=1}^A$ using Gibbs update -- Equation (15) without edge information\\
+		update $\mathcal{Z}^{D^*}$ using Gibbs update -- Equation (24) without edge information \\
+		sample  $i^{(D^*)}$, $J^{(D^*)}$, and $t^{(D^*)}$ conditional on $\{J_i^{D^*}\}_{i=1}^A$ and $\mathcal{Z}^{D^*}$, via the generative process
+		}
+		store $i^{(D^*)}$, $J^{(D^*)}$, $t^{(D^*)}$, and $\mathcal{Z}^{D^*}$
+	}
+\end{algorithm}
+
 
 \section{Conclusion} 
 The IPTM is, to our knowledge, the first model to be capable of jointly modeling sender, receivers, time and contents in time stamped text valued networks. The IPTM incorporates innovative components, including the modeling of multicast tie formation and the conditioning of ERGM style network generative features on topic-based content. The application to North Carolina county government email data demonstrates, among other capabilities, the effectiveness at the IPTM in separating out both the content and relational structure underlying the normal day-to-day function of an organization and the management of a highly time-sensitive event---Hurricane Sandy. The IPTM is applicable to a variety of networks in which ties are attributed with textual documents. These include, for example, economic sanctions sent between countries and legislation attributed with sponsors and co-sponsors. 
@@ -689,6 +722,7 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
    \end{equation}
    where $J^{(d)}_{i[-j]}$ meaning similarly that the $j^{th}$ element of $J_{i}^{(d)}$ is fixed as 0. In this case, we cannot guarantee that $\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0)$ is 0 or 1, so we have to leave the term. When it is zero, $\exp\{\mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big)\} = 0$, thus we will sample 1 with probability 1. From this property of non-empty Gibbs measure, we prevent from the instances where the sender has no recipients to send the document. Now we can use multinomial sampling using the two probabilities, Equation (17) and Equation (18), which is equivalent to Bernoulli sampling with probability $\frac{P(\mathcal{J}^{(d)}_{ij}=1)}{P(\mathcal{J}^{(d)}_{ij}=0)+ P(\mathcal{J}^{(d)}_{ij}=0)}$. 
    \subsubsection{Resampling $\mathcal{Z}$}  \label{subsec: Resampling Z}
+   
    Second, we resample the topic assignments, one words in a document at a time.  The new values of $z^{(d)}_n$ are sampled using the conditional posterior probability of being topic $k$, and we derive the sampling equation by starting from the conditional distribution used in Latent Dirichlet allocation \citep{Blei2003}:
      \begin{equation}
      \begin{aligned}
