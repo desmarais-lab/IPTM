@@ -561,37 +561,42 @@ We have not implemented this posterior predictive experiments yet, but will do s
 
 We perform posterior predictive checks \cite{rubin1984bayesianly} in order to evaluate the appropriateness of the model specification for Dare county. If the model is appropriate, the observed data should not be an outlier with respect to distributions of new data drawn from the posterior predictive distribution. To draw these comparisons, we first consider how to draw from the posterior predictive distribution. We produce a sample from the posterior predictive distribution by drawing new data conditional upon the parameters inferred in a single draw from the posterior distribution of the parameters, repeated over many draws from the posterior distribution. We already know how to generate new data conditional upon a set of inferred parameter values---that process is given by Algorithm 10, which describes how to generate data with backward sampling.
 
-Formally, Algorithm 9 is used to draw new data, which we denote ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$).
+Formally, Algorithm 10 is used to draw new data, which we denote ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$).
 \begin{equation}
 P(\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^* |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta).
 \label{eqn:backwardssample}
 \end{equation}
 
-This is nearly the distribution of data that we require for posterior predictive checking, but we do not want to condition on $\mathcal{Z}$, as they represent document-specific (i.e., `local') latent variables on which $\mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}$, and $\mathcal{W}$ are highly dependent. We need to marginalize out $\mathcal{Z}$. This can be done via MCMC by iteratively drawing the  new data, then the new latent recipients conditional upon the new data using Equations 18 and 15---which are required to draw token topic assignments, then the new token topic assignments conditional upon the new data and the new latent recipients. To recap what these equations give, Equation 25 is used to sample from $$P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta).$$ Equations 17 and 18 are used to sample from $$  P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, \mathcal{Z}, \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*,  \mathcal{J}_{\mbox{a}, -i}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta). $$ We will need to run this procedure longer than we would if we marginalized the document-specific variables out of the big joint distribution, but its an empirical question how long that would need to be run, and there is more than something to be said for re-using the math and code that we have already vetted so heavily. Algorithm 8
+This is nearly the distribution of data that we require for posterior predictive checking, but we do not want to condition on $\mathcal{Z}$, as they represent document-specific (i.e., `local') latent variables on which $\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*$, and $\mathcal{W}^*$ are highly dependent. We need to marginalize out $\mathcal{Z}$. This can be done via MCMC by iteratively drawing the  new data, then the new latent recipients conditional upon the new data using Equations 18 and 15---which are required to draw token topic assignments, then the new token topic assignments conditional upon the new data and the new latent recipients. To recap what these equations give, Equation 25 is used to sample from $$P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta).$$ Equations 17 and 18 are used to sample from $$  P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, \mathcal{Z}, \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*,  \mathcal{J}_{\mbox{a}, -i}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta). $$ We will need to run this procedure longer than we would if we marginalized the document-specific variables out of the big joint distribution to derive sampling equations for independent posterior predictive draws, but its an empirical question how long this would need to be run, and there is more than something to be said for re-using the math and code that we have already vetted so heavily. We present pseudocode in Algorithm 8 that can be used to take a single draw from the posterior predictive distribution conditional on a single outer iteration of inference.
 
- \begin{algorithm}[H]
-	\SetAlgoLined
-	\caption{Predicting tie data for the next document}
-	
-	Input
-	\begin{enumerate}
-	\item $O$, number of outer iterations of inference from which to generate predictions
-	\item $D^*$, the document to make a prediction
-	\item $R$, the number of iterations to sample predicted data within each outer iteration
-	\item $\boldsymbol{w}^{D^*}$, the observed words in the document to predict ($D^*$)
-	\end{enumerate}
-	Run burnin iterations\\
-	\For{o=1 to O}{
-		run an outer iteration of inference on documents $1$ through $(D^*-1)$\\
-		\For{r=1 to R}{
-		initialize latent receivers $\{J_i^{D^*}\}_{i=1}^A$ and $\mathcal{Z}^{D^*}$ using empirical estimates from the infernece\\
-		update $\{J_i^{D^*}\}_{i=1}^A$ using Gibbs update -- Equation (15) without edge information\\
-		update $\mathcal{Z}^{D^*}$ using Gibbs update -- Equation (24) without edge information \\
-		sample  $i^{(D^*)}$, $J^{(D^*)}$, and $t^{(D^*)}$ conditional on $\{J_i^{D^*}\}_{i=1}^A$ and $\mathcal{Z}^{D^*}$, via the generative process
+     \begin{algorithm}[H]
+        	\SetAlgoLined
+        	\caption{Generate data from posterior predictive distribution}
+        	Input data :\\
+        	1) token topic assignments $\{\{z_n^{(d)}\}_{n=1}^{N^{(d)}}\}_{d=1}^D$,\\
+        	2) topic interaction pattern assignments, $\{C_k\}_{k=1}^K$,\\
+        	3) interaction pattern parameters $\{\boldsymbol{b}^{(c)}\}_{c=1}^C$, \\
+        	4) receiver size parameter $\delta$. \\
+	5) Number of iterations at which ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) can be considered independent of observed data on which inference was performed---$R$.\\
+	\For{$r$=1 to $R$}{
+		Sample ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) from $P(\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^* |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta)$	using Algorithm 10.\\
+		\For{$d$=1 to $D$}{
+		\For{$i  \neq i^{*(d)}_o$}{
+		\For{$j$\neq i$}{
+		Sample $\mathcal{J}_{ij}^{(d)}$ from 
+		$$  P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, \mathcal{Z}, \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*,  \mathcal{J}_{\mbox{a}, -i}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta). $$ using Equations 17 and 18.
 		}
-		store $i^{(D^*)}$, $J^{(D^*)}$, $t^{(D^*)}$, and $\mathcal{Z}^{D^*}$
-	}
-\end{algorithm}
+		}
+		 \For{$n$ = 1 to $\bar{N}^{(d)}$}{
+		 Sample $z_n^{(d)}$ from $$P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta).$$ using Equation 25
+		 }
+		
+      }
+      }
+      Return ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) as a draw from the posterior distribution of the data.
+      
+				
+        \end{algorithm}
 
 
 \section{Conclusion} 
