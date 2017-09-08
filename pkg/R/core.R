@@ -1749,7 +1749,6 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
 #' @param vocabulary all vocabularies used over the corpus
 #' @param nIP total number of interaction patterns specified by the user
 #' @param K total number of topics specified by the user
-#' @param nwords number of words in a document (fixed constant for now)
 #' @param alpha Dirichlet concentration prior for document-topic distribution
 #' @param mvec Dirichlet base prior for document-topic distribution
 #' @param betas Dirichlet concentration prior for topic-word distribution
@@ -1761,51 +1760,144 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
 #' @param netstat which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")
 #' @param base.edge edges before 384 hours that is used to calculate initial history of interactions
 #' @param base.text texts corresponding to base.edge
-#' @param topic_token_assignments matrix of topic-token assignments
+#' @param currentZ topic-token assignments
+#' @param R number of iterations to make the generated data considered independent of observed data
 #'
 #' @return generated edge and text, parameter b used to generate those, and base (if base == TRUE)
 #'
 #' @export
-GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, iJi,
-                        b, delta, currentC, netstat, base.edge, base.text, topic_token_assignments = NULL) {
+GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
+                        b, delta, currentC, netstat, base.edge, base.text, currentZ, R) {
   W = length(vocabulary)
   phi = lapply(1:K, function(k) {
     rdirichlet_cpp(1, betas * nvec)
   })
-    netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
-    L = 3
-    P = netstat[1] + L * (2 * netstat[2] + 2 * netstat[3] + 4 * netstat[4])
+  netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic") %in% netstat)
+  L = 3
+  P = netstat[1] + L * (2 * netstat[2] + 2 * netstat[3] + 4 * netstat[4])
   
   edge = base.edge
   text = base.text
   base.length = length(edge)
-  t.d = base.edge[[base.length]][3] 
-  p.d = pdmat(topic_token_assignments, currentC, nIP)  		  
+  lambda = list()
+  t.d = base.edge[[base.length]][[3]] 
+  p.d = pdmat(currentZ, currentC, nIP)  		  
   word_type_topic_counts = matrix(0, W, K)
+  maxedge2 = length(currentZ)
   for (d in 1:nDocs) {
-    N.d = nwords
+    N.d = length(currentZ[[base.length + d]])
     text[[base.length + d]] = rep(NA, N.d)
       phi.k = rep(NA, K)
-      topic.d = topic_token_assignments[[base.length + d]]
+      topic.d = currentZ[[base.length + d]]
         for (n in 1:N.d){
           for (w in 1:W) {
             phi.k[w] = (word_type_topic_counts[w, topic.d[n]] + betas * nvec[w]) / (sum(word_type_topic_counts[, topic.d[n]]) + betas)
           } 
           text[[base.length + d]][n] = multinom_vec(1, phi.k)
-          word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] = word_type_topic_counts[text[[d]][n], topic.d[n]] + 1
+          word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] = word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] + 1
         }
         names(text[[base.length + d]]) = topic.d
 
     history.t = History(edge, p.d, node, t.d + exp(-745))
     X = Netstats_cpp(history.t, node, netstat)
     XB = MultiplyXBList(X, b)     
-    lambda = lambda_cpp(p.d[base.length + d,], XB)
-    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi[[d]])
+    lambda[[d]] = lambda_cpp(p.d[base.length + d,], XB)
+    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi[[base.length + d]])
     i.d = multinom_vec(1, LambdaiJi)
     j.d = which(iJi[[base.length + d]][i.d,] == 1)
     t.d = t.d + rexp(1, sum(LambdaiJi))
     edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
   }
+  textlist.raw = unlist(text[-1:-base.length])
+  for (r in 1:R) {
+  	timestamps = vapply(edge, function(d) {
+  			  d[[3]]
+ 			  }, c(1))
+    timeinc = c(timestamps[1], timestamps[-1] - timestamps[-length(timestamps)])
+    table.W = lapply(1:K, function(k) {
+      			 tabulateC(textlist.raw[which(unlist(currentZ[-1:-base.length]) == k)], W)
+      			 })
+    table.W2 = table.W 
+  	for (d in 1:nDocs) {
+   	 #iJi update
+   		for (i in node) {
+   			XB_IP = lapply(XB, function(IP) {IP[i,]})
+		for (j in sample(node[-i], length(node) - 1)) {
+			 probij = DataAug_cpp_Gibbs(iJi[[base.length + d]][i, ], lambda[[d]][i,], XB_IP, p.d[base.length + d, ], delta, timeinc[base.length + d], j) 
+			 iJi[[base.length + d]][i, j] = multinom_vec(1, probij) - 1		
+			}
+      	}
+     #Z update 	
+        textlist.d = text[[base.length +d]]
+       if (as.numeric(edge[[base.length + d]][3]) + 384 > as.numeric(edge[[maxedge2]][3])) {
+      	 hist.d = maxedge2
+       } else {
+      	 hist.d = which_num(as.numeric(edge[[base.length + d]][3]) + 384, timestamps)
+       }
+       edgetime.d = rep(NA, K)
+       for (w in 1:length(currentZ[[base.length + d]])) {
+       	 zw.old = currentZ[[base.length + d]][w]
+       	 if (length(textlist.d) > 0) {       	 
+       	 table.W2[[zw.old]][textlist.d[w]] = table.W2[[zw.old]][textlist.d[w]] - 1
+         topicpart.d = TopicInEqZ(K, currentZ[[base.length + d]][-w], alpha, mvec)
+         wordpart.d = WordInEqZ(K, textlist.d, table.W2, betas, nvec)
+       } else {
+         topicpart.d = 0
+         wordpart.d = matrix(0, nrow = length(currentZ[[base.length + d]]), ncol = K)
+       }
+ 	 for (IP in unique(currentC)) {
+       	  	currentCK = which(currentC == IP)
+       		currentZ[[base.length + d]][w] = min(currentCK)
+       	 	p.d[d, ] = pdmat(list(currentZ[[base.length + d]]), currentC, nIP)           
+            history.t = History(edge, p.d, node, as.numeric(edge[[hist.d-1]][3]) + exp(-745))
+    	    X = Netstats_cpp(history.t, node, netstat)
+    	    XB = MultiplyXBList(X, b)   
+    	    lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
+	   	 	LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
+        	observediJi[[hist.d]] = LambdaiJi[[hist.d]][as.numeric(edge[[hist.d]][1])]
+        	edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])   
+              }
+          const.Z = edgetime.d + topicpart.d + wordpart.d[w, ] 
+          zw.new = multinom_vec(1, expconst(const.Z))
+         if (zw.new != zw.old) {
+           currentZ[[d]][w] = zw.new
+           table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
+           table.W[[zw.new]][textlist.d[w]] = table.W[[zw.new]][textlist.d[w]] + 1 
+           table.W2 = table.W        
+         } else {
+         	currentZ[[base.length + d]][w] = zw.old
+         }
+       }
+      } 
+   #regenerate data   
+   p.d = pdmat(currentZ, currentC, nIP)  		  
+  word_type_topic_counts = matrix(0, W, K)
+  maxedge2 = length(currentZ)
+  for (d in 1:nDocs) {
+    N.d = length(currentZ[[base.length + d]])
+    text[[base.length + d]] = rep(NA, N.d)
+      phi.k = rep(NA, K)
+      topic.d = currentZ[[base.length + d]]
+        for (n in 1:N.d){
+          for (w in 1:W) {
+            phi.k[w] = (word_type_topic_counts[w, topic.d[n]] + betas * nvec[w]) / (sum(word_type_topic_counts[, topic.d[n]]) + betas)
+          } 
+          text[[base.length + d]][n] = multinom_vec(1, phi.k)
+          word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] = word_type_topic_counts[text[[base.length + d]][n], topic.d[n]] + 1
+        }
+        names(text[[base.length + d]]) = topic.d
+
+    history.t = History(edge, p.d, node, t.d + exp(-745))
+    X = Netstats_cpp(history.t, node, netstat)
+    XB = MultiplyXBList(X, b)     
+    lambda[[d]] = lambda_cpp(p.d[base.length + d,], XB)
+    LambdaiJi = lambdaiJi(p.d[base.length + d,], XB, iJi[[base.length + d]])
+    i.d = multinom_vec(1, LambdaiJi)
+    j.d = which(iJi[[base.length + d]][i.d,] == 1)
+    t.d = t.d + rexp(1, sum(LambdaiJi))
+    edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
+  }	 		
+  	}
   return(list(edge = edge, text = text, iJi = iJi))							
 } 
 

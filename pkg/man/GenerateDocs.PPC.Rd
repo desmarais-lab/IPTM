@@ -4,9 +4,8 @@
 \alias{GenerateDocs.PPC}
 \title{GenerateDocs.PPC}
 \usage{
-GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
-  nvec, iJi, b, delta, currentC, netstat, base.edge, base.text,
-  topic_token_assignments = NULL)
+GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
+  b, delta, currentC, netstat, base.edge, base.text, currentZ, R)
 }
 \arguments{
 \item{nDocs}{number of documents to be generated}
@@ -18,8 +17,6 @@ GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
 \item{nIP}{total number of interaction patterns specified by the user}
 
 \item{K}{total number of topics specified by the user}
-
-\item{nwords}{number of words in a document (fixed constant for now)}
 
 \item{alpha}{Dirichlet concentration prior for document-topic distribution}
 
@@ -43,7 +40,9 @@ GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
 
 \item{base.text}{texts corresponding to base.edge}
 
-\item{topic_token_assignments}{matrix of topic-token assignments}
+\item{currentZ}{topic-token assignments}
+
+\item{R}{number of iterations to make the generated data considered independent of observed data}
 }
 \value{
 generated edge and text, parameter b used to generate those, and base (if base == TRUE)
