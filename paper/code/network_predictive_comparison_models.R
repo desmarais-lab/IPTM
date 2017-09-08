@@ -1,7 +1,8 @@
 # read in statistics matrix data
-load("netstas.RData")
+load("netstats.RData")
 # array: (documents) X (senders) X (receivers) X (statistics)
 # names of these statistics?
+
 
 # For each model below... The model will be fit up to document d, then
 ## 1,000 values will be simulated conditional on the input values from document d+1
