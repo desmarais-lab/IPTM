@@ -1,4 +1,3 @@
-
 library(stringr)
 
 Clean_String <- function(string){
@@ -20,7 +19,7 @@ Clean_String <- function(string){
 }
 
 library(tm)
-load("/Users/bomin8319/Desktop/enron/enron_raw.RData")
+load("/Users/bomin8319/Desktop/IPTM/enron/enron_raw.RData")
 Enron = list()
 edge = list()
 text = list()
@@ -60,7 +59,7 @@ for (d in 1:dim(enron)[1]) {
   text[[d]] = which(vocab %in% text[[d]])
 } 
 
-#only include receivers > 20 received emails
+#only include receivers > 100 received emails
 receiver = lapply(edge, function(i){i[[2]]})
 
 newreceiver = which(tabulate(unlist(receiver)) > 100)
@@ -82,25 +81,24 @@ for (d in 1:dim(enron)[1]) {
   }
 }
 vocab = unique(unlist(text))
-for (d in 1:length(text)) {
-  text[[d]] = which(vocab %in% text[[d]])
-} 
-edge = edge[-which(sapply(text, function(x){length(x)}) ==0)]
-text = text[-which(sapply(text, function(x){length(x)}) ==0)]
-edge = edge[-which(sapply(text, function(x){length(x)}) ==6519)]
-text = text[-which(sapply(text, function(x){length(x)}) ==6519)]
-
-vocab = unique(unlist(text))
+delete = which(sapply(text, function(x){length(x)}) ==0 |sapply(text, function(x){length(x)}) ==6519 )
+edge2 = edge[-delete]
+text2 = text[-delete]
+edge = edge2
+text = text2
 sender = lapply(edge, function(i){i[[1]]})
 receiver = lapply(edge, function(i){i[[2]]})
 node = union(unique(unlist(sender)), unique(unlist(receiver)))
-
+vocab = unique(unlist(text))
+text2 = list()
 for (d in 1:length(edge)) {
   edge[[d]]$sender = which(node == edge[[d]]$sender)
   edge[[d]]$receiver = which(node %in% edge[[d]]$receiver)
-  edge[[d]]$timestamp = edge[[d]]$timestamp / 24
-}
-vocab = unique(unlist(text))
+  if (d > 1 && edge[[d]]$timestamp == edge[[d-1]]$timestamp) {
+  edge[[d]]$timestamp = edge[[d]]$timestamp + exp(-20)
+  }
+   text2[[d]] = which(vocab %in% text[[d]])
+  }
 
-Enron = list(edge = edge, node = 1:length(node), text = text, vocab = vocab)
+Enron = list(edge = edge, node = 1:length(node), text = text2, vocab = vocab)
 save(Enron, file = "Enron.RData")
