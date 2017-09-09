@@ -33,10 +33,10 @@ base.text = base.data$text
 
 sigma_Q = c(0.1, 0.0002)
 
-niters = c(5, 5500, 500, 500, 5)
+niters = c(3, 5500, 500, 500, 5)
 
 GiR<- Schein.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec,
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat, 
-					generate_PP_plots = FALSE, generate_trace_plots = FALSE)
+					generate_PP_plots = TRUE)
 
 save(GiR, file = "GiR.RData")

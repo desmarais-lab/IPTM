@@ -494,6 +494,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   mvecmat = matrix(NA, nrow = 0, ncol = K)
   n_B2 = n_B / 5
   n_d2 = n_d / 5
+  accept.rates = rep(0, 2)
     #start outer iteration
     for (o in 1:out) {
     	if (o == out) {
@@ -628,14 +629,16 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     prior.old1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.old[[IP]], FALSE)}, c(1)))
     post.old1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
     if (o != 1) {
-      accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / length(deltamat))
+    	accept.rates[1] = accept.rates[1] / n_B2
+    	accept.rates[2] = accept.rates[2] / n_d2
       sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
-      if (accept.rates[1] > 1 / ncol(bmat[[1]])) { 
+      if (accept.rates[1] > 0.15) { 
         for (IP in 1:nIP) {
-          proposal.var[[IP]] = var(t(bmat[[IP]]))
+          proposal.var[[IP]] = cor(t(bmat[[IP]]))
         }
       }
     }
+    accept.rates = rep(0, 2)
     for (i3 in 1:n_B2) {
       beta.new = lapply(1:nIP, function(IP) {
         c(rcpp_rmvnorm(1, sigma_Q[1] * proposal.var[[IP]], beta.old[[IP]]))
@@ -655,8 +658,9 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         }
         prior.old1 = prior.new1
         post.old1 = post.new1
+        accept.rates[1] = accept.rates[1] + 1
       }
-      if (o == out && i3 > burn[1] && i3 %% (thinning[1]) == 0) {
+      if (i3 > burn[1] && i3 %% (thinning[1]) == 0) {
         for (IP in 1:nIP) {
           bmat[[IP]][ , (i3 - burn[1]) / thinning[1]] = beta.old[[IP]]
         }
@@ -679,8 +683,9 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         delta = delta.new
         prior.old2 = prior.new2
         post.old2 = post.new2
+        accept.rates[2] = accept.rates[2] + 1
       } 
-      if (o == out && i4 > burn[2] && i4 %% (thinning[2]) == 0) {
+      if (i4 > burn[2] && i4 %% (thinning[2]) == 0) {
         deltamat[(i4 - burn[2]) / thinning[2]] = delta
       }
     }
@@ -1805,6 +1810,7 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
    			XB_IP = lapply(XB, function(IP) {IP[i,]})
 		for (j in sample(node[-i], length(node) - 1)) {
 			 probij = DataAug_cpp_Gibbs(iJi[[base.length + d]][i, ], lambda[[d]][i,], XB_IP, p.d[base.length + d, ], delta, timeinc[base.length + d], j) 
+			 print(probij)
 			 iJi[[base.length + d]][i, j] = multinom_vec(1, probij) - 1		
 			}
       	}
