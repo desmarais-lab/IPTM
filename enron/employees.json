@@ -1,0 +1,1406 @@
+[
+ {
+ "id": 1,
+   "name": "John Arnold",
+   "department": "Trading",
+   "long_department": "ENA Gas Financial",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 2,
+   "name": "Harry Arora",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 3,
+   "name": "Robert Badeer",
+   "department": "Trading",
+   "long_department": "ENA West Power",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 4,
+   "name": "Susan Bailey",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Specialist Legal",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 5,
+   "name": "Eric Bass",
+   "department": "Trading",
+   "long_department": "ENA Gas Texas",
+   "title": "Trader",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 6,
+   "name": "Don Baughman Jr.",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 7,
+   "name": "Sally Beck",
+   "department": "Other",
+   "long_department": "Energy Operations",
+   "title": "VP",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 8,
+   "name": "Robert Benson",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 9,
+   "name": "Lynn Blair",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Director",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 10,
+   "name": "Sandra F. Brawner",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "Dir Trading",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 11,
+   "name": "Rick Buy",
+   "department": "Trading",
+   "long_department": "Enron",
+   "title": "VP & CRO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 12,
+   "name": "Larry Campbell",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 13,
+   "name": "Larry F. Campbell",
+   "department": "Other",
+   "long_department": "ENA East Power",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 14,
+   "name": "Mike Carson",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 15,
+   "name": "Michelle Cash",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Attorney",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 16,
+   "name": "Monika Causholli",
+   "department": "Other",
+   "long_department": "ENA West Power Real Time",
+   "title": "Analyst",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 17,
+   "name": "Shelley Corman",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "VP",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 18,
+   "name": "Sean Crandall",
+   "department": "Trading",
+   "long_department": "ENA West Power",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 19,
+   "name": "Martin Cuilla",
+   "department": "Trading",
+   "long_department": "ENA Gas Central",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 20,
+   "name": "Jeff Dasovich",
+   "department": "Legal",
+   "long_department": "Regulatory and Government Affairs",
+   "title": "Director",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 21,
+   "name": "Dana Davis",
+   "department": "Other",
+   "long_department": "NA",
+   "title": "Administrator",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 22,
+   "name": "Clint Dean",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 23,
+   "name": "Craig Dean",
+   "department": "Other",
+   "long_department": "ENA West Power Real Time",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 24,
+   "name": "David W. Delainey",
+   "department": "Other",
+   "long_department": "EWS",
+   "title": "President & CEO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 25,
+   "name": "James Derrick Jr.",
+   "department": "Legal",
+   "long_department": "Enron",
+   "title": "VP & Gen Cnsl",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 26,
+   "name": "Stacy E. Dickson",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Cnsl",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 27,
+   "name": "Lindy Donoho",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Employee",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 28,
+   "name": "Tom Donohoe",
+   "department": "Trading",
+   "long_department": "ENA Gas Central",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 29,
+   "name": "Chris Dorland",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 30,
+   "name": "Frank Ermis",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 31,
+   "name": "Daren J. Farmer",
+   "department": "Trading",
+   "long_department": "ENA Gas Texas",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 32,
+   "name": "Mary Fischer",
+   "department": "Other",
+   "long_department": "NA",
+   "title": "Employee",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 33,
+   "name": "John M. Forney",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 34,
+   "name": "Drew Fossum",
+   "department": "Legal",
+   "long_department": "ETS",
+   "title": "VP & Gen Cnsl",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 35,
+   "name": "Lisa Gang",
+   "department": "Other",
+   "long_department": "ENA West Power",
+   "title": "Specialist",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 36,
+   "name": "Randall L. Gay",
+   "department": "Other",
+   "long_department": "ENA Gas West",
+   "title": "Associate",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 37,
+   "name": "Rob G. Gay",
+   "department": "Other",
+   "long_department": "NA",
+   "title": "Employee",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 38,
+   "name": "Tracy Geaccone",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Assistant",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 39,
+   "name": "Chris Germany",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 40,
+   "name": "Doug Gilbert-Smith",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 41,
+   "name": "Darron C. Giron",
+   "department": "Trading",
+   "long_department": "Energy Operations",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 42,
+   "name": "John Griffith",
+   "department": "Trading",
+   "long_department": "ENA Gas Financial",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 43,
+   "name": "Mike Grigsby",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 44,
+   "name": "Mark Guzman",
+   "department": "Other",
+   "long_department": "ENA West Power Real Time",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 45,
+   "name": "Mark E. Haedicke",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Mng Director & Gen Cnsl",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 46,
+   "name": "Mary Hain",
+   "department": "Legal",
+   "long_department": "Regulatory and Government Affairs",
+   "title": "Director",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 47,
+   "name": "Steven Harris",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "VP",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 48,
+   "name": "Rod Hayslett",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "VP & CFO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 49,
+   "name": "Marie Heard",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Specialist Legal",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 50,
+   "name": "Scott Hendrickson",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 51,
+   "name": "Juan Hernandez",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 52,
+   "name": "Judy Hernandez",
+   "department": "Other",
+   "long_department": "Energy Operations",
+   "title": "Administrator",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 53,
+   "name": "Jeffrey T. Hodge",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "VP & Asst Gen Cnsl",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 54,
+   "name": "John Hodge",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 55,
+   "name": "Keith Holst",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 56,
+   "name": "Stanley Horton",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "President & CEO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 57,
+   "name": "Kevin Hyatt",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Director",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 58,
+   "name": "Dan J. Hyvl",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Employee",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 59,
+   "name": "Tana Jones",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Specialist Legal",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 60,
+   "name": "Vince J. Kaminski",
+   "department": "Other",
+   "long_department": "EWS",
+   "title": "Mng Director Research",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 61,
+   "name": "Steven J. Kean",
+   "department": "Other",
+   "long_department": "Enron",
+   "title": "VP & Chief of Staff",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 62,
+   "name": "Peter F. Keavey",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 63,
+   "name": "Kam Keiser",
+   "department": "Trading",
+   "long_department": "Energy Operations",
+   "title": "Mgr Trading",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 64,
+   "name": "Jeff King",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 65,
+   "name": "Louise Kitchen",
+   "department": "Other",
+   "long_department": "EWS",
+   "title": "COO",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 66,
+   "name": "Tori Kuykendall",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "Mgr Trading",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 67,
+   "name": "John J. Lavorato",
+   "department": "Other",
+   "long_department": "EWS",
+   "title": "ENA President & CEO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 68,
+   "name": "Kenneth Lay",
+   "department": "Other",
+   "long_department": "Enron",
+   "title": "President & CEO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 69,
+   "name": "Matthew Lenhart",
+   "department": "Other",
+   "long_department": "ENA Gas West",
+   "title": "Analyst",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 70,
+   "name": "Andrew H. Lewis",
+   "department": "Trading",
+   "long_department": "ENA Gas Central",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 71,
+   "name": "Eric Linder",
+   "department": "Other",
+   "long_department": "ENA West Power Real Time",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 72,
+   "name": "Michelle Lokay",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Director",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 73,
+   "name": "Teb Lokey",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Employee",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 74,
+   "name": "Phillip M. Love",
+   "department": "Other",
+   "long_department": "Energy Operations",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 75,
+   "name": "Paul T. Lucci",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 76,
+   "name": "Mike Maggi",
+   "department": "Trading",
+   "long_department": "ENA Gas Financial",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 77,
+   "name": "Kay Mann",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Director & Cnsl",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 78,
+   "name": "Thomas A. Martin",
+   "department": "Trading",
+   "long_department": "ENA Gas Texas",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 79,
+   "name": "Larry May",
+   "department": "Trading",
+   "long_department": "ENA Gas Financial",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 80,
+   "name": "Danny McCarty",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "VP & CTO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 81,
+   "name": "Mark McConnell",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Director",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 82,
+   "name": "Mike McConnell",
+   "department": "Other",
+   "long_department": "EWS",
+   "title": "EGM President & CEO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 83,
+   "name": "Brad McKay",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 84,
+   "name": "Jonathan McKay",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 85,
+   "name": "Errol McLaughlin Jr.",
+   "department": "Other",
+   "long_department": "Energy Operations",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 86,
+   "name": "Steven Merris",
+   "department": "Other",
+   "long_department": "ENA West Power Real Time",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 87,
+   "name": "Bert Meyers",
+   "department": "Other",
+   "long_department": "ENA West Power Real Time",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 88,
+   "name": "Patrice L. Mims ",
+   "department": "Trading",
+   "long_department": "ENA Gas Central",
+   "title": "Dir Trading",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 89,
+   "name": "Matt Motley",
+   "department": "Trading",
+   "long_department": "ENA West Power Real Time",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 90,
+   "name": "Scott Neal",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 91,
+   "name": "Gerald Nemec",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Manager",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 92,
+   "name": "Stephanie Panus",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Specialist Legal",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 93,
+   "name": "Joe Parks",
+   "department": "Trading",
+   "long_department": "ENA Gas Central",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 94,
+   "name": "Susan W. Pereira",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "Mgr Trading",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 95,
+   "name": "Debra Perlingiere",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Specialist Legal",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 96,
+   "name": "Vladi Pimenov",
+   "department": "Other",
+   "long_department": "ENA Gas East",
+   "title": "Associate",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 97,
+   "name": "Phillip Platter",
+   "department": "Other",
+   "long_department": "ENA West Power",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 98,
+   "name": "Kevin M. Presto",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 99,
+   "name": "Joe Quenet",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 100,
+   "name": "Dutch Quigley",
+   "department": "Other",
+   "long_department": "ENA Gas Financial",
+   "title": "Associate",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 101,
+   "name": "Bill Rapp",
+   "department": "Legal",
+   "long_department": "ETS",
+   "title": "Attorney",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 102,
+   "name": "Jay Reitmeyer",
+   "department": "Other",
+   "long_department": "ENA Gas West",
+   "title": "Associate",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 103,
+   "name": "Cooper Richey",
+   "department": "Other",
+   "long_department": "ENA West Power",
+   "title": "Associate",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 104,
+   "name": "Andrea Ring",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "Dir Trading",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 105,
+   "name": "Richard Ring",
+   "department": "Other",
+   "long_department": "EES",
+   "title": "Employee",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 106,
+   "name": "Robin Rodrigue ",
+   "department": "Other",
+   "long_department": "ENA Gas Central",
+   "title": "Analyst",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 107,
+   "name": "Benjamin Rogers",
+   "department": "Other",
+   "long_department": "ENA East Power",
+   "title": "Associate",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 108,
+   "name": "Kevin Ruscitti",
+   "department": "Trading",
+   "long_department": "ENA Gas Central",
+   "title": "Mgr Trading",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 109,
+   "name": "Elizabeth Sager",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "VP & Asst Gen Cnsl",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 110,
+   "name": "Eric Saibi",
+   "department": "Other",
+   "long_department": "ENA East Power",
+   "title": "Analyst",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 111,
+   "name": "Holden Salisbury",
+   "department": "Other",
+   "long_department": "ENA West Power",
+   "title": "Analyst",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 112,
+   "name": "Monique Sanchez ",
+   "department": "Other",
+   "long_department": "ENA Gas West",
+   "title": "Associate",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 113,
+   "name": "Richard B. Sanders",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "VP & Asst Gen Cnsl",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 114,
+   "name": "Diana Scholtes",
+   "department": "Trading",
+   "long_department": "ENA West Power",
+   "title": "Dir Trading",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 115,
+   "name": "Darrell Schoolcraft",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Employee",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 116,
+   "name": "Jim Schwieger",
+   "department": "Trading",
+   "long_department": "ENA Gas Texas",
+   "title": "Trader",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 117,
+   "name": "Susan Scott",
+   "department": "Legal",
+   "long_department": "ETS",
+   "title": "Cnsl",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 118,
+   "name": "Susan M. Scott",
+   "department": "Other",
+   "long_department": "ENA Gas West",
+   "title": "Analyst",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 119,
+   "name": "Cara Semperger",
+   "department": "Other",
+   "long_department": "ENA West Power",
+   "title": "Specialist",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 120,
+   "name": "Sara Shackleton",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Gen Cnsl Asst",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 121,
+   "name": "Jeffrey A. Shankman",
+   "department": "Other",
+   "long_department": "EWS",
+   "title": "COO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 122,
+   "name": "Richard Shapiro",
+   "department": "Legal",
+   "long_department": "Regulatory and Government Affairs",
+   "title": "VP of Regulatory Affairs",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 123,
+   "name": "Hunter S. Shively",
+   "department": "Trading",
+   "long_department": "ENA Gas Central",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 124,
+   "name": "Jeff Skilling",
+   "department": "Other",
+   "long_department": "Enron",
+   "title": "President & CEO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 125,
+   "name": "Ryan Slinger",
+   "department": "Other",
+   "long_department": "ENA West Power Real Time",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 126,
+   "name": "Matt Smith",
+   "department": "Other",
+   "long_department": "ENA Gas West",
+   "title": "Associate",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 127,
+   "name": "Geir Solberg",
+   "department": "Other",
+   "long_department": "ENA West Power Real Time",
+   "title": "Analyst",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 128,
+   "name": "Steven P. South",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 129,
+   "name": "Theresa Staab",
+   "department": "Other",
+   "long_department": "ENA Gas West",
+   "title": "Specialist",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 130,
+   "name": "Carol St Clair",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "Director & Gen Cnsl Asst",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 131,
+   "name": "James D. Steffes",
+   "department": "Legal",
+   "long_department": "Regulatory and Government Affairs",
+   "title": "VP of Government Affairs",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 132,
+   "name": "Joe Stepenovitch",
+   "department": "Other",
+   "long_department": "ENA East Power",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 133,
+   "name": "Chris Stokley",
+   "department": "Other",
+   "long_department": "ENA West Power",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 134,
+   "name": "Geoff Storey",
+   "department": "Trading",
+   "long_department": "ENA Gas Central",
+   "title": "Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 135,
+   "name": "Fletcher J. Sturm",
+   "department": "Trading",
+   "long_department": "ENA East Power",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 136,
+   "name": "Mike Swerzbin",
+   "department": "Trading",
+   "long_department": "ENA West Power",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 137,
+   "name": "Kate Symes",
+   "department": "Other",
+   "long_department": "ENA West Power Real Time",
+   "title": "Employee",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 138,
+   "name": "Mark E. Taylor",
+   "department": "Legal",
+   "long_department": "ENA Legal",
+   "title": "VP & Gen Cnsl",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 139,
+   "name": "Michael E. Taylor",
+   "department": "Trading",
+   "long_department": "Energy Operations",
+   "title": "Trader",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 140,
+   "name": "Jane M. Tholt",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "Dir Trading",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 141,
+   "name": "Paul D. Thomas",
+   "department": "Other",
+   "long_department": "ENA East Power",
+   "title": "Associate",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 142,
+   "name": "Judy Townsend",
+   "department": "Trading",
+   "long_department": "ENA Gas East",
+   "title": "Mgr Trading",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 143,
+   "name": "Barry Tycholiz",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 144,
+   "name": "Kim S. Ward",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "Mgr Trading",
+   "gender": "Female",
+   "seniority": "Junior" 
+},
+{
+ "id": 145,
+   "name": "Kimberly Watson",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Director",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 146,
+   "name": "V Charles Weldon",
+   "department": "Other",
+   "long_department": "ENA Gas Texas",
+   "title": "Associate",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 147,
+   "name": "Greg Whalley",
+   "department": "Other",
+   "long_department": "EWS",
+   "title": "President & CEO",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 148,
+   "name": "Stacey W. White",
+   "department": "Other",
+   "long_department": "Energy Operations",
+   "title": "Director",
+   "gender": "Female",
+   "seniority": "Senior" 
+},
+{
+ "id": 149,
+   "name": "Mark Whitt",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "VP Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 150,
+   "name": "Jason Williams",
+   "department": "Other",
+   "long_department": "ENA Gas Central",
+   "title": "Specialist",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 151,
+   "name": "Bill Williams III",
+   "department": "Other",
+   "long_department": "ENA West Power Real Time",
+   "title": "Analyst",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 152,
+   "name": "Jason Wolfe",
+   "department": "Other",
+   "long_department": "ENA Gas West",
+   "title": "Analyst",
+   "gender": "Male",
+   "seniority": "Junior" 
+},
+{
+ "id": 153,
+   "name": "Paul Y’Barbo",
+   "department": "Other",
+   "long_department": "ETS",
+   "title": "Director",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 154,
+   "name": "Andy Zipper",
+   "department": "Other",
+   "long_department": "EWS",
+   "title": "VP of Enron Online",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 155,
+   "name": "John Zufferli",
+   "department": "Other",
+   "long_department": "EWS",
+   "title": "VP of Enron Canada",
+   "gender": "Male",
+   "seniority": "Senior" 
+},
+{
+ "id": 156,
+   "name": "Phillip K. Allen",
+   "department": "Trading",
+   "long_department": "ENA Gas West",
+   "title": "Mng Dir Trading",
+   "gender": "Male",
+   "seniority": "Senior" 
+}
+]

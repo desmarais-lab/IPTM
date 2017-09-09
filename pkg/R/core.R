@@ -1790,13 +1790,13 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
     t.d = t.d + rexp(1, sum(LambdaiJi))
     edge[[base.length + d]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
   }
-  textlist.raw = unlist(text[-1:-base.length])
   for (r in 1:R) {
   	timestamps = vapply(edge, function(d) {
   			  d[[3]]
  			  }, c(1))
     timeinc = c(timestamps[1], timestamps[-1] - timestamps[-length(timestamps)])
-    table.W = lapply(1:K, function(k) {
+    textlist.raw = unlist(text[-1:-base.length])
+	table.W = lapply(1:K, function(k) {
       			 tabulateC(textlist.raw[which(unlist(currentZ[-1:-base.length]) == k)], W)
       			 })
   	for (d in 1:nDocs) {
@@ -1809,7 +1809,7 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
 			}
       	}
      #Z update 	
-        textlist.d = text[[base.length +d]]
+        textlist.d = text[[base.length + d]]
        if (edge[[base.length + d]][[3]] + 384 > edge[[maxedge2]][[3]]) {
       	 hist.d = maxedge2
        } else {
