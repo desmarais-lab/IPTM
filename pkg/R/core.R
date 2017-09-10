@@ -180,7 +180,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
      			 multinom_vec(max(1, length(textlist[[d]])), theta[d, ])
  				 })
  	p.d = pdmat(currentZ, currentC, nIP)
-
+	accept.rates = rep(0, 2)
     # initialize beta
     netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
     L = 3
@@ -332,69 +332,74 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     	    X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
-	      	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+	    LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
         	observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
 	}
 	
-	# beta update
-	prior.old1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.old[[IP]], FALSE)}, c(1)))
-	post.old1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])  
+    # beta update
+    prior.old1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.old[[IP]], FALSE)}, c(1)))
+    post.old1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
     if (o != 1) {
-    		accept.rates = c(length(unique(bmat[[1]][1,])) / ncol(bmat[[1]]), length(unique(deltamat)) / n_d)
-    		sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.1 * sigma_Q)
-    	if (accept.rates[1] > 1 / ncol(bmat[[1]])) {
-    		for (IP in 1:nIP) {
-     		proposal.var[[IP]] = var(t(bmat[[IP]]))
-      	}
+    	accept.rates[1] = accept.rates[1] / n_B2
+    	accept.rates[2] = accept.rates[2] / n_d2
+      sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
+      if (accept.rates[1] > 0.15) { 
+        for (IP in 1:nIP) {
+          proposal.var[[IP]] = cor(t(bmat[[IP]]))
+        }
       }
-   }
-    for (i3 in 1:n_B) {
-    		beta.new = lapply(1:nIP, function(IP) {
-          		   c(rcpp_rmvnorm(1, sigma_Q[1] * proposal.var[[IP]], beta.old[[IP]]))
-         		   }) 
-        for (d in maxedge2) {
-           XB = MultiplyXBList(X, beta.new)
-           lambda[[d]] = lambda_cpp(p.d[d,], XB)    
-           LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-	       observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+    }
+    accept.rates = rep(0, 2)
+    for (i3 in 1:n_B2) {
+      beta.new = lapply(1:nIP, function(IP) {
+        c(rcpp_rmvnorm(1, sigma_Q[1] * proposal.var[[IP]], beta.old[[IP]]))
+      }) 
+      for (d in maxedge2) {
+        XB = MultiplyXBList(X, beta.new)
+        lambda[[d]] = lambda_cpp(p.d[d,], XB)    
+        LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+        observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+      }
+      prior.new1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.new[[IP]], FALSE)}, c(1)))
+      post.new1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
+      loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
+      if (log(runif(1, 0, 1)) < loglike.diff) {
+        for (IP in 1:nIP) {
+          beta.old[[IP]] = beta.new[[IP]]
         }
-        prior.new1 =  sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.new[[IP]], FALSE)}, c(1)))
-        post.new1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
-    		loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
-        if (log(runif(1, 0, 1)) < loglike.diff) {
-        		for (IP in 1:nIP) {
-         		beta.old[[IP]] = beta.new[[IP]]
-         	}
-         	prior.old1 = prior.new1
-         	post.old1 = post.new1
+        prior.old1 = prior.new1
+        post.old1 = post.new1
+        accept.rates[1] = accept.rates[1] + 1
+      }
+      if (i3 > burn[1] && i3 %% (thinning[1]) == 0) {
+        for (IP in 1:nIP) {
+          bmat[[IP]][ , (i3 - burn[1]) / thinning[1]] = beta.old[[IP]]
         }
-         if (i3 > burn && i3 %% (thinning) == 0) {
-        		for (IP in 1:nIP) {
-           		bmat[[IP]][ , (i3 - burn) / thinning] = beta.old[[IP]]
-           	}
-    		}
+      }
     }
     
     #delta update
     for (d in maxedge2) {
-    	 	XB = MultiplyXBList(X, beta.old)
-     		lambda[[d]] = lambda_cpp(p.d[d,], XB)  
+      XB = MultiplyXBList(X, beta.old)
+      lambda[[d]] = lambda_cpp(p.d[d,], XB)  
     }
     prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
     post.old2 = EdgeInEqZ_Gibbs(iJi[[maxedge2]], lambda[[maxedge2]], delta)
-
- 	for (i4 in 1:n_d) {
-        delta.new = rnorm(1, delta, sqrt(sigma_Q[2]))
-        prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
-        post.new2 = EdgeInEqZ_Gibbs(iJi[[maxedge2]], lambda[[maxedge2]], delta.new)
-        loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 
-        if (log(runif(1, 0, 1)) < loglike.diff2) {
-        	delta = delta.new
-         	prior.old2 = prior.new2
-         	post.old2 = post.new2
-        } 
-            deltamat[i4] = delta
-    	}
+    for (i4 in 1:n_d2) {
+      delta.new = rnorm(1, delta, sqrt(sigma_Q[2]))
+      prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
+      post.new2 = EdgeInEqZ_Gibbs(iJi[[maxedge2]], lambda[[maxedge2]], delta.new)
+      loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 
+      if (log(runif(1, 0, 1)) < loglike.diff2) {
+        delta = delta.new
+        prior.old2 = prior.new2
+        post.old2 = post.new2
+        accept.rates[2] = accept.rates[2] + 1
+      } 
+      if (i4 > burn[2] && i4 %% (thinning[2]) == 0) {
+        deltamat[(i4 - burn[2]) / thinning[2]] = delta
+      }
+    }
  }
      
   chain.final = list(C = currentC, Z = lapply(edge2, function(d) {currentZ[[d]]}), B = bmat, D = deltamat,
