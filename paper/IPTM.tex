@@ -542,17 +542,19 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
 	\item $D^*$, the document to make a prediction
 	\item $R$, the number of iterations to sample predicted data within each outer iteration
 	\item $\boldsymbol{w}^{D^*}$, the observed words in the document to predict ($D^*$)
+	\item $b$, the number of burnin iterations of sampling predicted data  
+	\item $q$, the thinning interval at which to keep predicted data
 	\end{enumerate}
 	Run burnin iterations\\
 	\For{o=1 to O}{
 		run an outer iteration of inference on documents $1$ through $(D^*-1)$\\
-		\For{r=1 to R}{
-		initialize latent receivers $\{J_i^{D^*}\}_{i=1}^A$ and $\mathcal{Z}^{D^*}$ using empirical estimates from the infernece\\
-		update $\{J_i^{D^*}\}_{i=1}^A$ using Gibbs update -- Equation (15) without edge information\\
-		update $\mathcal{Z}^{D^*}$ using Gibbs update -- Equation (24) without edge information \\
-		sample  $i^{(D^*)}$, $J^{(D^*)}$, and $t^{(D^*)}$ conditional on $\{J_i^{D^*}\}_{i=1}^A$ and $\mathcal{Z}^{D^*}$, via the generative process
+		initialize $\mathcal{Z}^{D^*}$ using Equation 22 (Standard LDA topic inference, conditioning on results from inference on documents $1$ through $(D^*-1)$). \\
+		\For{r=1 to b+R}{
+		sample  $i_o^{(D^*)}$, $J_o^{(D^*)}$, and $t_o^{(D^*)}$ using the lines of Algorithm 10 beginning with the for loop over $i$ \\
+		sample $J_a^{(D^*)}$ using Equations 17 and 18, treating $i^{(D^*)}$, $J^{(D^*)}$, and $t^{(D^*)}$ as the observed edge information for document $D$\\
+		sample $\mathcal{Z}^{D^*}$ using Equation 25, treating $i^{(D^*)}$, $J^{(D^*)}$, and $t^{(D^*)}$ as the observed edge information for document $D$ \\
+		if $r > b$ \& $r=qn$ (where $n$ is an integer),   store $i_o^{(D^*)}$, $J_o^{(D^*)}$, $t_o^{(D^*)}$
 		}
-		store $i^{(D^*)}$, $J^{(D^*)}$, $t^{(D^*)}$, and $\mathcal{Z}^{D^*}$
 	}
 \end{algorithm}
 We have not implemented this posterior predictive experiments yet, but will do so in the next phase of this project.
