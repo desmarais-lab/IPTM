@@ -4,7 +4,7 @@
 \alias{adaptive_MH}
 \title{adaptive_MH}
 \usage{
-adaptive_MH(sigma_Q, accept_rates, target = 0.25, update_size, tol = 0.05)
+adaptive_MH(sigma_Q, accept_rates, target = 0.25, update_size, tol = 0.15)
 }
 \arguments{
 \item{sigma_Q}{proposal distribution variance parameter for beta and delta}

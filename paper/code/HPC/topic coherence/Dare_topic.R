@@ -46,15 +46,15 @@ TableWord = function(Zchain, K, textlist, vocabulary, top = 20) {
       matchWZ = which(colnames(topic.word) == names(all.word[i]))
       topic.word[all.word[i], matchWZ] = topic.word[all.word[i], matchWZ] + 1
     }
-    table.word = top.topic.words(topic.word, num.words = top, by.score = TRUE)
+    table.word = top.topic.words(topic.word, num.words = top)
     colnames(table.word) = names(top.topic)
   return(table.word)
 }
 
-Dare_topic = matrix(0, 2, 7)
-colnames(Dare_topic) = as.numeric(c("2", "5", "10", "20", "30", "40", "50"))
+Dare_topic = matrix(0, 2, 8)
+colnames(Dare_topic) = as.numeric(c("1", "2", "5", "10", "20", "30", "40", "50"))
 
-load('~/Desktop/IPTM/topic coherence/Daretest_IPTM_K50.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_IPTM_K50.RData')
 top.words = TableWord(Daretest$Z, 50, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
 rownames(topic.word) = 1:length(Dare$text)
@@ -63,11 +63,11 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K =50
-Dare_topic[1,7] = mean(sapply(1:K, function(k) {
+Dare_topic[1,8] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
-load('~/Desktop/IPTM/topic coherence/Daretest_IPTM_K40.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_IPTM_K40.RData')
 top.words = TableWord(Daretest$Z, 40, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
 rownames(topic.word) = 1:length(Dare$text)
@@ -76,11 +76,11 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K =40
-Dare_topic[1,6] = mean(sapply(1:K, function(k) {
+Dare_topic[1,7] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
-load('~/Desktop/IPTM/topic coherence/Daretest_IPTM_K30.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_IPTM_K30.RData')
 top.words = TableWord(Daretest$Z, 30, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
 rownames(topic.word) = 1:length(Dare$text)
@@ -89,26 +89,26 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K =30
+Dare_topic[1,6] = mean(sapply(1:K, function(k) {
+topic_coherence(top.words[,k], topic.word,Dare$vocab)	
+}))
+
+
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_IPTM_K20.RData')
+top.words = TableWord(Daretest$Z, 20, Dare$text, Dare$vocab)
+topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
+rownames(topic.word) = 1:length(Dare$text)
+colnames(topic.word) = Dare$vocab
+for (d in seq(along = Dare$text)) {
+	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
+}
+K =20
 Dare_topic[1,5] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
 
-load('~/Desktop/IPTM/topic coherence/Daretest_IPTM_K20.RData')
-top.words = TableWord(Daretest$Z, 20, Dare$text, Dare$vocab)
-topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
-rownames(topic.word) = 1:length(Dare$text)
-colnames(topic.word) = Dare$vocab
-for (d in seq(along = Dare$text)) {
-	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
-}
-K =20
-Dare_topic[1,4] = mean(sapply(1:K, function(k) {
-topic_coherence(top.words[,k], topic.word,Dare$vocab)	
-}))
-
-
-load('~/Desktop/IPTM/topic coherence/Daretest_IPTM_K10.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_IPTM_K10.RData')
 top.words = TableWord(Daretest$Z, 10, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
 rownames(topic.word) = 1:length(Dare$text)
@@ -117,13 +117,13 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K = 10
-Dare_topic[1,3] = mean(sapply(1:K, function(k) {
+Dare_topic[1,4] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
 
 
-load('~/Desktop/IPTM/topic coherence/Daretest_IPTM_K5.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_IPTM_K5.RData')
 top.words = TableWord(Daretest$Z, 5, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
 rownames(topic.word) = 1:length(Dare$text)
@@ -132,12 +132,12 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K = 5
-Dare_topic[1,2] = mean(sapply(1:K, function(k) {
+Dare_topic[1,3] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
 
-load('~/Desktop/IPTM/topic coherence/Daretest_IPTM_K2.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_IPTM_K2.RData')
 top.words = TableWord(Daretest$Z, 2, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
 rownames(topic.word) = 1:length(Dare$text)
@@ -146,11 +146,29 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K = 2
-Dare_topic[1,1] = mean(sapply(1:K, function(k) {
+Dare_topic[1,2] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
-load('~/Desktop/IPTM/topic coherence/Daretest_LDA_K50.RData')
+for (i in 1:length(Daretest$Z)) {
+    Daretest$Z[[i]] = rep(1, length(Daretest$Z[[i]]))
+}
+top.words = TableWord(Daretest$Z, 1, Dare$text, Dare$vocab)
+topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
+rownames(topic.word) = 1:length(Dare$text)
+colnames(topic.word) = Dare$vocab
+for (d in seq(along = Dare$text)) {
+    topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
+}
+K = 1
+Dare_topic[1,1] = mean(sapply(1:K, function(k) {
+    topic_coherence(top.words[,k], topic.word,Dare$vocab)
+}))
+
+
+
+
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_LDA_K50.RData')
 Daretest = Daretest_LDA
 top.words = TableWord(Daretest$Z, 50, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
@@ -160,11 +178,11 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K =50
-Dare_topic[2,7] = mean(sapply(1:K, function(k) {
+Dare_topic[2,8] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
-load('~/Desktop/IPTM/topic coherence/Daretest_LDA_K40.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_LDA_K40.RData')
 Daretest = Daretest_LDA
 top.words = TableWord(Daretest$Z, 40, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
@@ -174,11 +192,11 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K =40
-Dare_topic[2,6] = mean(sapply(1:K, function(k) {
+Dare_topic[2,7] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
-load('~/Desktop/IPTM/topic coherence/Daretest_LDA_K30.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_LDA_K30.RData')
 Daretest = Daretest_LDA
 top.words = TableWord(Daretest$Z, 30, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
@@ -188,12 +206,12 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K =30
-Dare_topic[2,5] = mean(sapply(1:K, function(k) {
+Dare_topic[2,6] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
 
-load('~/Desktop/IPTM/topic coherence/Daretest_LDA_K20.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_LDA_K20.RData')
 Daretest = Daretest_LDA
 top.words = TableWord(Daretest$Z, 20, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
@@ -203,12 +221,12 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K =20
-Dare_topic[2,4] = mean(sapply(1:K, function(k) {
+Dare_topic[2,5] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
 
-load('~/Desktop/IPTM/topic coherence/Daretest_LDA_K10.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_LDA_K10.RData')
 Daretest = Daretest_LDA
 top.words = TableWord(Daretest$Z, 10, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
@@ -218,13 +236,13 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K = 10
-Dare_topic[2,3] = mean(sapply(1:K, function(k) {
+Dare_topic[2,4] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
 
 
-load('~/Desktop/IPTM/topic coherence/Daretest_LDA_K5.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_LDA_K5.RData')
 Daretest = Daretest_LDA
 top.words = TableWord(Daretest$Z, 5, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
@@ -234,12 +252,12 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K = 5
-Dare_topic[2,2] = mean(sapply(1:K, function(k) {
+Dare_topic[2,3] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
 
-load('~/Desktop/IPTM/topic coherence/Daretest_LDA_K2.RData')
+load('~/Desktop/IPTM/paper/code/HPC/topic coherence/Daretest_LDA_K2.RData')
 Daretest = Daretest_LDA
 top.words = TableWord(Daretest$Z, 2, Dare$text, Dare$vocab)
 topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
@@ -249,14 +267,15 @@ for (d in seq(along = Dare$text)) {
 	topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 }
 K = 2
-Dare_topic[2,1] = mean(sapply(1:K, function(k) {
+Dare_topic[2,2] = mean(sapply(1:K, function(k) {
 topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 }))
 
+Dare_topic[2,1] = Dare_topic[1,1]
 
 plot(colnames(Dare_topic), Dare_topic[2,], type = 'l', col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Topic Coherence", ylim = c(min(Dare_topic), max(Dare_topic)))
 lines(colnames(Dare_topic), Dare_topic[1,], lty = 3,col = "blue")
-legend(40, -445, pch = 21, legend = c("LDA", "IPTM"), col = c("red", "blue"))
+legend(40, -410, pch = 21, legend = c("IPTM","LDA"), col = c("blue","red"))
 
 load('~/Desktop/IPTM/paper/code/AISTAT_version/Vancetest_LDA_K5.RData')
 K = 10

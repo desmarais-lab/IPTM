@@ -65,7 +65,7 @@ r.gibbs.measure <- function(nsamp, lambdai, delta, support) {
 #' @return nsamp number of samples with each row denoting binary vector
 #'
 #' @export
-adaptive_MH = function(sigma_Q, accept_rates, target = 0.25, update_size, tol = 0.05) {
+adaptive_MH = function(sigma_Q, accept_rates, target = 0.25, update_size, tol = 0.15) {
 	for (i in 1:length(sigma_Q)) {
 		if (accept_rates[i] < target) {
 				sigma_Q[i] = sigma_Q[i] - update_size[i]
@@ -340,8 +340,8 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     prior.old1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.old[[IP]], FALSE)}, c(1)))
     post.old1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
     if (o != 1) {
-    	accept.rates[1] = accept.rates[1] / n_B2
-    	accept.rates[2] = accept.rates[2] / n_d2
+    	accept.rates[1] = accept.rates[1] / n_B
+    	accept.rates[2] = accept.rates[2] / n_d
       sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
       if (accept.rates[1] > 0.15) { 
         for (IP in 1:nIP) {
@@ -350,7 +350,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       }
     }
     accept.rates = rep(0, 2)
-    for (i3 in 1:n_B2) {
+    for (i3 in 1:n_B) {
       beta.new = lapply(1:nIP, function(IP) {
         c(rcpp_rmvnorm(1, sigma_Q[1] * proposal.var[[IP]], beta.old[[IP]]))
       }) 
@@ -385,7 +385,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     }
     prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
     post.old2 = EdgeInEqZ_Gibbs(iJi[[maxedge2]], lambda[[maxedge2]], delta)
-    for (i4 in 1:n_d2) {
+    for (i4 in 1:n_d) {
       delta.new = rnorm(1, delta, sqrt(sigma_Q[2]))
       prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
       post.new2 = EdgeInEqZ_Gibbs(iJi[[maxedge2]], lambda[[maxedge2]], delta.new)
@@ -499,7 +499,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   mvecmat = matrix(NA, nrow = 0, ncol = K)
   n_B2 = n_B / 5
   n_d2 = n_d / 5
-  accept.rates = rep(0, 2)
+   accept.rates = rep(0, 2)
     #start outer iteration
     for (o in 1:out) {
     	if (o == out) {
@@ -640,6 +640,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       if (accept.rates[1] > 0.15) { 
         for (IP in 1:nIP) {
           proposal.var[[IP]] = cor(t(bmat[[IP]]))
+          proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
         }
       }
     }
