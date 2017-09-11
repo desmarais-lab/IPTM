@@ -16,6 +16,15 @@ load("netstats.RData")
 ## Covariate value for statistic k for sender i in document d is the sum over 
 ## the row i for statistic matrix k for document d
 
+library(zeligverse)
+data(mexico)
+z.out1 <- zelig(as.factor(vote88) ~ pristr + othcok + othsocok,
+                model = "mlogit", data = mexico, cite = FALSE)
+x.weak <- setx(z.out1, pristr = 1)
+x.strong <- setx(z.out1, pristr = 3)
+s.out.mlogit <- sim(z.out1, x = x.strong, x1 = x.weak,num=100)
+s.out.mlogit$sim.out$x$pv
+
 # Logit predicting who is added to the e-mail given the sender
 ## One covariate value for each network statistic
 ## Covariate value for statistic k for recipient j in document d, sent by i is 
