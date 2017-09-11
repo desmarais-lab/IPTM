@@ -201,7 +201,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 	observediJi = list()
 	support = gibbs.measure.support(length(node) - 1)
 	for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
+   	 	history.t = History(edge, p.d, node, edge[[d-1]][[3]] + exp(-745))
    	 	X = Netstats_cpp(history.t, node, netstat)
    	 	XB = MultiplyXBList(X, beta.old)     
 		lambda[[d]] = lambda_cpp(p.d[d,], XB)
@@ -228,21 +228,21 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
       }
      # Data augmentation
       for (d in edge2) {
-   	 	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
+   	 	history.t = History(edge, p.d, node, edge[[d-1]][[3]] + exp(-745))
    	 	X = Netstats_cpp(history.t, node, netstat)
    	 	XB = MultiplyXBList(X, beta.old)   
 		lambda[[d]] = lambda_cpp(p.d[d,], XB)
 		#calculate the resampling probability	
-		for (i in node[-as.numeric(edge[[d]][1])]) {
+		for (i in node[-edge[[d]][[1]]]) {
 			XB_IP = lapply(XB, function(IP) {IP[i,]}) 
 			for (j in sample(node[-i], length(node) - 1)) {
 				probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], XB_IP, p.d[d, ], delta, timeinc[d], j)
 				iJi[[d]][i, j] = multinom_vec(1, probij) - 1		
 				}
 		}
-		iJi[[d]][as.numeric(edge[[d]][1]),] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
+		iJi[[d]][edge[[d]][[1]],] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
 		LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-		observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+		observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
 		}	 
 
       # C update
@@ -251,12 +251,12 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
          for (IP in 1:nIP) {
           	currentC[k] = IP
           	p.d = pdmat(currentZ, currentC, nIP)
- 		 	      history.t = History(edge, p.d, node, as.numeric(edge[[maxedge2-1]][3]) + exp(-745))
+ 		 	      history.t = History(edge, p.d, node, edge[[maxedge2-1]][[3]] + exp(-745))
     	   	X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, beta.old)    
            	lambda[[maxedge2]] = lambda_cpp(p.d[maxedge2,], XB)
 		    LambdaiJi[[maxedge2]] = lambdaiJi(p.d[maxedge2,], XB, iJi[[maxedge2]])
-           	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][as.numeric(edge[[maxedge2]][1])]
+           	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][edge[[maxedge2]][[1]]]
            	prob = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]]) 
            	const.C[IP] = prob
       	 }	
@@ -266,10 +266,10 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
      # Z update
    	 for (d in edge2) {
        textlist.d = textlist[[d]]
-       if (as.numeric(edge[[d]][3]) + 384 > as.numeric(edge[[maxedge2]][3])) {
+       if (edge[[d]][[3]] + 384 > edge[[maxedge2]][[3]]) {
       	 hist.d = maxedge2
        } else {
-      	 hist.d = which_num(as.numeric(edge[[d]][3]) + 384, timestamps)
+      	 hist.d = which_num(edge[[d]][[3]] + 384, timestamps)
        }
        edgetime.d = rep(NA, K)
        for (w in 1:length(currentZ[[d]])) {
@@ -286,12 +286,12 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
        	  	currentCK = which(currentC == IP)
        		currentZ[[d]][w] = min(currentCK)
        	 	p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP)           
-            history.t = History(edge, p.d, node, as.numeric(edge[[hist.d-1]][3]) + exp(-745))
+            history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]] + exp(-745))
     	    		X = Netstats_cpp(history.t, node, netstat)
     	    		XB = MultiplyXBList(X, beta.old)   
     	    		lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
 	        LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
-        		observediJi[[hist.d]] = LambdaiJi[[hist.d]][as.numeric(edge[[hist.d]][1])]
+        		observediJi[[hist.d]] = LambdaiJi[[hist.d]][edge[[hist.d]][[1]]]
         		edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
         }
          const.Z = edgetime.d + topicpart.d + wordpart.d[w, ]
@@ -313,12 +313,12 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
          for (IP in 1:nIP) {
           	currentC[k] = IP
           	p.d = pdmat(currentZ, currentC, nIP)
- 		 	      history.t = History(edge, p.d, node, as.numeric(edge[[maxedge2-1]][3]) + exp(-745))
+ 		 	      history.t = History(edge, p.d, node, edge[[maxedge2-1]][[3]] + exp(-745))
     	   	X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, beta.old)    
            	lambda[[maxedge2]] = lambda_cpp(p.d[maxedge2,], XB)
 		        LambdaiJi[[maxedge2]] = lambdaiJi(p.d[maxedge2,], XB, iJi[[maxedge2]])
-           	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][as.numeric(edge[[maxedge2]][1])]
+           	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][edge[[maxedge2]][[1]]]
            	prob = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]]) 
            	const.C[IP] = prob
       	 }	
@@ -328,12 +328,12 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
  	p.d = pdmat(currentZ, currentC, nIP)
  
     for (d in maxedge2) {
-        	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
+        	history.t = History(edge, p.d, node, edge[[d-1]][[3]] + exp(-745))
     	    X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
 	    LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-        	observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+        	observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
 	}
 	
     # beta update
@@ -358,7 +358,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
         XB = MultiplyXBList(X, beta.new)
         lambda[[d]] = lambda_cpp(p.d[d,], XB)    
         LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-        observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+        observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
       }
       prior.new1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.new[[IP]], FALSE)}, c(1)))
       post.new1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
@@ -517,21 +517,21 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       }
       # Data augmentation
     for (d in edge2) {
-      history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
+      history.t = History(edge, p.d, node, edge[[d-1]][[3]] + exp(-745))
       X = Netstats_cpp(history.t, node, netstat)
       XB = MultiplyXBList(X, beta.old)     
       lambda[[d]] = lambda_cpp(p.d[d,], XB)
       #calculate the resampling probability	
-      for (i in node[-as.numeric(edge[[d]][1])]) {
+      for (i in node[-edge[[d]][[1]]]) {
       	XB_IP = lapply(XB, function(IP) {IP[i,]})
         for (j in sample(node[-i], length(node) - 1)) {
           probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], XB_IP, p.d[d, ], delta, timeinc[d], j)
           iJi[[d]][i, j] = multinom_vec(1, probij) - 1
         }
       }
-      iJi[[d]][as.numeric(edge[[d]][1]),] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
+      iJi[[d]][edge[[d]][[1]],] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
       LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-      observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+      observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
     }	 
        
     # Z update	
@@ -563,10 +563,10 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
        	 }
  	 for (d in edge2) {
        textlist.d = textlist[[d]]
-       if (as.numeric(edge[[d]][3]) + 384 > as.numeric(edge[[maxedge2]][3])) {
+       if (edge[[d]][[3]] + 384 > edge[[maxedge2]][[3]]) {
       	 hist.d = maxedge2
        } else {
-      	 hist.d = which_num(as.numeric(edge[[d]][3]) + 384, timestamps)
+      	 hist.d = which_num(edge[[d]][[3]] + 384, timestamps)
        }
        edgetime.d = rep(NA, K)
        for (w in 1:length(currentZ[[d]])) {
@@ -583,12 +583,12 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
        	  	currentCK = which(currentC == IP)
        		currentZ[[d]][w] = min(currentCK)
        	 	p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP)           
-            history.t = History(edge, p.d, node, as.numeric(edge[[hist.d-1]][3]) + exp(-745))
+            history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]]+ exp(-745))
     	    		X = Netstats_cpp(history.t, node, netstat)
     	    		XB = MultiplyXBList(X, beta.old)   
     	    		lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
 	    		LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
-       	 	observediJi[[hist.d]] = LambdaiJi[[hist.d]][as.numeric(edge[[hist.d]][1])]
+       	 	observediJi[[hist.d]] = LambdaiJi[[hist.d]][edge[[hist.d]][[1]]]
         		edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
         }
          const.Z = edgetime.d + topicpart.d + wordpart.d[w, ]
@@ -609,12 +609,12 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
          for (IP in 1:nIP) {
           	currentC[k] = IP
           	p.d = pdmat(currentZ, currentC, nIP) 
- 		 	history.t = History(edge, p.d, node, as.numeric(edge[[maxedge2-1]][3]) + exp(-745))
+ 		 	history.t = History(edge, p.d, node, edge[[maxedge2-1]][[3]] + exp(-745))
     	   		X = Netstats_cpp(history.t, node, netstat)
     	   		XB = MultiplyXBList(X, beta.old)    
            	lambda[[maxedge2]] = lambda_cpp(p.d[maxedge2,], XB)
 		    LambdaiJi[[maxedge2]] = lambdaiJi(p.d[maxedge2,], XB, iJi[[maxedge2]])
-           	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][as.numeric(edge[[maxedge2]][1])]
+           	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][edge[[maxedge2]][[1]]]
            	prob = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
            	const.C[IP] = prob
       	 }
@@ -622,12 +622,12 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
 	}    
  	p.d = pdmat(currentZ, currentC, nIP)  
     for (d in maxedge2) {
-        	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
+        	history.t = History(edge, p.d, node, edge[[d-1]][[3]] + exp(-745))
     	    X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
 	    	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-        	observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+        	observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
 	}
 	        
     # beta update
@@ -653,7 +653,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         XB = MultiplyXBList(X, beta.new)
         lambda[[d]] = lambda_cpp(p.d[d,], XB)    
         LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-        observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+        observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
       }
       prior.new1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.new[[IP]], FALSE)}, c(1)))
       post.new1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
@@ -699,7 +699,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         XB = MultiplyXBList(X, beta.old)
         lambda[[d]] = lambda_cpp(p.d[d,], XB)    
         LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-        observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+        observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
       }
     convergence[o] = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
       }
@@ -793,21 +793,21 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
       }
       # Data augmentation
     for (d in edge2) {
-      history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
+      history.t = History(edge, p.d, node, edge[[d-1]][[3]] + exp(-745))
       X = Netstats_cpp(history.t, node, netstat)
       XB = MultiplyXBList(X, beta.old)     
       lambda[[d]] = lambda_cpp(p.d[d,], XB)
       #calculate the resampling probability	
-      for (i in node[-as.numeric(edge[[d]][1])]) {
+      for (i in node[-edge[[d]][[1]]]) {
       	XB_IP = lapply(XB, function(IP) {IP[i,]})
         for (j in sample(node[-i], length(node) - 1)) {
           probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], XB_IP, p.d[d, ], delta, timeinc[d], j)
           iJi[[d]][i, j] = multinom_vec(1, probij) - 1
         }
       }
-      iJi[[d]][as.numeric(edge[[d]][1]),] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
+      iJi[[d]][edge[[d]][[1]],] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
       LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-      observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+      observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
     }
     	 	    	
      # Z update
@@ -816,10 +816,10 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
       			 })
    	 for (d in edge2) {
        textlist.d = textlist[[d]]
-       if (as.numeric(edge[[d]][3]) + 384 > as.numeric(edge[[maxedge2]][3])) {
+       if (edge[[d]][[3]] + 384 > edge[[maxedge2]][[3]]) {
       	 hist.d = maxedge2
        } else {
-      	 hist.d = which_num(as.numeric(edge[[d]][3]) + 384, timestamps)
+      	 hist.d = which_num(edge[[d]][[3]] + 384, timestamps)
        }
        edgetime.d = rep(NA, K)
        for (w in 1:length(currentZ[[d]])) {
@@ -836,12 +836,12 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
        	  	currentCK = which(currentC == IP)
        		currentZ[[d]][w] = min(currentCK)
        	 	p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP)           
-            history.t = History(edge, p.d, node, as.numeric(edge[[hist.d-1]][3]) + exp(-745))
+            history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]] + exp(-745))
     	    		X = Netstats_cpp(history.t, node, netstat)
     	    		XB = MultiplyXBList(X, beta.old)   
     	    		lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
 	   	 	LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
-        		observediJi[[hist.d]] = LambdaiJi[[hist.d]][as.numeric(edge[[hist.d]][1])]
+        		observediJi[[hist.d]] = LambdaiJi[[hist.d]][edge[[hist.d]][[1]]]
         		edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
         }       
          const.Z = edgetime.d + topicpart.d + wordpart.d[w, ] 
@@ -862,12 +862,12 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
          for (IP in 1:nIP) {
           	currentC[k] = IP
           	p.d = pdmat(currentZ, currentC, nIP) 
- 		 	history.t = History(edge, p.d, node, as.numeric(edge[[maxedge2-1]][3]) + exp(-745))
+ 		 	history.t = History(edge, p.d, node, edge[[maxedge2-1]][[3]] + exp(-745))
     	   		X = Netstats_cpp(history.t, node, netstat)
     	   		XB = MultiplyXBList(X, beta.old)    
            	lambda[[maxedge2]] = lambda_cpp(p.d[maxedge2,], XB)
 		    LambdaiJi[[maxedge2]] = lambdaiJi(p.d[maxedge2,], XB, iJi[[maxedge2]])
-           	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][as.numeric(edge[[maxedge2]][1])]
+           	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][edge[[maxedge2]][[1]]]
            	prob = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
            	const.C[IP] = prob
       	 }
@@ -877,12 +877,12 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
  	p.d = pdmat(currentZ, currentC, nIP) 
  
     for (d in maxedge2) {
-        	history.t = History(edge, p.d, node, as.numeric(edge[[d-1]][3]) + exp(-745))
+        	history.t = History(edge, p.d, node, edge[[d-1]][[3]] + exp(-745))
     	    X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
 	    	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
-        	observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+        	observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
 	}
 	 
 	 # beta update
@@ -906,7 +906,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
              XB = MultiplyXBList(X, beta.new)
              lambda[[d]] = lambda_cpp(p.d[d,], XB)    
              LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
- 	         observediJi[[d]] = LambdaiJi[[d]][as.numeric(edge[[d]][1])]
+ 	         observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
           }
           prior.new1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.new[[IP]], FALSE)}, c(1)))
           post.new1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])     			   
@@ -1842,12 +1842,12 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
        	  	currentCK = which(currentC == IP)
        		currentZ[[base.length + d]][w] = min(currentCK)
        	 	p.d[base.length + d, ] = pdmat(list(currentZ[[base.length + d]]), currentC, nIP)          
-            history.t = History(edge, p.d, node, as.numeric(edge[[hist.d-1]][3]) + exp(-745))
+            history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]] + exp(-745))
     	    		X = Netstats_cpp(history.t, node, netstat)
     	    		XB = MultiplyXBList(X, b)   
     	    		lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
 	   	 	LambdaiJi = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
-        		observediJi = LambdaiJi[as.numeric(edge[[hist.d]][1])]
+        		observediJi = LambdaiJi[edge[[hist.d]][[1]]]
         		edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi, timeinc[hist.d], observediJi)   
             }
           	const.Z = edgetime.d + topicpart.d + wordpart.d[w, ] 

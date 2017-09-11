@@ -1,6 +1,6 @@
 library(IPTM)
 load('Enron.RData')
-attach(Dare)
+
 Enrontest <- IPTM_inference.LDA(Enron$edge, Enron$node, Enron$text, Enron$vocab, nIP = 2, K = 2, sigma_Q = c(0.0005, 0.01),
                         alpha = 2, mvec = rep(1/2, 2), betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), 
                         prior.b.mean = c(-3, rep(0, 24)), 
