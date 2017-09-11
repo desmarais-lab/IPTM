@@ -1754,13 +1754,14 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
 #' @param base.edge edges before 384 hours that is used to calculate initial history of interactions
 #' @param base.text texts corresponding to base.edge
 #' @param currentZ topic-token assignments
+#' @param word_type_topic_counts word_type_topic_counts from inference
 #' @param R number of iterations to make the generated data considered independent of observed data
 #'
 #' @return generated edge and text, parameter b used to generate those, and base (if base == TRUE)
 #'
 #' @export
 GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
-                        b, delta, currentC, netstat, base.edge, base.text, currentZ, R) {
+                        b, delta, currentC, netstat, base.edge, base.text, currentZ, word_type_topic_counts, R) {
   W = length(vocabulary)
   phi = lapply(1:K, function(k) {
     rdirichlet_cpp(1, betas * nvec)
@@ -1775,7 +1776,7 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
   lambda = list()
   t.d = base.edge[[base.length]][[3]] 
   p.d = pdmat(currentZ, currentC, nIP)  		  
-  word_type_topic_counts = matrix(0, W, K)
+  word_type_topic_counts = word_type_topic_counts
   maxedge2 = length(currentZ)
   for (d in 1:nDocs) {
     N.d = length(currentZ[[base.length + d]])
@@ -1863,7 +1864,9 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
       } 
    #regenerate data   
    p.d = pdmat(currentZ, currentC, nIP)  		  
-  word_type_topic_counts = matrix(0, W, K)
+  for (k in 1:K) {
+  	word_type_topic_counts[, k] == tabulateC(textlist.raw[which(unlist(currentZ[-1:-base.length]) == k)], W)
+  }
   maxedge2 = length(currentZ)
   for (d in 1:nDocs) {
     N.d = length(currentZ[[base.length + d]])

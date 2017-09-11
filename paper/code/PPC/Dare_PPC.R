@@ -12,7 +12,7 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("/Users/bomin8319/Desktop/IPTM/topic coherence/Daretest_IPTM_K20.RData")
+load("//Users/bomin8319/Desktop/IPTM/paper/code/HPC/Daretest_IPTM_K20_nIP2.RData")
 nDocs = length(Daretest$edge2)
 node = Dare$node
 vocabulary = Dare$vocab
@@ -29,8 +29,13 @@ nvec = rep(1/length(vocabulary), length(vocabulary))
     currentC = Daretest$C
 currentZ = Daretest$Z
 iJi = Daretest$iJi
-netstat = c("intercept", "dyadic")
+netstat = c("intercept", "dyadic", "degree","triadic")
 base.edge = Dare$edge[-Daretest$edge2]
 base.text = Dare$text[-Daretest$edge2]
+word_type_topic_counts = matrix(0, length(Dare$vocab), K)
+textlist.raw = unlist(Dare$text[Daretest$edge2])
+for (k in 1:K) {
+	word_type_topic_counts[,k] = tabulate(textlist.raw[which(unlist(currentZ[Daretest$edge2])==k)], length(Dare$vocab))
+}
 
-PPC = GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi, b, delta, currentC, netstat, base.edge, base.text, currentZ, 1)
+PPC = GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi, b, delta, currentC, netstat, base.edge, base.text, currentZ, word_type_topic_counts, 1)
