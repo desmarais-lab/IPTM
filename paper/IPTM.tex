@@ -577,6 +577,15 @@ We have not implemented this posterior predictive experiments yet, but will do s
 
 The document-ahead forecasting described in Algorithm 7 provides predictions regarding (1) who sends the e-mail, (2) who receives the e-mail, and (3) when the e-mail is sent (specifically, the time between the last e-mail and the predicted e-mail). Three types of information are used in Algorithm 7 to predict these features of document $D$. First, Algorithm 7 uses model parameters inferred on documents 1 through $D-1$. Second, it uses the state of the history of interaction encoded in the network statistics at the time that document $D-1$ was sent. Third, it uses the content of document $D$. Though we are unaware of a comparison model that can be used to jointly predict the sender, receivers, and timing of an e-mail conditional upon interaction history and content, we can combine established existing models to make comparable predictions using the same inputs. 
 
+ \begin{algorithm}[H]
+	\SetAlgoLined
+	\caption{Predicting tie data for the next document}
+	Logit model of recipients in documents 1 throught $D-1$ \\
+	Simulate from logit model until at least one recipient \\
+	Predict sender using multinomial logit, conditional on receivers\\
+	Predict time conditional on sender and receiver
+	
+	 \end{algorithm}
 
 
 \section{Posterior Predictive Checks}
