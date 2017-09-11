@@ -528,8 +528,14 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
           	\end{table}
 \newpage
    \section{Topic Coherence} \label{sec:topiccoherence}
-   Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to demonstrate that incorporating network properties does not impair the ability of IPTM in modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using LDA. For each model, we varied the number of topics from 1 to 100 and drew five samples from the joint posterior distribution over the unobserved random variables in that model. We evaluated the topics resulting from each sample and averaged over the five samples, where the result is shown in Figure 2. Our model achieves coherence comparable to that of LDA. This result, when combined with the results in Section 5.2, demonstrates that our model can achieve state-of-the-art predictive performance while producing coherent topics.
-   
+   Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to demonstrate that incorporating network properties does not impair the ability of IPTM in modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using LDA. For each model, we varied the number of topics from 1 to 50 and drew two samples from the joint posterior distribution over the unobserved random variables in that model. We evaluated the topics resulting from each sample and averaged over the two samples, where the result is shown in Figure 10. Surprisingly, our model outperformed LDA in terms of topic coherence, for any choice of the number of topics. This result, when combined with the results in Section 7 and Section 8, demonstrates that our model can achieve state-of-the-art predictive performance while producing coherent topics.
+               \begin{figure}[ht]
+               	\centering
+               	\includegraphics[width=0.49\textwidth]{plots/topic_coherence_plot.pdf}  
+               		\includegraphics[width=0.49\textwidth]{plots/topic_coherence_plot.pdf}  
+               	\label{fig:Daretopic}
+               	 \caption{Average topic coherence scores for the Dare County email network (left) and the Enron data set (right).}
+               \end{figure}
      \section{Document Prediction Experiments} \label{sec:PosteriorPredictive}
  We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For a randomly chosen document $D^* \in \{M,M+1,\hdots,D\}$, we fit the IPTM to the corpus consisting of the first $d = \{1,\hdots,D^*-1\}$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(D^*)}, J^{(D^*)}, t^{(D^*)}$) for document $D^*$ conditional on the content in document $D^*$, ($\boldsymbol{w}^{(D^*)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set for the first document in the test set. The variables that need to be sampled are the token topic assignments, $\mathcal{Z}^{D^*}$, and the tie data ($i^{(D^*)}, J^{(D^*)}, t^{(D^*)}$). 
  \begin{algorithm}[H]
@@ -549,7 +555,7 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
 	\For{o=1 to O}{
 		run an outer iteration of inference on documents $1$ through $(D^*-1)$\\
 		initialize $\mathcal{Z}^{D^*}$ as below:\\
-		initialize $N_{v|k}$ and $N_k$ counts from the inference on $Z$ for documents $1$ through $(D^*-1)$\\
+		initialize $N_{v|k}$ and $N_k$ counts from the inference on $\mathcal{Z}$ for documents $1$ through $(D^*-1)$\\
 		\For {d = 1 to $(D^*-1)$ } {
 			initialize $N_{k|D^*} = 0$ for $k = 1,...,K$\\
 			\For {n = 1 to $N_{D^*}$}{
@@ -563,11 +569,12 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
 				}
 			}
 		}
+		initialize $J_a^{(D^*)}$ via Bernoulli sampling using the emprical probability from the inference on $\mathcal{J}_a$ for documents $1$ through $(D^*-1)$\\
 		\For{r=1 to b+R}{
-		sample  $i_o^{(D^*)}$, $J_o^{(D^*)}$, and $t_o^{(D^*)}$ using the lines of Algorithm 10 beginning with the for loop over $i$ \\
-		sample $J_a^{(D^*)}$ using Equations 17 and 18, treating $i^{(D^*)}$, $J^{(D^*)}$, and $t^{(D^*)}$ as the observed edge information for document $D$\\
-		sample $\mathcal{Z}^{D^*}$ using Equation 25, treating $i^{(D^*)}$, $J^{(D^*)}$, and $t^{(D^*)}$ as the observed edge information for document $D$ \\
-		if $r > b$ \& $r=qn$ (where $n$ is an integer),   store $i_o^{(D^*)}$, $J_o^{(D^*)}$, $t_o^{(D^*)}$
+		sample $i_o^{(D^*)}$, $J_o^{(D^*)}$, and $t_o^{(D^*)}$ using the last 4 lines of Algorithm 10\\
+		sample $J_a^{(D^*)}$ using Equations 17 and 18, given $(i_o^{(D^*)}$, $J_o^{(D^*)}$, $t_o^{(D^*)} )$\\
+		sample $\mathcal{Z}^{D^*}$ using Equation 25, given $(i_o^{(D^*)}$, $J_o^{(D^*)}$, $t_o^{(D^*)} )$\\
+		if $r > b$ \& $r=qn$ (where $n$ is an integer), store $(i_o^{(D^*)}$, $J_o^{(D^*)}$, $t_o^{(D^*)} )$
 		}
 	}
 \end{algorithm}
