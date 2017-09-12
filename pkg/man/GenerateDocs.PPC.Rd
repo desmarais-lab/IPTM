@@ -5,7 +5,8 @@
 \title{GenerateDocs.PPC}
 \usage{
 GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
-  b, delta, currentC, netstat, base.edge, base.text, currentZ, R)
+  b, delta, currentC, netstat, base.edge, base.text, currentZ,
+  word_type_topic_counts, R)
 }
 \arguments{
 \item{nDocs}{number of documents to be generated}
@@ -41,6 +42,8 @@ GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
 \item{base.text}{texts corresponding to base.edge}
 
 \item{currentZ}{topic-token assignments}
+
+\item{word_type_topic_counts}{word_type_topic_counts from inference}
 
 \item{R}{number of iterations to make the generated data considered independent of observed data}
 }

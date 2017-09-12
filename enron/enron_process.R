@@ -27,7 +27,7 @@ reservedM<-c("re", "a", "b", "c", "d", "e", "g", "h", "q", "s", "t", "v","w","x"
              "l", "p", "r", "f", "n", "y", "u", "k", "j", "i", "m", "o")
 for (d in 1:dim(enron)[1]) {
   receivers =as.numeric(strsplit(Corpus(VectorSource(as.character(enron[d,2])))$content, ",")[[1]])
-  edge[[d]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3] / 3600)
+  edge[[d]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3] / (3600 * 24))
   words = Clean_String(enron[d, 4])
   words = words[nchar(words) >= 3]
   words = tm_map(Corpus(VectorSource(words)), removeWords, c(stopwords('english'), reservedM))$content
@@ -47,7 +47,7 @@ edge = list()
 text = list()
 for (d in 1:dim(enron)[1]) {
   receivers =as.numeric(strsplit(Corpus(VectorSource(as.character(enron[d,2])))$content, ",")[[1]])
-  edge[[d]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3] / 3600)
+  edge[[d]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3] /(3600 * 24))
   words = Clean_String(enron[d, 4])
   words = words[nchar(words) >= 3]
   words = tm_map(Corpus(VectorSource(words)), removeWords, c(stopwords('english'), reservedM))$content
@@ -71,7 +71,7 @@ it = 1
 for (d in 1:dim(enron)[1]) {
   if (sum(oldedge[[d]]$receiver %in% newreceiver)==length(oldedge[[d]]$receiver)) {
   receivers =as.numeric(strsplit(Corpus(VectorSource(as.character(enron[d,2])))$content, ",")[[1]])
-  edge[[it]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3] / 3600)
+  edge[[it]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3] / (3600 * 24))
   words = Clean_String(enron[d, 4])
   words = words[nchar(words) >= 3]
   words = tm_map(Corpus(VectorSource(words)), removeWords, c(stopwords('english'), reservedM))$content
@@ -99,6 +99,9 @@ for (d in 1:length(edge)) {
   }
    text2[[d]] = which(vocab %in% text[[d]])
   }
+edge[[36]]$timestamp = edge[[36]]$timestamp + 2 * exp(-20)
+edge[[677]]$timestamp = edge[[677]]$timestamp + 2 * exp(-20)
+edge[[684]]$timestamp = edge[[684]]$timestamp + 2 * exp(-20)
 
 Enron = list(edge = edge, node = 1:length(node), text = text2, vocab = vocab)
-save(Enron, file = "Enron.RData")
+save(Enron, file = "/Users/bomin8319/Desktop/IPTM/enron/Enron.RData")

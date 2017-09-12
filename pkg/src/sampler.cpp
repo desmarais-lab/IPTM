@@ -338,7 +338,7 @@ List Triadic_reduced(List triadic) {
 	    triadmat_IP(i, 11) = historyIP(i, 29) + historyIP(i, 32) + historyIP(i, 33) + 
 	                         historyIP(i, 34) + historyIP(i, 35);
    	}
-    IPmat[IP] = triadmat_IP;
+    IPmat[IP] = triadmat_IP / 10;
   }
   return IPmat;
 }
