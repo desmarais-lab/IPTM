@@ -540,9 +540,10 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
  We use a set of posterior predictive experiments to evaluate the performance of the IPTM as compared to alternative modeling approaches, and with respect to alternative parameterizations of the IPTM. For a randomly chosen document $D^* \in \{M,M+1,\hdots,D\}$, we fit the IPTM to the corpus consisting of the first $d = \{1,\hdots,D^*-1\}$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($i^{(D^*)}, J^{(D^*)}, t^{(D^*)}$) for document $D^*$ conditional on the content in document $D^*$, ($\boldsymbol{w}^{(D^*)}$).  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set for the first document in the test set. The variables that need to be sampled are the token topic assignments, $\mathcal{Z}^{D^*}$, and the tie data ($i^{(D^*)}, J^{(D^*)}, t^{(D^*)}$). 
  \begin{algorithm}[H]
 	\SetAlgoLined
-	\caption{Predicting tie data for the next document}
+	\caption{Predicting tie data for the next document (document $D$)}
 	
-	Input
+
+	token topic assignments $\{\{z_n^{(d)}\}_{n=1}^{N^{(d)}}\}_{d=1}^D$
 	\begin{enumerate}
 	\item $O$, number of outer iterations of inference from which to generate predictions
 	\item $D^*$, the document to make a prediction
@@ -584,19 +585,57 @@ We have not implemented this posterior predictive experiments yet, but will do s
 
 The document-ahead forecasting described in Algorithm 7 provides predictions regarding (1) who sends the e-mail, (2) who receives the e-mail, and (3) when the e-mail is sent (specifically, the time between the last e-mail and the predicted e-mail). Three types of information are used in Algorithm 7 to predict these features of document $D$. First, Algorithm 7 uses model parameters inferred on documents 1 through $D-1$. Second, it uses the state of the history of interaction encoded in the network statistics at the time that document $D-1$ was sent. Third, it uses the content of document $D$. Though we are unaware of a comparison model that can be used to jointly predict the sender, receivers, and timing of an e-mail conditional upon interaction history and content, we can combine established existing models to make comparable predictions using the same inputs. 
 
-We will train three separate models to use in predicting document $D$ recipients, sender, and timing, respectively. These models are selected to closely mirror the structure of the corresponding components of IPTM. In each model the documents used for training include documents $1$ through $D-1$. The model of recipients will be a logistic regression model in which the dependent variable is the observed value of $J^{(d)}_{ij}$, where $i$ indexes the observed sender, $i_o^(d)$. The network statistics, $\boldsymbol{x}^{(c)}_t(i, j)$, will be used as the covariates, with all $c=1$ (i.e., all past interactions are within the same single interaction pattern in the comparison models). The model of when an e-mail was sent is an exponential regression model in which the dependent variable is $t_d$. The single covariate in this model, assumed to have a coefficient of 1, is $\lambda_{iJ_i}^{(d)}(t)$, which is defined in Equation 6. We estimate an intercept term in this regression model in order to calibrate the scale of the model. The predicted sender of document $D$ is determined by simulating $t_i^{(D)}$ for each $i$, and selecting the $i$ that corresponds to the minimum value of $t_i^{(D)}$. The minimum value of $t_i^{(D)}$ is the predicted timing for document $D$.
+We will train three separate models to use in predicting document $D$ recipients, sender, and timing, respectively. These models are selected to closely mirror the structure of the corresponding components of IPTM. In each model the documents used for training include documents $1$ through $D-1$. The model of recipients will be a logistic regression model in which the dependent variable is the observed value of $J^{(d)}_{ij}$, where $i$ indexes the observed sender, $i_o^{(d)}$. The network statistics, $\boldsymbol{x}^{(c)}_t(i, j)$, will be used as the covariates, with all $c=1$ (i.e., all past interactions are within the same single interaction pattern in the comparison models). Specifically, the model used for predicting recipients of document $D$ will have the form 
+\begin{equation}
+P(J^{(D)}_{ij}=1)=\frac{1}{1+\exp\left(-(b_0 +\boldsymbol{b}^T\boldsymbol{x}_t(i, j))\right)}.
+\label{eqn:predrec}
+\end{equation}
+The model of when an email was sent is an exponential regression model in which the dependent variable is $t_i^{(d)}$. The single covariate in this model, assumed to have a coefficient of 1, is $\lambda_{iJ_i}^{(d)}(t)$, which is defined in Equation 6. We estimate an intercept term in this regression model in order to calibrate the scale of the model. Specifically, the probability density function of the model for the timing of the email is given by
+\begin{equation}
+f(t_i^{(d)},\lambda_{iJ_i}^{(d)}(t),\eta) = \eta\lambda_{iJ_i}^{(d)}(t)\exp(- \eta\lambda_{iJ_i}^{(d)}(t)t_i^{(d)}),
+\label{eqn:predtime}
+\end{equation}
+where $\ln(\eta)$ is the intercept that calibrates the scale of the exponential distribution. The predicted sender of document $D$ is determined by simulating $t_i^{(D)}$ for each $i$, and selecting the $i$ that corresponds to the minimum value of $t_i^{(D)}$. The minimum value of $t_i^{(D)}$ is the predicted timing for document $D$.
+
+
+
 
 
 
  \begin{algorithm}[H]
 	\SetAlgoLined
-	\caption{Predicting tie data for the next document}
-	Logit model of recipients in documents 1 throught $D-1$ \\
-	Simulate from logit model until at least one recipient \\
-	Predict sender using multinomial logit, conditional on receivers\\
-	Predict time conditional on sender and receiver
+	\caption{Predicting tie data for document $D$}
+	Input
+	\begin{enumerate}
+	\item Observed senders for documents $1$ through $D-1$, $\{i_o^{(d)}\}_{d=1}^{D-1}$
+	\item Observed recipients for documents $1$ through $D-1$, $\{J_o^{(d)}\}_{d=1}^{D-1}$
+	\item Observed timing for documents $1$ through $D-1$, $\{t_o^{(d)}\}_{d=1}^{D-1}$
+	\item Number of predictions to make regarding document $D$, $R$
+	\end{enumerate}
+	Train models defined by Equations \ref{eqn:predrec} and \ref{eqn:predtime} by maximum likelihood estimation using the input data. \\
+	\For {r = 1 to $R$} {
+	Draw $b_0$, $\boldsymbol{b}$, and $\eta$ from their sampling distributions conditional on the input data.\\ 
+	\For {i=1 to $A$}{
+	set $J_i^{(D^*)}$ to a vector of zeros \\
+	\While{$\sum_{j \neq i} J^{(D^*)}_{ij} = 0$}{ 
+	\For {$j \neq i$}{
+	Draw $J^{(D^*)}_{ij}$ using Equation \ref{eqn:predrec}
+	}
+	}
+	Draw $t_i^{(D^*)}$ using Equation \ref{eqn:predtime}
+	}
+	Set  $s = \displaystyle{\min_{i \in 1,2,..,A} } t_i^{(D^*)}$ \\
+	Store $i_o^{(D^*)} = s$ \\
+	Store $t_o^{(D^*)}= t_s^{*(D)}$ \\
+	Store $J_o^{(D^*)}= J_s^{*(D)}$ \\
 	
+	
+	
+	}
+	\label{alg:docpredict}
 	 \end{algorithm}
+	 
+	 Running Algorithm \ref{alg:docpredict} will produce $R$ predictions regarding who sent document $D$, who received document $D$, and when document $D$ was sent. We can then compare the IPTM and these predictions in terms of classification accuracy in predicting senders and receivers, as well as mean squared error in predicting document timing.
 
 
 \section{Posterior Predictive Checks}
