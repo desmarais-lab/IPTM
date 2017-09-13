@@ -12,7 +12,7 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("//Users/bomin8319/Desktop/IPTM/paper/code/HPC/Daretest_IPTM_K20_nIP2.RData")
+load("/Users/bomin8319/Desktop/IPTM/paper/code/HPC/Daretest_IPTM_K20_nIP2.RData")
 nDocs = length(Daretest$edge2)
 node = Dare$node
 vocabulary = Dare$vocab

@@ -332,7 +332,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     	    X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
-	    LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+	    	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
         	observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
 	}
 	
@@ -343,9 +343,9 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     	accept.rates[1] = accept.rates[1] / n_B
     	accept.rates[2] = accept.rates[2] / n_d
       sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
-      if (accept.rates[1] > 0.15) { 
+      if (accept.rates[1] > 0.25) { 
         for (IP in 1:nIP) {
-          proposal.var[[IP]] = cor(t(bmat[[IP]]))
+          proposal.var[[IP]] = var(t(bmat[[IP]]))
         }
       }
     }
@@ -610,8 +610,8 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
           	currentC[k] = IP
           	p.d = pdmat(currentZ, currentC, nIP) 
  		 	history.t = History(edge, p.d, node, edge[[maxedge2-1]][[3]] + exp(-745))
-    	   		X = Netstats_cpp(history.t, node, netstat)
-    	   		XB = MultiplyXBList(X, beta.old)    
+    	   	X = Netstats_cpp(history.t, node, netstat)
+    	   	XB = MultiplyXBList(X, beta.old)    
            	lambda[[maxedge2]] = lambda_cpp(p.d[maxedge2,], XB)
 		    LambdaiJi[[maxedge2]] = lambdaiJi(p.d[maxedge2,], XB, iJi[[maxedge2]])
            	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][edge[[maxedge2]][[1]]]
@@ -636,11 +636,10 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     if (o != 1) {
     	accept.rates[1] = accept.rates[1] / n_B2
     	accept.rates[2] = accept.rates[2] / n_d2
-      sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
-      if (accept.rates[1] > 0.15) { 
+      	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
+      if (accept.rates[1] > 0.25) { 
         for (IP in 1:nIP) {
-          proposal.var[[IP]] = cor(t(bmat[[IP]]))
-          proposal.var[[IP]][is.na(proposal.var[[IP]])] = 0
+          proposal.var[[IP]] = var(t(bmat[[IP]]))
         }
       }
     }
@@ -1817,10 +1816,10 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
    			XB_IP = lapply(XB, function(IP) {IP[i,]})
 		for (j in sample(node[-i], length(node) - 1)) {
 			 probij = DataAug_cpp_Gibbs(iJi[[base.length + d]][i, ], lambda[[d]][i,], XB_IP, p.d[base.length + d, ], delta, timeinc[base.length + d], j) 
-			 print(probij)
 			 iJi[[base.length + d]][i, j] = multinom_vec(1, probij) - 1		
 			}
       	}
+      	browser()
      #Z update 	
         textlist.d = text[[base.length + d]]
        if (edge[[base.length + d]][[3]] + 384 > edge[[maxedge2]][[3]]) {
