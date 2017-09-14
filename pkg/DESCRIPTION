@@ -22,7 +22,8 @@ Imports:
     lda,
     reshape,
     coda,
-    combinat
+    combinat,
+    mgcv
 LinkingTo:
     Rcpp,
     RcppArmadillo 

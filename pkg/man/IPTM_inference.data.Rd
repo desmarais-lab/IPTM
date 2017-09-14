@@ -51,7 +51,7 @@ IPTM_inference.data(edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha,
 
 \item{optimize}{to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)}
 
-\item{initial}{list of initial values user wants to assign}
+\item{initial}{list of initial values user wants to assign including (alpha, mvec, delta, b, C, Z, bmat, dmat, proposal.var, iJi)}
 }
 \value{
 MCMC output containing IP assignment, topic assignment, and (beta, mu, delta) chain

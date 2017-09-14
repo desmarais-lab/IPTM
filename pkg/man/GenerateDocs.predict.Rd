@@ -4,13 +4,11 @@
 \alias{GenerateDocs.predict}
 \title{GenerateDocs.predict}
 \usage{
-GenerateDocs.predict(nDocs = 1, node, vocabulary, nIP, K, owords, alpha, mvec,
-  betas, nvec, b, delta, currentC, netstat, initial_iJi, base.edge, base.text,
-  topic_token_assignments = NULL, edge2, niter)
+GenerateDocs.predict(node, vocabulary, nIP, K, owords, alpha, mvec, betas, nvec,
+  b, delta, currentC, netstat, initial_iJi, base.edge, base.text, currentZ,
+  edge2, word_type_topic_counts, niter)
 }
 \arguments{
-\item{nDocs}{number of documents to be generated}
-
 \item{node}{nodelist containing the ID of nodes (ID starting from 1)}
 
 \item{vocabulary}{all vocabularies used over the corpus}
@@ -43,9 +41,11 @@ GenerateDocs.predict(nDocs = 1, node, vocabulary, nIP, K, owords, alpha, mvec,
 
 \item{base.text}{texts corresponding to base.edge}
 
-\item{topic_token_assignments}{matrix of topic-token assignments}
+\item{currentZ}{list of topic-token assignments}
 
 \item{edge2}{index of documents after initial history}
+
+\item{word_type_topic_counts}{word_type_topic_counts from inference}
 
 \item{niter}{number of iterations for Gibbs update of topic assignments and latent receivers}
 }

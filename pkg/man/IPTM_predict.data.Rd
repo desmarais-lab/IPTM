@@ -6,7 +6,7 @@
 \usage{
 IPTM_predict.data(D, O, R, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
   alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n_B,
-  n_d, burn, thinning, netstat, optimize = FALSE, niter = c(1, 1))
+  n_d, burn, thinning, netstat, optimize = FALSE, initial)
 }
 \arguments{
 \item{D}{Dth document the user wants to predict}
@@ -57,7 +57,7 @@ IPTM_predict.data(D, O, R, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
 
 \item{optimize}{to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)}
 
-\item{niter}{number of iterations for Gibbs update of topic assignments and latent receivers}
+\item{initial}{list of initial values user wants to assign}
 }
 \value{
 prediction output
