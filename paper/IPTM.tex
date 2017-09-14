@@ -528,11 +528,10 @@ To examine shifts in the patterns of connectivity surrounding Sandy we created n
           	\end{table}
 \newpage
    \section{Topic Coherence} \label{sec:topiccoherence}
-   Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to demonstrate that incorporating network properties does not impair the ability of IPTM in modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using LDA. For each model, we varied the number of topics from 1 to 50 and drew two samples from the joint posterior distribution over the unobserved random variables in that model. We evaluated the topics resulting from each sample and averaged over the two samples, where the result is shown in Figure 10. Surprisingly, our model outperformed LDA in terms of topic coherence, for any choice of the number of topics. This result, when combined with the results in Section 7 and Section 8, demonstrates that our model can achieve state-of-the-art predictive performance while producing coherent topics.
+   Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to demonstrate that incorporating network properties does not impair the ability of IPTM in modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using LDA. For each model, we varied the number of topics from 1 to 50 and drew three samples from the joint posterior distribution over the unobserved random variables in that model. We evaluated the topics resulting from each sample and averaged over the three samples, where the result is shown in Figure 10. Surprisingly, our model outperformed LDA in terms of topic coherence, for any choice of the number of topics. This result, when combined with the results in Section 7 and Section 8, demonstrates that our model can achieve state-of-the-art predictive performance while producing coherent topics.
                \begin{figure}[ht]
                	\centering
-               	\includegraphics[width=0.49\textwidth]{plots/topic_coherence_plot.pdf}  
-               		\includegraphics[width=0.49\textwidth]{plots/topic_coherence_plot.pdf}  
+               	\includegraphics[width=0.49\textwidth]{plots/topiccoherenceplot.pdf}  
                	\label{fig:Daretopic}
                	 \caption{Average topic coherence scores for the Dare County email network (left) and the Enron data set (right).}
                \end{figure}
