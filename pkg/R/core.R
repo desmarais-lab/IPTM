@@ -344,9 +344,10 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
     	accept.rates[1] = accept.rates[1] / n_B
     	accept.rates[2] = accept.rates[2] / n_d
       sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
-      if (accept.rates[1] > 0.25) { 
+      if (accept.rates[1] > 1 / n_B) { 
         for (IP in 1:nIP) {
           proposal.var[[IP]] = var(uniquecombs(t(bmat[[IP]])))
+          proposal.var[[IP]] = proposal.var[[IP]] / max(abs(proposal.var[[IP]]))
         }
       }
     }
@@ -649,7 +650,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
       if (accept.rates[1] >  1 / n_B2) { 
         for (IP in 1:nIP) {
           proposal.var[[IP]] = var(uniquecombs(t(bmat[[IP]])))
-          proposal.var[[IP]] = proposal.var[[IP]] / max(proposal.var[[IP]])
+          proposal.var[[IP]] = proposal.var[[IP]] / max(abs(proposal.var[[IP]]))
         }
       }
     }
@@ -904,6 +905,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
       if (accept.rates[1] > 1 / ncol(bmat[[1]])) {
      		 for (IP in 1:nIP) {
       		 proposal.var[[IP]] = var(uniquecombs(t(bmat[[IP]])))
+      		 proposal.var[[IP]] = proposal.var[[IP]] / max(abs(proposal.var[[IP]]))
        	 }
         }
      }
@@ -1974,6 +1976,7 @@ IPTM_check.data = function(O, R, edge, node, textlist, vocabulary, nIP, K, sigma
 #' @title GenerateDocs.predict
 #' @description Generate a collection of documents according to the generative process of IPTM using Gibbs measure
 #'
+#' @param R the number of iterations to sample predicted data within each outer iteration
 #' @param node nodelist containing the ID of nodes (ID starting from 1)
 #' @param vocabulary all vocabularies used over the corpus
 #' @param nIP total number of interaction patterns specified by the user
@@ -1998,7 +2001,7 @@ IPTM_check.data = function(O, R, edge, node, textlist, vocabulary, nIP, K, sigma
 #' @return generated edge and text, parameter b used to generate those, and base (if base == TRUE)
 #'
 #' @export
-GenerateDocs.predict = function(node, vocabulary, nIP, K, owords, alpha, mvec, betas, nvec,
+GenerateDocs.predict = function(R, node, vocabulary, nIP, K, owords, alpha, mvec, betas, nvec,
                         b, delta, currentC, netstat, initial_iJi, base.edge, base.text, currentZ, edge2, 
                         word_type_topic_counts, niter) {
 
@@ -2054,46 +2057,54 @@ GenerateDocs.predict = function(node, vocabulary, nIP, K, owords, alpha, mvec, b
       	}
           #Z update 	
         textlist.d = text[[base.length + 1]]
-       if (edge[[base.length + 1]][[3]] + 384 > edge[[maxedge2]][[3]]) {
-      	 hist.d = maxedge2
-       } else {
-      	 hist.d = which_num(edge[[base.length + d]][[3]] + 384, timestamps)
-       }
-       edgetime.d = rep(NA, K)
-       for (w in 1:length(currentZ[[base.length + d]])) {
-       	 zw.old = currentZ[[base.length + d]][w]
+      	hist.d = base.length + 1
+        edgetime.d = rep(NA, K)
+        textlist.raw = unlist(text)
+	table.W = lapply(1:K, function(k) {
+      			 tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
+      			 })
+       for (w in 1:length(currentZ[[base.length + 1]])) {
+       	 zw.old = currentZ[[base.length + 1]][w]
        	 if (length(textlist.d) > 0) { 
        	 table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] - 1
-         topicpart.d = TopicInEqZ(K, currentZ[[base.length + d]][-w], alpha, mvec)
+         topicpart.d = TopicInEqZ(K, currentZ[[base.length + 1]][-w], alpha, mvec)
          wordpart.d = WordInEqZ(K, textlist.d, table.W, betas, nvec)
        } else {
          topicpart.d = 0
-         wordpart.d = matrix(0, nrow = length(currentZ[[base.length + d]]), ncol = K)
+         wordpart.d = matrix(0, nrow = length(currentZ[[base.length + 1]]), ncol = K)
        }
  	 for (IP in unique(currentC)) {
        	  	currentCK = which(currentC == IP)
-       		currentZ[[base.length + d]][w] = min(currentCK)
-       	 	p.d[base.length + d, ] = pdmat(list(currentZ[[base.length + d]]), currentC, nIP)          
+       		currentZ[[base.length + 1]][w] = min(currentCK)
+       	 	p.d[base.length + 1, ] = pdmat(list(currentZ[[base.length + 1]]), currentC, nIP)          
            	 history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]] + exp(-745))
-    	    		X = Netstats_cpp(history.t, node, netstat)
-    	    		XB = MultiplyXBList(X, b)   
-    	    		lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
-	   	 	LambdaiJi = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
+    	    	X = Netstats_cpp(history.t, node, netstat)
+    	    	XB = MultiplyXBList(X, b)   
+    	    	lambda = lambda_cpp(p.d[hist.d,], XB)
+	   	LambdaiJi = lambdaiJi(p.d[hist.d, ], XB, iJi)
         		observediJi = LambdaiJi[edge[[hist.d]][[1]]]
-        		edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi, timeinc[hist.d], observediJi)   
+        		edgetime.d[currentCK] = EdgeTime(iJi, lambda, delta, LambdaiJi, Time.inc, observediJi)   
             }
           	const.Z = edgetime.d + topicpart.d + wordpart.d[w, ] 
           	zw.new = multinom_vec(1, expconst(const.Z))
          if (zw.new != zw.old) {
-           currentZ[[base.length + d]][w] = zw.new
+           currentZ[[base.length + 1]][w] = zw.new
            table.W[[zw.new]][textlist.d[w]] = table.W[[zw.new]][textlist.d[w]] + 1       
          } else {
-         	currentZ[[base.length + d]][w] = zw.old
+         	currentZ[[base.length + 1]][w] = zw.old
          	table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]] + 1
          }
        } 
-     }
-    edge[[base.length + 1]] = list(sender = i.d, receiver = j.d, timestamp = t.d)		
+   #regenerate data   
+   p.d = pdmat(currentZ, currentC, nIP)  		  
+    lambda = lambda_cpp(p.d[base.length + 1,], XB)
+    LambdaiJi = lambdaiJi(p.d[base.length + 1,], XB, iJi)
+    i.d = multinom_vec(1, LambdaiJi)
+    j.d = which(iJi[i.d,] == 1)
+    Time.inc = rexp(1, sum(LambdaiJi))
+    t.d = t.d + Time.inc
+    edge[[base.length + 1]] = list(sender = i.d, receiver = j.d, timestamp = t.d)	
+     } 	
   return(list(edge = edge[[length(edge)]], text = text[[length(text)]], iJi = iJi, time = Time.inc))							
 } 
 

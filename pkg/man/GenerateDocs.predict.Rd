@@ -4,11 +4,13 @@
 \alias{GenerateDocs.predict}
 \title{GenerateDocs.predict}
 \usage{
-GenerateDocs.predict(node, vocabulary, nIP, K, owords, alpha, mvec, betas, nvec,
-  b, delta, currentC, netstat, initial_iJi, base.edge, base.text, currentZ,
-  edge2, word_type_topic_counts, niter)
+GenerateDocs.predict(R, node, vocabulary, nIP, K, owords, alpha, mvec, betas,
+  nvec, b, delta, currentC, netstat, initial_iJi, base.edge, base.text,
+  currentZ, edge2, word_type_topic_counts, niter)
 }
 \arguments{
+\item{R}{the number of iterations to sample predicted data within each outer iteration}
+
 \item{node}{nodelist containing the ID of nodes (ID starting from 1)}
 
 \item{vocabulary}{all vocabularies used over the corpus}
