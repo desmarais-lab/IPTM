@@ -2046,6 +2046,9 @@ GenerateDocs.predict = function(R, node, vocabulary, nIP, K, owords, alpha, mvec
     Time.inc = rexp(1, sum(LambdaiJi))
     t.d = t.d + Time.inc
     edge[[base.length + 1]] = list(sender = i.d, receiver = j.d, timestamp = t.d)	
+    
+    
+    results = list()
     for (r in 1:R) {
      #iJi update
     for (i in node) {
@@ -2060,7 +2063,7 @@ GenerateDocs.predict = function(R, node, vocabulary, nIP, K, owords, alpha, mvec
       	hist.d = base.length + 1
         edgetime.d = rep(NA, K)
         textlist.raw = unlist(text)
-	table.W = lapply(1:K, function(k) {
+		table.W = lapply(1:K, function(k) {
       			 tabulateC(textlist.raw[which(unlist(currentZ) == k)], W)
       			 })
        for (w in 1:length(currentZ[[base.length + 1]])) {
@@ -2104,8 +2107,9 @@ GenerateDocs.predict = function(R, node, vocabulary, nIP, K, owords, alpha, mvec
     Time.inc = rexp(1, sum(LambdaiJi))
     t.d = t.d + Time.inc
     edge[[base.length + 1]] = list(sender = i.d, receiver = j.d, timestamp = t.d)	
+    results[[r]] = list(edge = edge[[length(edge)]], text = text[[length(text)]], iJi = iJi, time = Time.inc)
      } 	
-  return(list(edge = edge[[length(edge)]], text = text[[length(text)]], iJi = iJi, time = Time.inc))							
+  return(results)							
 } 
 
 #' @title IPTM_predict.data
@@ -2146,7 +2150,6 @@ IPTM_predict.data = function(D, O, R, edge, node, textlist, vocabulary, nIP, K, 
    New_sample = list()
    for (o in 1:O) {
    	print(o)
-   	New_sample[[o]] = list()
     Inference_samp = IPTM_inference.data(edge[1:(D-1)], node, textlist[1:(D-1)], vocabulary, nIP, K,
     									 sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
                       					 out, n_B, n_d, burn, thinning, netstat, optimize = optimize, initial = initial)
@@ -2162,13 +2165,24 @@ IPTM_predict.data = function(D, O, R, edge, node, textlist, vocabulary, nIP, K, 
     for (k in 1:K) {
 	word_type_topic_counts[,k] = tabulate(textlist.raw[which(unlist(Inference_samp$Z)==k)], length(vocabulary))
     }
-	for (r in 1:R) {
-	New_sample[[o]][[r]] = GenerateDocs.predict(1, node, vocabulary, nIP, K, owords = textlist[[D]],
+	New_sample[[o]] = GenerateDocs.predict(R, node, vocabulary, nIP, K, owords = textlist[[D]],
 												alpha = Inference_samp$alpha, mvec = tabulate(unlist(Inference_samp$Z)) / length(unlist(Inference_samp$Z)), 
 												betas, nvec, b, delta, currentC, netstat, initial_iJi = initial_iJi, base.edge = edge[1:(D-1)], 
 												base.text = textlist[1:(D-1)], currentZ = currentZ, edge2 = Inference_samp$edge2, 
 												word_type_topic_counts = word_type_topic_counts)
-	}
+   initial = list()
+   initial$alpha = Inference_samp$alpha[dim(Inference_samp$alpha)[1],1]
+   initial$mvec = Inference_samp$mvec[dim(Inference_samp$mvec)[1],]
+   initial$delta = Inference_samp$D[length(Inference_samp$D)]
+   initial$b = lapply(1:nIP, function(IP) {
+        Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
+    })
+   initial$C = Inference_samp$C
+   initial$Z = Inference_samp$Z
+   initial$bmat = Inference_samp$B
+   initial$dmat = Inference_samp$D
+   initial$proposal.var = Inference_samp$proposal.var
+   initial$iJi = Inference_samp$iJi
    }  
  return(New_sample)                                	
 }
