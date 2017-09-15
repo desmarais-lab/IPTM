@@ -2080,11 +2080,11 @@ GenerateDocs.predict = function(R, node, vocabulary, nIP, K, owords, alpha, mvec
        	  	currentCK = which(currentC == IP)
        		currentZ[[base.length + 1]][w] = min(currentCK)
        	 	p.d[base.length + 1, ] = pdmat(list(currentZ[[base.length + 1]]), currentC, nIP)          
-           	 history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]] + exp(-745))
+                history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]] + exp(-745))
     	    	X = Netstats_cpp(history.t, node, netstat)
     	    	XB = MultiplyXBList(X, b)   
     	    	lambda = lambda_cpp(p.d[hist.d,], XB)
-	   	LambdaiJi = lambdaiJi(p.d[hist.d, ], XB, iJi)
+                LambdaiJi = lambdaiJi(p.d[hist.d, ], XB, iJi)
         		observediJi = LambdaiJi[edge[[hist.d]][[1]]]
         		edgetime.d[currentCK] = EdgeTime(iJi, lambda, delta, LambdaiJi, Time.inc, observediJi)   
             }

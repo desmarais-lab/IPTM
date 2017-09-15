@@ -35,7 +35,7 @@ selectD = sample(1105:2210, 200, replace = FALSE)
 predictIPTM = function(d) {
 	initial$Z = Daretest$Z[1:(d-1)]
 	initial$iJi = Daretest$iJi[1:(d-1)]
-PPE = IPTM_predict.data(d, O = 20, R = 100, edge = Dare$edge, node = Dare$node, textlist = Dare$text, vocabulary = Dare$vocab, nIP = 2, K = 20, 
+    PPE = IPTM_predict.data(d, O = 20, R = 100, edge = Dare$edge, node = Dare$node, textlist = Dare$text,   vocabulary = Dare$vocab, nIP = 2, K = 20,
 						sigma_Q = Daretest$sigma_Q, alpha = Daretest$alpha[dim(Daretest$alpha)[1],1], mvec = Daretest$mvec[dim(Daretest$mvec)[1],],
 						betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), prior.b.mean = rep(0,25), prior.b.var = diag(25),
 						prior.delta = c(0, 1), out = 2, n_B = 5500, n_d = 550, burn = c(500, 50), thinning = c(10, 1), 
