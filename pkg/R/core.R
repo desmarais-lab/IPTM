@@ -1088,6 +1088,220 @@ IPTM_inference.LDA = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q,
   return(chain.final)
 }
 
+
+#' @title IPTM_inference.Network
+#' @description Iterate Markov Chain Monte Carlo (MCMC) algorithm using Gibbs measure to sequentially update the assignments of Z, C and B
+#'
+#' @param edge list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)
+#' @param node nodelist containing the ID of nodes (ID starting from 1)
+#' @param textlist list of text (length=number of documents in total) containing the words in each document
+#' @param vocabulary all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns specified by the user
+#' @param K total number of topics specified by the user
+#' @param sigma_Q proposal distribution variance parameter for beta and delta
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param betas Dirichlet concentration prior for topic-word distribution
+#' @param nvec Dirichlet base prior for topic-word distribution
+#' @param prior.b.mean mean vector of b in multivariate normal distribution
+#' @param prior.b.var covairance matrix of b in multivariate normal distribution
+#' @param prior.delta parameter of delta in Normal prior
+#' @param out size of outer iterations 
+#' @param n_B size of third inner iteration for updates of B
+#' @param n_d size of third inner iteration for updates of delta
+#' @param burn iterations to be discarded at the beginning of beta and delta chain 
+#' @param thinning the thinningning interval of beta and delta chain
+#' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
+#' @param optimize to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)
+#' @param initial list of initial values user wants to assign including (alpha, mvec, delta, b, C, Z, bmat, dmat, proposal.var, iJi)
+#'
+#' @return MCMC output containing IP assignment, topic assignment, and (beta, mu, delta) chain 
+#'
+#' @export
+IPTM_inference.Network = function(edge, node, textlist, vocabulary, nIP = 1, K, sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, 
+                               out, n_B, n_d, burn, thinning, netstat, optimize = FALSE, initial = NULL) {
+  # trim the edge so that we only model edges after 384 hours
+  timestamps = vapply(edge, function(d) {
+    d[[3]]
+  }, c(1))
+  
+  edge2 = which_int(384, timestamps) : length(edge)
+  maxedge2 = max(edge2)
+  timeinc = c(timestamps[1], timestamps[-1] - timestamps[-length(timestamps)])
+  convergence = c()
+  netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
+  L = 3
+  P = netstat[1] + L * (2 * netstat[2] + 2 * netstat[3] + 4 * netstat[4])
+  
+  # initialize alpha, mvec, delta, nvec, delta, lvec, and gammas
+  W = length(vocabulary)
+  phi = lapply(1:K, function(k) {
+    rdirichlet_cpp(1, betas * nvec)
+  })
+  if (length(initial) == 0) {
+  theta = rdirichlet_cpp(length(edge), alpha * mvec)
+  delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
+  beta.old = lapply(1:nIP, function(IP) {
+    prior.b.mean
+  })
+  # initialize C, theta and Z
+  currentC = sample(1:nIP, K, replace = TRUE) 
+  currentZ = lapply(seq(along = edge), function(d) {
+    multinom_vec(max(1, length(textlist[[d]])), theta[d, ])
+    })
+  p.d = matrix(1, nrow = length(edge), ncol = 1)
+
+  bmat = list()
+  for (IP in 1:nIP) {
+    bmat[[IP]] = matrix(beta.old[[IP]], nrow = P, ncol = (n_B - burn[1]) / thinning[1])
+  }
+  deltamat = rep(delta,  (n_d - burn[2]) / thinning[2])
+  proposal.var = lapply(1:nIP, function(IP){diag(P)})
+    
+  #initialize the latent sender-receiver pairs
+  iJi = lapply(seq(along = edge), function(d) {
+    matrix(0, nrow = length(node), ncol = length(node))
+  })
+  for (d in edge2) {
+    iJi[[d]] = matrix(rbinom(length(node)^2, 1, 1 / length(node)), nrow =length(node), ncol = length(node))
+    diag(iJi[[d]]) = 0
+  } 
+  } else {
+    theta = rdirichlet_cpp(length(edge), initial$alpha * initial$mvec)
+    delta = initial$delta
+    beta.old = initial$b
+    # initialize C, theta and Z
+ 	 currentC = initial$C
+ 	 currentZ = initial$Z
+  	 p.d = pdmat(currentZ, currentC, nIP) 
+	bmat = initial$bmat
+    deltamat = initial$dmat
+    proposal.var = initial$proposal.var
+    iJi = initial$iJi
+  }
+  lambda = list()
+  LambdaiJi = list()
+  observediJi = list()
+  alphamat = matrix(NA, nrow = 0, ncol = 1)
+  mvecmat = matrix(NA, nrow = 0, ncol = K)
+  n_B2 = n_B / 5
+  n_d2 = n_d / 5
+   accept.rates = rep(0, 2)
+    #start outer iteration
+    for (o in 1:out) {
+    	if (o == out) {
+    		n_B2 = n_B
+    		n_d2 = n_d
+    	}
+      print(o)
+      # Data augmentation
+    for (d in edge2) {
+      history.t = History(edge, p.d, node, edge[[d-1]][[3]] + exp(-745))
+      X = Netstats_cpp(history.t, node, netstat)
+      XB = MultiplyXBList(X, beta.old)     
+      lambda[[d]] = lambda_cpp(p.d[d,], XB)
+      #calculate the resampling probability	
+      for (i in node[-edge[[d]][[1]]]) {
+      	XB_IP = lapply(XB, function(IP) {IP[i,]})
+        for (j in sample(node[-i], length(node) - 1)) {
+          probij = DataAug_cpp_Gibbs(iJi[[d]][i, ], lambda[[d]][i,], XB_IP, p.d[d, ], delta, timeinc[d], j)
+          iJi[[d]][i, j] = multinom_vec(1, probij) - 1
+        }
+      }
+      iJi[[d]][edge[[d]][[1]],] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
+      LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+      observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
+    }	 
+       
+      for (d in maxedge2) {
+        	history.t = History(edge, p.d, node, edge[[d-1]][[3]] + exp(-745))
+    	    X = Netstats_cpp(history.t, node, netstat)
+    	    XB = MultiplyXBList(X, beta.old)   
+    	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
+	    		LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+        	observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
+	}
+	        
+    # beta update
+    prior.old1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.old[[IP]], FALSE)}, c(1)))
+    post.old1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
+    if (o != 1) {
+    	accept.rates[1] = accept.rates[1] / n_B2
+    	accept.rates[2] = accept.rates[2] / n_d2
+      	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
+      if (accept.rates[1] >  1 / n_B2) { 
+        for (IP in 1:nIP) {
+          proposal.var[[IP]] = var(uniquecombs(t(bmat[[IP]])))
+          proposal.var[[IP]] = proposal.var[[IP]] / max(abs(proposal.var[[IP]]))
+        }
+      }
+    }
+    accept.rates = rep(0, 2)
+    for (i3 in 1:n_B2) {
+      beta.new = lapply(1:nIP, function(IP) {
+        c(rcpp_rmvnorm(1, sigma_Q[1] * proposal.var[[IP]], beta.old[[IP]]))
+      }) 
+      for (d in maxedge2) {
+        XB = MultiplyXBList(X, beta.new)
+        lambda[[d]] = lambda_cpp(p.d[d,], XB)    
+        LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+        observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
+      }
+      prior.new1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.new[[IP]], FALSE)}, c(1)))
+      post.new1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
+      loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
+      if (log(runif(1, 0, 1)) < loglike.diff) {
+        for (IP in 1:nIP) {
+          beta.old[[IP]] = beta.new[[IP]]
+        }
+        prior.old1 = prior.new1
+        post.old1 = post.new1
+        accept.rates[1] = accept.rates[1] + 1
+      }
+      if (i3 > burn[1] && i3 %% (thinning[1]) == 0) {
+        for (IP in 1:nIP) {
+          bmat[[IP]][ , (i3 - burn[1]) / thinning[1]] = beta.old[[IP]]
+        }
+      }
+    }
+    
+    #delta update
+    for (d in maxedge2) {
+      XB = MultiplyXBList(X, beta.old)
+      lambda[[d]] = lambda_cpp(p.d[d,], XB)  
+    }
+    prior.old2 = dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
+    post.old2 = EdgeInEqZ_Gibbs(iJi[[maxedge2]], lambda[[maxedge2]], delta)
+    for (i4 in 1:n_d2) {
+      delta.new = rnorm(1, delta, sqrt(sigma_Q[2]))
+      prior.new2 = dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
+      post.new2 = EdgeInEqZ_Gibbs(iJi[[maxedge2]], lambda[[maxedge2]], delta.new)
+      loglike.diff2 = prior.new2 + post.new2 - prior.old2 - post.old2 
+      if (log(runif(1, 0, 1)) < loglike.diff2) {
+        delta = delta.new
+        prior.old2 = prior.new2
+        post.old2 = post.new2
+        accept.rates[2] = accept.rates[2] + 1
+      } 
+      if (i4 > burn[2] && i4 %% (thinning[2]) == 0) {
+        deltamat[(i4 - burn[2]) / thinning[2]] = delta
+      }
+    }
+   	  for (d in maxedge2) {
+        XB = MultiplyXBList(X, beta.old)
+        lambda[[d]] = lambda_cpp(p.d[d,], XB)    
+        LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+        observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
+      }
+    convergence[o] = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
+      }
+ 
+  chain.final = list(B = bmat, D = deltamat, 
+                     iJi = iJi, sigma_Q =sigma_Q, alpha = alphamat, mvec = mvecmat, edge2 = edge2,
+                     proposal.var= proposal.var, convergence = convergence)
+  return(chain.final)
+}
+
 #' @title TablebetaIP
 #' @description Generate a table summary of the MCMC chain of network statistics coefficients (beta) for each interaction pattern
 #'
