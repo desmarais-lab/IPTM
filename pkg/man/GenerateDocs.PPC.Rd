@@ -4,8 +4,8 @@
 \alias{GenerateDocs.PPC}
 \title{GenerateDocs.PPC}
 \usage{
-GenerateDocs.PPC(nDocs = 1, node, vocabulary, nIP, K, alpha, mvec, betas,
-  nvec, iJi, b, delta, currentC, netstat, base.edge, base.text, currentZ,
+GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
+  b, delta, currentC, netstat, base.edge, base.text, currentZ,
   word_type_topic_counts)
 }
 \arguments{

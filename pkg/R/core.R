@@ -1986,7 +1986,7 @@ Schein.Gibbs = function(Nsamp, nDocs, node, vocabulary, nIP, K, nwords, alpha, m
 #' @return generated edge and text, parameter b used to generate those, and base (if base == TRUE)
 #'
 #' @export
-GenerateDocs.PPC = function(nDocs = 1, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
+GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
                         b, delta, currentC, netstat, base.edge, base.text, currentZ, word_type_topic_counts) {
   W = length(vocabulary)
   phi = lapply(1:K, function(k) {
@@ -2065,11 +2065,9 @@ IPTM_check.data = function(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
 							 prior.b.mean, prior.b.var, prior.delta, out, n_B, n_d, burn, thinning, netstat, optimize = FALSE, 
 							 initial) {
    New_sample = list()
-   for (o in 1:O) {
-   	print(o)
-    Inference_samp = IPTM_inference.data(edge, node, textlist=, vocabulary, nIP, K,
+    Inference_samp = IPTM_inference.data(edge, node, textlist, vocabulary, nIP, K,
     									 sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
-                      				 1, n_B, n_d, burn, thinning, netstat, optimize = optimize, initial = initial)
+                      				 out = 1, n_B, n_d, burn, thinning, netstat, optimize = optimize, initial = initial)
 	b = lapply(1:nIP, function(IP) {
         rowMeans(Inference_samp$B[[IP]])
     })
@@ -2085,22 +2083,11 @@ IPTM_check.data = function(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
     base.edge = edge[Inference_samp$edge2]
      base.edge = edge[Inference_samp$edge2]
      base.text = textlist[Inference_samp$edge2]
-     New_sample[[o]] = GenerateDocs.PPC(1, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
+      for (o in 1:O) {
+      	print(o)
+       New_sample[[o]] = GenerateDocs.PPC(length(edge[-Inference_samp$edge2]), node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
                         b, delta, currentC, netstat, base.edge, base.text, currentZ, word_type_topic_counts)
-   initial = list()
-   initial$alpha = Inference_samp$alpha[dim(Inference_samp$alpha)[1],1]
-   initial$mvec = Inference_samp$mvec[dim(Inference_samp$mvec)[1],]
-   initial$delta = Inference_samp$D[length(Inference_samp$D)]
-   initial$b = lapply(1:nIP, function(IP) {
-        Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
-    })
-   initial$C = Inference_samp$C
-   initial$Z = Inference_samp$Z
-   initial$bmat = Inference_samp$B
-   initial$dmat = Inference_samp$D
-   initial$proposal.var = Inference_samp$proposal.var
-   initial$iJi = Inference_samp$iJi
-   }  
+      }                    
  return(New_sample)                                	
 }
 

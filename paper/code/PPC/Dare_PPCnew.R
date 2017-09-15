@@ -28,14 +28,13 @@ initial$dmat = Daretest$D
 initial$proposal.var = Daretest$proposal.var
 initial$iJi = Daretest$iJi
 
-PPC = IPTM_check.data(O = 1, edge = Dare$edge, node = Dare$node, textlist = Dare$text, vocabulary = Dare$vocab, nIP = 2, K = 20,
+PPC = IPTM_check.data(O = 10, edge = Dare$edge, node = Dare$node, textlist = Dare$text, vocabulary = Dare$vocab, nIP = 2, K = 20,
 						sigma_Q = Daretest$sigma_Q, alpha = Daretest$alpha[dim(Daretest$alpha)[1],1], mvec = Daretest$mvec[dim(Daretest$mvec)[1],],
 						betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), prior.b.mean = rep(0,25), prior.b.var = diag(25),
-						prior.delta = c(0, 1), out = 1, n_B = 5500, n_d = 550, burn = c(500, 50), thinning = c(10, 1), 
-						netstat = c("intercept", "dyadic", "degree", "triadic"), optimize = TRUE, initial = initial)
+						prior.delta = c(0, 1), out = 1, n_B = 5500, n_d = 550, burn = c(500, 50), thinning = c(10, 1), netstat = c("intercept", "dyadic", "degree", "triadic"), optimize = TRUE, initial = initial)
 filename = paste0("PPC", 1, ".RData")	
 save(PPC, file = filename)
-}
+
 
 
 library(foreach)
