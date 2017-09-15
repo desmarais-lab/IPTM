@@ -4,14 +4,12 @@
 \alias{IPTM_check.data}
 \title{IPTM_check.data}
 \usage{
-IPTM_check.data(O, R, edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha,
+IPTM_check.data(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha,
   mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n_B, n_d,
   burn, thinning, netstat, optimize = FALSE, initial)
 }
 \arguments{
 \item{O}{number of outer iterations of inference from which to generate predictions}
-
-\item{R}{the number of iterations to sample predicted data within each outer iteration}
 
 \item{edge}{list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)}
 

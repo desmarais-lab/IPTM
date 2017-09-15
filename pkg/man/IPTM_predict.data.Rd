@@ -6,7 +6,7 @@
 \usage{
 IPTM_predict.data(D, O, R, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
   alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n_B,
-  n_d, burn, thinning, netstat, optimize = FALSE, initial)
+  n_d, burn, thinning, netstat, optimize = TRUE, initial)
 }
 \arguments{
 \item{D}{Dth document the user wants to predict}

@@ -660,36 +660,6 @@ P(\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\
 
 This is nearly the distribution of data that we require for posterior predictive checking, but we do not want to condition on the $\mathcal{Z}$ that came directly from inference on the observed data, as they represent document-specific (i.e., `local') latent variables on which $\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*$, and $\mathcal{W}^*$ are highly dependent. We need to somehow draw data conditional on $\mathcal{Z}$ that are independent of the observed data. This can be done via MCMC by iteratively drawing the  new data, then the new latent recipients conditional upon the new data using Equations 18 and 15---which are required to draw token topic assignments, then the new token topic assignments conditional upon the new data and the new latent recipients. To recap what these equations give, Equation 25 is used to sample from $$P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta).$$ Equations 17 and 18 are used to sample from $$  P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, \mathcal{Z}, \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*,  \mathcal{J}_{\mbox{a}, -i}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta). $$ We will need to run this procedure longer than we would if we marginalized the document-specific variables out of the big joint distribution to derive sampling equations for independent posterior predictive draws, but its an empirical question how long this would need to be run, and there is more than something to be said for re-using the math and code that we have already vetted so heavily. We present pseudocode in Algorithm 9 that can be used to take a single draw from the posterior predictive distribution conditional on a single outer iteration of inference.
      \begin{algorithm}[H]
-        	\SetAlgoLined
-        	\caption{Generate data from posterior predictive distribution}
-        	Input data :\\
-        	1) $\mathcal{Z}$, estimates of token topic assignments from document $1$ through $D$\\
-        	2) $\mathcal{C}$, estimates of topic interaction pattern assignments for topic $k = 1,...,K$\\
-        	3) $\mathcal{B}$,  estimates of interaction pattern parameters for intercation pattern $IP = 1,...,nIP$\\
-        	4) $\delta$, receiver size parameter \\
-	5) $R$, number of iterations at which ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) can be considered independent of observed data on which inference was performed.\\
-	\For{$r$=1 to $R$}{
-		Sample ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) from $P(\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^* |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{u}, \alpha, \boldsymbol{m})$ using Algorithm 11.\\
-		One difference from Algorithm 11 is that we initialize $\mathcal{W}^*$ as below:\\
-		Initialize $NKV$ and $NK$ counts from the inference on $\mathcal{Z}$ and observed $\mathcal{W}$ (instead of zeros)\\
-		\For{$d$=1 to $D$}{
-					 \For{$n$ = 1 to $\bar{N}^{(d)}$}{
-					 	Sample $z_n^{(d)}$  using Equation (27): $$P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \mathcal{W}^*, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}).$$
-					 }
-			Recalculate $p_c^{d}$ from the updated $z^{(d)}$
-		\For{$i  \neq i^{*(d)}_o$}{
-		\For{$j\neq i$ }{
-		Sample $\mathcal{J}_{ij}^{(d)}$	using Equations (19) and (20):
-		$$  P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, \mathcal{Z}, \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*,  \mathcal{J}_{\mbox{a}, -i}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*). $$ 
-		}
-	}
-      	Recalculate $\lambda_{iJ_i}^{(d)}$ from updated $\mathcal{J}_a^{(D)}$
-      	}
-    }
-      Return ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) as a draw from the posterior distribution of the data
-        \end{algorithm}
-        
-     \begin{algorithm}[H]
      	\SetAlgoLined
      	\caption{Generate data from posterior predictive distribution}
      	Input data :\\
@@ -702,7 +672,7 @@ This is nearly the distribution of data that we require for posterior predictive
      		Initialize $NKV$ and $NK$ counts from the inference on $\mathcal{Z}$ and observed $\mathcal{W}$ (instead of zeros)\\
          	Return ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) as a draw from the posterior distribution of the data
      \end{algorithm}        
-We would run Alogorithm 10 for $O$ number of outer iterations, and obtain the empirical distribution of specific network properties of interest (e.g. degree distribution) and compare with the one calculated from observed data / network.
+We would run Alogorithm 9 for $O$ number of outer iterations, and obtain the empirical distribution of specific network properties of interest (e.g. degree distribution) and compare with the one calculated from observed data / network.
 
 \section{Conclusion} 
 The IPTM is, to our knowledge, the first model to be capable of jointly modeling sender, receivers, time and contents in time stamped text valued networks. The IPTM incorporates innovative components, including the modeling of multicast tie formation and the conditioning of ERGM style network generative features on topic-based content. The application to North Carolina county government email data demonstrates, among other capabilities, the effectiveness at the IPTM in separating out both the content and relational structure underlying the normal day-to-day function of an organization and the management of a highly time-sensitive event---Hurricane Sandy. The IPTM is applicable to a variety of networks in which ties are attributed with textual documents. These include, for example, economic sanctions sent between countries and legislation attributed with sponsors and co-sponsors. 

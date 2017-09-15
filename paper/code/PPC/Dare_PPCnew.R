@@ -11,7 +11,7 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("/Users/bomin8319/Desktop/IPTM/paper/code/HPC/topic coherence/tDaretest_IPTM_K20.RData")
+load("/Users/bomin8319/Desktop/IPTM/paper/code/HPC/Daretest_IPTM_K20_nIP2.RData")
 nIP = 2
 K = 20
 initial = list()
@@ -28,20 +28,13 @@ initial$dmat = Daretest$D
 initial$proposal.var = Daretest$proposal.var
 initial$iJi = Daretest$iJi
 
-
-selectD = sample(1105:2210, 200, replace = FALSE)
-
-
-predictIPTM = function(d) {
-	initial$Z = Daretest$Z[1:(d-1)]
-	initial$iJi = Daretest$iJi[1:(d-1)]
-    PPE = IPTM_predict.data(d, O = 1, R = 10, edge = Dare$edge, node = Dare$node, textlist = Dare$text,   vocabulary = Dare$vocab, nIP = 2, K = 20,
+PPC = IPTM_check.data(O = 1, edge = Dare$edge, node = Dare$node, textlist = Dare$text, vocabulary = Dare$vocab, nIP = 2, K = 20,
 						sigma_Q = Daretest$sigma_Q, alpha = Daretest$alpha[dim(Daretest$alpha)[1],1], mvec = Daretest$mvec[dim(Daretest$mvec)[1],],
-						betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), prior.b.mean = rep(0,7), prior.b.var = diag(7),
-						prior.delta = c(0, 1), out = 2, n_B = 5500, n_d = 550, burn = c(500, 50), thinning = c(10, 1), 
-						netstat = c("intercept", "dyadic"), optimize = TRUE, initial = initial)
-filename = paste0("PPE", d, ".RData")	
-save(PPE, file = filename)
+						betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), prior.b.mean = rep(0,25), prior.b.var = diag(25),
+						prior.delta = c(0, 1), out = 1, n_B = 5500, n_d = 550, burn = c(500, 50), thinning = c(10, 1), 
+						netstat = c("intercept", "dyadic", "degree", "triadic"), optimize = TRUE, initial = initial)
+filename = paste0("PPC", 1, ".RData")	
+save(PPC, file = filename)
 }
 
 
