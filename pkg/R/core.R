@@ -478,7 +478,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   }
   deltamat = rep(delta,  (n_d - burn[2]) / thinning[2])
   proposal.var = lapply(1:nIP, function(IP){diag(P)})
-    
+  sigma_Q = sigma_Q
   #initialize the latent sender-receiver pairs
   iJi = lapply(seq(along = edge), function(d) {
     matrix(0, nrow = length(node), ncol = length(node))
@@ -498,6 +498,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
 	bmat = initial$bmat
     deltamat = initial$dmat
     proposal.var = initial$proposal.var
+    sigma_Q = initial$sigma_Q
     iJi = initial$iJi
   }
   lambda = list()
