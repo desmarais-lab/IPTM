@@ -594,12 +594,12 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
        		currentZ[[d]][w] = min(currentCK)
        	 	p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP)           
             history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]]+ exp(-745))
-    	    X = Netstats_cpp(history.t, node, netstat)
-    	    XB = MultiplyXBList(X, beta.old)   
-    	    lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
-	    	LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
+    	   	 	X = Netstats_cpp(history.t, node, netstat)
+    	    		XB = MultiplyXBList(X, beta.old)   
+    	    		lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
+	    		LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
        	 	observediJi[[hist.d]] = LambdaiJi[[hist.d]][edge[[hist.d]][[1]]]
-        	edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
+        		edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
         }
          const.Z = edgetime.d + topicpart.d + wordpart.d[w, ]
          zw.new = multinom_vec(1, expconst(const.Z))
@@ -620,8 +620,8 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
           	currentC[k] = IP
           	p.d = pdmat(currentZ, currentC, nIP) 
  		 	history.t = History(edge, p.d, node, edge[[maxedge2-1]][[3]] + exp(-745))
-    	   	X = Netstats_cpp(history.t, node, netstat)
-    	   	XB = MultiplyXBList(X, beta.old)    
+    	   		X = Netstats_cpp(history.t, node, netstat)
+    	   		XB = MultiplyXBList(X, beta.old)    
            	lambda[[maxedge2]] = lambda_cpp(p.d[maxedge2,], XB)
 		    LambdaiJi[[maxedge2]] = lambdaiJi(p.d[maxedge2,], XB, iJi[[maxedge2]])
            	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][edge[[maxedge2]][[1]]]
@@ -847,12 +847,12 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
        		currentZ[[d]][w] = min(currentCK)
        	 	p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP)           
             history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]] + exp(-745))
-    	    X = Netstats_cpp(history.t, node, netstat)
-    	    XB = MultiplyXBList(X, beta.old)   
-    	    lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
+    	   	 	X = Netstats_cpp(history.t, node, netstat)
+    	    		XB = MultiplyXBList(X, beta.old)   
+    	    		lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
 	   	 	LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
-        	observediJi[[hist.d]] = LambdaiJi[[hist.d]][edge[[hist.d]][[1]]]
-        	edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
+        		observediJi[[hist.d]] = LambdaiJi[[hist.d]][edge[[hist.d]][[1]]]
+        		edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
         }       
          const.Z = edgetime.d + topicpart.d + wordpart.d[w, ] 
          zw.new = multinom_vec(1, expconst(const.Z))
@@ -2064,7 +2064,7 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
 IPTM_check.data = function(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, 
 							 prior.b.mean, prior.b.var, prior.delta, out, n_B, n_d, burn, thinning, netstat, optimize = FALSE, 
 							 initial) {
-   New_sample = list()
+    New_sample = list()
     Inference_samp = IPTM_inference.data(edge, node, textlist, vocabulary, nIP, K,
     									 sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
                       				 out = 1, n_B, n_d, burn, thinning, netstat, optimize = optimize, initial = initial)
@@ -2081,8 +2081,7 @@ IPTM_check.data = function(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
 	word_type_topic_counts[,k] = tabulate(textlist.raw[which(unlist(Inference_samp$Z)==k)], length(vocabulary))
     }
     base.edge = edge[Inference_samp$edge2]
-     base.edge = edge[Inference_samp$edge2]
-     base.text = textlist[Inference_samp$edge2]
+    base.text = textlist[Inference_samp$edge2]
       for (o in 1:O) {
       	print(o)
        New_sample[[o]] = GenerateDocs.PPC(length(edge[-Inference_samp$edge2]), node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
@@ -2162,8 +2161,7 @@ GenerateDocs.predict = function(R, node, vocabulary, nIP, K, owords, alpha, mvec
     i.d = multinom_vec(1, LambdaiJi)
     j.d = which(iJi[i.d,] == 1)
     Time.inc = rexp(1, sum(LambdaiJi))
-    t.d = t.d + Time.inc
-    edge[[base.length + 1]] = list(sender = i.d, receiver = j.d, timestamp = t.d)	
+    edge[[base.length + 1]] = list(sender = i.d, receiver = j.d, timestamp = t.d + Time.inc)	
 
     results = list()
     for (r in 1:R) {
@@ -2197,7 +2195,7 @@ GenerateDocs.predict = function(R, node, vocabulary, nIP, K, owords, alpha, mvec
        	  	currentCK = which(currentC == IP)
        		currentZ[[base.length + 1]][w] = min(currentCK)
        	 	p.d[base.length + 1, ] = pdmat(list(currentZ[[base.length + 1]]), currentC, nIP)          
-                history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]] + exp(-745))
+            history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]] + exp(-745))
     	    		X = Netstats_cpp(history.t, node, netstat)
     	    		XB = MultiplyXBList(X, b)   
     	    		lambda = lambda_cpp(p.d[hist.d,], XB)
@@ -2222,9 +2220,8 @@ GenerateDocs.predict = function(R, node, vocabulary, nIP, K, owords, alpha, mvec
     i.d = multinom_vec(1, LambdaiJi)
     j.d = which(iJi[i.d,] == 1)
     Time.inc = rexp(1, sum(LambdaiJi))
-    t.d = t.d + Time.inc
-    edge[[base.length + 1]] = list(sender = i.d, receiver = j.d, timestamp = t.d)	
-    results[[r]] = list(edge = edge[[length(edge)]], text = text[[length(text)]], iJi = iJi, time = Time.inc)
+    edge[[base.length + 1]] = list(sender = i.d, receiver = j.d, timestamp = t.d + Time.inc)	
+    results[[r]] = list(edge = edge[[length(edge)]], text = text[[length(text)]], iJi = iJi)
      } 	
   return(results)							
 } 
