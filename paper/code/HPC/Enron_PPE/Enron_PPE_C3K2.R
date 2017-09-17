@@ -24,7 +24,7 @@ predictIPTM = function(doc) {
     initial$Z = Daretest$Z
     initial$bmat = Daretest$B
     initial$dmat = Daretest$D
-    intial$sigma_Q = Daretst$sigma_Q
+    intial$sigma_Q = Daretest$sigma_Q
     initial$proposal.var = Daretest$proposal.var
     initial$iJi = Daretest$iJi
 						

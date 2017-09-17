@@ -873,11 +873,11 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
          for (IP in 1:nIP) {
           	currentC[k] = IP
           	p.d = pdmat(currentZ, currentC, nIP) 
- 		 	history.t = History(edge, p.d, node, edge[[maxedge2-1]][[3]] + exp(-745))
+ 		 	      history.t = History(edge, p.d, node, edge[[maxedge2-1]][[3]] + exp(-745))
     	   		X = Netstats_cpp(history.t, node, netstat)
     	   		XB = MultiplyXBList(X, beta.old)    
            	lambda[[maxedge2]] = lambda_cpp(p.d[maxedge2,], XB)
-		    LambdaiJi[[maxedge2]] = lambdaiJi(p.d[maxedge2,], XB, iJi[[maxedge2]])
+		        LambdaiJi[[maxedge2]] = lambdaiJi(p.d[maxedge2,], XB, iJi[[maxedge2]])
            	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][edge[[maxedge2]][[1]]]
            	prob = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
            	const.C[IP] = prob
@@ -892,7 +892,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
     	    X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
-	    	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+	      	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
         	observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
 	}
 	 
@@ -918,11 +918,11 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
              XB = MultiplyXBList(X, beta.new)
              lambda[[d]] = lambda_cpp(p.d[d,], XB)    
              LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
- 	         observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
+ 	           observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
           }
           prior.new1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.new[[IP]], FALSE)}, c(1)))
           post.new1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])     			   
-     	  loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
+     	    loglike.diff = prior.new1 + post.new1 - prior.old1 - post.old1
           if (log(runif(1, 0, 1)) < loglike.diff) {
          	for (IP in 1:nIP) {
           		 beta.old[[IP]] = beta.new[[IP]]
@@ -2301,6 +2301,7 @@ IPTM_predict.data = function(D, O, R, edge, node, textlist, vocabulary, nIP, K, 
    initial$bmat = Inference_samp$B
    initial$dmat = Inference_samp$D
    initial$proposal.var = Inference_samp$proposal.var
+   initial$sigma_Q = Inference_samp$sigma_Q
    initial$iJi = Inference_samp$iJi
    }  
  return(New_sample)                                	
