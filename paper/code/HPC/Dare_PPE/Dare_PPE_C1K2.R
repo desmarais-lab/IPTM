@@ -45,7 +45,7 @@ PPE = IPTM::IPTM_predict.data(D, O = 10, R = 50, edge = Dare$edge, node = Dare$n
 						betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), prior.b.mean = rep(0,25), prior.b.var = diag(25),
 						prior.delta = c(-3.5, 1), out = 2, n_B = 5500, n_d = 550, burn = c(500, 50), thinning = c(10, 1),
 						netstat = c("intercept", "dyadic", "degree", "triadic"), optimize = TRUE, initial = initial)
-filename = paste0("PPE_",d,"_",nIP,"_",K,".RData")
+filename = paste0("PPE_",D,"_",nIP,"_",K,".RData")
 save(PPE, file = filename)
 }
 

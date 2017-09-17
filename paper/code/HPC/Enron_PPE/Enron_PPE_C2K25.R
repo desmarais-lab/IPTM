@@ -25,7 +25,7 @@ predictIPTM = function(doc) {
     initial$Z = Daretest$Z
     initial$bmat = Daretest$B
     initial$dmat = Daretest$D
-    intial$sigma_Q = Daretest$sigma_Q
+    initial$sigma_Q = Daretest$sigma_Q
     initial$proposal.var = Daretest$proposal.var
     initial$iJi = Daretest$iJi
 						
@@ -34,7 +34,7 @@ PPE = IPTM::IPTM_predict.data(D, O = 10, R = 50, edge = Enron$edge, node = Enron
 						betas = 2, nvec = rep(1/length(Enron$vocab), length(Enron$vocab)), prior.b.mean = rep(0,7), prior.b.var = diag(7),
 						prior.delta = c(-3.5, 1), out = 2, n_B = 5500, n_d = 550, burn = c(500, 50), thinning = c(10, 1),
 						netstat = c("intercept", "dyadic"), optimize = TRUE, initial = initial)
-filename = paste0("PPE_",d,"_",nIP,"_",K,".RData")
+filename = paste0("PPE_",D,"_",nIP,"_",K,".RData")
 save(PPE, file = filename)
 }
 
