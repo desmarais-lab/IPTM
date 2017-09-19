@@ -70,25 +70,35 @@ features <- dim(netstats)[4]
 
 # build dataset for training
 # sender, receivers (nodes columns), timeinc
-observed_edge_data <- matrix(NA,length(Dare$edge),nodes+2)
+observed_edge_data <- matrix(NA,length(Dare$edge),nodes+3)
 for(d in 1:length(Dare$edge)){
   dati <- c(Dare$edge[[d]]$sender)
   receivers <- numeric(nodes)
   receivers[Dare$edge[[d]]$receiver] <- 1
-  dati <- c(dati,receivers,Dare$edge[[d]]$timeinc)
+  dati <- c(dati,receivers,Dare$edge[[d]]$timeinc,Dare$edge[[d]]$unixtime)
   observed_edge_data[d,] <- dati
 }
-colnames(observed_edge_data) <- c("sender",paste("R",1:nodes,sep=""),"timeinc")
+colnames(observed_edge_data) <- c("sender",paste("R",1:nodes,sep=""),"timeinc","time")
 
 observed_edge_data <- data.frame(observed_edge_data)
 
-# reshape into dyadic dataset
+observed_edge_data <- observed_edge_data[observed_edge_data$time > 384,]
+
+# reshape into dyadic dataset, ignore initial history
 dyadic_sendrec <- matrix(NA,nrow(observed_edge_data)*(nodes-1),features+4)
+rowind <- 1
 for(i in 1:nrow(observed_edge_data)){
-  for(j in (1:nodes)[-i]){
+  for(j in (1:nodes)[-observed_edge_data$sender[i]]){
     datij <- c(i,observed_edge_data$sender[i],j,observed_edge_data[i,1+j],netstats[i,observed_edge_data$sender[i],j,])
+    dyadic_sendrec[rowind,] <- datij
+    rowind <- rowind + 1
   }
 }
+colnames(dyadic_sendrec) <- c("document","sender","alter","recieved",paste("f",1:features))
+
+
+# full data estimate
+dare_logit_fulldata <- glm(dyadic_sendrec[,"recieved"]~dyadic_sendrec[,5:ncol(dyadic_sendrec)],family="binomial")
 
 
 
