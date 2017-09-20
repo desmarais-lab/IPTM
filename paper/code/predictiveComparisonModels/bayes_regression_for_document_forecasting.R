@@ -98,9 +98,15 @@ colnames(dyadic_sendrec) <- c("document","sender","alter","recieved",paste("f",1
 
 
 # full data estimate
-dare_logit_fulldata <- glm(dyadic_sendrec[,"recieved"]~dyadic_sendrec[,5:ncol(dyadic_sendrec)],family="binomial")
+# system.time(dare_logit_fulldata <- mcmc_logit(dyadic_sendrec[,"recieved"],dyadic_sendrec[,5:ncol(dyadic_sendrec)],burnin = 15000, mcmc = 75000,thin=50))
 
-
+for(d in (floor(nrow(observed_edge_data))+1):nrow(observed_edge_data)){
+  training_data <- dyadic_sendrec[which(dyadic_sendrec[,1]<d),]
+  training_results <- mcmc_logit(training_data[,"recieved"],training_data[,5:ncol(training_data)],burnin = 15000, mcmc = 75000,thin=50)
+  result_file <- paste("./paper/code/predictiveComparisonModels/results/logitResultsD",d,".RData",sep="")
+  save(list="training_results",file=result_file)
+  print(d)
+}
 
 
 
