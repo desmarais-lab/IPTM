@@ -132,7 +132,7 @@ Now, we define the $(i, j)^{th}$ element of the stochastic intensity matrix $\bo
 \cdot  \mbox{exp}\Big\{\lambda^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\},
 	\label{alg:lambdad}
 \end{equation}
-where $p_c^{(d)}$ is as defined in Equation \ref{alg:pcd}, $\lambda^{(c)}_0$ is the baseline intensity for the interaction pattern $c$, $\boldsymbol{b}^{(c)}$ is an unknown vector of coefficients in $\mathbbm{R}^{P}$ corresponding to the interaction pattern $c$, and $\boldsymbol{x}^{(c)}_t(i, j)$ is a vector of the $P$-dimensional dynamic network statistics for directed edge $(i, j)$ at time $t$ corresponding to the interaction pattern $c$. In other words, $\boldsymbol{\lambda}^{(d)}$ can be seen as the weighted average of exponentiated terms over all interaction pattern, where $\{p_c^{(d)}\}_{c=1}^C$ is used as weights. 
+where $p_c^{(d)}$ is as defined in Equation (\ref{alg:pcd}), $\lambda^{(c)}_0$ is the baseline intensity for the interaction pattern $c$, $\boldsymbol{b}^{(c)}$ is an unknown vector of coefficients in $\mathbbm{R}^{P}$ corresponding to the interaction pattern $c$, and $\boldsymbol{x}^{(c)}_t(i, j)$ is a vector of the $P$-dimensional dynamic network statistics for directed edge $(i, j)$ at time $t$ corresponding to the interaction pattern $c$. In other words, $\boldsymbol{\lambda}^{(d)}$ can be seen as the weighted average of exponentiated terms over all interaction pattern, where $\{p_c^{(d)}\}_{c=1}^C$ is used as weights. 
 
 \subsection{Dynamic Network Statistics} \label{subsec: Dynamic covariates2}
 In this Section, we introduce detailed specifications of the dynamic network statsitics in our model. We develop a suite of eight different effects to be used as the components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling), which are incorporated as in Equation (2).  These statistics capture common network properties such as popularity, centrality, reciprocity, and transitivity. Each network statistic is calculated for each interaction pattern $c=1,...,C$, which means that each interaction pattern can be understood in terms of the ways that network dynamics shape tie formation within the interaction pattern. Below are the specifications of the degree, dyadic, and triadic network statistics we use in this paper.
@@ -195,7 +195,7 @@ The tie generating process determines the sender, recipients, and timing ($i_o^{
 	\lambda^{(d)}_{iJ_i}(t)= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\frac{1}{\lVert J_i^{(d)} \rVert_1}\sum\limits_{j: J^{(d)}_{ij}=1} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_t(i, j)\Big\}.
 			\label{alg:multicastlambda}
 	\end{equation}
-	Note that Equation \ref{alg:multicastlambda} reduces to the stochastic intensity $\lambda_{ij}^{(d)}$ in Equation \ref{alg:lambdad} in the case of a single receiver (i.e. $\lVert J_i^{(d)}\rVert_1 = 1$), so we can interpret this mean parameter as weighted stochastic intensity across the chosen receivers. When there are multiple chosen receivers (i.e. $\lVert J_i^{(d)}\rVert_1 > 1$), we call it as ``multicast interaction".
+	Note that Equation (\ref{alg:multicastlambda}) reduces to the stochastic intensity $\lambda_{ij}^{(d)}$ in Equation (\ref{alg:lambdad}) in the case of a single receiver (i.e. $\lVert J_i^{(d)}\rVert_1 = 1$), so we can interpret this mean parameter as weighted stochastic intensity across the chosen receivers. When there are multiple chosen receivers (i.e. $\lVert J_i^{(d)}\rVert_1 > 1$), we call it as ``multicast interaction".
 	 	 \item[3.] Set the observed sender, recipient, and time of the document simultaneously by choosing the sender who generated the minimum time in step 2 and the corresponding recipient and time increment (NOTE: $t_o^{(0)}=0$):
 	 	 \begin{equation}
 	 	 \begin{aligned}
@@ -451,7 +451,7 @@ In the Dare County analysis the two interaction patterns exhibited quite differe
   \section{Document Prediction Experiments} \label{sec:PosteriorPredictive}
  We use a set of posterior predictive experiments, or document-ahead forecasting, to evaluate the performance of the IPTM as compared to alternative parameterizations of the IPTM and alternative modeling approaches via regressions. For a randomly chosen document $D \in \{M,M+1,\hdots, D\}$, we fit the IPTM to the corpus consisting of the first $d = \{1,\hdots,D-1\}$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data for document $D$ conditional on the content in document $D$, $\boldsymbol{w}^{(D)}$.  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set for the first document in the test set. The variables that need to be sampled are the tie data ($i_o^{(D)}, J_o^{(D)}, t_o^{(D)}$), and we would compare the simulated ones to the observed data. Detailed pseudocode for generating predicted tie data using the IPTM is demonstrated in Appendix \ref{subsubsec: IPTM PPE}.
 
-\subsection{Comparison Models}
+\subsection{Comparison Models}\label{subsec:ComparisonModels}
 We first compare the ability of the IPTM in predicting tie data to that of the reduced parameterization of the IPTM. Specifically, by setting the number of interaction pattern $C = 1$ (i.e. $\{p_c^{d}\}_{d=1}^D = 1$), the IPTM reduces to pure network model which disregards the content reflection on network dynamics. However, this reduced version of the model still is innovative network model in that we jointly make inference on sender, receiver, and timestamp of the document. There exists numerous network modeling approaches in the literature, however, we are unaware of a model that can be used to jointly predict the sender, receivers, and timing of an e-mail/document conditional upon the interaction history. Therefore, the two main goals of this ablation study are 1) to test whether the reduced model itself serves as a novel network model with good predictive performance, and 2) to test whether including content information via interaction pattern provides additional advantage on document-ahead forecasting for tie data.
 
 Next, we compare the IPTM to the comparative model that is built upon two regression models, in order to test if the IPTM or the ablated version of IPTM have any benefit over other existing models. To build an alternative modeling approach, we combine established existing models to make comparable predictions using the same inputs. The objective underlying our selection and use of comparison models is to evaluate the performance gains from jointly inferring the parameters that govern the generation of tie data---senders, receivers, and timing. Several models exist that could be used to model any of these three data types individually, but, to our knowledge, the literature does not offer any models that can be used to jointly generate all three types of tie data integrated into the IPTM. We train two separate models to use in predicting document $D$ recipients, sender, and timing, respectively. These models are selected to closely mirror the structure of the corresponding components of the IPTM. In each model the documents used for training include documents $1$ through $D-1$. The model of recipients will be a logistic regression model in which the dependent variable is the observed value of $J^{(d)}_{ij}$, where $i$ indexes the observed sender, $i_o^{(d)}$. The network statistics, $\boldsymbol{x}^{(c)}_t(i, j)$, will be used as the covariates, with all $c=1$ (i.e., all past interactions are within the same single interaction pattern in the comparison models). Specifically, the model used for predicting recipients of document $D$ will have the form 
@@ -459,7 +459,7 @@ Next, we compare the IPTM to the comparative model that is built upon two regres
 P(J^{(D)}_{ij}=1)=\frac{1}{1+\exp\left(-(b_0 +\boldsymbol{b}^T\boldsymbol{x}_t(i, j))\right)}.
 \label{eqn:predrec}
 \end{equation}
-The model of when an email was sent is an exponential regression model in which the dependent variable is $t_i^{(D)}$. The single covariate in this model, assumed to have a coefficient of 1, is $\lambda_{iJ_i}^{(D)}(t)$, which is defined in Equation \ref{alg:multicastlambda}. We estimate an intercept term in this regression model in order to calibrate the scale of the model. Specifically, the probability density function of the model for the timing of the email is given by
+The model of when an email was sent is an exponential regression model in which the dependent variable is $t_i^{(D)}$. The single covariate in this model, assumed to have a coefficient of 1, is $\lambda_{iJ_i}^{(D)}(t)$, which is defined in Equation (\ref{alg:multicastlambda}). We estimate an intercept term in this regression model in order to calibrate the scale of the model. Specifically, the probability density function of the model for the timing of the email is given by
 \begin{equation}
 f(t_i^{(D)},\lambda_{iJ_i}^{(D)}(t),\eta) = \eta\lambda_{iJ_i}^{(D)}(t)\exp(- \eta\lambda_{iJ_i}^{(D)}(t)t_i^{(D)}),
 \label{eqn:predtime}
@@ -468,37 +468,15 @@ where $\ln(\eta)$ is the intercept that calibrates the scale of the exponential 
 \subsection{Predictive Experiment Results}
 To verify that our model is applicable beyond the Dare County email data, we also performed the posterior predictive experiments using the Enron email data set ---the most widely studied email data set. For this data set, we only included emails between actors who sent over 100 emails, and actors who received over 100 emails from the chosen senders. E-mails that were not sent to at least one other active actor were discarded, and also preprocessed to remove any stop words, URLs, quoted text, and signatures. These steps resulted in a total of 3,925 emails involving 33 actors. 
 
-For both data sets, Dare County and Enron, we randomly selected 200 documents from the later half of the corpus and generated 100 samples of predicted tie data for every document $D$ by running Algorithm \ref{alg:IPTMPPE} and Algorithm \ref{alg:docpredict} ($O = 10$ and $R = 50$) with some burn-ins and thinnings ($b = 10$ and $q = 4$). Moreover, we ran the same predictive experiments with 21 unique combinations of the number of interaction patterns ($C = 1, 2, 3$) and the number of topics ($K = 2, 5, 10, 25, 50, 75, 100$) as a grid-search based hyperparameter selection process. We then compare the IPTM and these predictions in terms of classification accuracy in predicting senders and receivers, as well as mean squared error in predicting document timing. Figure 7 presents the $F_1$ scores on sender predictions, multiclass version of the area under the ROC curve (AUC) measure \cite{hand2001simple} on receiver predictions, and mean squared error (MSE) on time predictions, all averaged over 100 samples. \textbf{Note: Plots and analysis to be added when we get the results}
+For both data sets, Dare County and Enron, we randomly selected 200 documents from the later half of the corpus and generated 100 samples of predicted tie data for every document $D$ by running Algorithm \ref{alg:IPTMPPE} and Algorithm \ref{alg:docpredict} ($O = 10$ and $R = 50$) with some burn-ins and thinnings ($b = 10$ and $q = 4$). Due to computational burden, we used the reduced set of network statistics (``intercept" and ``dyadic") for Enron, while we used full set of network statistics (``intercept" and ``dyadic", ``degree", ``triadic"). Moreover, we ran the same predictive experiments with 21 unique combinations of the number of interaction patterns ($C = 1, 2, 3$) and the number of topics ($K = 2, 5, 10, 25, 50, 75, 100$) as a grid-search based hyperparameter selection process. After choosing the best-performing hyperparameter combinations from the prediction results of earlier 150 documents, we then use the prediction results of the rest 50 documents to compare the IPTM and these predictions in terms of classification accuracy in predicting senders and receivers, as well as mean squared error in predicting document timing. Figure 7 presents the $F_1$ scores on sender predictions, multiclass version of the area under the ROC curve (AUC) measure \citep{hand2001simple} on receiver predictions, and mean squared error (MSE) on time predictions for each document we predicted, all averaged over 100 samples. 
 
-\newpage
-\section{Posterior Predictive Checks}
+\textbf{Note: Plots and analysis to be added when we get the results}
 
-We finally perform posterior predictive checks \cite{rubin1984bayesianly} in order to evaluate the appropriateness of the model specification for Dare county. If the model is appropriate, the observed data should not be an outlier with respect to distributions of new data drawn from the posterior predictive distribution. To draw these comparisons, we first consider how to draw from the posterior predictive distribution. We produce a sample from the posterior predictive distribution by drawing new data conditional upon the parameters inferred in a single draw from the posterior distribution of the parameters, repeated over many draws from the posterior distribution. We already know how to generate new data conditional upon a set of inferred parameter values---that process is given by Algorithm 10, which describes how to generate data with backward sampling.
-
-Formally, Algorithm 12 is used to draw new data, which we denote ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$).
-\begin{equation}
-P(\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^* |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta).
-\label{eqn:backwardssample}
-\end{equation}
-
-This is nearly the distribution of data that we require for posterior predictive checking, but we do not want to condition on the $\mathcal{Z}$ that came directly from inference on the observed data, as they represent document-specific (i.e., `local') latent variables on which $\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*$, and $\mathcal{W}^*$ are highly dependent. We need to somehow draw data conditional on $\mathcal{Z}$ that are independent of the observed data. This can be done via MCMC by iteratively drawing the  new data, then the new latent recipients conditional upon the new data using Equations 18 and 15---which are required to draw token topic assignments, then the new token topic assignments conditional upon the new data and the new latent recipients. To recap what these equations give, Equation 25 is used to sample from $$P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta).$$ Equations 17 and 18 are used to sample from $$  P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, \mathcal{Z}, \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}^*,  \mathcal{J}_{\mbox{a}, -i}, \mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta). $$ We will need to run this procedure longer than we would if we marginalized the document-specific variables out of the big joint distribution to derive sampling equations for independent posterior predictive draws, but its an empirical question how long this would need to be run, and there is more than something to be said for re-using the math and code that we have already vetted so heavily. We present pseudocode in Algorithm 9 that can be used to take a single draw from the posterior predictive distribution conditional on a single outer iteration of inference.
-     \begin{algorithm}[H]
-     	\SetAlgoLined
-     	\caption{Generate data from posterior predictive distribution}
-     	Input data :\\
-     	1) $\mathcal{Z}$, estimates of token topic assignments from document $1$ through $D$\\
-     	2) $\mathcal{C}$, estimates of topic interaction pattern assignments for topic $k = 1,...,K$\\
-     	3) $\mathcal{B}$,  estimates of interaction pattern parameters for intercation pattern $IP = 1,...,nIP$\\
-     	4) $\delta$, receiver size parameter \\
-     		Sample ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) from $P(\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^* |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{u}, \alpha, \boldsymbol{m})$ using Algorithm 11.\\
-     		One difference from Algorithm 12 is that we initialize $\mathcal{W}^*$ as below:\\
-     		Initialize $NKV$ and $NK$ counts from the inference on $\mathcal{Z}$ and observed $\mathcal{W}$ (instead of zeros)\\
-         	Return ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) as a draw from the posterior distribution of the data
-     \end{algorithm}        
-We would run Alogorithm 9 for $O$ number of outer iterations, and obtain the empirical distribution of specific network properties of interest (e.g. degree distribution) and compare with the one calculated from observed data / network.
 
 \section{Topic Coherence} \label{sec:topiccoherence}
-Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to demonstrate that incorporating network properties does not impair the ability of IPTM in modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using LDA. For each model, we varied the number of topics from 1 to 50 and drew three samples from the joint posterior distribution over the unobserved random variables in that model. We evaluated the topics resulting from each sample and averaged over the three samples, where the result is shown in Figure 10. Our model was not significantly different from LDA in terms of topic coherence, for any choice of the number of topics. This result, when combined with the results in Section 7 and Section 8, demonstrates that our model can achieve state-of-the-art predictive performance while producing coherent topics.
+Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to test whether the IPTM's incorporation of network properties improves or impairs the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using the latent dirichlet allocation (LDA). Instead of re-fit the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which simply makes the IPTM reduced to LDA in terms of topic assignments by unlinking the text and networks (same analogy as ablation study in Section \ref{subsec:ComparisonModels}). For each model, we varied the number of topics from 1 to 100 and drew five samples from the joint posterior distribution over the unobserved random variables in that model. We evaluated the topics resulting from each sample and averaged over the five samples, where the result is shown in Figure \ref{fig:Daretopic}. Our model was not significantly different from LDA in terms of topic coherence, for any choice of the number of topics. This result, when combined with the results in Section 7, demonstrates that our model can achieve state-of-the-art predictive performance while producing coherent topics. 
+
+\textbf{Note: Plots to be updated when we get further results, including Enron's.}
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.49\textwidth]{plots/topiccoherenceplot.pdf}  
@@ -506,6 +484,22 @@ Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate th
 	\caption{Average topic coherence scores for the Dare County email network (left) and the Enron data set (right).}
 \end{figure}
 
+
+\section{Posterior Predictive Checks}
+
+We finally perform posterior predictive checks \cite{rubin1984bayesianly} in order to evaluate the appropriateness of the model specification for Dare county. If the model is appropriate, the observed data should not be an outlier with respect to distributions of new data drawn from the posterior predictive distribution. To draw these comparisons, we first consider how to draw from the posterior predictive distribution. We produce a sample from the posterior predictive distribution by drawing new data conditional upon the parameters inferred in a single draw from the posterior distribution of the parameters, repeated over many draws from the posterior distribution. 
+
+Formally, we generate new data, which we denote ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$), conditional upon a set of inferred parameter values from
+\begin{equation}
+P(\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^* |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta),
+\label{eqn:backwardssample}
+\end{equation}
+and the pseudocode for generating new sets of data is given by Appendix \ref{subsec:Details on PPC}.
+
+ We use this posterior predictive checking to assess the extent to which our model is a ``good fit" for the Dare County email network. For the test of goodness-of-fit in terms of network dynamics, we defined multiple network statistics that summarize meaningful aspects of Dare County data: indegree distribution for sender activities, outdegree distribution for receiver activities, document time-increment distributions, multicast (number of receivers) distribution, the edgewise shared partner distribution, and the geodesic distance distribution. For content-wise goodness-of-fit, we employed mutual information (MI) in \cite{mimno2011bayesian}, which is often used to evaluate ``bag of words" model assumptions. We then generated 1,000 synthetic networks and texts from the posterior predictive distribution implied by the IPTM and Dare County email data.
+We applied each discrepancy function to each synthetic network to yield the distributions over the values of the six network statistics and MI. If the IPTM is a suitable model for Dare County data, these distributions should be centered around the values of the corresponding discrepancy functions (except MI) when computed using the observed data.
+
+\textbf{Note: Plots and analysis to be added when we get the results}
 
 \section{Conclusion} 
 The IPTM is, to our knowledge, the first model to be capable of jointly modeling sender, receivers, time and contents in time stamped text valued networks. The IPTM incorporates innovative components, including the modeling of multicast tie formation and the conditioning of ERGM style network generative features on topic-based content. The application to North Carolina county government email data demonstrates, among other capabilities, the effectiveness at the IPTM in separating out both the content and relational structure underlying the normal day-to-day function of an organization and the management of a highly time-sensitive event---Hurricane Sandy. The IPTM is applicable to a variety of networks in which ties are attributed with textual documents. These include, for example, economic sanctions sent between countries and legislation attributed with sponsors and co-sponsors. 
@@ -882,6 +876,7 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
         \end{itemize}        
       \subsection{Details on Document Prediction Experiments}\label{subsec:Details on PPE}    
        \subsubsection{Prediction using IPTM} \label{subsubsec: IPTM PPE}
+        Here, one important point is that we do not have $\mathcal{Z}^{(D)}$ and $\mathcal{J}_a^{(D)}$ that came directly from inference on the observed data, as they represent document-specific (i.e., `local') latent variables. We need to somehow initialized them conditional on the inferred $\mathcal{Z}^{1:(D-1)}$ and $\mathcal{J}_a^{1:(D-1)}$, and update them multiple times such that they are independent of the initialized ones. This can be done via MCMC by iteratively drawing the new data, then the new latent recipients conditional upon the new data and the new token topic assignments conditional upon the new data and the new latent recipients. We present detailed pseudocode in Algorithm 9 below.
         \begin{algorithm}[H]
         	\SetAlgoLined
         	\caption{Predicting tie data for document $D$}
@@ -899,7 +894,7 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
        		run an outer iteration of inference on documents $1$ through $(D-1)$\\
        		obtain global latent variables ($\mathcal{B}$, $\mathcal{C}$, $\delta$)  and local variables  ($\mathcal{Z}^{1:(D-1)}$, $\mathcal{J}_a^{1:(D-1)}$)\\
        		initialize $N_{v|k}$ and $N_k$ counts from the inference on $\mathcal{Z}^{1:(D-1)}$ and set $N_{k|D} = 0$\\
-       		\For {n = 1 to $|\boldsymbol{w}^{D}|$}{
+       		\For {n = 1 to $N^{D}$}{
        			\For {k = 1 to K} {
        				set $P(z_n^{D} = k | z_{1:n-1}^{D}, w_{1:n}^{D}, \mathcal{Z}^{1:(D-1)}, \boldsymbol{w}^{1:(D-1)}) = \frac{(N_{k|D} + \alpha{m_k})}{ (n - 1 + \alpha)} \times \frac{(N_{w_n^{D}|k} +
        					\frac{\beta}{V})}{ (N_k + \beta)}$\\
@@ -918,7 +913,7 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
        		}
        		\For{r=1 to b+R}{
        			sample $i_o^{(D)}$, $J_o^{(D)}$, and $t_o^{(D)}$ following generative process\\
-         	\For{$n$ = 1 to $\bar{N}^{(D)}$}{
+         	\For{$n$ = 1 to $N^{(D)}$}{
        				Sample $z_n^{(D)}$ using Equation (27): $$P(z^{(D)}_n=k|\mathcal{Z}_{\backslash D, n},   \mathcal{C},   \mathcal{B}, \boldsymbol{w}^{(D)}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}^{(D)}, \mathcal{J}_{\mbox{o}}^{(D)}, \mathcal{T}_{\mbox{o}}^{(D)}, \mathcal{Z}_{1:(D-1)}, \boldsymbol{w}_{1:(D-1)}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}).$$ 
        			}
        			\For{$i  \neq i^{*(d)}_o$}{
@@ -945,7 +940,7 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
        		\item $\{t_o^{(d)}\}_{d=1}^{D-1}$, Observed timing for documents $1$ through $D-1$
        		\item $R$, Number of predictions to make regarding document $D$
        	\end{enumerate}
-       	Train models defined by Equations (\ref{eqn:predrec}) and (\ref{eqn:predtime}) by maximum likelihood estimation using the input data. \\
+       	Train models defined by Equations (\ref{eqn:predrec}) and (\ref{eqn:predtime}) by Bayesian estimation using MCMC given the input data. \\
        	\For {r = 1 to $R$} {
        		Draw $b_0$, $\boldsymbol{b}$, and $\eta$ from their sampling distributions conditional on the input data.\\ 
        		\For {i=1 to $A$}{
@@ -964,5 +959,20 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
        	}
        	\label{alg:docpredict}
        \end{algorithm}
+             \subsection{Details on Posterior Predictive Checks}\label{subsec:Details on PPC}    
+          \begin{algorithm}[H]
+          	\SetAlgoLined
+          	\caption{Generate new data from posterior predictive distribution}
+          	Input data :\\
+          	1) $\mathcal{Z}$, estimates of token topic assignments from document $1$ through $D$\\
+          	2) $\mathcal{C}$, estimates of topic interaction pattern assignments for topic $k = 1,...,K$\\
+          	3) $\mathcal{B}$,  estimates of interaction pattern parameters for intercation pattern $c = 1,\hdots,C$\\
+          	4) $\delta$, receiver size parameter \\
+          	Sample ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) from $P(\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^* |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{u}, \alpha, \boldsymbol{m})$ using Algorithm 8.\\
+          	One difference from Algorithm 8 is that we initialize $\mathcal{W}^*$ as below:\\
+          	Initialize $NKV$ and $NK$ counts from the inference on $\mathcal{Z}$ and observed $\mathcal{W}$ (instead of zeros)\\
+          	Return ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) as a draw from the posterior distribution of the data
+          \end{algorithm}        
+          
              \end{document}
 

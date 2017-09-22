@@ -201,6 +201,13 @@ McCullough, B.~D. (2009).
 \newblock The accuracy of econometric software.
 \newblock {\em Handbook of computational econometrics}, pages 55--79.
 
+\bibitem[Mimno and Blei, 2011]{mimno2011bayesian}
+Mimno, D. and Blei, D. (2011).
+\newblock Bayesian checking for topic models.
+\newblock In {\em Proceedings of the Conference on Empirical Methods in Natural
+  Language Processing}, pages 227--237. Association for Computational
+  Linguistics.
+
 \bibitem[Mimno et~al., 2011]{mimno2011optimizing}
 Mimno, D., Wallach, H.~M., Talley, E., Leenders, M., and McCallum, A. (2011).
 \newblock Optimizing semantic coherence in topic models.
