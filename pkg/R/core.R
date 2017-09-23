@@ -2068,7 +2068,7 @@ IPTM_check.data = function(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
     New_sample = list()
     Inference_samp = IPTM_inference.data(edge, node, textlist, vocabulary, nIP, K,
     									 sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
-                      				 out = 1, n_B, n_d, burn, thinning, netstat, optimize = optimize, initial = initial)
+                      				 out = out, n_B, n_d, burn, thinning, netstat, optimize = optimize, initial = initial)
 	b = lapply(1:nIP, function(IP) {
         rowMeans(Inference_samp$B[[IP]])
     })
