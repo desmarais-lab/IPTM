@@ -2,7 +2,7 @@ loglik_logit <- function(beta,y,x){
   # beta is a vector of regression coefficients
   # y is the dependent variable
   # x is a matrix of covariates
-  linear_predictor <- cbind(1,x)%*%cbind(beta)
+  linear_predictor <- cbind(x)%*%cbind(beta)
   proby <- 1/(1+exp(-linear_predictor))
   ll <- sum(log(dbinom(y,1,proby)))
   ll
@@ -21,7 +21,7 @@ library(MCMCpack)
 
 mcmc_logit <-function(y,X,burnin = 5000, mcmc = 15000, thin = 10){
   require(MCMCpack)
-  init <- coef(glm(y~X,family="binomial"))
+  init <- coef(glm(y~X-1,family="binomial"))
   mcmcRes <- MCMCmetrop1R(loglik_logit,init,burnin=burnin,mcmc=mcmc,thin=thin,x=X,y=y)
   mcmcRes
 }
@@ -58,9 +58,9 @@ summary(test.expreg)
 
 ## Read in data
 # load Dare observed data
-load("./paper/code/predictiveComparisonModels/dare/Dare.RData")
+load("./dare/Dare.RData")
 # load Dare network statistics
-load("./paper/code/predictiveComparisonModels/dare/netstats_Dare.RData")
+load("./dare/netstats_Dare.RData")
 
 # extract the number of nodes
 nodes <- dim(netstats)[2]
@@ -82,7 +82,9 @@ colnames(observed_edge_data) <- c("sender",paste("R",1:nodes,sep=""),"timeinc","
 
 observed_edge_data <- data.frame(observed_edge_data)
 
-observed_edge_data <- observed_edge_data[observed_edge_data$time > 384,]
+# observed_edge_data <- observed_edge_data[observed_edge_data$time > 384,]
+
+first.training.obs <- min(which(observed_edge_data$time > 384))
 
 # reshape into dyadic dataset, ignore initial history
 dyadic_sendrec <- matrix(NA,nrow(observed_edge_data)*(nodes-1),features+4)
@@ -96,17 +98,14 @@ for(i in 1:nrow(observed_edge_data)){
 }
 colnames(dyadic_sendrec) <- c("document","sender","alter","recieved",paste("f",1:features))
 
+set.seed(1)
+testDocuments = sample(1105:2210, 200, replace = FALSE)
 
-# full data estimate
-# system.time(dare_logit_fulldata <- mcmc_logit(dyadic_sendrec[,"recieved"],dyadic_sendrec[,5:ncol(dyadic_sendrec)],burnin = 15000, mcmc = 75000,thin=50))
-set.seed(5)
-testDocuments <- (floor(nrow(observed_edge_data)/2)+1):nrow(observed_edge_data)
-testDocuments <- sample(testDocuments,length(testDocuments))
 
 for(d in testDocuments){
-  training_data <- dyadic_sendrec[which(dyadic_sendrec[,1]<d),]
+  training_data <- dyadic_sendrec[which(dyadic_sendrec[,1]<d & dyadic_sendrec[,1] >= first.training.obs),]
   training_results <- mcmc_logit(training_data[,"recieved"],training_data[,5:ncol(training_data)],burnin = 15000, mcmc = 25000,thin=50)
-  result_file <- paste("./paper/code/predictiveComparisonModels/results/logitResultsD",d,".RData",sep="")
+  result_file <- paste("./results/DarelogitResultsD",d,".RData",sep="")
   save(list="training_results",file=result_file)
   print(d)
 }
