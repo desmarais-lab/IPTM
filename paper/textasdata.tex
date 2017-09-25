@@ -470,8 +470,14 @@ To verify that our model is applicable beyond the Dare County email data, we als
 
 For both data sets, Dare County and Enron, we randomly selected 200 documents from the later half of the corpus and generated 100 samples of predicted tie data for every document $D$ by running Algorithm \ref{alg:IPTMPPE} and Algorithm \ref{alg:docpredict} ($O = 10$ and $R = 50$) with some burn-ins and thinnings ($b = 10$ and $q = 4$). Due to computational burden, we used the reduced set of network statistics (``intercept" and ``dyadic") for Enron, while we used full set of network statistics (``intercept" and ``dyadic", ``degree", ``triadic"). Moreover, we ran the same predictive experiments with 21 unique combinations of the number of interaction patterns ($C = 1, 2, 3$) and the number of topics ($K = 2, 5, 10, 25, 50, 75, 100$) as a grid-search based hyperparameter selection process. After choosing the best-performing hyperparameter combinations from the prediction results of earlier 150 documents, we then use the prediction results of the rest 50 documents to compare the IPTM and these predictions in terms of classification accuracy in predicting senders and receivers, as well as mean squared error in predicting document timing. Figure 7 presents the $F_1$ scores on sender predictions, multiclass version of the area under the ROC curve (AUC) measure \citep{hand2001simple} on receiver predictions, and mean squared error (MSE) on time predictions for each document we predicted, all averaged over 100 samples. 
 
-\textbf{Note: Plots and analysis to be added when we get the results}
-
+\textbf{Note: Plots to be updated when we get further results}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{plots/Dare_PPE.pdf}  
+		\includegraphics[width=1\textwidth]{plots/Enron_PPE.pdf}  
+	\label{fig:PPE}
+	\caption{Average AUC, F1 score, MSE for the Dare County email network (upper) and the Enron data set (lower).}
+\end{figure}
 
 \section{Topic Coherence} \label{sec:topiccoherence}
 Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to test whether the IPTM's incorporation of network properties improves or impairs the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using the latent dirichlet allocation (LDA). Instead of re-fit the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which simply makes the IPTM reduced to LDA in terms of topic assignments by unlinking the text and networks (same analogy as ablation study in Section \ref{subsec:ComparisonModels}). For each model, we varied the number of topics from 1 to 100 and drew five samples from the joint posterior distribution over the unobserved random variables in that model. We evaluated the topics resulting from each sample and averaged over the five samples, where the result is shown in Figure \ref{fig:Daretopic}. Our model was not significantly different from LDA in terms of topic coherence, for any choice of the number of topics. This result, when combined with the results in Section 7, demonstrates that our model can achieve state-of-the-art predictive performance while producing coherent topics. 
