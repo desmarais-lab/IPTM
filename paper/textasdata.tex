@@ -485,7 +485,7 @@ Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate th
 \textbf{Note: Plots to be updated when we get further results, including Enron's.}
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.49\textwidth]{plots/Dare_topic.pdf}  
+	\includegraphics[width=1\textwidth]{plots/topic_coherence.pdf}  
 	\label{fig:Daretopic}
 	\caption{Average topic coherence scores for the Dare County email network (left) and the Enron data set (right).}
 \end{figure}
@@ -505,7 +505,13 @@ and the pseudocode for generating new sets of data is given by Appendix \ref{sub
  We use this posterior predictive checking to assess the extent to which our model is a ``good fit" for the Dare County email network. For the test of goodness-of-fit in terms of network dynamics, we defined multiple network statistics that summarize meaningful aspects of Dare County data: indegree distribution for sender activities, outdegree distribution for receiver activities, document time-increment distributions, multicast (number of receivers) distribution, the edgewise shared partner distribution, and the geodesic distance distribution. For content-wise goodness-of-fit, we employed mutual information (MI) in \cite{mimno2011bayesian}, which is often used to evaluate ``bag of words" model assumptions. We then generated 1,000 synthetic networks and texts from the posterior predictive distribution implied by the IPTM and Dare County email data.
 We applied each discrepancy function to each synthetic network to yield the distributions over the values of the six network statistics and MI. If the IPTM is a suitable model for Dare County data, these distributions should be centered around the values of the corresponding discrepancy functions (except MI) when computed using the observed data.
 
-\textbf{Note: Plots and analysis to be added when we get the results}
+\textbf{Note: Plots and analysis to be updated when we get the results}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{plots/PPC_Dare_2_10.pdf}  
+	\label{fig:DarePPC}
+	\caption{PPC results for Dare County data: (a) outdegree distribution, (b) indegree distribution, (c) multicast distribution, and (d) QQplot of time-increments}
+\end{figure}
 
 \section{Conclusion} 
 The IPTM is, to our knowledge, the first model to be capable of jointly modeling sender, receivers, time and contents in time stamped text valued networks. The IPTM incorporates innovative components, including the modeling of multicast tie formation and the conditioning of ERGM style network generative features on topic-based content. The application to North Carolina county government email data demonstrates, among other capabilities, the effectiveness at the IPTM in separating out both the content and relational structure underlying the normal day-to-day function of an organization and the management of a highly time-sensitive event---Hurricane Sandy. The IPTM is applicable to a variety of networks in which ties are attributed with textual documents. These include, for example, economic sanctions sent between countries and legislation attributed with sponsors and co-sponsors. 

@@ -1,5 +1,5 @@
 setwd('/Users/bomin8319/Desktop/IPTM/Dare_full')
-
+library(fields)
 load('Darenew.RData')
 # 762 - 
 attach(Dare)
@@ -39,12 +39,7 @@ for (i in 1:5) {
 	}
 }
 
-outdegree = outdegree[1:80, ]
-indegree = indegree[1:80, ]
-multicast = multicast[1:80,]
-timediff = timediff[1:80,]
-
-
+par(mfrow = c(1,4))
 sortedoutdegree = sort(o_outdegree, decreasing = TRUE)
 outdegree = outdegree[, as.numeric(names(sortedoutdegree))]
 bplot(outdegree, xlab = "Actor", ylab = "Outdegree")
@@ -62,3 +57,18 @@ lines(o_multicast[1:24], col = 'red')
 qqplot(o_timediff, timediff, xlab = "Observed Quantile", ylab = "Simulated Quantile")
 abline(0, 1)
 
+
+
+mi_calc =function(text, K = 10) {
+	W = length(unique(unlist(text)))
+	D = length(text)
+	MI = rep(0, K)
+	topics = lapply(text, function(x){as.numeric(names(x))})
+	N_k = tabulate(unlist(topics), K)
+	N_dk = t(sapply(topics, function(x){ tabulate(x, K)}))
+	N_wk = matrix(0, W, K)
+	for (w in 1:W) {
+		N_wk[w, ] = tabulate(unlist(topics)[which(unlist(text) == w)], K)
+	}
+	
+}

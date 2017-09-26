@@ -4,7 +4,7 @@ load('/Users/bomin8319/Desktop/IPTM/enron/Enron.RData')
 set.seed(1)
 selectD = sample(1963:3925, 200, replace = FALSE)
 tables = list()
-for (d in 1:20) {
+for (d in c(1:28,101:103, 196:200)) {
   D = selectD[d]
   observeds = tabulate(Enron$edge[[D]]$sender, 33)
   observedr = tabulate(Enron$edge[[D]]$receiver, 33)
@@ -39,7 +39,7 @@ for (d in 1:20) {
   }
 }
 
-all =  Reduce('+', tables) / length(tables)
+all =  Reduce('+', tables[ c(1:28,101:103, 196:200)]) / length(tables[ c(1:28,101:103, 196:200)])
 
 22 - rank(all[,1]) + 22 - rank(all[,2]) + rank(all[,3])
 

@@ -7,7 +7,7 @@ setwd('/Users/bomin8319/Desktop/IPTM/paper/code/predictiveComparisonModels/resul
  tables = matrix(0, nrow = 200, ncol = 3)
   colnames(tables) = c("sender", "receiver", "time")
   rownames(tables) = selectD
-for (d in 1:22) {
+for (d in c(1:28,101:103, 196:200)) {
   D = selectD[d]
   observeds = tabulate(Enron$edge[[D]]$sender, 33)
   observedr = tabulate(Enron$edge[[D]]$receiver, 33)
@@ -27,8 +27,8 @@ for (d in 1:22) {
     tables[d, 3] = MSE / 100
   }
 
-tables = tables[order(selectD[1:22]),]
-tables = tables[- which(tables[,3] > 50),]
+tables = tables[order(selectD[c(1:28,101:103, 196:200)]),]
+#tables = tables[-which(tables[,3] > 50),]
 par(mfrow = c(1,3))
 plot(rownames(tables), tables[,1], type = 'l', col = 'black', xlab = "Document", lty = 2, ylab = "Sender AUC", ylim = c(min(tables[,1]), max(tables[,1])), main = "Enron")
 #lines(colnames(Dare_topic), Dare_topic[2,], lty = 3,col = "blue")
@@ -56,7 +56,7 @@ colnames(table_sum) = c("2", "5", "10", "25", "50", "75", "100")
 
 setwd('/Users/bomin8319/Desktop/IPTM/Enron_PPE')
 tables = list()
-for (d in 1:22) {
+for (d in c(1:28,101:103, 196:200)) {
   D = selectD[d]
   observeds = tabulate(Enron$edge[[D]]$sender, 33)
   observedr = tabulate(Enron$edge[[D]]$receiver, 33)
@@ -90,27 +90,27 @@ for (d in 1:22) {
   }
   }
 }
-tables = tables[order(selectD[1:22])]
-all = Reduce('+', tables[-c(1,12)]) / length(tables[-c(1,12)])
+#all = Reduce('+', tables[c(1:28,101:103, 196:200)[-c(9,10,23,26)]]) / length(tables[c(1:28,101:103, 196:200)[-c(9,10,23,26)]])
+all = Reduce('+', tables[c(1:28,101:103, 196:200)]) / length(tables[c(1:28,101:103, 196:200)])
 
 par(mfrow = c(1,3))
-plot(colnames(table_sum), table_sum[1,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Sender AUC", ylim = c(table_sum[1,1] - 0.02, table_sum[1,1] + 0.02))
+plot(colnames(table_sum), table_sum[1,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Sender AUC", ylim = c(table_sum[1,1] - 0.02, table_sum[1,1] + 0.15))
 lines(colnames(table_sum), all[1:7,1], lty = 3,col = "blue", type = 'b', pch = 19)
 lines(colnames(table_sum), all[8:14,1], lty = 4,col = "green",type = 'b', pch = 19)
 lines(colnames(table_sum), all[15:21,1], lty = 5,col = "purple",type = 'b', pch = 19)
 legend(60, 0.545, pch = 19, bty = "n", lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))
 
-plot(colnames(table_sum), table_sum[2,], type = 'b', pch = 19,  col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Receiver F1Score", ylim = c(table_sum[2,1] - 0.02, table_sum[2,1] + 0.01))
+plot(colnames(table_sum), table_sum[2,], type = 'b', pch = 19,  col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Receiver F1Score", ylim = c(table_sum[2,1] - 0.02, 1))
 lines(colnames(table_sum), all[1:7,2], lty = 3,col = "blue",type = 'b', pch = 19)
 lines(colnames(table_sum), all[8:14,2], lty = 4,col = "green",type = 'b', pch = 19)
 lines(colnames(table_sum), all[15:21,2], lty = 5,col = "purple",type = 'b', pch = 19)
-legend(60, 0.96,  pch = 19,bty = "n", lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))
+legend(60, 0.98,  pch = 19,bty = "n", lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))
 
-plot(colnames(table_sum), table_sum[3,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Time MSE", ylim = c(0, 1.6))
+plot(colnames(table_sum), table_sum[3,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Time MSE", ylim = c(11.5, 13.5))
 lines(colnames(table_sum), all[1:7,3], lty = 3,col = "blue",type = 'b', pch = 19)
 lines(colnames(table_sum), all[8:14,3], lty = 4,col = "green",type = 'b', pch = 19)
 lines(colnames(table_sum), all[15:21,3], lty = 5,col = "purple",type = 'b', pch = 19)
-legend(60, 1.55,  pch = 19, bty = "n",lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))
+legend(60, 13.5,  pch = 19, bty = "n",lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))
 
 
 ##################################################
@@ -145,19 +145,19 @@ for (d in 1:3) {
 tables = tables[order(selectD[1:3]),]
 #tables = tables[- which(tables[,3] > 50),]
 
-par(mfrow = c(1,3))
-plot(rownames(tables), tables[,1], type = 'l', col = 'black', xlab = "Document", lty = 2, ylab = "Sender AUC", ylim = c(min(tables[,1]), max(tables[,1])), main = "Dare")
+#par(mfrow = c(1,3))
+#plot(rownames(tables), tables[,1], type = 'l', col = 'black', xlab = "Document", lty = 2, ylab = "Sender AUC", ylim = c(min(tables[,1]), max(tables[,1])), main = "Dare")
 #lines(colnames(Dare_topic), Dare_topic[2,], lty = 3,col = "blue")
 #lines(colnames(Dare_topic), Dare_topic[3,], lty = 4, col = "green")
 #legend(65, -405, pch = 21, legend = c("IPTM with C = 3","IPTM with C = 2","LDA"), col = c("green","blue","red"))
 
-plot(rownames(tables), tables[,2], type = 'l', col ='black', xlab = "Document", lty = 2, ylab = "Receiver F1Score", ylim = c(min(tables[,2]), max(tables[,2])), main = "Dare")
+#plot(rownames(tables), tables[,2], type = 'l', col ='black', xlab = "Document", lty = 2, ylab = "Receiver F1Score", ylim = c(min(tables[,2]), max(tables[,2])), main = "Dare")
 #lines(colnames(Dare_topic), Dare_topic[2,], lty = 3,col = "blue")
 #lines(colnames(Dare_topic), Dare_topic[3,], lty = 4, col = "green")
 #legend(65, -405, pch = 21, legend = c("IPTM with C = 3","IPTM with C = 2","LDA"), col = c("green","blue","red"))
 
 
-plot(rownames(tables), tables[,3], type = 'l', col ='black', xlab = "Document", lty = 2, ylab = "Time MSE", ylim = c(min(tables[,3]), max(tables[,3])), main = "Dare")
+#plot(rownames(tables), tables[,3], type = 'l', col ='black', xlab = "Document", lty = 2, ylab = "Time MSE", ylim = c(min(tables[,3]), max(tables[,3])), main = "Dare")
 #lines(colnames(Dare_topic), Dare_topic[2,], lty = 3,col = "blue")
 #lines(colnames(Dare_topic), Dare_topic[3,], lty = 4, col = "green")
 #legend(65, -405, pch = 21, legend = c("IPTM with C = 3","IPTM with C = 2","LDA"), col = c("green","blue","red"))

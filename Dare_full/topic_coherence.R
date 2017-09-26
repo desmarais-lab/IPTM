@@ -52,11 +52,12 @@ TableWord = function(Zchain, K, textlist, vocabulary, top = 20) {
 Dare_topic = matrix(0, 3, 8)
 colnames(Dare_topic) = as.numeric(c("1", "2", "5", "10", "25", "50", "75", "100"))
 
-setwd("~/Desktop/Dare_full")
+setwd("~/Desktop/IPTM/Dare_full")
+for (i in 1:2) {
 for (nIP in 1:3) {
 	iter = 1
 	for (K in c(2, 5, 10, 25, 50, 75, 100)){
-		filename = paste0("Dare_full_",nIP,"_",K,"_ver",1,".RData")
+		filename = paste0("Dare_full_",nIP,"_",K,"_ver",i,".RData")
 		load(filename)
 		top.words = TableWord(Daretest$Z, K, Dare$text, Dare$vocab)
         topic.word = matrix(0, nrow = length(Daretest$Z), ncol = length(Dare$vocab))
@@ -66,11 +67,14 @@ for (nIP in 1:3) {
 		topic.word[d, ] = tabulate(Dare$text[[d]], length(Dare$vocab))
 		}
 		iter = iter + 1
-		Dare_topic[nIP, iter] = mean(sapply(1:K, function(k) {
+		Dare_topic[nIP, iter] = Dare_topic[nIP, iter] + mean(sapply(1:K, function(k) {
 		topic_coherence(top.words[,k], topic.word,Dare$vocab)	
 		}))
 	}
 }
+}
+
+Dare_topic = Dare_topic / 2
 
 for (i in 1:length(Daretest$Z)) {
     Daretest$Z[[i]] = rep(1, length(Daretest$Z[[i]]))
@@ -87,8 +91,97 @@ Dare_topic[,1] = mean(sapply(1:K, function(k) {
     topic_coherence(top.words[,k], topic.word,Dare$vocab)
 }))
 
+###################
+load('~/Desktop/IPTM/Enron/Enron.RData')
 
+TableWord = function(Zchain, K, textlist, vocabulary, top = 20) {
+  # Generate a table of token-topic assignments with high probabilities for each IP
+  #
+  # Args 
+  #  Zchain summary of Z obtained using MCMC function
+  #  K total number of topics specified by the user
+  #  textlist list of text containing the words in each document
+  #  vocabulary all vocabularies used over the corpus
+  #
+  # Returns
+  #  List of table that summarize token-topic assignments for each IP
+  W = length(vocabulary)
+    Zsummary = list()
+    topic.word = matrix(0, nrow = K, ncol = W)
+    colnames(topic.word) = vocabulary
+    iter = 1
+    for (d in seq(along = textlist)) {
+      if (length(Zchain[[d]]) > 0){
+        Zsummary[[iter]] = Zchain[[d]]
+        names(Zsummary[[iter]])<- vocabulary[textlist[[d]]]
+        iter = iter+1
+      }
+    }
+    topic.dist = t(tabulate(unlist(Zsummary), K)/length(unlist(Zsummary)))
+    colnames(topic.dist) = c(1:K)
+    top.topic = topic.dist[, order(topic.dist, decreasing = TRUE)]
+    all.word = unlist(Zsummary)
+    for (i in seq(along = all.word)){
+      matchWZ = which(colnames(topic.word) == names(all.word[i]))
+      topic.word[all.word[i], matchWZ] = topic.word[all.word[i], matchWZ] + 1
+    }
+    table.word = top.topic.words(topic.word, num.words = top, by.score =TRUE)
+    colnames(table.word) = names(top.topic)
+  return(table.word)
+}
+
+Enron_topic = matrix(0, 3, 8)
+colnames(Enron_topic) = as.numeric(c("1", "2", "5", "10", "25", "50", "75", "100"))
+
+setwd("~/Desktop/IPTM/Enron_full")
+for (i in 1:1) {
+for (nIP in 1:3) {
+	iter = 1
+	for (K in c(2, 5, 10, 25)){
+		filename = paste0("Enron_full_",nIP,"_",K,"_ver",i,".RData")
+		load(filename)
+		top.words = TableWord(Enrontest$Z, K, Enron$text, Enron$vocab)
+        topic.word = matrix(0, nrow = length(Enrontest$Z), ncol = length(Enron$vocab))
+		rownames(topic.word) = 1:length(Enron$text)
+		colnames(topic.word) = Enron$vocab
+		for (d in seq(along = Enron$text)) {
+		topic.word[d, ] = tabulate(Enron$text[[d]], length(Enron$vocab))
+		}
+		iter = iter + 1
+		Enron_topic[nIP, iter] = Enron_topic[nIP, iter] + mean(sapply(1:K, function(k) {
+		topic_coherence(top.words[,k], topic.word,Enron$vocab)	
+		}))
+	}
+}
+}
+
+Enron_topic = Enron_topic /1
+
+for (i in 1:length(Enrontest$Z)) {
+   Enrontest$Z[[i]] = rep(1, length(Enrontest$Z[[i]]))
+}
+top.words = TableWord(Enrontest$Z, 1, Enron$text, Enron$vocab)
+topic.word = matrix(0, nrow = length(Enrontest$Z), ncol = length(Enron$vocab))
+rownames(topic.word) = 1:length(Enron$text)
+colnames(topic.word) = Enron$vocab
+for (d in seq(along =Enron$text)) {
+    topic.word[d, ] = tabulate(Enron$text[[d]], length(Enron$vocab))
+}
+K = 1
+Enron_topic[,1] = mean(sapply(1:K, function(k) {
+    topic_coherence(top.words[,k], topic.word,Enron$vocab)
+}))
+
+################
+
+par(mfrow = c(1,2))
 plot(colnames(Dare_topic), Dare_topic[1,], type = 'l', col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Topic Coherence", ylim = c(min(Dare_topic), max(Dare_topic)), main = "Dare")
 lines(colnames(Dare_topic), Dare_topic[2,], lty = 3,col = "blue")
 lines(colnames(Dare_topic), Dare_topic[3,], lty = 4, col = "green")
 legend(65, -405, pch = 21, legend = c("IPTM with C = 3","IPTM with C = 2","LDA"), col = c("green","blue","red"))
+
+Enron_topic = Enron_topic[, -c(6:8)]
+plot(colnames(Enron_topic), Enron_topic[1,], type = 'l', col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Topic Coherence", ylim = c(min(Enron_topic), max(Enron_topic)), main = "Enron")
+lines(colnames(Enron_topic), Enron_topic[2,], lty = 3,col = "blue")
+lines(colnames(Enron_topic), Enron_topic[3,], lty = 4, col = "green")
+legend(15, -500, pch = 21, legend = c("IPTM with C = 3","IPTM with C = 2","LDA"), col = c("green","blue","red"))
