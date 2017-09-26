@@ -11,7 +11,7 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-setwd('~/Desktop/Dare_full')
+setwd('~/Desktop/IPTM/Dare_full')
 for (i in 5:5) {
     filename = paste0("Dare_full_",2,"_",10,"_ver",i,".RData")
 	load(filename)

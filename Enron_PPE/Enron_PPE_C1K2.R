@@ -38,5 +38,5 @@ save(PPE, file = filename)
 }
 
 for (doc in 1:200) {
-	predictIPTM(201-doc)
+	predictIPTM(100+doc)
 }
