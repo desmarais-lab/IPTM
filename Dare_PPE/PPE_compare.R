@@ -3,7 +3,7 @@ library(pROC)
 load('/Users/bomin8319/Desktop/IPTM/enron/Dare.RData')
 set.seed(1)
 selectD = sample(1105:2210, 200, replace = FALSE)
-setwd('/Users/bomin8319/Desktop/Dare_PPE')
+setwd('/Users/bomin8319/Desktop/IPTM/Dare_PPE')
 tables = list()
 for (d in 1:3) {
   D = selectD[d]
@@ -44,5 +44,5 @@ for (d in 1:3) {
 
 all =  Reduce('+', tables) / length(tables)
 
-22 - rank(all[,1]) + 22 - rank(all[,2]) + rank(all[,3])
+22 - rank(all[1:14,1]) + 22 - rank(all[1:14,2]) + rank(all[1:14,3])
 
