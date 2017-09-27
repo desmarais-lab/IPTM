@@ -6,7 +6,7 @@
 \usage{
 IPTM_check.data(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha,
   mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta, out, n_B, n_d,
-  burn, thinning, netstat, optimize = FALSE, initial)
+  burn, thinning, netstat, optimize = FALSE, initial, inference)
 }
 \arguments{
 \item{O}{number of outer iterations of inference from which to generate predictions}
@@ -54,6 +54,8 @@ IPTM_check.data(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha,
 \item{optimize}{to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)}
 
 \item{initial}{list of initial values user wants to assign}
+
+\item{inference}{inference result}
 }
 \value{
 prediction output

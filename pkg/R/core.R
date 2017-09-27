@@ -2058,17 +2058,16 @@ GenerateDocs.PPC = function(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas,
 #' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
 #' @param optimize to optimize alpha (Dirichlet concentration prior for document-topic distribution) or not (TRUE/FALSE)
 #' @param initial list of initial values user wants to assign
+#' @param inference inference result
 #'
 #' @return prediction output 
 #'
 #' @export
 IPTM_check.data = function(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q, alpha, mvec, betas, nvec, 
 							 prior.b.mean, prior.b.var, prior.delta, out, n_B, n_d, burn, thinning, netstat, optimize = FALSE, 
-							 initial) {
+							 initial, inference) {
     New_sample = list()
-    Inference_samp = IPTM_inference.data(edge, node, textlist, vocabulary, nIP, K,
-    									 sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
-                      				 out = out, n_B, n_d, burn, thinning, netstat, optimize = optimize, initial = initial)
+    Inference_samp = inference
 	b = lapply(1:nIP, function(IP) {
         rowMeans(Inference_samp$B[[IP]])
     })
@@ -2081,8 +2080,8 @@ IPTM_check.data = function(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
     for (k in 1:K) {
 	word_type_topic_counts[,k] = tabulate(textlist.raw[which(unlist(Inference_samp$Z)==k)], length(vocabulary))
     }
-    base.edge = edge[Inference_samp$edge2]
-    base.text = textlist[Inference_samp$edge2]
+    base.edge = edge[-Inference_samp$edge2]
+    base.text = textlist[-Inference_samp$edge2]
       for (o in 1:O) {
       	print(o)
        New_sample[[o]] = GenerateDocs.PPC(length(edge[-Inference_samp$edge2]), node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
