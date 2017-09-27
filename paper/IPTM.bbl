@@ -112,6 +112,12 @@ Hammer, M. (1985).
   network data.
 \newblock {\em Social Networks}, 7(2):189--201.
 
+\bibitem[Hand and Till, 2001]{hand2001simple}
+Hand, D.~J. and Till, R.~J. (2001).
+\newblock A simple generalisation of the area under the roc curve for multiple
+  class classification problems.
+\newblock {\em Machine learning}, 45(2):171--186.
+
 \bibitem[Hunter et~al., 2008]{hunter2008ergm}
 Hunter, D.~R., Handcock, M.~S., Butts, C.~T., Goodreau, S.~M., and Morris, M.
   (2008).
@@ -194,6 +200,13 @@ McCallum, A., Corrada-Emmanuel, A., and Wang, X. (2005).
 McCullough, B.~D. (2009).
 \newblock The accuracy of econometric software.
 \newblock {\em Handbook of computational econometrics}, pages 55--79.
+
+\bibitem[Mimno and Blei, 2011]{mimno2011bayesian}
+Mimno, D. and Blei, D. (2011).
+\newblock Bayesian checking for topic models.
+\newblock In {\em Proceedings of the Conference on Empirical Methods in Natural
+  Language Processing}, pages 227--237. Association for Computational
+  Linguistics.
 
 \bibitem[Mimno et~al., 2011]{mimno2011optimizing}
 Mimno, D., Wallach, H.~M., Talley, E., Leenders, M., and McCallum, A. (2011).
