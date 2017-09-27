@@ -1,5 +1,6 @@
 setwd('/Users/bomin8319/Desktop/IPTM/Dare_full')
 library(fields)
+library(ergm)
 load('Darenew.RData')
 # 762 - 
 attach(Dare)
@@ -12,10 +13,10 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-o_outdegree = tabulate(sapply(Dare$edge[385:2210], function(x) {x$sender}), 27)
-o_indegree = tabulate(unlist(lapply(Dare$edge[385:2210], function(x) {x$receiver})), 27)
-o_multicast = tabulate(sapply(Dare$edge[385:2210], function(x) {length(x$receiver)}), 27)
-o_timediff = sapply(385:2210, function(x) {Dare$edge[[x]]$unixtime - Dare$edge[[x-1]]$unixtime })
+o_outdegree = tabulate(sapply(Dare$edge[385:2210], function(x) {x[[1]]}), 27)
+o_indegree = tabulate(unlist(lapply(Dare$edge[385:2210], function(x) {x[[2]]})), 27)
+o_multicast = tabulate(sapply(Dare$edge[385:2210], function(x) {length(x[[2]])}), 27)
+o_timediff = sapply(385:2210, function(x) {Dare$edge[[x]][[3]] - Dare$edge[[x-1]][[3]] })
 names(o_outdegree) = c(1:27)
 names(o_indegree) = c(1:27)
 
@@ -52,19 +53,19 @@ espart = matrix(0, 100, 26)
 
 K = 10
 d = 1
-for (i in 1:5) {
-	filename = paste0("PPC", i, ".RData")
+for (i in 1:3) {
+	filename = paste0("PPC", i, "_nIP2_K10_Dare.RData")
 	load(filename)
     filename2 = paste0("Dare_full_",2,"_",10,"_ver",i,".RData")
     load(filename2)
     MI[[i]] = matrix(0, 20, K)
 	for (j in 1:20) {
 		PPC_j = PPC[[j]]
-		outdegree[d,] = tabulate(sapply(PPC_j$edge[385:2210], function(x) {x$sender}), 27)
-		indegree[d,] = tabulate(unlist(lapply(PPC_j$edge[385:2210], function(x) {x$receiver})), 27)
-		multicast[d,] =  tabulate(sapply(PPC_j$edge[385:2210], function(x) {length(x$receiver)}), 27)
+		outdegree[d,] = tabulate(sapply(PPC_j$edge[385:2210], function(x) {x[[1]]}), 27)
+		indegree[d,] = tabulate(unlist(lapply(PPC_j$edge[385:2210], function(x) {x[[2]]})), 27)
+		multicast[d,] =  tabulate(sapply(PPC_j$edge[385:2210], function(x) {length(x[[2]])}), 27)
 		timediff[d, ] = unlist(sapply(385:2210, function(x) {PPC_j$edge[[x]][[3]]- PPC_j$edge[[x-1]][[3]]}))
-        #MI[[i]][d, ] = mi_calc(PPC_j$text[385:2210], topics = Daretest$Z[385:2210], K)
+        MI[[i]][d, ] = mi_calc(PPC_j$text[385:2210], topics = Daretest$Z[385:2210], K)
         #Z's from different inferences may have label switching problem
         networkmat = matrix(0, nrow = 0, ncol = 2)
         for (doc in 385:2210) {

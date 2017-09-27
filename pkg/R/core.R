@@ -2084,7 +2084,7 @@ IPTM_check.data = function(O, edge, node, textlist, vocabulary, nIP, K, sigma_Q,
     base.text = textlist[-Inference_samp$edge2]
       for (o in 1:O) {
       	print(o)
-       New_sample[[o]] = GenerateDocs.PPC(length(edge[-Inference_samp$edge2]), node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
+       New_sample[[o]] = GenerateDocs.PPC(length(Inference_samp$edge2), node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
                         b, delta, currentC, netstat, base.edge, base.text, currentZ, word_type_topic_counts)
       }                    
  return(New_sample)                                	
