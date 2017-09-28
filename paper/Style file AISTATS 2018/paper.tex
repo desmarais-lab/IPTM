@@ -1,0 +1,193 @@
+\documentclass[twoside]{article}
+\usepackage{aistats2018}
+\usepackage{natbib}
+ % If your paper is accepted, change the options for the package
+% aistats2018 as follows:
+%
+%\usepackage[accepted]{aistats2018}
+%
+% This option will print headings for the title of your paper and
+% headings for the authors names, plus a copyright note at the end of
+% the first column of the first page.
+
+
+\begin{document}
+
+% If your paper is accepted and the title of your paper is very long,
+% the style will print as headings an error message. Use the following
+% command to supply a shorter title of your paper so that it can be
+% used as headings.
+%
+%\runningtitle{I use this title instead because the last one was very long}
+
+% If your paper is accepted and the number of authors is large, the
+% style will print as headings an error message. Use the following
+% command to supply a shorter version of the authors names so that
+% they can be used as headings (for example, use only the surnames)
+%
+%\runningauthor{Surname 1, Surname 2, Surname 3, ...., Surname n}
+
+\twocolumn[
+
+\aistatstitle{A Network Model for Dynamic Textual Communications \\with Application to
+  Government Email Corpora}
+
+\aistatsauthor{ Bomin Kim \And Aaron Schein \And  Bruce Desmarais \And Hanna Wallach}
+
+\aistatsaddress{ Institution 1 \And  Institution 2 \And Institution 3 \And Institution 4} ]
+
+\begin{abstract}
+  In this paper, we introduce the interaction-partitioned topic model
+  (IPTM)---a probabilistic model for who communicates with whom about
+  what, and when. Broadly speaking, the IPTM partitions time-stamped
+  textual communications, such as emails, according to both the network
+  dynamics that they reflect and their content. To define the IPTM, we
+  integrate a dynamic version of the exponential random graph model---a
+  generative model for ties that tend toward structural features such as
+  triangles---and latent Dirichlet allocation---a generative model for
+  topic-based content. The IPTM assigns each topic to an ``interaction
+  pattern"---a generative process for ties that is governed by a set of
+  dynamic network features. Each communication is then modeled as a
+  mixture of topics and their corresponding interaction patterns. We use
+  the IPTM to analyze emails sent between department managers in Dare
+  county government in North Carolina; these email corpora
+  covers the Outer Banks during the time period surrounding Hurricane
+  Sandy. Via this application, we demonstrate that the IPTM is effective
+  at predicting and explaining continuous-time textual communications.
+\end{abstract}
+
+\section{Introduction}
+
+% Aaron: Currently this section is a combined Introduction and Related Work section.
+%        For an ML audience, we need to say why any probabilistic model of this data is
+%        needed.  We should have a paragraph after the first paragraph that explains how
+%        political scientists use these models and what kinds of tasks are motivated.
+%        I think we should then move some of the more technical details of related work to
+%        a "Related Works" section, which comes after we present the model.
+
+% Aaron: At the end of this section we should add an example of what kinds of structure motivate
+%        motivate our model. I think we should put figures 5 and 6 (hurricane plots) in the intro.
+
+In recent decades, real-time digitized textual communication has developed into a ubiquitous form of social and professional interaction \citep[see, e.g.,][]{kanungo2008modeling, szostek2011dealing, burgess2004email, pew2016}. From the perspective of the computational social scientist, this has lead to a growing need for methods of modeling interactions that manifest as text exchanged in continuous time (e.g., e-mail messages). 
+
+A number of models that build upon topic modeling through Latent Dirichlet Allocation \citep{Blei2003} to incorporate link data as well as textual content have been developed recently \citep{mccallum2005author,lim2013twitter,Krafft2012}. These models are innovative in their extensions that incorporate network tie information. However, none of the models that are currently available in the literature integrate the rich random-graph structure offered by state of the art models for network structure---in particular, the exponential random graph model (ERGM) \citep{robins2007introduction,chatterjee2013estimating,hunter2008ergm}. The ERGM is the canonical model for network structure, as it is flexible enough to specify a generative model that accounts for nearly any pattern of tie formation (e.g., tie reciprocation, clustering, popularity effects) \citep{desmarais2017statistical}. We build upon recent extensions of ERGM that model time-stamped ties \citep{PerryWolfe2012,Butts2008}, and develop the interaction-partitioned topic model (IPTM) to simultaneously model the network structural patterns that govern tie formation, and the content in the communications.
+
+ERGM, and models based on ERGM, provide a framework for explaining or predicting ties between nodes using the network sub-structures in which the two nodes are embedded (e.g., an ERGM specification may predict ties between two nodes that have many shared partners). ERGM-style models have been used for many applications in which the ties between nodes are annotated with text. The text, despite providing rich information regarding the strength, scope, and character of the ties, has been largely excluded from these analyses, due to the inability of ERGM-style models to incorporate textual attributes of ties. These application domains include, among other applicaitons, the study of legislative networks in which networks reflect legislators' co-support of bills, but exclude bill text \citep{bratton2011networks,aleman2013explaining}; the study of alliance networks in which networks reflect countries' co-signing of treaties, but exclude treaty text \citep{camber2010geometry,cranmer2012complex,cranmer2012toward,kinne2016agreeing}; the study of scientific co-authorship networks that exclude the text of the co-authored papers \citep{kronegger2011collaboration,liang2015changing,fahmy2016gender}; and the study of text-based interaction on social media (e.g., users tied via `mentions' on twitter) \citep{yoon2014strategies,peng2016follower,lai2017connecting}.
+
+In defining and testing the IPTM we embed three core conceptual properties, in addition to modeling both text and network structure. First, we link the content component of the model, and network component of the model such that knowing who is communicating with whom at what time (i.e., the network component) provides information about the content of communication,  and vice versa. Second, we fully specify the network dynamic component of the model such that, given the content of the communication and the history of tie formation, we can draw an exact, continuous-time prediction of when, by whom, and to whom the communication will be sent. Third, we formulate the network dynamic component of the model such that the model can represent, and be used to test hypotheses regarding, canonical processes relevant to network theory such as preferential attachment---the tendency for actors to prefer interacting with actors who have been popular in the past \citep{barabasi1999emergence,vazquez2003growing,jeong2003measuring}, reciprocity \citep{hammer1985implications,rao1987measures}, and transitivity---the tendency for the friends of friends to become friends \citep{louch2000personal,burda2004network}. In what follows we (1) present the generative process for the IPTM, describing how it meets our theoretical criteria, (2) derive the sampling equations for Bayesian inference with the IPTM, and (3) illustrate the IPTM through application to email corpora of internal communications by government officials in Dare County, NC.
+
+
+\section{Model}
+This section should follow the roughly the same structure as the corresponding section in IPTM.pdf.
+\begin{enumerate}
+\item Introduce notation and key concepts (e.g., \emph{interaction patterns}) 
+\item Generative process
+\item More details
+\begin{itemize}
+\item Dynamic network statistics
+\item Tie generating process and computation of normalizing constant (which perhaps should be a Proposition)
+\end{itemize}
+\end{enumerate}
+We will have to seriously condense what is in IPTM.pdf though (2 pages MAX, 1-1.5 if possible).
+
+\section{Related work}
+This is where we should factor out some of the details in the current introduction about how the model relates to previous work.  Point out how the different components of the model relate to different subcommunities (e.g., topic modeling, ERGMs).  We also reiterate clearly here what has/n't been done before and why that's important (this should ALSO be stated in the introduction).   
+\section{MCMC inference}
+This section can look a lot like what is currently in IPTM.pdf.  We should put more emphasis on the auxiliary variable technique and the properties of the exponential distribution we are exploiting as these might be interesting to reviewers.  We should relegate the algorithm to Supplementary Material.  We should also cut down some of the more notational parts (e.g., equation 8). 
+
+\section{Model validation}
+\begin{itemize}
+\item PPCs
+\item Document prediction
+\item Coherence
+\end{itemize}
+
+\section{Example application: Dare county}
+In this section, we use fit the model to the Dare county data and demonstrate how a political scientist would use its output to understand the patterns present in the data (i.e., section 5.2 in IPTM.pdf).  We want to make sure that whatever findings we report in this section are foreshadowed in the introduction/motivation.
+
+\section{Conclusion (and/or Future directions)}
+
+% \subsubsection{Footnotes}
+
+% Indicate footnotes with a number\footnote{Sample of the first
+%   footnote.} in the text. Use 8 point type for footnotes. Place the
+% footnotes at the bottom of the column in which their markers appear,
+% continuing to the next column if required. Precede the footnote
+% section of a column with a 0.5 point horizontal rule 1~inch (6~picas)
+% long.\footnote{Sample of the second footnote.}
+
+% \subsubsection{Figures}
+
+% All artwork must be centered, neat, clean, and legible.  All lines
+% should be very dark for purposes of reproduction, and art work should
+% not be hand-drawn.  Figures may appear at the top of a column, at the
+% top of a page spanning multiple columns, inline within a column, or
+% with text wrapped around them, but the figure number and caption
+% always appear immediately below the figure.  Leave 2 line spaces
+% between the figure and the caption. The figure caption is initial caps
+% and each figure should be numbered consecutively.
+
+% Make sure that the figure caption does not get separated from the
+% figure. Leave extra white space at the bottom of the page rather than
+% splitting the figure and figure caption.
+% \begin{figure}[h]
+% \vspace{.3in}
+% \centerline{\fbox{This figure intentionally left non-blank}}
+% \vspace{.3in}
+% \caption{Sample Figure Caption}
+% \end{figure}
+
+% \subsubsection{Tables}
+
+% All tables must be centered, neat, clean, and legible. Do not use hand-drawn tables. Table number and title always appear above the table.
+% See Table~\ref{sample-table}.
+
+% Use one line space before the table title, one line space after the table title, and one line space after the table. The table title must be
+% initial caps and each table numbered consecutively.
+
+% \begin{table}[h]
+% \caption{Sample Table Title} \label{sample-table}
+% \begin{center}
+% \begin{tabular}{ll}
+% {\bf PART}  &{\bf DESCRIPTION} \\
+% \hline \\
+% Dendrite         &Input terminal \\
+% Axon             &Output terminal \\
+% Soma             &Cell body (contains cell nucleus) \\
+% \end{tabular}
+% \end{center}
+% \end{table}
+
+% \section{SUPPLEMENTARY MATERIAL}
+
+% If you need to include additional appendices during submission, you
+% can include them in the supplementary material file.
+
+
+% \subsubsection*{Acknowledgements}
+
+% Use unnumbered third level headings for the acknowledgements.  All
+% acknowledgements go at the end of the paper.
+
+% \subsubsection*{References}
+\bibliographystyle{apalike}
+\bibliography{IPTM}
+
+% References follow the acknowledgements.  Use an unnumbered third level
+% heading for the references section.  Any choice of citation style is
+% acceptable as long as you are consistent.  Please use the same font
+% size for references as for the body of the paper---remember that
+% references do not count against your page length total.
+
+% J.~Alspector, B.~Gupta, and R.~B.~Allen (1989). Performance of a
+% stochastic learning microchip.  In D. S. Touretzky (ed.), {\it
+%   Advances in Neural Information Processing Systems 1}, 748-760.  San
+% Mateo, Calif.: Morgan Kaufmann.
+
+% F.~Rosenblatt (1962). {\it Principles of Neurodynamics.} Washington,
+% D.C.: Spartan Books.
+
+% G.~Tesauro (1989). Neurogammon wins computer Olympiad.  {\it Neural
+%   Computation} {\bf 1}(3):321-323.
+
+\end{document}
