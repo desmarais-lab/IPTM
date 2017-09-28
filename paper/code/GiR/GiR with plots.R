@@ -17,7 +17,7 @@ netstat = c("dyadic")
 P =  3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
 prior.b.mean = rep(0, P)
 prior.b.var = 0.05 * diag(P)
-prior.delta = c(0.1, 1)
+prior.delta = c(-2.5, 0.1)
 sigma_Q = c(0.01, 0.001)
 niters = c(5, 5500, 500, 500, 5)
 
@@ -25,7 +25,7 @@ b = lapply(1:nIP, function(IP) {
     prior.b.mean
     })
 delta = prior.delta[1]
-eta = prior.delta[1]
+eta = exp(prior.delta[1])
 
 currentC = sample(1L:nIP, K, replace = TRUE)
 supportD = gibbs.measure.support(length(node) - 1)
@@ -38,7 +38,7 @@ base.text = base.data$text
 # par(mfrow=c(5,8), oma = c(1,1,1,1), mar = c(1,1,1,1))
 # GiR_PP_Plots(TrySchein$Forward, TrySchein$Backward)
 
-set.seed(2)
+set.seed(1)
 sigma_Q = c(0.1, 5)
 niters = c(5, 2, 2, 0, 1)
 

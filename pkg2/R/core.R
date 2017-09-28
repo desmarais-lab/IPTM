@@ -171,7 +171,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
 		rdirichlet_cpp(1, betas * nvec)
 	})
 	delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
-	eta = exp(rnorm(1, prior.eta[1], sqrt(prior.eta[2])))
+	eta = exp(rnorm(1, prior.delta[1], sqrt(prior.delta[2])))
 
 	beta.old = lapply(1:nIP, function(IP) {
       			  c(rcpp_rmvnorm(1,  prior.b.var, prior.b.mean))
@@ -183,7 +183,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
      			 multinom_vec(max(1, length(textlist[[d]])), theta[d, ])
  				 })
  	p.d = pdmat(currentZ, currentC, nIP)
-	accept.rates = rep(0, 2)
+	accept.rates = rep(0, 3)
     # initialize beta
     netstat = c(0, as.numeric(c("degree", "dyadic", "triadic") %in% netstat))
     L = 3
@@ -532,7 +532,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   mvecmat = matrix(NA, nrow = 0, ncol = K)
   n_B2 = n_B / 5
   n_d2 = n_d / 5
-   accept.rates = rep(0, 2)
+   accept.rates = rep(0, 3)
     #start outer iteration
     for (o in 1:out) {
     	if (o == out) {
@@ -668,7 +668,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     post.old1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, eta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
     if (o != 1) {
     	accept.rates[1] = accept.rates[1] / n_B2
-    	accept.rates[2] = accept.rates[2] / n_d2
+    	accept.rates[2:3] = accept.rates[2:3] / n_d2
       	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
       if (accept.rates[1] >  1 / n_B2) { 
         for (IP in 1:nIP) {
@@ -677,7 +677,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         }
       }
     }
-    accept.rates = rep(0, 2)
+    accept.rates = rep(0, 3)
     for (i3 in 1:n_B2) {
       beta.new = lapply(1:nIP, function(IP) {
         c(rcpp_rmvnorm(1, sigma_Q[1] * proposal.var[[IP]], beta.old[[IP]]))
