@@ -5,7 +5,7 @@
 \title{GenerateDocs.Gibbs}
 \usage{
 GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
-  nvec, b, delta, currentC, netstat, base.edge, base.text,
+  nvec, b, delta, eta, currentC, netstat, base.edge, base.text,
   topic_token_assignments = NULL, forward = FALSE, backward_init = FALSE,
   backward = FALSE, base = FALSE, support)
 }
@@ -33,6 +33,8 @@ GenerateDocs.Gibbs(nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas,
 \item{b}{List of coefficients estimating the history effect for each IP}
 
 \item{delta}{tuning parameter controlling the number of recipients}
+
+\item{eta}{tuning parameter controlling the time increments}
 
 \item{currentC}{topic-IP assignment}
 

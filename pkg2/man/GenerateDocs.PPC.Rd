@@ -5,7 +5,7 @@
 \title{GenerateDocs.PPC}
 \usage{
 GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
-  b, delta, currentC, netstat, base.edge, base.text, currentZ,
+  b, delta, eta, currentC, netstat, base.edge, base.text, currentZ,
   word_type_topic_counts)
 }
 \arguments{
@@ -32,6 +32,8 @@ GenerateDocs.PPC(nDocs, node, vocabulary, nIP, K, alpha, mvec, betas, nvec, iJi,
 \item{b}{List of coefficients estimating the history effect for each IP}
 
 \item{delta}{tuning parameter controlling the number of recipients}
+
+\item{eta}{tuning parameter controlling the time increments}
 
 \item{currentC}{topic-IP assignment}
 

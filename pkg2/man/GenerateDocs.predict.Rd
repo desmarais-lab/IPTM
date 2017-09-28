@@ -5,7 +5,7 @@
 \title{GenerateDocs.predict}
 \usage{
 GenerateDocs.predict(R, node, vocabulary, nIP, K, owords, alpha, mvec, betas,
-  nvec, b, delta, currentC, netstat, initial_iJi, base.edge, base.text,
+  nvec, b, delta, eta, currentC, netstat, initial_iJi, base.edge, base.text,
   currentZ, edge2, word_type_topic_counts, niter)
 }
 \arguments{
@@ -32,6 +32,8 @@ GenerateDocs.predict(R, node, vocabulary, nIP, K, owords, alpha, mvec, betas,
 \item{b}{List of coefficients estimating the history effect for each IP}
 
 \item{delta}{tuning parameter controlling the number of recipients}
+
+\item{eta}{tuning parameter controlling the time increments}
 
 \item{currentC}{topic-IP assignment}
 
