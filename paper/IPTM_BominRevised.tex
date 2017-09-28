@@ -334,7 +334,7 @@ We generated $10^5$ sets of forward and backward samples, and then calculated 1,
 by taking every 9th sample starting at the 10,000th sample for a resulting sample size of 10,000, in order to reduce the autocorrelation in the Markov chains. In each case, if we observe a large p-value, this gives us evidence that the distributions generated under forward and backward sampling have the same locations. We depict the GiR results using probability-probability (PP) plots. To compare two samples with a PP-plot we calculate the empirical quantile in each sample of a set of values observed across the two samples, then plot the sets of quantiles in the two samples against each other. If the two samples are from equivalent distributions, the quantiles should line up on a line with zero $y$-intercept, and unit slope (i.e., a 45-degree line). The GiR test results are depicted in Figure 2, which show that we pass the test on every statistic.
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1\textwidth]{plots/Schein.png} 
+	\includegraphics[width=1\textwidth]{plots/GiReta.pdf} 
 	\label{fig:PPplot}
 	\caption{Probability-Probability plot for the 25 GiR test statistics.}
 \end{figure}

@@ -19,7 +19,7 @@ prior.b.mean = rep(0, P)
 prior.b.var = 0.05 * diag(P)
 prior.delta = c(-2.5, 0.1)
 sigma_Q = c(0.01, 0.001)
-niters = c(5, 5500, 500, 500, 5)
+niters = c(3, 5500, 500, 500, 5)
 
 b = lapply(1:nIP, function(IP) {
     prior.b.mean
@@ -42,6 +42,6 @@ set.seed(1)
 sigma_Q = c(0.1, 5)
 niters = c(5, 2, 2, 0, 1)
 
-TrySchein<- Schein.Gibbs(5000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+TrySchein<- Schein.Gibbs(10000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
 					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat)
 
