@@ -1,4 +1,4 @@
-library(IPTM)
+library(IPTM2)
 load('Darenew.RData')
 # 762 - 
 attach(Dare)
@@ -18,10 +18,10 @@ K = 75
 for (i in 1:5){
     set.seed(i)
     Daretest = IPTM_inference.data(edge = Dare$edge, node = Dare$node, textlist = Dare$text, vocabulary = Dare$vocab, nIP = nIP, K = K,
-    sigma_Q = c(0.001, 0.01), alpha = 2, mvec = rep(1/K, K),
-    betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), prior.b.mean = rep(0,25), prior.b.var = diag(25),
-    prior.delta = c(-3.5, 1), out = 100, n_B = 5500, n_d = 550, burn = c(500, 50), thinning = c(10, 1),
-    netstat = c("intercept", "dyadic", "degree", "triadic"), optimize = TRUE, initial = NULL)
+    sigma_Q = c(0.001, 0.01, 0.05), alpha = 2, mvec = rep(1/K, K),
+    betas = 2, nvec = rep(1/length(Dare$vocab), length(Dare$vocab)), prior.b.mean = rep(0,24), prior.b.var = diag(24),
+    prior.delta = c(-3.5, 1), out = 50, n_B = 5500, n_d = 550, burn = c(500, 50), thinning = c(10, 1),
+    netstat = c("dyadic", "degree", "triadic"), optimize = TRUE, initial = NULL)
     filename = paste0("Dare_full_",nIP,"_",K,"_ver",i,".RData")
     save(Daretest, file = filename)
 }

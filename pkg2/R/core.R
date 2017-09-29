@@ -68,6 +68,7 @@ r.gibbs.measure <- function(nsamp, lambdai, delta, support) {
 #' @export
 adaptive_MH = function(sigma_Q, accept_rates, target = 0.25, update_size, tol = 0.15) {
 	for (i in 1:length(sigma_Q)) {
+	  if (is.na(accept_rates[i])) {browser()}
 		if (accept_rates[i] < target) {
 				sigma_Q[i] = sigma_Q[i] - update_size[i]
 		}
@@ -235,7 +236,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
    	 	history.t = History(edge, p.d, node, edge[[d-1]][[3]] + exp(-745))
    	 	X = Netstats_cpp(history.t, node, netstat)
    	 	XB = MultiplyXBList(X, beta.old)   
-		lambda[[d]] = lambda_cpp(p.d[d,], XB)
+		  lambda[[d]] = lambda_cpp(p.d[d,], XB)
 		#calculate the resampling probability	
 		for (i in node[-edge[[d]][[1]]]) {
 			XB_IP = lapply(XB, function(IP) {IP[i,]}) 
@@ -406,7 +407,7 @@ IPTM_inference.Gibbs = function(edge, node, textlist, vocabulary, nIP, K, sigma_
         post.old2 = post.new2
         accept.rates[2] = accept.rates[2] + 1
       } 
-      eta.new = exp(rnorm(1, log(eta), sqrt(sigma_Q[2])))
+      eta.new = exp(rnorm(1, log(eta), sqrt(sigma_Q[3])))
       prior.new3 = dnorm(log(eta.new), prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
       post.new3 = TimeObsInEqZ(LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]], eta.new)
       loglike.diff3 = prior.new3 + post.new3 - prior.old3 - post.old3 
@@ -498,7 +499,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     bmat[[IP]] = matrix(beta.old[[IP]], nrow = P, ncol = (n_B - burn[1]) / thinning[1])
   }
   deltamat = rep(delta,  (n_d - burn[2]) / thinning[2])
-  etamat = rep(eta, n_d)
+  etamat = rep(eta, (n_d - burn[2]) / thinning[2])
   proposal.var = lapply(1:nIP, function(IP){diag(P)})
   sigma_Q = sigma_Q
   #initialize the latent sender-receiver pairs
@@ -512,13 +513,15 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   } else {
     theta = rdirichlet_cpp(length(edge), initial$alpha * initial$mvec)
     delta = initial$delta
+    eta = initial$eta
     beta.old = initial$b
     # initialize C, theta and Z
- 	 currentC = initial$C
- 	 currentZ = initial$Z
-  	 p.d = pdmat(currentZ, currentC, nIP) 
-	bmat = initial$bmat
+ 	  currentC = initial$C
+ 	  currentZ = initial$Z
+  	p.d = pdmat(currentZ, currentC, nIP) 
+	  bmat = initial$bmat
     deltamat = initial$dmat
+    etamat = initial$emat
     proposal.var = initial$proposal.var
     sigma_Q = initial$sigma_Q
     iJi = initial$iJi
@@ -532,7 +535,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
   mvecmat = matrix(NA, nrow = 0, ncol = K)
   n_B2 = n_B / 5
   n_d2 = n_d / 5
-   accept.rates = rep(0, 3)
+  accept.rates = rep(0, 3)
     #start outer iteration
     for (o in 1:out) {
     	if (o == out) {
@@ -669,7 +672,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     if (o != 1) {
     	accept.rates[1] = accept.rates[1] / n_B2
     	accept.rates[2:3] = accept.rates[2:3] / n_d2
-      	sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
+      sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
       if (accept.rates[1] >  1 / n_B2) { 
         for (IP in 1:nIP) {
           proposal.var[[IP]] = var(uniquecombs(t(bmat[[IP]])))
@@ -729,7 +732,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
         post.old2 = post.new2
         accept.rates[2] = accept.rates[2] + 1
       } 
-      eta.new = exp(rnorm(1, log(eta), sqrt(sigma_Q[2])))
+      eta.new = exp(rnorm(1, log(eta), sqrt(sigma_Q[3])))
       prior.new3 = dnorm(log(eta.new), prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
       post.new3 = TimeObsInEqZ(LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]], eta.new)
       loglike.diff3 = prior.new3 + post.new3 - prior.old3 - post.old3 
@@ -990,7 +993,7 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
         prior.old2 = prior.new2
         post.old2 = post.new2
       } 
-      eta.new = exp(rnorm(1, log(eta), sqrt(sigma_Q[2])))
+      eta.new = exp(rnorm(1, log(eta), sqrt(sigma_Q[3])))
       prior.new3 = dnorm(log(eta.new), prior.delta[1], sqrt(prior.delta[2]), log = TRUE)
       post.new3 = TimeObsInEqZ(LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]], eta.new)
       loglike.diff3 = prior.new3 + post.new3 - prior.old3 - post.old3 
@@ -1984,13 +1987,14 @@ IPTM_predict.data = function(D, O, R, edge, node, textlist, vocabulary, nIP, K, 
     Inference_samp = IPTM_inference.data(edge[1:(D-1)], node, textlist[1:(D-1)], vocabulary, nIP, K,
     									 sigma_Q, alpha, mvec, betas, nvec, prior.b.mean, prior.b.var, prior.delta,
                       					 out, n_B, n_d, burn, thinning, netstat, optimize = optimize, initial = initial)
-	b = lapply(1:nIP, function(IP) {
+	  b = lapply(1:nIP, function(IP) {
         rowMeans(Inference_samp$B[[IP]])
     })
     delta = mean(Inference_samp$D)
-    eta =mean(Inference_samp$E)
+    eta = mean(Inference_samp$E)
     currentC = Inference_samp$C
     currentZ = Inference_samp$Z
+    sigma_Q = Inference_samp$sigma_Q
     initial_iJi = matrix(0, nrow =length(node), ncol = length(node))
     for (i in 1:length(node)) {
     	d = sample(Inference_samp$edge2, 1)
@@ -2010,6 +2014,7 @@ IPTM_predict.data = function(D, O, R, edge, node, textlist, vocabulary, nIP, K, 
    initial$alpha = Inference_samp$alpha[dim(Inference_samp$alpha)[1],1]
    initial$mvec = Inference_samp$mvec[dim(Inference_samp$mvec)[1],]
    initial$delta = Inference_samp$D[length(Inference_samp$D)]
+   initial$eta = Inference_samp$E[length(Inference_samp$E)]
    initial$b = lapply(1:nIP, function(IP) {
         Inference_samp$B[[IP]][,ncol(Inference_samp$B[[IP]])]
     })
@@ -2017,6 +2022,7 @@ IPTM_predict.data = function(D, O, R, edge, node, textlist, vocabulary, nIP, K, 
    initial$Z = Inference_samp$Z
    initial$bmat = Inference_samp$B
    initial$dmat = Inference_samp$D
+   initial$emat = Inference_samp$E
    initial$proposal.var = Inference_samp$proposal.var
    initial$sigma_Q = Inference_samp$sigma_Q
    initial$iJi = Inference_samp$iJi
