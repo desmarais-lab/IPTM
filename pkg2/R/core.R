@@ -68,8 +68,7 @@ r.gibbs.measure <- function(nsamp, lambdai, delta, support) {
 #' @export
 adaptive_MH = function(sigma_Q, accept_rates, target = 0.25, update_size, tol = 0.15) {
 	for (i in 1:length(sigma_Q)) {
-	  if (is.na(accept_rates[i])) {browser()}
-		if (accept_rates[i] < target) {
+	  		if (accept_rates[i] < target) {
 				sigma_Q[i] = sigma_Q[i] - update_size[i]
 		}
 		if (accept_rates[i] > (target + tol)) {
@@ -669,7 +668,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     # beta update
     prior.old1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b.var, prior.b.mean, beta.old[[IP]], FALSE)}, c(1)))
     post.old1 = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, eta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
-    if (o != 1) {
+    if (o > 1) {
     	accept.rates[1] = accept.rates[1] / n_B2
     	accept.rates[2:3] = accept.rates[2:3] / n_d2
       sigma_Q = adaptive_MH(sigma_Q, accept.rates, update_size = 0.2 * sigma_Q)
@@ -889,13 +888,13 @@ IPTM_inference.Schein = function(edge, node, textlist, vocabulary, nIP, K, sigma
        }
  	 for (IP in unique(currentC)) {
        	  	currentCK = which(currentC == IP)
-       		currentZ[[d]][w] = min(currentCK)
-       	 	p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP)           
+       		  currentZ[[d]][w] = min(currentCK)
+       	 	  p.d[d, ] = pdmat(list(currentZ[[d]]), currentC, nIP)           
             history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]] + exp(-745))
     	   	 	X = Netstats_cpp(history.t, node, netstat)
     	    		XB = MultiplyXBList(X, beta.old)   
     	    		lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
-	   	 	LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
+	   	    	LambdaiJi[[hist.d]] = lambdaiJi(p.d[hist.d, ], XB, iJi[[hist.d]])
         		observediJi[[hist.d]] = LambdaiJi[[hist.d]][edge[[hist.d]][[1]]]
         		edgetime.d[currentCK] = EdgeTime(iJi[[hist.d]], lambda[[hist.d]], delta, eta, LambdaiJi[[hist.d]], timeinc[hist.d], observediJi[[hist.d]])
         }       
