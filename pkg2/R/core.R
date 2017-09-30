@@ -648,7 +648,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     	   		X = Netstats_cpp(history.t, node, netstat)
     	   		XB = MultiplyXBList(X, beta.old)    
            	lambda[[maxedge2]] = lambda_cpp(p.d[maxedge2,], XB)
-		    LambdaiJi[[maxedge2]] = lambdaiJi(p.d[maxedge2,], XB, iJi[[maxedge2]])
+		        LambdaiJi[[maxedge2]] = lambdaiJi(p.d[maxedge2,], XB, iJi[[maxedge2]])
            	observediJi[[maxedge2]] = LambdaiJi[[maxedge2]][edge[[maxedge2]][[1]]]
            	prob = EdgeTime(iJi[[maxedge2]], lambda[[maxedge2]], delta, eta, LambdaiJi[[maxedge2]], timeinc[maxedge2], observediJi[[maxedge2]])
            	const.C[IP] = prob
@@ -661,7 +661,7 @@ IPTM_inference.data = function(edge, node, textlist, vocabulary, nIP, K, sigma_Q
     	    X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, beta.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
-	    	LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
+	    	  LambdaiJi[[d]] = lambdaiJi(p.d[d,], XB, iJi[[d]])
         	observediJi[[d]] = LambdaiJi[[d]][edge[[d]][[1]]]
 	}
 	        

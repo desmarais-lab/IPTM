@@ -663,7 +663,7 @@ double TimeObsInEqZ(NumericVector LambdaiJi, double observedtdiff, double observ
   if (observediJi < exp(-745)) {
 		observediJi = exp(-745);
 	}
-	return  -eta * observedtdiff * sumlambda + log(eta * observediJi);
+	return  -eta * observedtdiff * sumlambda + log(eta) + log(observediJi);
 }
 
 // **********************************************************//
@@ -836,5 +836,5 @@ double EdgeTime(arma::mat iJi, arma::mat lambda, double delta, double eta,
   if (observediJi < exp(-745)) {
 		observediJi = exp(-745);
 	}
-	return  edges -eta * observedtdiff * sumlambda + log(eta * observediJi);
+	return  edges -eta * observedtdiff * sumlambda + log(eta) + log(observediJi);
 }
