@@ -12,8 +12,8 @@ echo "quename Started on `hostname` at `date`"
 
 # load R and run R code codename.r
 module load r/3.4
-R CMD BATCH Dare_PPE_C1K2.R
-Rscript Dare_PPE_C1K2.R
+R CMD BATCH Dare_PPE_C1K2copy3.R
+Rscript Dare_PPE_C1K2copy3.R
 
 # load module and then run matlab script codename.m
 #module load matlab
