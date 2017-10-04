@@ -3,17 +3,6 @@ library(pROC)
 load('/Users/bomin8319/Desktop/IPTM/enron/Enron.RData')
 set.seed(1)
 selectD = sample(1963:3925, 200, replace = FALSE)
-
-common = c()
-for (nIP in 1:3) {
-    for (K in c(2, 5, 10, 25, 50, 75, 100)){
-         filelist = list.files(pattern = "_nIP_K")
-         for (i in 1:length(filelist)) {
-             strsplit(filelist[i], "\\_")[[1]][2]
-         }
-    }
-}
-
 tables = list()
 for (d in c(1:28,101:103, 196:200)) {
   D = selectD[d]
