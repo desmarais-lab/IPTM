@@ -11,8 +11,7 @@ library(lda)
 load('/Users/bomin8319/Desktop/IPTM/paper/code/Darenew.RData')
 # 762 - 
 attach(Dare)
-Dare$text = Dare$text[762:length(Dare$edge)]
-Dare$edge = Dare$edge[762:length(Dare$edge)]
+#Dare$node = 1:nrow(Dare$node)
 Dare$edge = Dare$edge[-which(sapply(Dare$text, function(d){length(d)})==0)]
 Dare$text = Dare$text[-which(sapply(Dare$text, function(d){length(d)})==0)]
 #mintime = Dare$edge[[1]][[3]]
@@ -141,8 +140,6 @@ load('/Users/bomin8319/Desktop/IPTM/paper/code/Darenew.RData')
 # 762 - 
 attach(Dare)
 Dare$node = 1:nrow(Dare$node)
-Dare$text = Dare$text[762:length(Dare$edge)]
-Dare$edge = Dare$edge[762:length(Dare$edge)]
 Dare$edge = Dare$edge[-which(sapply(Dare$text, function(d){length(d)})==0)]
 Dare$text = Dare$text[-which(sapply(Dare$text, function(d){length(d)})==0)]
 mintime = Dare$edge[[1]][[3]]
@@ -151,10 +148,10 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("/Users/bomin8319/Desktop/IPTM/paper/code/AISTAT_version/Daretest_IP3.RData")
+load("/Users/bomin8319/Desktop/IPTM/full/Dare_full_2_25_ver5.RData")
 load("/Users/bomin8319/Desktop/IPTM/paper/code/AISTAT_version/Daretest_LDA.RData")
 
-Daretest1 = Daretest_LDA
+Daretest1 = Daretest
 Daretest1$C
 
 TableWord = function(Zchain, K, textlist, vocabulary) {
@@ -182,7 +179,7 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
     }
     topic.dist = t(tabulate(unlist(Zsummary), K)/length(unlist(Zsummary)))
     colnames(topic.dist) = c(1L:K)
-    top.topic = topic.dist[, order(topic.dist, decreasing = TRUE)]
+    top.topic = topic.dist[, order(topic.dist[1,], decreasing = TRUE)]
     all.word = unlist(Zsummary)
     for (i in seq(along = all.word)){
       matchWZ = which(colnames(topic.word) == names(all.word[i]))
@@ -192,7 +189,7 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
     colnames(table.word) = names(top.topic)
   return(table.word)
 }
-TableWord(Daretest1$Z[Daretest1$edge2], 20, Dare$text[Daretest1$edge2], Dare$vocab)
+TableWord(Daretest1$Z[Daretest1$edge2], 25, Dare$text[Daretest1$edge2], Dare$vocab)
 table(unlist(Daretest1$Z)) / sum(table(unlist(Daretest1$Z)))
 
 which(Sandy$date %in% unique(Sandy$date)[20:27])
@@ -256,27 +253,27 @@ lapply(Daretest1$B, function(IP) {rowMeans(IP)})
 
 library(reshape)
 
-DareB = matrix(NA, 500, 25)
-DareB[,1:25] = t(Daretest$B[[1]])
-colnames(DareB)= c( "intercept",
+DareB = matrix(NA, 500, 24)
+DareB[,1:24] = t(Daretest$B[[1]])
+colnames(DareB)= c(
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
 "send1", "send2", "send3" ,"receive1", "receive2", "receive3",
 "2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
 "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
 DareB = melt(DareB)
 
-DareB2 = matrix(NA, 500, 25)
-DareB2[,1:25] = t(Daretest$B[[2]])
-colnames(DareB2)= c( "intercept",
+DareB2 = matrix(NA, 500, 24)
+DareB2[,1:24] = t(Daretest$B[[2]])
+colnames(DareB2)= c(
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
 "send1", "send2", "send3" ,"receive1", "receive2", "receive3",
 "2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
 "sibling1", "sibling2" ,"sibling3", "cosibling1", "cosibling2", "cosibling3")
 DareB2 = melt(DareB2)
 
-DareB3 = matrix(NA, 500, 25)
-DareB3[,1:25] = t(Daretest$B[[3]])
-colnames(DareB3)= c( "intercept",
+DareB3 = matrix(NA, 500, 24)
+DareB3[,1:24] = t(Daretest$B[[3]])
+colnames(DareB3)= c( 
                      "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
                      "send1", "send2", "send3" ,"receive1", "receive2", "receive3",
                      "2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
@@ -289,7 +286,7 @@ DareB3$IP = 3
 DareBnew = rbind(DareB, DareB2, DareB3)[,-1]
 DareBnew$IP = as.factor(DareBnew$IP)
 colnames(DareBnew) = c("Netstat", "Estimate", "IP")
-DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( "intercept",
+DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( 
 "outdegree1", "outdegree2", "outdegree3", "indegree1", "indegree2", "indegree3",
 "send1", "send2", "send3" ,"receive1", "receive2", "receive3",
 "2-send1", "2-send2", "2-send3", "2-receive1", "2-receive2" ,"2-receive3",
