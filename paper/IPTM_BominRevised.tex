@@ -468,30 +468,26 @@ f(t_i^{(D)},\lambda_{iJ_i}^{(D)}(t),\eta) = \eta\lambda_{iJ_i}^{(D)}(t)\exp(- \e
 \end{equation}
 where $\ln(\eta)$ is the intercept that calibrates the scale of the exponential distribution. The predicted sender of document $D$ is determined by simulating $t_i^{(D)}$ for each $i$, and selecting the $i$ that corresponds to the minimum value of $t_i^{(D)}$. The minimum value of $t_i^{(D)}$ is the predicted timing for document $D$, i.e. $t_o^{(D)}$, and similarly as the IPTM, the minimum time chooses the sender and recipient of the document D, i.e. $i_o^{(D)}$ and $J_o^{(D)}$. See Appendix \ref{subsubsec: Regression PPE} for pseudocode.
 \subsection{Predictive Experiment Results}
-To verify that our model is applicable beyond the Dare County email data, we also performed the posterior predictive experiments using the Enron email data set ---the most widely studied email data set. For this data set, we only included emails between actors who sent over 100 emails, and actors who received over 100 emails from the chosen senders. E-mails that were not sent to at least one other active actor were discarded, and also preprocessed to remove any stop words, URLs, quoted text, and signatures. These steps resulted in a total of 3,925 emails involving 33 actors. 
+To verify that our model is applicable beyond the Dare County email data, we also performed the posterior predictive experiments using the Enron email data set ---the most widely studied email data set. For this predictive experiment, we took a subset of the original data such that we only include emails between actors who sent over 100 emails, and actors who received over 100 emails from the chosen senders. E-mails that were not sent to at least one other active actor were discarded, and also preprocessed to remove any stop words, URLs, quoted text, and signatures. These steps resulted in a total of 3,925 emails involving 33 actors. 
 
-For both data sets, Dare County and Enron, we randomly selected 200 documents from the later half of the corpus and generated 100 samples of predicted tie data for every document $D$ by running Algorithm \ref{alg:IPTMPPE} and Algorithm \ref{alg:docpredict} ($O = 10$ and $R = 50$) with some burn-ins and thinnings ($b = 10$ and $q = 4$). Due to computational burden, we used the reduced set of network statistics (``intercept" and ``dyadic") for Enron, while we used full set of network statistics (``intercept" and ``dyadic", ``degree", ``triadic"). Moreover, we ran the same predictive experiments with 21 unique combinations of the number of interaction patterns ($C = 1, 2, 3$) and the number of topics ($K = 2, 5, 10, 25, 50, 75, 100$) as a grid-search based hyperparameter selection process. After choosing the best-performing hyperparameter combinations from the prediction results of earlier 150 documents, we then use the prediction results of the rest 50 documents to compare the IPTM and these predictions in terms of classification accuracy in predicting senders and receivers, as well as mean squared error in predicting document timing. Figure 7 presents the $F_1$ scores on sender predictions, multiclass version of the area under the ROC curve (AUC) measure \citep{hand2001simple} on receiver predictions, and mean squared error (MSE) on time predictions for each document we predicted, all averaged over 100 samples. 
+For both data sets, Dare County and Enron, we randomly selected 200 documents from the later half of the corpus and generated 100 samples of predicted tie data for every document $D$ by running Algorithm \ref{alg:IPTMPPE} and Algorithm \ref{alg:docpredict} ($O = 10$ and $R = 50$) with some burn-ins and thinnings ($b = 10$ and $q = 4$). Due to computational burden, we used the reduced set of network statistics (``intercept" and ``dyadic") for Enron, while we used full set of network statistics (``intercept" and ``dyadic", ``degree", ``triadic"). Moreover, we ran the same predictive experiments with 21 unique combinations of the number of interaction patterns ($C = 1, 2, 3$) and the number of topics ($K = 2, 5, 10, 25, 50, 75, 100$) as a grid-search based hyperparameter selection process. We compare the predictions in terms of classification accuracy in predicting senders and receivers, as well as prediction error in document timing. Figure 7 presents the $F_1$ scores on sender predictions, multiclass version of the area under the ROC curve (AUC) measure \citep{hand2001simple} on receiver predictions, and median absolute error (MAE) on time predictions for each document we predicted, all averaged over the entire samples.\footnote{\noindent Number of documents currently used: Dare = 22 and Enron = 177.}
 
-\textbf{Note: Plots to be updated when we get further results}
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1\textwidth]{plots/Dare_PPE.pdf}  
-		\includegraphics[width=1\textwidth]{plots/Enron_PPE.pdf}  
-	\label{fig:PPE}
+	\includegraphics[width=1\textwidth]{plots/Dare_PPE_22.pdf}  
+		\includegraphics[width=1\textwidth]{plots/Enron_PPE_177.pdf}  
+	\label{fig:PPE}	
 	\caption{Average AUC, F1 score, MSE for the Dare County email network (upper) and the Enron data set (lower).}
 \end{figure}
-
+Figure 7 demonstrates the ability IPTM in predicting the sender, receiver(s), and timetsamps of email. We currently do not have solid conclusion from this prediction experiment, however, we plan to further improve our model to achieve better predictibility.
 \section{Topic Coherence} \label{sec:topiccoherence}
-Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to test whether the IPTM's incorporation of network properties improves or impairs the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using the latent dirichlet allocation (LDA). Instead of re-fit the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which simply makes the IPTM reduced to LDA in terms of topic assignments by unlinking the text and networks (same analogy as ablation study in Section \ref{subsec:ComparisonModels}). For each model, we varied the number of topics from 1 to 100 and drew five samples from the joint posterior distribution over the unobserved random variables in that model. We evaluated the topics resulting from each sample and averaged over the five samples, where the result is shown in Figure \ref{fig:Daretopic}. Our model was not significantly different from LDA in terms of topic coherence, for any choice of the number of topics. This result, when combined with the results in Section 7, demonstrates that our model can achieve state-of-the-art predictive performance while producing coherent topics. 
-
-\textbf{Note: Plots to be updated when we get further results, including Enron's.}
+Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to test whether the IPTM's incorporation of network properties improves or impairs the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using the latent dirichlet allocation (LDA). Instead of re-fit the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which simply makes the IPTM reduced to LDA in terms of topic assignments by unlinking the text and networks (same analogy as ablation study in Section \ref{subsec:ComparisonModels}). For each model, we varied the number of topics from 1 to 100 and drew five samples from the joint posterior distribution over the unobserved random variables in that model. We evaluated the topics resulting from each sample and averaged over the five samples, where the result is shown in Figure 8.\footnote{\noindent Currently, Enron data used two samples, varying the number of topics from 1 to 75.} For Dare County data, our model works significantly better than LDA in terms of topic coherence, for any choice of the number of topics greater than or equal to 10. For Enron data, although the IPTM did not outperform LDA, still the topic coherence scores using the IPTM were not significantly different from LDA for all three cases, $C=3$, $C=2$, and $C=1$. This result, when combined with the results in Section 6, demonstrates that our model can achieve goo predictive performance while producing coherent topics. 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=1\textwidth]{plots/topic_coherence.pdf}  
 	\label{fig:Daretopic}
-	\caption{Average topic coherence scores for the Dare County email network (left) and the Enron data set (right).}
+	\caption{Average topic coherence scores for the Dare County email network (left) and the Enron dataset (right).}
 \end{figure}
-
 
 \section{Posterior Predictive Checks}
 
@@ -505,16 +501,15 @@ P(\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\
 and the pseudocode for generating new sets of data is given by Appendix \ref{subsec:Details on PPC}.
 
  We use this posterior predictive checking to assess the extent to which our model is a ``good fit" for the Dare County email network. For the test of goodness-of-fit in terms of network dynamics, we defined multiple network statistics that summarize meaningful aspects of Dare County data: indegree distribution for sender activities, outdegree distribution for receiver activities, document time-increment distributions, multicast (number of receivers) distribution, the edgewise shared partner distribution, and the geodesic distance distribution. For content-wise goodness-of-fit, we employed mutual information (MI) in \cite{mimno2011bayesian}, which is often used to evaluate ``bag of words" model assumptions. We then generated 1,000 synthetic networks and texts from the posterior predictive distribution implied by the IPTM and Dare County email data.
-We applied each discrepancy function to each synthetic network to yield the distributions over the values of the six network statistics and MI. If the IPTM is a suitable model for Dare County data, these distributions should be centered around the values of the corresponding discrepancy functions (except MI) when computed using the observed data.
+We applied each discrepancy function to each synthetic network to yield the distributions over the values of the six network statistics and MI. If the IPTM is a suitable model for Dare County data, these distributions should be centered around the values of the corresponding discrepancy functions (except MI) when computed using the observed data. 
 
-\textbf{Note: Plots and analysis to be updated when we get the results}
+ Figure 9 illustrates the result of posterior predictive checks, showing IPTM's goodness of fit for Dare County data. (Mutual information plots are in Appendix \ref{subsec:MI_PPC})\footnote{\noindent Number of samples currently used: 80 simulated corpus.} Four plots, indegree distribution, multicast distribution, geodesic distance distribution, and edgewise shared partner distribution, reveal that IPTM captures some important work features of the data, including spreadness and transitivity. However, outdegree distribution and time-increments from the simulated data are not quite similar to those of the observed data. The two aspects of data, sender and time-increments, are directly related from the time-generating process from Exponential distribution, thus we again learn that the current time-modeling framework of IPTM is not fully able to reflect or capture the time-generating process of real-world data. We plan on further dive into this issue and make adjustments in the future work.
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1\textwidth]{plots/PPC_Dare_2_10.pdf}  
+	\includegraphics[width=1\textwidth]{plots/PPC_Dare_80.pdf}  
 	\label{fig:DarePPC}
-	\caption{PPC results for Dare County data: (a) outdegree distribution, (b) indegree distribution, (c) multicast distribution, and (d) QQplot of time-increments}
+	\caption{PPC results for Dare County data: (a) outdegree distribution, (b) indegree distribution, (c) multicast distribution, (d) QQplot of time-increments, (e) geodesic distance distribution, and (f) edgewise shared partner distribution. For (a) and (b), a box plot indicates the sampled degree of each actors in the synthetic networks, with actors sorted from highest to lowest observed degree and their observed degrees indicated by a line.}
 \end{figure}
-
 \section{Conclusion} 
 The IPTM is, to our knowledge, the first model to be capable of jointly modeling sender, receivers, time and contents in time stamped text valued networks. The IPTM incorporates innovative components, including the modeling of multicast tie formation and the conditioning of ERGM style network generative features on topic-based content. The application to North Carolina county government email data demonstrates, among other capabilities, the effectiveness at the IPTM in separating out both the content and relational structure underlying the normal day-to-day function of an organization and the management of a highly time-sensitive event---Hurricane Sandy. The IPTM is applicable to a variety of networks in which ties are attributed with textual documents. These include, for example, economic sanctions sent between countries and legislation attributed with sponsors and co-sponsors. 
  \clearpage
@@ -963,6 +958,16 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
           	Initialize $NKV$ and $NK$ counts from the inference on $\mathcal{Z}$ and observed $\mathcal{W}$ (instead of zeros)\\
           	Return ($\mathcal{I}_{\mbox{o}}^*, \mathcal{J}_{\mbox{o}}^*, \mathcal{T}_{\mbox{o}}^*,\mathcal{W}^*$) as a draw from the posterior distribution of the data
           \end{algorithm}        
-          
+                   \subsection{Mutual Information in Posterior Predictive Checks}\label{subsec:MI_PPC}        
+                   \begin{figure}[ht]
+                   	\centering
+                   	\includegraphics[width=1\textwidth]{plots/MI1.pdf}  
+                   	                   	\includegraphics[width=1\textwidth]{plots/MI2.pdf}  
+                   	            \includegraphics[width=1\textwidth]{plots/MI3.pdf}  
+          	\includegraphics[width=1\textwidth]{plots/MI4.pdf}  
+                \includegraphics[width=1\textwidth]{plots/MI5.pdf}  
+                   	\label{fig:DareMI}
+                   	\caption{Mutual information (MI) score in posterior predictive check for Dare County (using $C=2$ and $K=25$) }
+                   \end{figure}
              \end{document}
 

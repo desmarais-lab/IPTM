@@ -1,4 +1,0 @@
-Error in table.W[[zw.new]] : 
-  attempt to select less than one element in integerOneIndex
-Calls: IPTM_inference.data
-Execution halted
