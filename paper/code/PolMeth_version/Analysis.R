@@ -148,7 +148,7 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-load("/Users/bomin8319/Desktop/IPTM/full/Dare_full_2_25_ver5.RData")
+load("/Users/bomin8319/Desktop/IPTM/full/Dare_full_2_25_ver1.RData")
 load("/Users/bomin8319/Desktop/IPTM/paper/code/AISTAT_version/Daretest_LDA.RData")
 
 Daretest1 = Daretest
@@ -283,7 +283,7 @@ DareB3 = melt(DareB3)
 DareB$IP = 1
 DareB2$IP = 2
 DareB3$IP = 3
-DareBnew = rbind(DareB, DareB2, DareB3)[,-1]
+DareBnew = rbind(DareB, DareB2)[,-1]
 DareBnew$IP = as.factor(DareBnew$IP)
 colnames(DareBnew) = c("Netstat", "Estimate", "IP")
 DareBnew$Netstat = factor(DareBnew$Netstat, levels =  c( 
