@@ -1,0 +1,142 @@
+Slide 1.
+
+Good afternoon, today I'll present fairly preliminary results from work on a a network model for dynamic textual communications. My wonderful collaborators on this project include Bomin Kim, a graduate student in statistics at Penn State; Aaron Schein, a graduate student in computer science at UMass Amherst, and Hanna Wallach, who is a Senior Researcher at Microsoft Research and adjunct associate professor at UMass Amherst.
+
+Slide 2.
+
+We study many networks in which ties are attributed with text. Some examples include international treaties, international sanctions, cosponsorship of bills, and online discussions. However, methods designed to model complex network structure cannot currently handle text-valued tie data. Models for text either cannot incorporate information about ties or do so in a fairly simple and dyadic manner. We develop a new model for text valued networks that incorporates complex network structure.
+
+
+Slide 3.
+
+Our new model is called “Interaction-Partitioned Topic Model”, which I will refer to as IPTM. IPTM is a statistical model for time-stamped textual communications, such as emails. The model is built upon two well-known models, one is Latent Dirichlet Allocation, a canonical model for topic-based contents, and the second one is ERGM, the exponential random graph model, which is a statistical models used to analyze networks. So, IPTM is a model about “who communicates with whom about what, and when?” The LDA component of the model handles the “what” and the    ERGM component models “who, whom and when”.
+
+
+Slide 4.
+
+Now I will walk through the data generating process underlying the model (or in other words, the generative process). Let me first introduce how the contents or the words are generated. Each topic has unique topic-word distribution over the word types. We assign each topic to one interaction pattern, from a uniform distribution, such as IP_1 = 1, IP_2= 2, and IP_3 = 1.
+
+To create a document, we first sample a topic distribution of each document, for example in this figure, this document has topic distribution as this (highest proportion of topic 2 and topic 1, 3 follows). Then for each word, we first choose the topic from document-topic distribution, and then choose a word from topic-word distribution given the chosen topic. 
+
+The content is then summarized as a distribution of interaction patterns, p_c^{(d)}, which is the proportion of words with the topics corresponding to the respective interaction pattern. This statistic will be passed and reflected in the tie generating process.
+
+
+Slide 5. 
+
+Now I'll provide an overview of the components of the model that affect tie formation.The model that we derive treats tie formation as a real time process. Tie formation is modeled/predicted based on rich and complex network structure. We incorporate several network formation dynnamics, including the effects of vertex attributes, popularity, reciprocity, and transitivity. It is a realistic actor-driven model in that the sender selects a vector of recipients as well as the time of the e-mail. Our model of sending behavior is innovative in that we define a distribution for the selection of a multicast vector.
+
+Slide 6. 
+
+The core of the tie generating process lies in network features, constructed from past ties, that are used to predict the formation of ties in the future. We define two degree terms---how many times i sent a document to anyone or received from anyone; then we use two dyadic statistics, send and receive, which simply means how many times i sent to or received from j. Lastly we use 4 triadic statistics, which model transitive closure and cycling of ties (i.e., a friend of a friend is a friend). Details on these statistics are illustrated in Perry and Wolfe, 2012 paper.
+
+Slide 7. 
+
+Now I describe how we used time in defining our dynamic network statistics. Considering that document sending/receiving behavior is highly influenced by the previous interactions, we track the history of interactions 16 days in the past, and divide the past 16 days into 3 intervals: now to 1 day ago, 1 day to 3 days ago, and 3 days to 16 days ago, such that they have equal space in the log-scale. To form a time-interval-spcific network statistic, we count the number of configurations in which edges fall within the respective interval. For the triadic statistic, either one or both edges need to fall within the oldest interval.
+
+Slide 8.
+
+This is the key part of our model, the tie generating process. Basic assumption is, at any given time, everyone is planning to send a document to a single or multiple receivers. So for each sender, we have a receiver vector of zeros and 1’s, where 1’s imply the sender i’s willingness to send a document to whom. We choose this vector from the multicast distribution, which we call “non-empty Gibbs measure”. So, the probability of (J_i^{(d)}) is a function of individual stochastic intensity \lambda_ij^{(d)} and a recipient size parameter \delta. Here, lambda_ij is a mixture of contents via p_c^{(d)}, the distribution of interaction patterns, and the network history X multiplied by coefficient vectors b.
+
+Slide 9.
+
+After choosing who are the latent receivers of each sender, we generate the time associated with each sender. Given the receiver sets, each sender gets its own rate of time \lambda_iJi, which is calculated similarly as stochastic intensity except that we are averaging over the selected receivers. The time increments, or time until the next document, are generated from Exponential distribution with mean parameter \lambda_iJi.
+
+Finally, we will take the person who generated the minimum time as an observed sender, the corresponding receivers as observed receivers, and the observed time will be the timestamp of previous document plus the smallest time generated.
+
+
+Slide 10.
+
+For example, if node 2 generated the smallest time, the observed d^th document will look like this: sender is 2, receivers are 1 and 3, sent at t^{(d-1)} + t_2. After one document is generated, the latent edges are censored and we repeat steps 1, 2, 3, again for the next document.
+
+
+For the inference, we infer some latent variables given the observed corpora. The latent variables are topic assignments Z, interaction pattern assignments C, the vector of network effect B, and recipient size parameter delta.
+
+
+
+Slide 11.
+
+We implement Bayesian inference using MCMC. Here we provide pseudocode to outline the steps in the algorithm. Note that when we interpret B and \delta, we do so at the final values of Z--the topic assignments, and C, the interaction pattern assignments. After first setting initial values, for each outer iteration o, we sequentially update each variables. 
+For the first three discrete variables, latent edge J_ij, topics Z, interaction patterns C, we use Gibbs sampling from multinomial distributions; and the next two continuous variables, interaction pattern-specific network effect parameters B and receiver size parameter \delta, we use adaptive Metropolis-Hastings algorithm. The detailed sampling equations are not included in this slide, but they will be in our paper.
+
+
+Slide 12. 
+
+Geweke proposed a very broad and general framework for testing whether both the derivation and implementation of a Bayesian posterior sampler are correct. The test is run as follows. A forward sample of parameters and data are generated by first generating parameters from the prior then simulating data conditional on those parameters. That process is repeated a large number of times to produce many independent draws from the distributions of parameters and data implied by the priors. A backward sample is taken using data drawn from one of the forward samples. Parameters are drawn conditional on that data by running infererence, and new data is drawn by simulating data conditional on the parameters inferred. The test is conducted by comparing the distributions of data and parameters from the forward and backward samples. The intuition is that, for both samplers, the only information provided is in the prior distribution.
+
+Slide 13.
+
+Our GiR results are presented in this grid of probability-probability plots. If the points fall perfectly along the 45-degree lines in these plots, that indicates that our model and code pass the GiR test. In each plot, we also print a t-test and Mann-Whitney rank test in which we compare the forward and backward sample. We include a plot for every parameter and data type generated. Some of the plots exhibit substantial discrepancies between the 45-degree lines and the points, and several hypothesis tests indicate significant differences between samples. The larger plot to your right presents the number of recipients simulated. 
+
+Slide 14.
+
+In troubleshooting the model and code we noticed that the backwards samples tended to exhibit higher numbers of topics assigned to one interaction pattern than we observed in the forward samples. We believe that we likely have a math error in our handling of the documents that represent the initial history (i.e., the first sixteen days) in our data. We have not been able to correct this yet, but we are able to verify that once we fix C---associating each topic with a fixed interaction pattern---we pass GiR. So that is the model we use in our application. 
+
+Slide 15.
+
+We applied the IPTM to two counties from the North Carolina County Government e-mail dataset. The larger dataset comes from Dare county---a coastal county that includes the Outer Banks. We analyzed 1456 emails between 27 county government managers, from October to November 2013. This includes the time period where Hurricane Sandy passed by NC. We look to see if our model can capture any changes in email content and/or network structure during the hurricane period. We also study a smaller and more inland county---Vance county. We have just 183 e0mails exchanged between 17 managers. 
+
+Slide 16.
+
+We can apply a few theoretical insights from communication network theory to derive expectations regarding the structures we observe. First, for interaction patterns populated mostly by personal discussion topics, we should see reciprocity and transitivity in tie formation. Second, if an interaction pattern that contains mostly proffessional information dissemination topics (e.g., the meeting agenda, reports on the county commission, etc.) we should observe a lack of looping---a negative effect of looping variables. We are not sure what to expect with communication focused on Hurricane Sandy. We may see a general breakdown in the typical network tendencies.  
+
+Slide 17.
+
+We first present an exploratory analysis on the effect of Sandy on county government managers’ email exchange patterns. The plots on the top give the number of e-mails sent and received by each manager, colored according to department, over time in the corpus. The vertical red lines enclose the period during which Hurricane Sandy affected North Carolina. 
+
+Below are the network plots based on 3-weeks period before Sandy, during Sandy, and after Sandy. We do not see any notable effects of the hurricane on Vance county from this simple exploratory analysis. This is not overly surprising since it is a relatively small corpus of e-mails and it is a fairly inland county.
+
+Slide 18.
+
+We see much larger changes in e-mail behavior surrounding Sandy in Dare County. During the Sandy period the Emergency Services department had sent large number of emails until the end of hurricane on October 30th, and when you look at the receive plot on the right, it seems that those emergent emails were sent to almost everyone. Also, even after hurricane passed, managers from Emergency services often sent emails to every county government manager, since the peaks in both plots match each other.
+
+Below are the network plots based on 3-weeks period before Sandy, during Sandy, and after Sandy. Previously county manager was in the center of network sending the largest number of emails, but it changed during hurricane Sandy, dominated by Emergency Services department. After Sandy, there still remains the effect of hurricane.
+
+
+Slide 19.
+
+We now move to the IPTM results. We once again cover Vance County first. For this preliminary analysis we use two interaction patterns, twenty topics, and 500 outer iterations of inference. We haven't yet developed a method for selecting these hyperparameters using the data, but we are working on some predictive assessment measures that we should be able to use for hyperparameter selection.d
+
+First we take a look at content. The three most prevalent topics in each interaction pattern are depicted in the table. The top 15 words in each topic are listed. Each topic has a fairly coherent meaning, and seems to be related to either functions or policy domains handled by government, but we can't see any clear differences across interaction patterns one and two. This lack of differentiation may, again, be due to the small corpus size for Vance County.
+
+Slide 20.
+
+Now we turn to the network parameters. In the interest of brevity, we only discuss two of the network effects---receive and 2-recieve, which are the two parameters about which we have the strongest predictions from communication network theory. Receive counts a loop of length two---i sends to j and j to i---and 2-receive counts a loop of length three. Both of these parameters would be predicted to have a positive effect in social/personal networks, but a negative effect in an information dissemination network, as looping is an inefficient form of dissemination. Neither parameter has a consistent sign across time points within either interaction pattern. It is, however, notable that the long-term reciprocation is fairly substantial in magnitude and negative in each interaction pattern. From this we might be seeing true dissemination structure, where the period in which we observe responses to requests for information has passed.
+
+
+Slide 21.
+
+Now we look at our results for Dare county. First, the topic results. The six most frequent topics in the first interaction pattern are displayed in the table. We again find several topics that are related to policy areas or tasks that you would expect to see in any local government communication network---discussion of water utilities, hr, meeting proceedings, etc. 
+
+It is in interaction pattern two that we see several topics related to Hurricane Sandy. If we look at e-mails exchanged during the Sandy period, many of them are heavily allocated to topics within this interaction pattern. 
+
+Slide 22.
+
+The results on the loop parameters for interaction pattern parameters for Dare county are quite interesting. In interaction pattern 1, which we associate with the normal business of the County, we see relatively consistent negative parameter values for our two loop effects. However, when we look to interaction pattern two, we see parameters that are much smaller in magnitude and nearly centered at zero. This would mean that past network structure appears to have very little effect on tie formation.
+
+Slide 23. 
+
+For a model as complex as the IPTM, we are in great need of an out-of-sample method of measuring model fit. This will help us in both selecting model hyperparameters and comparing to other methods. This has been surprisingly puzzling for us, but we have at least arrived at a design for an out-of-sample prediction experiment. This experiment will involve the following steps. First, split the dataset in half, temporally. The first half of the data is used only as training data. Starting with the first document in the second half of the data, run inference on the previous documents, then use the inferred parameters and the contents of the dth document to predict the topical contents of the document as well as who sent the document, who received the document, and when it was sent. Repeat this exercise for all of the remaining documents. This exercise will provide a one-document-ahead prediction for half of the documents in the corpus, in which we predict the sender, recipients, and timing of the e-mail. We have yet to implement this experiment, but plan to do so in the next phase of the project.
+
+Slide 24.
+
+I would like to point out three things before finishing the talk.
+First, IPTM jointly models the edges, time, and contents, and try to connect all of each other. Especially, there are not many models, both in network and topic model literatures dealing with time in continuous-scale, so we have our specialty as a continuous-time model.
+
+Second, to the best of our knowledge, this is the first model that explicitly allowed multicast, which is a case of single senders and multiple receivers, although it is so common some textual communications, especially emails. Previously it has been treated as multiple separate edges or documents, but we modeled it differently such that we treat multicasts in the same manner as single-receiver cases without duplicating documents.
+
+Last, as I mentioned earlier, this model could be applied to various types of textual communications other than emails, such as cosponsorship of bills or international sanctions, so it has so much potential to be used as a model for political science data.
+
+Thank you!
+
+
+
+
+
+  
+ 
+
+
+
+
+
+
