@@ -192,6 +192,20 @@ TableWord = function(Zchain, K, textlist, vocabulary) {
 TableWord(Daretest1$Z[Daretest1$edge2], 25, Dare$text[Daretest1$edge2], Dare$vocab)
 table(unlist(Daretest1$Z)) / sum(table(unlist(Daretest1$Z)))
 
+
+
+DareZC = Daretest$Z
+ZCdocs = matrix(0, 2210, 2)
+
+for (i in 1:2210) {
+	DareZC[[i]] = sum(DareZC[[i]] %in% c(11, 18, 23))
+	ZCdocs[i, 1] = DareZC[[i]] 
+	ZCdocs[i, 2] = DareZC[[i]]  / length(Daretest$Z[[i]])	}
+
+listsofdocs = which(ZCdocs>15)
+lapply(which(ZCdocs>15), function(x) {Dare$vocab[Dare$text[[x]]]})
+
+
 which(Sandy$date %in% unique(Sandy$date)[20:27])
 TableWord(Daretest1$Z[390:736], 20, Dare$text[390:736], Dare$vocab)
 

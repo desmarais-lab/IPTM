@@ -139,7 +139,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \centering \large\textit{``who communicates with whom about what, and when?"}
 \end{frame}
 
-\begin{frame}{Content Generating Process: LDA (Blei et al., 2003)}
+\begin{frame}{Content generating process: LDA (Blei et al., 2003)}
 \bni 
 \begin{minipage}{0.7\linewidth}
 \item For each topic $k =1,...,K:$\vspace{0.2cm}
@@ -177,7 +177,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 \end{frame}
 
 
-\begin{frame}{Network Model Components}
+\begin{frame}{Network model components}
 \large
 \begin{itemize}
 \item Models real time ties \vspace{.2cm}
@@ -195,7 +195,7 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 
 \end{frame}
 
-\begin{frame}{Dynamic Network Features (Perry and Wolfe, 2012)}
+\begin{frame}{Dynamic network features (Perry and Wolfe, 2012)}
 
 \large
 Current network features modeled
@@ -229,13 +229,13 @@ Current network features modeled
 
 \end{frame}
 
-\begin{frame}{Tie Generating Process: Receivers}
+\begin{frame}{Tie generating process: receivers}
 		\begin{itemize}
 		\item [1.] For each sender $i \in \{1,...,A\}$ and receiver $j \in \{1,...,A\}$ ($i \neq j$), calculate the stochastic indensity between $i$ and $j$:
 	%	\footnotesize
 			\begin{equation*}\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c
-		\cdot  \mbox{exp}\Big\{\boldsymbol{b}^{(c)}_0 + \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)\Big\},	\end{equation*}\normalsize
-		which is a mixture of contents, baseline interaction rate, and network effects.\\ \vspace{0.4cm}
+		\cdot  \mbox{exp}\Big\{ \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)\Big\},	\end{equation*}\normalsize
+		which is a mixture of contents and network effects.\\ \vspace{0.4cm}
 		\item[2.] For each sender $i \in \{1,...,A\}$, choose a binary vector $J^{(d)}_i$ of length $(A-1)$, by applying Gibbs measure (Fellows and Handcock, 2017) 
 	%	\footnotesize
 		%\mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + 
@@ -248,14 +248,14 @@ Current network features modeled
  \end{figure}	
 	\end{itemize}
 	\end{frame}
-\begin{frame}{Tie Generating Process: Sender and Time}
+\begin{frame}{Tie generating process: sender and time}
 \begin{itemize}
 		\item [3.] For each sender $i \in \{1,...,A\}$, generate the time increments for document $d$
 	%	\footnotesize
 		\begin{equation*}
-		\Delta T^{(d)}_{i{J_i}} \sim \mbox{Exponential}(\lambda_{i{J_i}}^{(d)}),
+		\Delta T^{(d)}_{i{J_i}} \sim \mbox{Exponential}(\eta\lambda_{i{J_i}}^{(d)}),
 		\end{equation*}\normalsize
-		where \footnotesize$\lambda^{(d)}_{iJ_i}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\lambda^{(c)}_0+\textcolor{black}{\frac{1}{|J_i|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)}\Big\}\quad$\normalsize is the updated sender-specific stochastic intensity given the receivers.\vspace{0.4cm}
+		where $\eta$ is the positive real-valued parameter for time-increments and \footnotesize$\lambda^{(d)}_{iJ_i}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\textcolor{black}{\frac{1}{|J_i|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)}\Big\}\quad$\normalsize is the updated sender-specific stochastic intensity given the receivers.\vspace{0.4cm}
 		\item[4.] Set the observed sender, receivers and timestamp simultaneously:
 		%\footnotesize
 			\begin{equation*}
@@ -272,7 +272,7 @@ Current network features modeled
  %\end{figure}	
 \end{frame}
 
-\begin{frame}{Joint Generating Process}
+\begin{frame}{Joint generating process}
 
 	\begin{figure}
 		\includegraphics[width=0.9\textwidth]{figures/summary.pdf}
@@ -285,20 +285,21 @@ Current network features modeled
 
 \begin{itemize}
 \item Take a Bayesian approach to inference
-\item $\mathcal{B}$ and $\delta$ interpreted at fixed $\mathcal{Z}$ and  $\mathcal{C}$
+\item $\mathcal{B}$, $\delta$, and $\eta$ interpreted at fixed $\mathcal{Z}$ and  $\mathcal{C}$
 \end{itemize}
   	\begin{center}
   		\scalebox{.9}{	 
  	 \begin{minipage}{1\linewidth}\begin{algorithm}[H]
 \SetAlgoLined
 	 	\caption{MCMC}
-	 	Set initial values $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, $ and $(\mathcal{B}^{(0)}, \delta^{(0)})$\\
+	 	Set initial values $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, $ and $(\mathcal{B}^{(0)}, \delta^{(0)},  \eta^{(0)})$\\
 	 	\For{o=1 to O}{
 	 				Sample the \textcolor{blue}{latent receivers} $J^{(d)}_{ij}$ via Gibbs sampling\\
 	 				Sample the \textcolor{blue}{topic assignments} $\mathcal{Z}$ via Gibbs sampling\\
 	 			Sample the \textcolor{blue}{interaction pattern assignments} $\mathcal{C}$ via Gibbs sampling\\
 	 		 				Sample the \textcolor{blue}{network effect parameters} $\mathcal{B}$  via Metropolis-Hastings \\
-	 			Sample the \textcolor{blue}{receiver size parameter} $\delta$ via Metropolis-Hastings
+	 			Sample the \textcolor{blue}{receiver size parameter} $\delta$ via Metropolis-Hastings\\
+	 			Sample the \textcolor{blue}{time-increment parameter} $\eta$ via Metropolis-Hastings
 	 	}
 	 \end{algorithm}
 	\end{minipage}}
@@ -306,7 +307,7 @@ Current network features modeled
 \end{frame}
 
 
-\begin{frame} \frametitle{Getting it Right: Jointly testing math and code}
+\begin{frame} \frametitle{Getting it Right: jointly testing math and code}
 
 Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \begin{itemize}
@@ -330,23 +331,23 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 
 \end{frame}
 
-\begin{frame} \frametitle{GiR Results}
-\begin{changemargin}{-1cm}{-.5cm}
-\vspace{-1.5cm}
-\includegraphics[scale=.45, left]{./figures/GiReta} \\  \vspace{-6cm} \includegraphics[height=4cm, right]{./figures/GiRFocus}
-\end{changemargin}
+\begin{frame} \frametitle{GiR results}
+\begin{center}
+\includegraphics[width=0.78\textwidth]{./figures/GiReta} 
+\end{center}
 \end{frame}
 
 
 
 \begin{frame}{Dare County, NC email data}
-\begin{center} \vspace{-1cm}
+\begin{center} 
 \includegraphics[width=0.75\textwidth]{figures/Dare.png}
 \end{center}
  \begin{itemize}
- \item $D = 1456$ emails
+ \item $D = 2210$ emails
 \item  $A = 27$ county government managers
-\item  covering 2 month period (October 1 - November 30) in 2012
+\item  $W = 2907$ unique words
+\item  covering 3 month period (September 1 - November 30) in 2012
 \item Hurricane Sandy passed by NC: October 26 - October 30
  \end{itemize}
 \end{frame}
@@ -364,7 +365,7 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 
 
 
-\begin{frame}{Exploratory Data Analysis: Dare County}
+\begin{frame}{Exploratory data analysis: Dare County}
 	\begin{minipage}{0.85\linewidth}
 	 	 \begin{figure}
 	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 6cm 0cm, clip=true]{figures/DareSend.pdf}	 	
@@ -384,73 +385,85 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 
 
 
- \begin{frame}{IPTM Result: Topics (IP 1)}
+ \begin{frame}{IPTM result: topics (IP=1)}
  \centering
- 	 $C=2$, $K=20$ and $O= 100$
+ 	 $C=2$, $K=25$ and $O= 100$
   	\scalebox{0.75}{	 	\begin{tabular}{ |c||c|c|c|c|c|}  
   			\hline
   			\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{1} &\textbf{1}   \\ \hline\hline
-  			\textbf{Topic} & \textbf{3} (0.078)&  \textbf{5} (0.065)& \textbf{19} (0.064) &\textbf{13} (0.057) &\textbf{15} (0.053)  \\ \hline\hline
+  			\textbf{Topic} & \textbf{23} (0.055)&   \textbf{18} (0.054) &\textbf{11} (0.048)&\textbf{20} (0.033) &\textbf{8} (0.032)  \\ \hline\hline
   			\textbf{Word} 
-  			& water & planning &phone &questions &contact\\
-  			& relocation & meter & collins & board & info \\
-  			& location & room & drive &december & problem\\
-  			& hills& asked &marshall & call & release \\
-  			& utilities &needed & director & sheets & check \\
-  			& mustian & sure & human & agenda & weather \\
-  			& hydrant &afternoon &resources & nov & priority \\
-  			& department &cheryl & manteo & hope & readings \\
-  			& skyco & johnson & phr & item & rodanthe \\
-  			& kill & issues & fax & weekly & top \\
-  			& devil & case & box & management & collection\\ 
-  			& road & letter & timesheets &internet & located \\
-  			& lane & antennas & -lsb- & told & health \\
-  			& tank & inspection & wanted & care & heads \\
-  			& map & keep & touch & comp & ahead\\
-  			\hline
-  			\hline
-            				
-  		\end{tabular}}
-\end{frame}
-
-
- \begin{frame}{IPTM Result: Topics (IP 2)}
- \centering
- 	 $C=2$, $K=20$ and $O= 100$
-  	\scalebox{0.75}{	 	\begin{tabular}{ |c||c|c|c|c|c|}  
-  			\hline
-  			\textbf{Topic} & \textbf{14} (0.058)&  \textbf{12} (0.047)& \textbf{2} (0.045) &\textbf{6} (0.044) &\textbf{18} (0.036) \\ \hline\hline
-  			\textbf{Word}
-  			& time & survey &  road & library & \cellcolor{blue!25} status \\
-  			& hours & voice & mirlo & week & \cellcolor{blue!25} system \\
-  			& leave & copy&\cellcolor{blue!25}  storm &  working & area \\
-  			& monday & discovery & beach & place & south \\
-  			& administrative & regional & high & best & \cellcolor{blue!25} forecast \\
-  			& employees & parties & \cellcolor{blue!25} coastal & start & \cellcolor{blue!25} track \\
-  			& empoyee & disclosed & \cellcolor{blue!25}  impacts & visit & pay \\
-  			& work & elections & saturday & year & move \\
-  			& day & pin & dot & albemarle & assessment \\
-  			& friday & sending & night & librarian & opens \\
-  			& october & prior & \cellcolor{blue!25} winds & web & \cellcolor{blue!25} damage\\
-  			& \cellcolor{blue!25} storm &editor & hold & learning & well\\
-  			& tomorrow & students & \cellcolor{blue!25} bridge & east&\cellcolor{blue!25}  ocean\\
-  			& hour & cost & expressed & holiday &  operation\\
-  			& question & residents & normal & system & addition
-  			\\
+  		& change & will &  \cellcolor{blue!25} sandy & time & services\\
+  		& order & \cellcolor{blue!25}  winds &  munis & hours & public \\
+  		& manager &  location & \cellcolor{blue!25} hurricane& monday & white\\
+  		&\cellcolor{blue!25} storm & \cellcolor{blue!25} beach &  position & leave & director \\
+  		& \cellcolor{blue!25}emergency &  \cellcolor{blue!25} hydrant & monday &employees & fyi\\
+  		&\cellcolor{blue!25} coastal & \cellcolor{blue!25} water & point & timesheets &tim \\
+  		& statute & relocation &  power& \cellcolor{blue!25} storm & \cellcolor{blue!25} update \\
+  		& \cellcolor{blue!25}evacuation & mirlo & update & employee & \cellcolor{blue!25} status\\
+  		&\cellcolor{blue!25} track &  road & \cellcolor{blue!25} storm& tomorrow &board \\
+  		& couple & high & hey & work & approval\\
+  		& changes & moving & release& regular &wanted\\
+  		& well & gas & weeks & period &rec\\
+  		& concerns & \cellcolor{blue!25}  forecast & weekend & comp & adult\\
+  		& things & saturday & working&sheets &older\\
+  		& consistent & project & month& vacation & today\\
+  		&\cellcolor{blue!25} boat &  \cellcolor{blue!25} outer & problems&administrative &\cellcolor{blue!25} storm  \\
+  		 & misdemeanor & map & \cellcolor{blue!25} strong& operation & reminder\\
+  		 & program &airport & \cellcolor{blue!25} impacts & timesheet &called\\
+  		 & \cellcolor{blue!25} system &called &  three & personnel & sep\\
+  		 & powerpoint &  \cellcolor{blue!25} banks & ncdot & will &charlotte \\
   			\hline            				
   		\end{tabular}}
 \end{frame}
 
 
+ \begin{frame}{IPTM result: topics (IP=2)}
+ \centering
+ 	 $C=2$, $K=25$ and $O= 100$
+  	\scalebox{0.75}{	 	\begin{tabular}{ |c||c|c|c|c|c|}  
+  			\hline
+  			\textbf{Topic} &   \textbf{21} (0.057)& \textbf{12} (0.037) &\textbf{14} (0.037) &\textbf{4} (0.035)&\textbf{10} (0.026) \\ \hline\hline
+  			\textbf{Word}
+  			& library & marshall & will&board & survey\\
+  			& best & collins &center&meeting & request\\
+  			& start & drive &day& property &call \\
+  			& web & manteo & office&planning & sure\\
+  			& place & phone & great&will & people\\
+  			& visit &box & manager&notice &emergency \\
+  			& albermarle & fax &assistance&  january & thought\\
+  			& east & resources & problem& review & seafood\\
+  			&regional & director & lot&commissioners & mail\\
+  			&system & human & call&list & grant\\
+  			&voice &phr &  currently&thoughts & ncacc \\
+  			& librarian &policy &september& amendment &community\\
+  			& learning & time &early&  members &check \\
+  			& discovery & october &parking& dot & rodanthe\\
+  			& manteo & hire & received&budget & district\\
+  			& expressed & will & monday& building & complete\\
+  			& views & offices & baum&inspections &option \\
+  			& box & approved &questions& night &best\\
+  			& conversion & hour & year&text & residents\\
+  			& director &told&today& copy &talk\\  			\hline            				
+  		\end{tabular}}
+\end{frame}
+
+\begin{frame}{IPTM result: example email}
+\begin{itemize}
+	\item From: 11 (Public Infromations)\\
+	\item To: 4 (Emergency Services) and 18 (Detention)\\	 
+	\item At: 25 Oct 2012 19:14:47\\
+	\item Content:
+\textcolor{blue}{ will will storm good \textcolor{black}{sure} sandy morning morning morning morning send change plan hurricane wanted copy base afternoon keep description description saturday saturday saturday saturday touch touch release signature plans prior ready duration submitted eoc running exactly activation activation released mind joint jis pasted \textcolor{black}{activate}}
+	\end{itemize}
+\end{frame}
 
 
-
-
-\begin{frame}{IPTM Result: Dynamic Network Effects, Dare County}
+\begin{frame}{IPTM result: dynamic network effects, Dare County}
 \begin{changemargin}{-1cm}{-1cm}
 	\begin{figure}
-		\includegraphics[width=.55\textwidth]{figures/DareBReceive-1.png} \includegraphics[width=.55\textwidth]{figures/Dare2Receive-1.png}
-	\end{figure}	
+		\includegraphics[width=.55\textwidth]{figures/outdegree.pdf} \includegraphics[width=.55\textwidth]{figures/cosibling.pdf}
+			\end{figure}
 	\end{changemargin}
 \end{frame}
 
@@ -460,8 +473,10 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \item Forecast topics, ties, and timing of next document
 \item Compare to one or more models that can generate same predictions
 \end{itemize}
+ 	\begin{center}
 \scalebox{.8}{
- \begin{minipage}{1\linewidth}\begin{algorithm}[H]
+ \begin{minipage}{1\linewidth}
+\begin{algorithm}[H]
 	\SetAlgoLined
 	\caption{Predicting tie data for the next document}
 	
@@ -484,7 +499,7 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \end{algorithm}
 \end{minipage}
 }
-
+\end{center}
 \end{frame}
 
 
@@ -492,8 +507,11 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \begin{itemize}
 \item Forecast topics, ties, and timing of next document
 \item Compare to one or more models that can generate same predictions
+\begin{center}
+	\includegraphics[width=1\textwidth]{figures/Dare_PPE_22.pdf}
+	\end{center}
+	\item Further modfications to improve model fits
 \end{itemize}
-\includegraphics[scale=0.5]{}
 \end{frame}
 
 
