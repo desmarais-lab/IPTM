@@ -34,7 +34,7 @@ base.edge = base.data$edge
 base.text = base.data$text
 
 set.seed(100)
-sigma_Q = c(0.1, 5, 1)
+sigma_Q = c(0.1, 5, 5)
 niters = c(5, 2, 2, 0, 1)
 
 TrySchein<- Schein.Gibbs(100000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 

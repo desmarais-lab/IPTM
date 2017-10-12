@@ -299,7 +299,7 @@ Current network features modeled
 	 			Sample the \textcolor{blue}{interaction pattern assignments} $\mathcal{C}$ via Gibbs sampling\\
 	 		 				Sample the \textcolor{blue}{network effect parameters} $\mathcal{B}$  via Metropolis-Hastings \\
 	 			Sample the \textcolor{blue}{receiver size parameter} $\delta$ via Metropolis-Hastings\\
-	 			Sample the \textcolor{blue}{time-increment parameter} $\eta$ via Metropolis-Hastings
+	 			Sample the \textcolor{blue}{timing parameter} $\eta$ via Metropolis-Hastings
 	 	}
 	 \end{algorithm}
 	\end{minipage}}
@@ -462,7 +462,7 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \begin{frame}{IPTM result: dynamic network effects, Dare County}
 \begin{changemargin}{-1cm}{-1cm}
 	\begin{figure}
-		\includegraphics[width=.55\textwidth]{figures/outdegree.pdf} \includegraphics[width=.55\textwidth]{figures/cosibling.pdf}
+		\includegraphics[width=.55\textwidth]{figures/receive.pdf} \includegraphics[width=.55\textwidth]{figures/2receive.pdf}
 			\end{figure}
 	\end{changemargin}
 \end{frame}
@@ -504,12 +504,13 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 
 
 \begin{frame} \frametitle{Model fit evaluation}
-\begin{itemize}
-\item Forecast topics, ties, and timing of next document
-\item Compare to one or more models that can generate same predictions
 \begin{center}
 	\includegraphics[width=1\textwidth]{figures/Dare_PPE_22.pdf}
 	\end{center}
+\begin{itemize}
+	\item Area under the ROC curve (AUC) for sender, F1-score for Receivers, and Mean Absolute Error (MAE) for timing
+	\item $C=1$ loses the connection between ties and text
+	\item Lack of fit in predicting receivers and timing
 	\item Further modfications to improve model fits
 \end{itemize}
 \end{frame}
