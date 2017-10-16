@@ -12,7 +12,7 @@
 \usepackage{amsfonts}%
 \usepackage{amssymb}%
 \usepackage[algo2e]{algorithm2e}
-\usepackage{algorithmic}  
+\usepackage{algorithmic}
 \usepackage{algorithm}
 \usepackage{tikz}
 \usepackage[english]{babel}
@@ -55,8 +55,8 @@
 %\newtheorem{defn}[thm]{Definition}
 \theoremstyle{remark}
 \newtheorem{rem}[thm]{Remark}
-%%\numberwithin{equation}{section}  
- 
+%%\numberwithin{equation}{section}
+
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\R}{\mathbb{R}}
@@ -82,10 +82,10 @@ Bomin Kim\textsuperscript{1}\and
     \setlength{\itemindent}{\parindent}%
     \setlength{\parsep}{\parskip}%
   }%
-  \item[]}{\end{list}} 
+  \item[]}{\end{list}}
 
 \begin{document}
- 
+
 \begin{frame}
   \titlepage
   \begin{center}
@@ -93,59 +93,56 @@ Bomin Kim\textsuperscript{1}\and
 \hspace*{-.2in} \tiny \begin{minipage}{3.5in}
 Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-1320219)\\ ~\\~\\~\\~\\
 \end{minipage}
-& \includegraphics[scale=.05]{figures/NSF_logo.png}
+& \includegraphics[scale=.05]{figures/NSF_Logo.PNG}
 \end{tabular}
 \end{center}
 \end{frame}
 
-
-
-
 \begin{frame}{Motivation}
-\Large
+\large
 \begin{itemize}
-\item Ties attributed with text
+\item Many networks have ties that are attributed with text:
+  \vspace{0.1cm}
 \begin{itemize}
-\item International treaties
-\item Legislative cosponsorship
-\item Discussion networks on social media
+\item International treaties, legislative cosponsorship, online discussions
 \end{itemize}
 
 \begin{center}
-\includegraphics[scale=.2]{figures/tieWords}
+\includegraphics[scale=.15]{figures/tieWords}
 \end{center} \vspace{-.1cm}
-\item Network models can't model text
+\item Network models can't account for text
 \vspace{.3cm}
-\item Models for text...
-\begin{itemize}
-\item not designed for networks
-\item simplistic network structure
-\end{itemize}
+\item Models for text either can't account for ties or only account
+  for simplistic network structure
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Interaction-Partitioned Topic Model (IPTM)}
 \large
 	\bni
-	\item Probablistic model for time-stamped textual communications 
+	\item Model for networks with timestamped, text-valued ties
 	\vspace{0.2cm}
-	\item Integration of two generative models:
+	\item Draws on ideas from two existing models:
+          \vspace{0.1cm}
 	\begin{itemize}
-	 \item Latent Dirichlet allocation (LDA) for topic-based contents
-	  \item Dynamic exponential random graph model (ERGM) for ties 
+	 \item Latent Dirichlet allocation (LDA) for topic-based
+           document content
+	  \item Dynamic exponential random graph model (ERGM) for ties
 	  \end{itemize}
-	\ei
-		\vspace{0.4cm}
-\centering \large\textit{``who communicates with whom about what, and when?"}
+        \vspace{0.4cm}
+\item \textit{Who communicates with whom about what, and when?}
+  \ei
 \end{frame}
 
-\begin{frame}{Content generating process: LDA (Blei et al., 2003)}
-\bni 
+\begin{frame}{Generating Content: LDA (Blei et al., 2003)}
+\bni
 \begin{minipage}{0.7\linewidth}
-\item For each topic $k =1,...,K:$\vspace{0.2cm}
+\item For each topic $k =1,...,K$:\vspace{0.2cm}
 	\begin{itemize}
-		\item[1.] Choose a topic-word distribution over the word types\vspace{0.2cm}
-		\item[2.] Choose a topic-interaction pattern assignment			
+		\item Draw a distribution over vocabulary:
+                  $\boldsymbol{\phi}_k \sim \mbox{Dir}(\beta,
+                  (\frac{1}{V}, \ldots, \frac{1}{V}))$\vspace{0.2cm}
+
 		\end{itemize}
 		\vspace{0.2cm}
 	\end{minipage}
@@ -154,125 +151,117 @@ Work supported by NSF grants SES-1558661, SES-1619644, SES-1637089, and CISE-132
 				\vspace{0.2cm}
 		\end{minipage}
 			\begin{minipage}{0.68\linewidth}
-				\item For each document $d =1,...,D:$ \vspace{0.2cm}
+				\item For each email $d =1,...,D:$ \vspace{0.2cm}
 		\begin{itemize}
-					\item[3-1.] Choose a document-topic distribution \\\vspace{0.1cm} 
-		\item[3-2.] For each word in a document $n=1$ to $N^{(d)}$:\vspace{0.1cm} 
+					\item Draw a distribution over
+                                          topics:
+                                          $\boldsymbol{\theta}_{d}
+                                          \sim \mbox{Dir}(\alpha,
+                                          (m_1, \ldots, m_K))$ \\\vspace{0.1cm}
+		\item For each token $n=1$ to $N_d$:\vspace{0.1cm}
 		\begin{itemize}
-			\item[(a)] Choose a topic from document-topic distribution\vspace{0.2cm} 
-			\item[(b)] Choose a word from topic-word distribution
-		\end{itemize} 
+			\item Draw a topic: $z_{dn} \sim \boldsymbol{\theta}_d$\vspace{0.2cm}
+			\item Draw a word type: $w_{dn} \sim \boldsymbol{\phi}_{z_{dn}}$
+		\end{itemize}
 			\end{itemize}
 		\end{minipage}
 		\begin{minipage}{0.3\linewidth}
 	\includegraphics[width=1.05\textwidth]{figures/LDAimage.jpeg}
 		\end{minipage}
 		\vspace{0.2cm}
-				\begin{itemize}\item[3-3] Calculate the distribution of interaction patterns within a document:
-		 \footnotesize\begin{equation*}
-		p_c^{(d)} = \Big({\sum\limits_{k: c_k=c} N^{(k|d)}}\Big)/{N^{(d)}},
-		\end{equation*}\normalsize
-	\end{itemize}
-\ei	
+\ei
 \end{frame}
 
+\begin{frame}{Key Idea: Interaction Patterns}
+\bni
+\item Different topics
+ associated with different interaction patterns
+\item[]
 
-\begin{frame}{Network model components}
+\item For each topic $k =1,...,K$:\vspace{0.2cm}
+	\begin{itemize}
+		\item Assign topic $k$ to an interaction pattern:
+                  $l_k \sim \mbox{Unif}(1, C)$
+		\end{itemize}
+		\vspace{0.2cm}
+
+\item For each email $d =1,...,D$: \vspace{0.2cm}
+
+				\begin{itemize}\item Calculate distribution over interaction patterns:
+		 \footnotesize\begin{equation*}
+		\pi_{dc} = \frac{\sum_{k : l_k=c} N_{dk}}{N_d}
+		\end{equation*}\normalsize
+	\end{itemize}
+\ei
+\end{frame}
+
+\begin{frame}{Generating Ties and Timestamps}
 \large
 \begin{itemize}
-\item Models real time ties \vspace{.2cm}
-\item Ties predicted using recent network structure 
+\item Continuous-time process \vspace{.2cm}
+\item Ties predicted using dynamic network features:
 \begin{itemize}
-\item Vertex attributes
-\item Popularity
-\item Reciprocity
+\item Popularity, activity
+\item Repetition, reciprocity
 \item Transitivity
 \end{itemize} \vspace{.1cm}
-\item Sender selects vector of recipients and timing \vspace{.2cm}
-\item Innovative modeling of multicasts
+\item Author determines recipients and timestamp
+  \vspace{.2cm}
+\item Innovative approach to modeling multiple recipients
 \end{itemize}
 
 
 \end{frame}
 
-\begin{frame}{Dynamic network features (Perry and Wolfe, 2012)}
-
-\large
-Current network features modeled
-\begin{itemize}
-\item memory
-\item reciprocity
-\item popularity and activity
-\item transitivity
-\end{itemize}
-
-	 \begin{figure}
-	 	\includegraphics[height= 2cm, trim= 0cm 0cm 14cm 0cm, clip=true]{figures/netstats.pdf}\\ \vspace{-.5cm}
-		\includegraphics[height= 2cm,, trim= 10cm 0cm 0cm 0cm, clip=true]{figures/netstats.pdf}
-	 \end{figure}	
-
-\end{frame}
-
-\begin{frame}{Conditioning features on recency}
-
-
-\begin{itemize}
-\item Network features conditioned on degree of recency
-\item Partition the past 384 hours (=16 days) into 3 sub-intervals
-	\begin{equation*}
-	[t-384h,t) = [t-384h, t-96h) \cup [t-96h, t-24h)\cup [t-24h, t),
-	\end{equation*}
-\item $\boldsymbol{x}^{(c)}_{t, l}(i, j)$ is the network statistics at time $t$, for interaction pattern $c$
-\end{itemize}
-\centering
-\includegraphics[scale=.2]{./figures/triadtable}
-
-\end{frame}
-
-\begin{frame}{Tie generating process: receivers}
+\begin{frame}{Generating Hypothetical Authors and Recipients}
 		\begin{itemize}
-		\item [1.] For each sender $i \in \{1,...,A\}$ and receiver $j \in \{1,...,A\}$ ($i \neq j$), calculate the stochastic indensity between $i$ and $j$:
+		\item [1.] For each author $i \in \{1,...,A\}$ and recipient $j \in \{1,...,A\}$ ($i \neq j$), calculate the stochastic indensity between $i$ and $j$:
 	%	\footnotesize
-			\begin{equation*}\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c
-		\cdot  \mbox{exp}\Big\{ \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)\Big\},	\end{equation*}\normalsize
-		which is a mixture of contents and network effects.\\ \vspace{0.4cm}
-		\item[2.] For each sender $i \in \{1,...,A\}$, choose a binary vector $J^{(d)}_i$ of length $(A-1)$, by applying Gibbs measure (Fellows and Handcock, 2017) 
+			\begin{align*}\nu_{idjc} &= \mbox{exp}({\boldsymbol{b}_c}^{\top}\boldsymbol{x}_{idjc})\\
+                          \lambda_{idj} &=\sum_{c=1}^{C} \pi_{dc}\, \nu_{idjc}
+			\end{align*}\normalsize
+		which combines information about content and network structure\\ \vspace{0.4cm}
+		\item[2.] For each author $i \in \{1,...,A\}$, draw a
+                  binary vector $\boldsymbol{u}_{id}$ of length $A$
+                  from a non-empty Gibbs measure (Fellows and Handcock, 2017)
 	%	\footnotesize
-		%\mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + 
-		\begin{equation*} \text{P}(J_i^{(d)}) \propto \exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\},
+		%\mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) +
+		\begin{equation*} \boldsymbol{u}_{id} = (u_{id1},
+                  \ldots, u_{idA}) \sim
+                  \mbox{Gibbs}(\delta, (\lambda_{id1}, \ldots, \lambda_{idA}))
 		\end{equation*}
 		\normalsize
-		where $\delta$ is a real-valued intercept controlling the recipient size\\ \vspace{0.1cm}
- \begin{figure}
- 	\includegraphics[width=0.4\textwidth]{figures/edge.pdf}
- \end{figure}	
+		where $\delta$ is a real-valued value that controls
+                the number of recipients\\\vspace{0.1cm}
 	\end{itemize}
 	\end{frame}
-\begin{frame}{Tie generating process: sender and time}
+\begin{frame}{Generating Hypothetical Timestamps and Actual Data}
 \begin{itemize}
-		\item [3.] For each sender $i \in \{1,...,A\}$, generate the time increments for document $d$
+		\item [3.] For each author $i \in \{1,...,A\}$,
+                  generate a timestamp:
 	%	\footnotesize
-		\begin{equation*}
-		\Delta T^{(d)}_{i{J_i}} \sim \mbox{Exponential}(\eta\lambda_{i{J_i}}^{(d)}),
-		\end{equation*}\normalsize
-		where $\eta$ is the positive real-valued parameter for time-increments and \footnotesize$\lambda^{(d)}_{iJ_i}= \sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\textcolor{black}{\frac{1}{|J_i|}\sum\limits_{j \in J_i} \boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}}(i, j)}\Big\}\quad$\normalsize is the updated sender-specific stochastic intensity given the receivers.\vspace{0.4cm}
-		\item[4.] Set the observed sender, receivers and timestamp simultaneously:
+		\begin{align*}
+                  \mu_{id} &= \sum_{c=1}^C \pi_{dc}\, \mbox{GeomMean}(\{
+                  \nu_{idjc} \}_{j:u_{idj}= 1})\\
+		\tau_{id} &\sim \mbox{Exp}(\eta\,\mu_{id})\\
+                t_{id} &= t_{d-1} + \tau_{id}
+		\end{align*}\normalsize
+		where $\eta$ is a positive real-valued value \vspace{0.4cm}
+		\item[4.] Select the actual author, recipients, and timestamp:
 		%\footnotesize
-			\begin{equation*}
-		\begin{aligned}
-		&i^{(d)} = i_{\mbox{min}(\Delta T^{(d)}_{i{J_i}})} \\
-		&J^{(d)} = J_{i^{(d)}}\\
-		&t^{(d)} = t^{(d-1)}+\mbox{min}(\Delta T^{(d)}_{i{J_i}})\\
-		\end{aligned}
-		\end{equation*}
+			\begin{align*}
+		a_d &= \mbox{argmin}_{i}(t_{id})\\
+		\boldsymbol{y}_d &= \boldsymbol{u}_{a_d d}\\
+		t_d &= t_{a_d d}
+		\end{align*}
 		\normalsize
 \end{itemize}
  %\begin{figure}
  %	\includegraphics[width=0.57\textwidth]{figures/tie.pdf}
- %\end{figure}	
+ %\end{figure}
 \end{frame}
 
-\begin{frame}{Joint generating process}
+\begin{frame}{Generating Ties and Timestamps}
 
 	\begin{figure}
 		\includegraphics[width=0.9\textwidth]{figures/summary.pdf}
@@ -280,26 +269,71 @@ Current network features modeled
 
 \end{frame}
 
+\begin{frame}{Network Features (Perry and Wolfe, 2012)}
+
+\large
+\begin{itemize}
+\item Features capture different types of interaction: popularity,
+  activity, repetition, reciprocity, transitivity
+\end{itemize}
+
+	 \begin{figure}
+	 	\includegraphics[height= 2cm, trim= 0cm 0cm 14cm 0cm, clip=true]{figures/netstats.pdf}\\ \vspace{-.5cm}
+		\includegraphics[height= 2cm,, trim= 10cm 0cm 0cm 0cm, clip=true]{figures/netstats.pdf}
+	 \end{figure}
+
+\end{frame}
+
+\begin{frame}{Dynamic Network Features}
+
+
+\begin{itemize}
+\item To form $\boldsymbol{x}_{idjc}$, consider 3 time intervals prior
+  to $t^{+}_{d-1}$:\vspace{0.1cm}
+  \begin{itemize}
+    \item 3--16 days, 1--3 days, 0--1 days
+  \end{itemize}
+  \vspace{0.2cm}
+
+\item For each interval, compute each network feature focusing on
+  emails in that interval: 24 dynamic network features in
+  $\boldsymbol{x}_{idjc}$
+
+\end{itemize}
+  \vspace{0.2cm}
+\centering
+\includegraphics[scale=.15]{./figures/triadtable}
+
+\end{frame}
+
 
 \begin{frame}{Inference}
 
-\begin{itemize}
-\item Take a Bayesian approach to inference
-\item $\mathcal{B}$, $\delta$, and $\eta$ interpreted at fixed $\mathcal{Z}$ and  $\mathcal{C}$
-\end{itemize}
+%\begin{itemize}
+%\item Take a Bayesian approach to inference (of course)
+%\end{itemize}
   	\begin{center}
-  		\scalebox{.9}{	 
+  		\scalebox{.9}{
  	 \begin{minipage}{1\linewidth}\begin{algorithm}[H]
 \SetAlgoLined
-	 	\caption{MCMC}
-	 	Set initial values $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, $ and $(\mathcal{B}^{(0)}, \delta^{(0)},  \eta^{(0)})$\\
+	 	\caption{MCMC: Metropolis-Hastings within Gibbs}
+	 	Initialize latent variables\\
 	 	\For{o=1 to O}{
-	 				Sample the \textcolor{blue}{latent receivers} $J^{(d)}_{ij}$ via Gibbs sampling\\
-	 				Sample the \textcolor{blue}{topic assignments} $\mathcal{Z}$ via Gibbs sampling\\
-	 			Sample the \textcolor{blue}{interaction pattern assignments} $\mathcal{C}$ via Gibbs sampling\\
-	 		 				Sample the \textcolor{blue}{network effect parameters} $\mathcal{B}$  via Metropolis-Hastings \\
-	 			Sample the \textcolor{blue}{receiver size parameter} $\delta$ via Metropolis-Hastings\\
-	 			Sample the \textcolor{blue}{timing parameter} $\eta$ via Metropolis-Hastings
+	 				Sample
+                                        \textcolor{blue}{token--topic
+                                          assignments} $z_{dn}$\\
+	 			Sample
+                                \textcolor{blue}{topic--interaction
+                                  pattern assignments} $l_k$\\
+	 				Sample
+                                        \textcolor{blue}{hypothetical
+                                          author--recipient set pairs}
+                                        $\boldsymbol{u}_{ad}$\\
+	 		 				Sample
+                                                        \textcolor{blue}{coefficients} $\boldsymbol{b}_c$
+                                                        using Metropolis-Hastings \\
+	 			Sample \textcolor{blue}{recipient parameter} $\delta$ using Metropolis-Hastings\\
+	 			Sample \textcolor{blue}{timestamp parameter} $\eta$ using Metropolis-Hastings
 	 	}
 	 \end{algorithm}
 	\end{minipage}}
@@ -307,23 +341,22 @@ Current network features modeled
 \end{frame}
 
 
-\begin{frame} \frametitle{Getting it Right: jointly testing math and code}
+\begin{frame} \frametitle{Getting it Right: Testing Math and Code
+    (Geweke, 2004)}
 
-Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \begin{itemize}
-\item {\em Forward samples}: 
+\item {\em Generate forward samples}:
 \begin{enumerate}
-\item Draw parameters from prior
-\item Draw data conditional on parameters
-\item Repeat
+\item Draw latent variables from priors
+\item Draw synthetic data conditioned on latent variables
+  \item Repeat 1 and 2 many times
 \end{enumerate} \vspace{.2cm}
-\item {\em Backward samples}: 
+\item {\em Backward samples}:
 \begin{enumerate}
-\item Start with a forward sample of data
-\item Run inference on data
-\item Generate new data conditioned on inferred parameters
-\item Run inference on new data
-\item Repeat
+\item Start with a forward sample
+\item Draw latent variables from posterior using inference code
+\item Draw synthetic data conditioned on latent variables
+\item Repeat 2 and 3 many times
 \end{enumerate} \vspace{.2cm}
 \item Forward samples and backward samples should match
 \end{itemize}
@@ -331,127 +364,117 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 
 \end{frame}
 
-\begin{frame} \frametitle{GiR results}
+\begin{frame} \frametitle{Getting it Right Results}
 \begin{center}
-\includegraphics[width=0.78\textwidth]{./figures/GiReta} 
+\includegraphics[width=0.6\textwidth]{./figures/GiReta}
 \end{center}
 \end{frame}
 
-
-
-\begin{frame}{Dare County, NC email data}
-\begin{center} 
-\includegraphics[width=0.75\textwidth]{figures/Dare.png}
+\begin{frame}{NC Email Corpus: Dare County}
+\begin{center}
+\includegraphics[width=0.6\textwidth]{figures/dare.png}
 \end{center}
  \begin{itemize}
- \item $D = 2210$ emails
-\item  $A = 27$ county government managers
-\item  $W = 2907$ unique words
-\item  covering 3 month period (September 1 - November 30) in 2012
-\item Hurricane Sandy passed by NC: October 26 - October 30
+ \item $D = 2,210$ emails
+\item  $A = 27$ department managers
+\item  $V = 2,907$ words in vocabulary
+\item Covers 3 months (September 1 to November 30) in 2012:
+  \vspace{0.1cm}
+\begin{itemize}
+  \item Hurricane Sandy: October 26 to October 30
+    \end{itemize}
  \end{itemize}
 \end{frame}
 
+\begin{frame}{Example Email}
+  \begin{minipage}{0.7\linewidth}
+\begin{itemize}
+	\item From: Health\\
+	\item To: County Manager\\
+	\item At: 8 April 2012 8:46:00\\
+	\item Content: ... A few months ago Jennifer was on call
+          and Friday night she was out till 2 am and started the calls
+          before 5pm, there were 2 bites at one time and then a goat
+          in the highway, she took the goat to her barn because we did
+          not have anywhere to keep it...
+	\end{itemize}
+\end{minipage}
+  \begin{minipage}{0.25\linewidth}
+\begin{center}
+\includegraphics[width=0.90\textwidth]{figures/goat.jpg}\\
+\tiny (Not the actual goat.)
+\end{center}
+\end{minipage}
+\end{frame}
 
-\begin{frame}{Theoretical considerations}
+
+\begin{frame}{Hypotheses}
 \large
 \begin{itemize}
-\item Personal/friendship topics exhibit reciprocity and transitivity \vspace{.4cm}
-\item Professional communications avoid loops  \vspace{.4cm}
-\item Sandy communications represent pattern breakdowns
+\item Personal/social topics exhibit reciprocity and transitivity \vspace{.4cm}
+\item Dissemination topics don't exhibit reciprocity\vspace{.4cm}
+\item Topics about Hurricane Sandy look different
 \end{itemize}
 
 \end{frame}
 
+\begin{frame}{Data Exploration}
+\begin{center}
+	\begin{minipage}{0.75\linewidth}
 
-
-\begin{frame}{Exploratory data analysis: Dare County}
-	\begin{minipage}{0.85\linewidth}
 	 	 \begin{figure}
-	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 6cm 0cm, clip=true]{figures/DareSend.pdf}	 	
+	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 6cm 0cm, clip=true]{figures/DareSend.pdf}
 	 	 	\includegraphics[width=0.5\textwidth, trim = 0cm 0cm 6cm 0cm, clip=true]{figures/DareReceive.pdf}
 	 	 \end{figure}	\vspace{-.5cm}
 	 \begin{figure}
-	 %	\includegraphics[width=0.5\textwidth]{Wordplot.pdf}	 
 	 		 	\includegraphics[width=1\textwidth]{figures/DareNetwork.pdf}
-	 		 		 \end{figure}	
+	 		 		 \end{figure}
 \end{minipage}
 \begin{minipage}{0.13\linewidth}
 		 \begin{figure}
 	 		 		 	\includegraphics[width=1.25\textwidth]{figures/Dept2.jpg}
-	 \end{figure}	
+	 \end{figure}
 	\end{minipage}
+\end{center}
 \end{frame}
 
 
 
- \begin{frame}{IPTM result: topics (IP=1)}
- \centering
- 	 $C=2$, $K=25$ and $O= 100$
-  	\scalebox{0.75}{	 	\begin{tabular}{ |c||c|c|c|c|c|}  
+ \begin{frame}{Interaction Pattern 1: Top 5 Topics}
+\begin{center}
+  	\scalebox{0.7}{	 	\begin{tabular}{ |c|c|c|c|c|}
   			\hline
-  			\textbf{IP} & \textbf{1} &  \textbf{1} & \textbf{1}  &\textbf{1} &\textbf{1}   \\ \hline\hline
-  			\textbf{Topic} & \textbf{23} (0.055)&   \textbf{18} (0.054) &\textbf{11} (0.048)&\textbf{20} (0.033) &\textbf{8} (0.032)  \\ \hline\hline
-  			\textbf{Word} 
-  		& change & will &  \cellcolor{blue!25} sandy & time & services\\
-  		& order & \cellcolor{blue!25}  winds &  munis & hours & public \\
-  		& manager &  location & \cellcolor{blue!25} hurricane& monday & white\\
-  		&\cellcolor{blue!25} storm & \cellcolor{blue!25} beach &  position & leave & director \\
-  		& \cellcolor{blue!25}emergency &  \cellcolor{blue!25} hydrant & monday &employees & fyi\\
-  		&\cellcolor{blue!25} coastal & \cellcolor{blue!25} water & point & timesheets &tim \\
-  		& statute & relocation &  power& \cellcolor{blue!25} storm & \cellcolor{blue!25} update \\
-  		& \cellcolor{blue!25}evacuation & mirlo & update & employee & \cellcolor{blue!25} status\\
-  		&\cellcolor{blue!25} track &  road & \cellcolor{blue!25} storm& tomorrow &board \\
-  		& couple & high & hey & work & approval\\
-  		& changes & moving & release& regular &wanted\\
-  		& well & gas & weeks & period &rec\\
-  		& concerns & \cellcolor{blue!25}  forecast & weekend & comp & adult\\
-  		& things & saturday & working&sheets &older\\
-  		& consistent & project & month& vacation & today\\
-  		&\cellcolor{blue!25} boat &  \cellcolor{blue!25} outer & problems&administrative &\cellcolor{blue!25} storm  \\
-  		 & misdemeanor & map & \cellcolor{blue!25} strong& operation & reminder\\
-  		 & program &airport & \cellcolor{blue!25} impacts & timesheet &called\\
-  		 & \cellcolor{blue!25} system &called &  three & personnel & sep\\
-  		 & powerpoint &  \cellcolor{blue!25} banks & ncdot & will &charlotte \\
-  			\hline            				
-  		\end{tabular}}
-\end{frame}
+  			\textbf{23}&   \textbf{18} &\textbf{11} &\textbf{20} &\textbf{8}  \\ \hline\hline
 
-
- \begin{frame}{IPTM result: topics (IP=2)}
- \centering
- 	 $C=2$, $K=25$ and $O= 100$
-  	\scalebox{0.75}{	 	\begin{tabular}{ |c||c|c|c|c|c|}  
+  		change & will &  \cellcolor{blue!25} sandy & time & services\\
+  		order & \cellcolor{blue!25}  winds &  munis & hours & public \\
+  		manager &  location & \cellcolor{blue!25} hurricane& monday & white\\
+  		\cellcolor{blue!25} storm & \cellcolor{blue!25} beach &  position & leave & director \\
+  		\cellcolor{blue!25}emergency &  \cellcolor{blue!25} hydrant & monday &employees & fyi\\
+  		\cellcolor{blue!25} coastal & \cellcolor{blue!25} water & point & timesheets &tim \\
+  		 statute & relocation &  power& \cellcolor{blue!25} storm & \cellcolor{blue!25} update \\
+  		\cellcolor{blue!25}evacuation & mirlo & update & employee & \cellcolor{blue!25} status\\
+  		\cellcolor{blue!25} track &  road & \cellcolor{blue!25} storm& tomorrow &board \\
+  		couple & high & hey & work & approval\\
+  		changes & moving & release& regular &wanted\\
+  		well & gas & weeks & period &rec\\
+  		concerns & \cellcolor{blue!25}  forecast & weekend & comp & adult\\
+  		things & saturday & working&sheets &older\\
+  		consistent & project & month& vacation & today\\
+  		\cellcolor{blue!25} boat &  \cellcolor{blue!25} outer & problems&administrative &\cellcolor{blue!25} storm  \\
+  		 misdemeanor & map & \cellcolor{blue!25} strong& operation & reminder\\
+  		 program &airport & \cellcolor{blue!25} impacts & timesheet &called\\
+  		 \cellcolor{blue!25} system &called &  three & personnel & sep\\
+  		 powerpoint &  \cellcolor{blue!25} banks & ncdot & will &charlotte \\
   			\hline
-  			\textbf{Topic} &   \textbf{21} (0.057)& \textbf{12} (0.037) &\textbf{14} (0.037) &\textbf{4} (0.035)&\textbf{10} (0.026) \\ \hline\hline
-  			\textbf{Word}
-  			& library & marshall & will&board & survey\\
-  			& best & collins &center&meeting & request\\
-  			& start & drive &day& property &call \\
-  			& web & manteo & office&planning & sure\\
-  			& place & phone & great&will & people\\
-  			& visit &box & manager&notice &emergency \\
-  			& albermarle & fax &assistance&  january & thought\\
-  			& east & resources & problem& review & seafood\\
-  			&regional & director & lot&commissioners & mail\\
-  			&system & human & call&list & grant\\
-  			&voice &phr &  currently&thoughts & ncacc \\
-  			& librarian &policy &september& amendment &community\\
-  			& learning & time &early&  members &check \\
-  			& discovery & october &parking& dot & rodanthe\\
-  			& manteo & hire & received&budget & district\\
-  			& expressed & will & monday& building & complete\\
-  			& views & offices & baum&inspections &option \\
-  			& box & approved &questions& night &best\\
-  			& conversion & hour & year&text & residents\\
-  			& director &told&today& copy &talk\\  			\hline            				
   		\end{tabular}}
+        \end{center}
 \end{frame}
 
-\begin{frame}{IPTM result: example email}
+\begin{frame}{Example Email}
 \begin{itemize}
-	\item From: 11 (Public Infromations)\\
-	\item To: 4 (Emergency Services) and 18 (Detention)\\	 
+	\item From: Public Information\\
+	\item To: Emergency Services, Detention\\
 	\item At: 25 Oct 2012 19:14:47\\
 	\item Content:
 \textcolor{blue}{ will will storm good \textcolor{black}{sure} sandy morning morning morning morning send change plan hurricane wanted copy base afternoon keep description description saturday saturday saturday saturday touch touch release signature plans prior ready duration submitted eoc running exactly activation activation released mind joint jis pasted \textcolor{black}{activate}}
@@ -459,42 +482,60 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \end{frame}
 
 
-\begin{frame}{IPTM result: dynamic network effects, Dare County}
-\begin{changemargin}{-1cm}{-1cm}
-	\begin{figure}
-		\includegraphics[width=.55\textwidth]{figures/receive.pdf} \includegraphics[width=.55\textwidth]{figures/2receive.pdf}
-			\end{figure}
-	\end{changemargin}
+
+ \begin{frame}{Interaction Pattern 2: Top 5 Topics}
+\begin{center}
+  	\scalebox{0.7}{	 	\begin{tabular}{ |c|c|c|c|c|}
+  			\hline
+  			 \textbf{21} & \textbf{12} &\textbf{14} &\textbf{4} &\textbf{10} \\ \hline\hline
+  			library & marshall & will&board & survey\\
+  			best & collins &center&meeting & request\\
+  			start & drive &day& property &call \\
+  			web & manteo & office&planning & sure\\
+  			place & phone & great&will & people\\
+  			visit &box & manager&notice &emergency \\
+  			albermarle & fax &assistance&  january & thought\\
+  			east & resources & problem& review & seafood\\
+  			regional & director & lot&commissioners & mail\\
+  			system & human & call&list & grant\\
+  			voice &phr &  currently&thoughts & ncacc \\
+  			librarian &policy &september& amendment &community\\
+  			learning & time &early&  members &check \\
+  			discovery & october &parking& dot & rodanthe\\
+  			manteo & hire & received&budget & district\\
+  			expressed & will & monday& building & complete\\
+  			views & offices & baum&inspections &option \\
+  			box & approved &questions& night &best\\
+  			conversion & hour & year&text & residents\\
+  			director &told&today& copy &talk\\  			\hline
+  		\end{tabular}}
+        \end{center}
 \end{frame}
 
 
-\begin{frame} \frametitle{Model fit evaluation}
-\begin{itemize}
-\item Forecast topics, ties, and timing of next document
-\item Compare to one or more models that can generate same predictions
-\end{itemize}
+\begin{frame}{Coefficients}
+	\begin{figure}
+		\includegraphics[width=.5\textwidth]{figures/receive.pdf} \includegraphics[width=.5\textwidth]{figures/2receive.pdf}
+			\end{figure}
+\end{frame}
+
+\begin{frame} \frametitle{Predicting Ties and Timestamps}
  	\begin{center}
 \scalebox{.8}{
  \begin{minipage}{1\linewidth}
 \begin{algorithm}[H]
 	\SetAlgoLined
-	\caption{Predicting tie data for the next document}
-	
-	Input
-	\begin{enumerate}
-	\item $O$, number of outer iterations of inference from which to generate predictions
-	\item $d$, the last document to use in inference
-	\item $R$, the number of iterations to sample predicted data within each outer iteration
-	\end{enumerate}
-	Run burnin iterations\\
+	\caption{Predict ties and timestamp for next email}
+	Run burn-in iterations of MCMC on emails 1 through $d-1$\\
 	\For{o=1 to O}{
-		run an outer iteration of inference on documents $1$ through $d$\\
-		initialize values for $i^{(d+1)}$, $J^{(d+1)}$, $t^{(d+1)}$, and $\mathcal{Z}^{d+1}$ \\
+		Run single iteration of MCMC on emails 1 through $d-1$\\
+                Initialize $a_{d}$, $\boldsymbol{y}_d$, $t_d$, and $\boldsymbol{z}_d$\\
 		\For{r=1 to R}{
-		sample  $i^{(d+1)}$, $J^{(d+1)}$, and $t^{(d+1)}$ conditional on $\mathcal{Z}^{d+1}$, via the generative process \\
-		sample $\mathcal{Z}^{d+1}$ via Equation 24
+		Sample $a_{d}$, $\boldsymbol{y}_d$, $t_d$ conditioned on
+                $\boldsymbol{z}_d$ using generative process\\
+                Sample $\boldsymbol{z}_d$ from conditional posterior
 		}
-		store $i^{(d+1)}$, $J^{(d+1)}$, $t^{(d+1)}$, and $\mathcal{Z}^{d+1}$
+		Save $a_d$, $\boldsymbol{y}_d$, $t_d$, and $\boldsymbol{z}_d$
 	}
 \end{algorithm}
 \end{minipage}
@@ -503,24 +544,26 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
 \end{frame}
 
 
-\begin{frame} \frametitle{Model fit evaluation}
+\begin{frame} \frametitle{Example Results}
 \begin{center}
-	\includegraphics[width=1\textwidth]{figures/Dare_PPE_22.pdf}
+	\includegraphics[width=0.85\textwidth]{figures/Dare_PPE_22.pdf}
 	\end{center}
 \begin{itemize}
-	\item Area under the ROC curve (AUC) for sender, F1-score for Receivers, and Mean Absolute Error (MAE) for timing
-	\item $C=1$ loses the connection between ties and text
-	\item Lack of fit in predicting receivers and timing
-	\item Further modfications to improve model fits
+	\item Model does poorly at predicting ties and timestamps
 \end{itemize}
 \end{frame}
 
+\begin{frame} \frametitle{Posterior Predictive Checks}
+\begin{center}
+	\includegraphics[width=0.85\textwidth]{figures/PPC_Dare_80.pdf}
+	\end{center}
+\end{frame}
 
-\begin{frame}{Conclusion}
+
+\begin{frame}{To Conclude...}
+  \large
  \bni
- \item Joint modeling of ties (sender, receiver, time) and contents
- 	\vspace{0.4cm}
- \item Contribution in distribution for non-empty multicast
+ \item Model for networks with timestamped, text-valued ties
  	\vspace{0.4cm}
  \item Many potential applications in political science
  	\vspace{0.4cm}
@@ -528,7 +571,41 @@ Geweke (2004) proposed a test for Bayesian posterior samplers \vspace{.2cm}
  \ei
 \end{frame}
 
+\begin{frame}{I otter know the answer...}
+  \begin{center}
+\includegraphics[width=0.65\textwidth]{figures/otter}
+\end{center}
+\end{frame}
 
+\begin{frame}{I don't have the necessary koalafications...}
+  \begin{center}
+\includegraphics[width=0.6\textwidth]{figures/koala}
+\end{center}
+\end{frame}
+
+\begin{frame}{If they'd gibbon me more time...}
+  \begin{center}
+\includegraphics[width=0.85\textwidth]{figures/gibbon}
+\end{center}
+\end{frame}
+
+\begin{frame}{If I'd implemented the IPTM with my bear hands...}
+  \begin{center}
+\includegraphics[width=0.4\textwidth]{figures/bear}
+\end{center}
+\end{frame}
+
+\begin{frame}{I'd be lion if I said yes...}
+  \begin{center}
+\includegraphics[width=0.75\textwidth]{figures/lion}
+\end{center}
+\end{frame}
+
+\begin{frame}{Let's table bat discussion...}
+  \begin{center}
+\includegraphics[width=0.85\textwidth]{figures/bat}
+\end{center}
+\end{frame}
 
 
 \end{document}

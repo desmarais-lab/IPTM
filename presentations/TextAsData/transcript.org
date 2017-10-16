@@ -1,0 +1,324 @@
+[file]
+iptm_textasdata.pdf
+[notes]
+### 1
+
+Hey everyone, as most of you know, I'm Hanna. Today I'm going to be
+presenting some work in progress on a new network model for dynamic
+textual communications. My awesome collaborators on this project are
+Bomin Kim, a graduate student in statistics at Penn State; Aaron
+Schein, a graduate student in computer science at UMass Amherst, and
+Bruce Desmarais, who is an associate professor at Penn State.
+
+Before I start, I do want to give a couple of disclaimers. First,
+Bruce was supposed to give this presentation, but was unexpectedly
+unable to attend the conference due to a family emergency. So I'm
+filling in for him -- and basically winging it because I only found
+out I'd be doing this 36 hours ago. Second, Bruce made these slides,
+not me, and they're in Beamer. I don't think I've given a presentation
+using someone else's slides since I was in grad school and even then,
+it was unclear that it was a good idea. So we'll see how this
+goes. Third, I'm aware that if I hadn't agreed to fill in for Bruce,
+you all would've been able to go home early. But I didn't think of
+that until right now, so, uh, I'll try to keep this brief :-)
+
+
+### 2
+
+Political scientists routinely study networks in which ties are
+attributed with timestamps and text -- for example, international
+treaties, international sanctions, co-sponsorship of bills, and online
+discussions. In pretty much all these cases, the ties and the text
+strongly affect one another. The *author* of a document affects its
+content, while the author and *content* affect its recipients.
+
+Most existing methods for modeling complex network structure can't
+account for text-valued ties. Meanwhile, most existing methods for
+modeling text can't account for ties at all or do so in a simplistic,
+dyadic manner. In either case, temporal dynamics are often neglected.
+
+Our goal for this project was therefore to fill these gaps by
+developing a new model for networks w/ timestamped, text-valued ties.
+
+
+### 3
+
+We call this model the "Interaction-Partitioned Topic Model" or the
+IPTM for short. To define the IPTM, we combined latent Dirichlet
+allocation---a generative model for topic-based document content---with
+a dynamic version of the exponential random graph model---a generative
+model for ties that tend toward structural features such as triangles.
+
+Broadly speaking, the IPTM models "who communicates with whom about
+what, and when" with the LDA component modeling "what" and the ERGM
+component modeling "who," "whom," and "when." Although it's intended
+for any network with timestamped, text-valued ties, we focus on email.
+
+
+### 4
+
+To explain the IPTM, I'm going to walk you through its generative
+process. This process generates a set of emails by first generating
+their content and then generating their authors, recipients, and
+timestamps. We start by generating K topics. Each topic is a discrete
+distribution over some fixed vocabulary, drawn from a symmetric
+Dirichlet. Next, to generate the content of email d, we draw a
+discrete distribution over these topics an asymmetric
+Dirichlet. Finally, we generate each token by drawing a topic from
+this distribution and then drawing a word from that topic.
+
+
+### 5
+
+They key idea that combines the IPTM component modeling "what" with
+the component modeling "who," "whom," and "when" is that different
+topics are associated with different interaction patterns. For
+example, a topic about socializing might exhibit strong reciprocity
+and transitivity. In contrast, a topic about dissemination of meeting
+agendas might exhibit a broadcast structure, characterized by a lack
+of reciprocity. We capture this intuition by defining C "interaction
+patterns". Each interaction pattern is characterized by a set of
+dynamic network features -- such as the number of messages sent from i
+to j in some time interval -- and corresponding coefficients. We then
+assign each topic to one of these interaction patterns.
+
+This enables us to summarize each email's content as a distribution
+over interaction patterns. In other words, for each email and
+interaction pattern, we compute the fraction of tokens that were
+generated using a topic that was assigned to that interaction
+pattern. We can then use each email's distribution over interaction
+patterns to generate its author, recipients, and timestamp.
+
+
+### 6
+
+The IPTM generates ties and timestamps using a continuous-time process
+that depends on the interaction patterns' dynamic network features and
+corresponding coefficients. It's an author-driven process in that the
+author of a email determines its recipients and its timestamp.
+
+
+### 7
+
+To generate an email's author, recipients, and timestamp, we start by
+computing a stochastic intensity for every possible author--recipient
+pair. Each intensity is mixture of interaction-pattern-specific
+intensities that depend on the interaction patterns' dynamic network
+features and corresponding coefficients. The mixture weights are
+defined by the email's distribution over interaction patterns.
+
+We then use these intensities to generate a set of recpients for each
+possible author. In other words, we effectively say, "If i were the
+author of email d, who would its recipients be?" To do this, we draw
+each author's set of recipients from a non-empty Gibbs measure that
+depends on the stochoastic intensities for that author and a
+real-valued parameter delta that controls the number of recipients.
+
+
+### 8
+
+Next, we generate a hypothetical timestamp for each
+author--recipient-set pair by saying, "If i were the author of email d
+and its recipients were u_{id}, when would it be sent?" I'm going to
+skip over the details of the math involved, but we use an exponential
+distribution that depends on the geometric mean of the corresponding
+interaction-pattern-specific intensities. Finally, we generate the
+email's *actual* author, recipients, and timestamp by selecting the
+author--recipient-set pair with the earliest timestamp.
+
+
+### 9
+
+So, for example, if email 1's content is the word "hi," we might end
+up with stochastic intensities that look like this. In turn, these
+might result in author--recipient-set pairs that look like this, which
+might result in timestamps that look like this. Because person 2 has
+the earliest timestamp, we'd then select person 2 and their
+corresponding recipients and timestamp for this email.
+
+
+### 10
+
+So what about the dynamic network features? As I said previously, we
+use these to compute an interaction-pattern-specific stochastic
+intensity for every possible author--recipient pair. So it's really
+these features that enable the IPTM to capture complex network
+structure and temporal dynamics. We follow roughly the same approach
+as Perry and Wolfe's 2012 paper, and focus on eight network features:
+the number of emails sent by i, the number of emails received by j,
+the number of emails sent by i to j, the number of emails sent by j to
+i, the number of two-email paths from i to j, the number of two-email
+paths from j to i, the number of two-email "sibling" paths to i and j,
+and the number of two-email "cosibling" paths from i and j.
+
+
+### 11
+
+To incorporate dynamics, we focus on three time intervals prior to
+just after the previous email's timestamp: 3--16 days, 1--3 days, and
+0--1 days. We then compute each of the eight network feature within
+each time interval to obtain a set of 24 dynamic network features
+specific to author i, recipient j, email d, and interaction pattern c.
+
+
+### 12
+
+Alright, so this generative process is a nice way of describing how a
+set of emails could theoretically have been generated. But, of course,
+real emails aren't actually generated via this process -- they're
+written by people. As a result, for real emails, the topics, the
+topic--interaction pattern assignments, and the interaction patterns'
+coefficients are unknown. However, we can infer them from the content,
+authors, recipients, and timestamps using an MCMC algorithm. I'm not
+going to go over the details of this algorithm, but the basic idea is
+that we use Gibbs sampling, relying on Metropolis-Hasting if we are
+unable to compute a variable's conditional posterior exactly.
+
+
+### 13
+
+So, by this point, I'm pretty sure you're all thinking, "Wow, Hanna,
+that's a really complicated model. How can you be sure that your
+derivations and code aren't full of mistakes?" Well, we use Geweke's
+"Getting it Right" test, which is the best thing ever. It's very
+simple to implement, yet very powerful because it amplifies subtle
+misktakes. If you take only one thing away from this talk, I hope it's
+that you should all be using "Getting it Right" whenever you derive
+and implement MCMC inference for a Bayesian latent variable model.
+
+So how does "Getting it Right" work? First, we draw a bunch of samples
+of the latent variables and the data using the generative process. We
+refer to these as "forward" samples. Next, we take one of these
+forward samples and, given this sample, draw a sample of the latent
+variables from their posterior distribution using our inference
+code. We then use the final step of the generative process to draw a
+new sample of the data given this sample of the latent
+variables. Finally, we repeat these last two steps many times to
+obtain a set of "backward" samples. If there are no mistakes, then the
+forward samples and the backward samples should be indistinguishable.
+
+
+### 14
+
+These are our "Getting it Right" results. All the blue dots lie on the
+45-degree red line, so our derivations and code pass the test. I do
+want to note that they didn't originally pass the test. In fact, when
+Bruce presented our work at PolMeth they were still failing! But we've
+now tracked down and fixed the mistakes that were responsible.
+
+
+### 15
+
+Okay, so what about using the IPTM? We decided to analyze a corpus of
+emails sent and received by local government officials in Dare County,
+North Carolina. This corpus contains around 2,000 emails, sent and
+received by 27 department managers over a period of 3 months
+in 2012. Crucially, Hurricane Sandy occurred during this time period,
+so we wanted to use the IPTM to see if there were any changes to the
+managers' interaction patterns during the hurricane. Just so we're
+all on the same page, this is work in progress, so what I'll show you
+is pretty preliminary and there is still a lot more to be done...
+
+
+### 16
+
+Oh and just so you get a better sense of what I'm talking about,
+here's an example email from the corpus. It was sent by the manager of
+the health department to the county manager and contains the following
+sentence: [read it] Really important government business there!
+
+
+### 17
+
+Okay, back to our analysis. We had three hypotheses: First, we
+expected that personal or social topics (if any) would likely exhibit
+strong reciprocity and transitivity in tie formation. Second, we
+expected that topics about dissemination of information would would
+likely be characterized by a lack of reciprocity. Finally, we expected
+that topics about Hurricane Sandy would exhibit a very different
+interaction pattern, though we weren't sure exactly what to expect.
+
+
+### 18
+
+Before using the IPTM to analyze the emails, we did some initial data
+exploration just to see whether anything looked different during the
+hurricane. The top two plots show the number of emails sent and
+received by each manager over time, and the vertical lines indicate
+when the hurricane occurred. It's pretty clear from these plots that
+there were large changes to the volume of email during the
+hurricane. In particular, the Emergency Services department manager
+sent a large number of emails to the other managers. This same pattern
+is also reflected in the network plots at the bottom of the slide.
+
+
+### 19
+
+We experimented with different numbers of interaction patterns and
+different numbers of topics, and found that we obtained the best
+results with two interaction patterns and 25 topics. This slide shows
+the top twenty words for the five topics that were most strongly
+associated with interaction pattern 1. It's pretty clear from the
+highlighted words that many of these topics are about the hurricane.
+
+
+### 20
+
+Sure enough, if we look at the emails sent around the time of the
+hurricane, many of them use these topics. This email was sent from the
+Public Information manager to the Emergency Services manager and the
+Detention manager the day before the hurricane. The tokens in blue
+were all assigned to topics associated with interaction pattern 1.
+
+
+### 21
+
+Alright, so what about interaction pattern 2? The topics most strongly
+associated with this interaction pattern are about standard government
+activities. Very few of their top words are about the hurricane.
+
+Together, the assignment of hurricane-related topics to interaction
+pattern 1 and government-related topics to interaction pattern 2
+provide support for our hypothesis that topics about Hurricane Sandy
+exhibit very a different interaction pattern to other topics.
+
+
+### 22
+
+In theory, we should be able to use the inferred coefficients to
+understand each interaction pattern's characteristics. However, we've
+only just begun to do this, so I can't say anything concrete yet...
+
+
+### 23
+
+Before I stop, I want to talk briefly about predicting out-of-sample
+ties and timestamps. Given that our derivations and code pass "Getting
+it Right" and given that our ultimate goal is to conduct analyses of
+the sort I just described, it might seem strange to use the IPTM for
+prediction. However, this is actually a really good way to check the
+validity of our modeling assumptions. We therefore designed an
+algorithm to predict a new email's author, recipients, and timestamps
+given its content. I'm not going to go over the details of this
+algorithm because it's not very exciting, but it's pretty simple.
+
+
+### 24
+
+We compared the IPTM's predictions to those made by some simple
+baseline regression models. Interestingly, we found that the IPTM's
+predictions weren't as good as those made by the baselines.
+
+
+### 25
+
+To try to understand why, we then performed some posterior predictive
+checks, which indicated that the IPTM's assumptions about timestamps
+aren't very realistic. So we're now trying to figure out how best to
+fix this. We suspect that the problem is the exponential distribution,
+but you'll have to wait for the next conference for to hear more...
+
+
+### 26
+
+Alright, so with that I'm going to stop...

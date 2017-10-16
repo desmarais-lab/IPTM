@@ -1,0 +1,20 @@
+Emails: presumably the people in NC know that their emails are public
+record, but Enron people didn't realize it was going to be
+public. Worry about how much is actually there in email. Maybe some of
+this is time-dependent? e.g., during a hurricane maybe people use the
+phone. What kind of information being omitted? Is this systematic?
+
+Should think about: who should be communicating vs. who is not
+communicating with whom. When are things not operating according to
+the plan? Compare to org chart -- that wasn't there.
+
+Competition logic: everyone is raring to go, wants to send the next
+email. But is this really true in government?
+
+Email is weird in terms of length of time to reply.
+
+What kinds of questions can we answer to this? How does it scale? Can
+we apply it to other data? Citation and information
+propagation. Social media shares/comments.
+
+How does communication shift the network over time?
