@@ -113,7 +113,7 @@ load('Enron.RData')
 Enron_topic = matrix(0, 3, 8)
 colnames(Enron_topic) = as.numeric(c("1", "2", "5", "10", "25", "50", "75", "100"))
 
-for (i in c(1, 5)) {
+for (i in c(1, 2,4, 5)) {
 for (nIP in 1:3) {
 	iter = 1
 	for (K in c(2, 5, 10, 25, 50, 75)){
@@ -134,7 +134,7 @@ for (nIP in 1:3) {
 }
 }
 
-Enron_topic = Enron_topic /2
+Enron_topic = Enron_topic /4
 
 for (i in 1:length(Enrontest$Z)) {
    Enrontest$Z[[i]] = rep(1, length(Enrontest$Z[[i]]))
