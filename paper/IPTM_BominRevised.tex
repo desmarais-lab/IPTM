@@ -506,7 +506,7 @@ We applied each discrepancy function to each synthetic network to yield the dist
  Figure 9 illustrates the result of posterior predictive checks, showing IPTM's goodness of fit for Dare County data. (Mutual information plots are in Appendix \ref{subsec:MI_PPC})\footnote{\noindent Number of samples currently used: 80 simulated corpus.} Four plots, indegree distribution, multicast distribution, geodesic distance distribution, and edgewise shared partner distribution, reveal that IPTM captures some important work features of the data, including spreadness and transitivity. However, outdegree distribution and time-increments from the simulated data are not quite similar to those of the observed data. The two aspects of data, sender and time-increments, are directly related from the time-generating process from Exponential distribution, thus we again learn that the current time-modeling framework of IPTM is not fully able to reflect or capture the time-generating process of real-world data. We plan on further dive into this issue and make adjustments in the future work.
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1\textwidth]{plots/PPC_Dare_80.pdf}  
+	\includegraphics[width=1\textwidth]{plots/PPC_plot.pdf}  
 	\label{fig:DarePPC}
 	\caption{PPC results for Dare County data: (a) outdegree distribution, (b) indegree distribution, (c) multicast distribution, (d) QQplot of time-increments, (e) geodesic distance distribution, and (f) edgewise shared partner distribution. For (a) and (b), a box plot indicates the sampled degree of each actors in the synthetic networks, with actors sorted from highest to lowest observed degree and their observed degrees indicated by a line.}
 \end{figure}

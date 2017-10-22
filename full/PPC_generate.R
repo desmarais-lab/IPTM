@@ -1,4 +1,5 @@
 library(IPTM2)
+setwd('~/Desktop/IPTM/full')
 load('Darenew.RData')
 # 762 - 
 attach(Dare)
@@ -11,8 +12,7 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-setwd('~/Desktop/IPTM/full')
-for (i in 1:5) {
+for (i in 2) {
     filename = paste0("Dare_full_",2,"_",25,"_ver",i,".RData")
 	load(filename)
 	nIP = 2
