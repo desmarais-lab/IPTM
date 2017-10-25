@@ -73,7 +73,7 @@ espart = matrix(0, 100, 26)
 
 
 d = 1
-for (i in c(1,3, 4, 5)) {
+for (i in c(1,2, 3, 4, 5)) {
 	filename = paste0("PPC", i, "_nIP2_K25_Dare.RData")
 	load(filename)
     filename2 = paste0("Dare_full_",2,"_",K,"_ver",i,".RData")
@@ -100,6 +100,26 @@ for (i in c(1,3, 4, 5)) {
 	d = d + 1
 	}
 }
+
+#outdegreetable = matrix(0, 1, max(outdegree))
+#colnames(outdegreetable) = 0:(max(outdegree)-1)
+#outdegreetable[1,] = tabulate(c(outdegree) )
+#bplot(outdegreetable/100)
+#lines(tabulate(o_outdegree), col = 'red')
+par(mfrow = c(1,2))
+hist(c(outdegree), freq = FALSE)
+lines(density(o_outdegree, from = 0), col = 'red')
+
+
+
+#indegreetable = matrix(0, 1, max(indegree))
+#colnames(indegreetable) = 0:(max(indegree)-1)
+#indegreetable[1,] = tabulate(c(indegree) )
+#bplot(indegreetable)
+#lines(tabulate(o_indegree), col = 'red')
+
+hist(c(indegree), freq = FALSE,  ylim = c(0, 0.003))
+lines(density(o_indegree, from = 0), col = 'red')
 
 
 par(mfrow = c(2,3))
