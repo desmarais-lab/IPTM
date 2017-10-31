@@ -1,0 +1,31 @@
+Package: IPTM3
+Title: Interaction-Partitioned Topic Models
+Version: 0.1
+Authors@R: c(person("Bomin", "Kim", email = "bzk147@psu.edu", role = c("aut", "cre")),
+  person("Jones", "Zachary", email = "zmj@zmjones.com", role = c("aut", "adp")),
+  person("Desmarais", "Bruce", email = "bdesmarais@psu.edu", role = c("aut", "adp")),
+  person("Wallach", "Hanna", email = "hanna@dirichlet.net", role = c("aut", "adp")))
+URL: https://github.com/bomin8319/IPTM
+BugReports: https://github.com/bomin8319/IPTM/issues
+Encoding: UTF-8
+Description: Functions jointly analyze the history of interaction (between
+    the sender and receiver) and the contents or topic of text (e.g. email, online
+    messages) using Markov chain Monte Carlo (MCMC).
+License: MIT + file LICENSE
+LazyData: true
+Imports:
+    FastGP,
+    MCMCpack,
+    entropy,
+    Rcpp,
+    RcppArmadillo,
+    lda,
+    reshape,
+    coda,
+    combinat,
+    mgcv
+LinkingTo:
+    Rcpp,
+    RcppArmadillo 
+RoxygenNote: 6.0.1.9000
+Suggests: testthat

@@ -119,7 +119,7 @@ qqline(simulated.times)
 
 
 par(mfrow = c(2,2))
-z.out <- survreg(Surv(Y)~ -1+X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+sender + W + D,dist= "exponential", data = Daresurv)
+z.out <- survreg(Surv(Y)~ -1 +sender+ W+ D,dist= "exponential", data = Daresurv)
 
 quantiles <- seq(0.0001,.9999,length=1000)
 quantileMat <- predict(z.out,type="quantile",p=quantiles)
@@ -167,7 +167,7 @@ qqplot(x = qx1,
            cex.main = 0.5)
     abline(0, 1, lty = 1, col = "red", lwd = 1)
     
-z.out <- survreg(Surv(Y)~ -1+X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+sender+W + D,dist= "weibull", data = Daresurv)
+z.out <- survreg(Surv(Y)~ X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+W + D,dist= "lognormal", data = Daresurv)
 
 quantiles <- seq(0.0001,.9999,length=1000)
 quantileMat <- predict(z.out,type="quantile",p=quantiles)
@@ -203,7 +203,7 @@ qqplot(x = qx1,
     abline(0, 1, lty = 1, col = "red", lwd = 1)
     
 
-z.out <- survreg(Surv(Y)~ -1+X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+sender+W + D,dist= "lognormal", data = Daresurv)
+z.out <- survreg(Surv(Y)~ -1 + log(L)+W+D,dist= "lognormal", data = Daresurv)
 
 quantiles <- seq(0.0001,.9999,length=1000)
 quantileMat <- predict(z.out,type="quantile",p=quantiles)
