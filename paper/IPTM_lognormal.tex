@@ -135,7 +135,7 @@ Now, we define the $(i, j)^{th}$ element of the stochastic intensity matrix $\bo
 where $p_c^{(d)}$ is as defined in Equation (\ref{alg:pcd}), $\boldsymbol{b}^{(c)}$ is an unknown vector of coefficients in $\mathbbm{R}^{P}$ corresponding to the interaction pattern $c$, and $\boldsymbol{x}^{(c)}_t(i, j)$ is a vector of the $P$-dimensional dynamic network statistics for directed edge $(i, j)$ at time $t$ corresponding to the interaction pattern $c$. In other words, $\boldsymbol{\lambda}^{(d)}$ can be seen as the weighted average of exponentiated terms over all interaction pattern, where $\{p_c^{(d)}\}_{c=1}^C$ is used as weights. 
 
 \subsection{Dynamic Network Statistics} \label{subsec: Dynamic covariates2}
-In this Section, we introduce detailed specifications of the dynamic network statsitics in our model. We develop a suite of eight different effects to be used as the components of $\boldsymbol{x}^{(c)}_t(i, j)$, (outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling), which are incorporated as in Equation (2).  These statistics capture common network properties such as popularity, centrality, reciprocity, and transitivity. Each network statistic is calculated for each interaction pattern $c=1,...,C$, which means that each interaction pattern can be understood in terms of the ways that network dynamics shape tie formation within the interaction pattern. Below are the specifications of the degree, dyadic, and triadic network statistics we use in this paper.
+In this Section, we introduce detailed specifications of the dynamic network statsitics in our model. We develop a suite of nine different effects to be used as the components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling), which are incorporated as in Equation (2).  These statistics capture common network properties such as popularity, centrality, reciprocity, and transitivity. Each network statistic is calculated for each interaction pattern $c=1,...,C$, which means that each interaction pattern can be understood in terms of the ways that network dynamics shape tie formation within the interaction pattern. In addition to assigning interaction-pattern specific intercepts, we introduce the degree, dyadic, and triadic network statistics in this paper, and below are the detailed specifications.
 
 We follow \cite{PerryWolfe2012} and define each network feature to have potentially different effects within a number of intervals of recency in the formation of the ties that contribute to the network feature. We partition the interval $[-\infty, t)$ into $L=4$ sub-intervals with equal length in the log-scale, by setting $\Delta_l$ = (6 hours) $\times  4^l$ for $l=1,...,L-1$ such that $\Delta_l$ takes the values 24 hours (=1 day), 96 hours (=4 days), 384 hours (=16 days): 
 \begin{equation*}
@@ -211,28 +211,26 @@ The tie generating process determines the sender, recipients, and timing ($i_o^{
 The algorithms we present in this section form the generative process for $D$ documents. This generative process integrates Sections \ref{subsec: Content Generating Process} through \ref{subsec: Tie Generating Process}.  
 \begin{algorithm}[H]
 	\SetAlgoLined
-	\caption{Topic Word Distributions}
+	\caption{Parameters from priors}
+\textbf{[Topic Word Distributions]}\\
 	\For{k=1 to K}{
-		draw $\boldsymbol{\phi}^{(k)}$ $\sim$ Dirichlet($\beta, \bf u$)
+		draw $\boldsymbol{\phi}^{(k)}$ $\sim$ Dirichlet($\beta, \bf u$) 
 	}
-\end{algorithm}
-\begin{algorithm}[H]
-	\SetAlgoLined
-	\caption{Interaction Pattern Parameters}
+	\vspace{0.2cm}
+		\textbf{[Topic Interaction Pattern Assginments]}\\
+		\For{k=1 to K}{
+			draw $c_k$ $\sim$ Uniform(1, C)
+		}
+			\vspace{0.2cm}
+		\textbf{[Interaction Pattern Parameters]}\\
 	\For{c=1 to C}{
-		draw $\boldsymbol{b}^{(c)}\sim \mbox{Multivariate Normal}(\mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})$
+		draw $\boldsymbol{b}^{(c)}\sim \mbox{Multivariate Normal}(\mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})$ 
 	}
-\end{algorithm}
-\begin{algorithm}[H]
-	\SetAlgoLined
-	\caption{Topic Interaction Pattern Assginments}
-	\For{k=1 to K}{
-		draw $c_k$ $\sim$ Uniform(1, C)
-	}
-\end{algorithm}
-\begin{algorithm}[H]
-	\SetAlgoLined
-	\caption{Recipient Size Parameter}
+		\vspace{0.2cm}
+	\textbf{[Time-related Parameters]}\\
+		draw $\boldsymbol{\eta}\sim \mbox{Multivariate Normal}(\mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}})$\\
+			draw $\sigma_T^2\sim \mbox{Inverse-Gamma}(a_T, b_T)$\\\\
+	\textbf{[Recipient Size Parameter]}\\
 		draw $\delta$ $\sim$ Normal($\mu_\delta, \sigma^2_\delta)$
 \end{algorithm}
 	\begin{algorithm}[H]
@@ -258,7 +256,8 @@ The algorithms we present in this section form the generative process for $D$ do
                     			  set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}$\\
                   }  }
                     draw $J_i^{(d)} \sim \mbox{Gibbs measure}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)$\\
-					draw $\Delta T_{iJ_i} \sim \mbox{Exponential}(\eta\lambda_{iJ_i}^{(d)})$
+                    calculate $\boldsymbol{y}_{iJ_i}^{(d)}$ (including $\boldsymbol{x}_{iJ_i}^{(d)}$)\\
+					draw $\Delta T_{iJ_i} \sim \mbox{Lognormal}(\boldsymbol{\eta}^T\boldsymbol{y}_{iJ_i}^{(d)}, \sigma_T^2)$
                     }
                     set $i_o^{(d)} = i_{\mbox{min}(\Delta T_{i{J_i}})}$, $J_o^{(d)} = J_{i^{(d)}}$, and
                     $t_o^{(d)} = t_o^{(d-1)}+\mbox{min}(\Delta T_{i{J_i}})$
@@ -267,25 +266,25 @@ The algorithms we present in this section form the generative process for $D$ do
 	\end{algorithm}
 
 \section{Inference} \label{sec: Inference}		
-We take a Bayesian approach to inferring the latent variables (i.e., parameters) in the IPTM. The likelihood function is implied by the generative process in Section \ref{subsec: Joint Generative Process of Document}. In this section, we derive the joint distribution over the variables introduced earlier $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D},\mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{b}^{(c)} \}_{c=1}^{C}, \delta, \eta$ as well as the augmented data $\mathcal{J}_{\mbox{a}}=\{\{J_i^{(d)}\}_{i\neq i_o^{(d)}}\}_{d=1}^D$, and $\mathcal{T}_{\mbox{a}}=\{\{t_{iJ_i}^{(d)}\}_{i\neq i_o^{(d)}}\}_{d=1}^D$, given the observed four components $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$, $\mathcal{I}_{\mbox{o}}=\{i_o^{(d)}\}_{d=1}^D$,  $\mathcal{J}_{\mbox{o}}=\{J_o^{(d)}\}_{d=1}^D$, and $\mathcal{T}_{\mbox{o}}= \{t_o^{(d)}\}_{d=1}^D$, and the hyperparameters $(\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta,  \mu_\eta, \sigma^2_\eta)$.
+We take a Bayesian approach to inferring the latent variables (i.e., parameters) in the IPTM. The likelihood function is implied by the generative process in Section \ref{subsec: Joint Generative Process of Document}. In this section, we derive the joint distribution over the variables introduced earlier $\Phi=\{\boldsymbol{\phi}^{(k)}\}_{k=1}^{K}, \Theta=\{\boldsymbol{\theta}^{(d)} \}_{d=1}^{D},\mathcal{Z}=\{\boldsymbol{z}^{(d)} \}_{d=1}^{D}, \mathcal{C}=\{{c}_k \}_{k=1}^{K}, \mathcal{B}=\{\boldsymbol{b}^{(c)} \}_{c=1}^{C}, \delta, \boldsymbol{\eta}, \sigma_T^2$ as well as the augmented data $\mathcal{J}_{\mbox{a}}=\{\{J_i^{(d)}\}_{i\neq i_o^{(d)}}\}_{d=1}^D$, and $\mathcal{T}_{\mbox{a}}=\{\{t_{iJ_i}^{(d)}\}_{i\neq i_o^{(d)}}\}_{d=1}^D$, given the observed four components $\mathcal{W}=\{\boldsymbol{w}^{(d)} \}_{d=1}^{D}$, $\mathcal{I}_{\mbox{o}}=\{i_o^{(d)}\}_{d=1}^D$,  $\mathcal{J}_{\mbox{o}}=\{J_o^{(d)}\}_{d=1}^D$, and $\mathcal{T}_{\mbox{o}}= \{t_o^{(d)}\}_{d=1}^D$, and the hyperparameters $(\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta,  \boldsymbol{\mu}_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)$.
 	
-After integrating out $\Phi$ and $\Theta$ using Dirichlet-multinomial conjugacy \citep{griffiths2004finding} we sample the remaining unobserved variables from their joint posterior distribution using Markov chain Monte Carlo (MCMC) methods. Additionally, we integrate out the latent time-increments $\mathcal{T}_{\mbox{a}}$ using the property of the minimum of Exponential random variables, as shown in Appendix \ref{subsubsec:Joint distribution of Tie}. 
+After integrating out $\Phi$ and $\Theta$ using Dirichlet-multinomial conjugacy \citep{griffiths2004finding} we sample the remaining unobserved variables from their joint posterior distribution using Markov chain Monte Carlo (MCMC) methods.
 
 Our inference goal is to draw samples from the posterior distribution
 	  \begin{equation}
 	  \begin{aligned}
-	  &P(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,  \eta, \mathcal{J}_{\mbox{a}}|\mathcal{W}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_\eta, \sigma^2_\eta) \\
-	  &\propto 	P(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,  \eta, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_\eta, \sigma^2_\eta)\\&  = P(\mathcal{Z}|\alpha, \boldsymbol{m})P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})P(\delta | \mu_\delta, \sigma^2_\delta)P(\eta | \mu_\eta, \sigma^2_\eta) P(\mathcal{W}|\mathcal{Z}, \beta, \boldsymbol{u})P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta).
+	  &P(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,  \boldsymbol{\eta}, \sigma_T^2, \mathcal{J}_{\mbox{a}}|\mathcal{W}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \boldsymbol{\mu}_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T) \\
+	  &\propto 	P(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \boldsymbol{\eta}, \sigma_T^2, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \boldsymbol{\mu}_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)\\&  = P(\mathcal{Z}|\alpha, \boldsymbol{m})P(\mathcal{C})P(\mathcal{B}|\mathcal{C}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})P(\delta | \mu_\delta, \sigma^2_\delta)P(\boldsymbol{\eta}| \boldsymbol{\mu}_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}})P(\sigma_T^2|a_T, b_T)\\&\quad\times P(\mathcal{W}|\mathcal{Z}, \beta, \boldsymbol{u})P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2).
 	  \end{aligned}
 	  	\label{alg:jointposterior}
 	  \end{equation}
-	 The detailed derivation of sampling equations can be found in Appendix \ref{subsec:Sampling Equations}. 
-	  
- To summarize the inference procedure outlined above, we provide pseudocode for Markov Chain Monte Carlo (MCMC) sampling. For better performance and interpretability of the topics we infer, we run $n_1$ iterations of the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured}, for every outer iteration $o$. In addition, while we update the categorical variables $\mathcal{Z}$ and $\mathcal{C}$ once per outer iteration, we specify a larger number of inner iterations ($n_2$ and $n_3$) for the continuous variables $\mathcal{B}$, $\delta$, and $\eta$, respectively. The continuous variables converge slower than the discrete variables since we sample the categorical variables using Gibbs sampling and the continuous variables using Metropolis-Hastings. When summarizing model results, we only use the samples from the last (i.e., $O^{th}$) outer loop.
+
+ To summarize the inference procedure outlined above, we provide pseudocode for Markov Chain Monte Carlo (MCMC) sampling. For better performance and interpretability of the topics we infer, we run $n_1$ iterations of the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured}, for every outer iteration $o$. In addition, while we update the categorical variables $\mathcal{Z}$, $\mathcal{C}$, and $\mathcal{J}_a$ once per outer iteration using Gibbs sampling method, we specify a larger number of inner iterations ($n_2$ and $n_3$) for the continuous variables that require Metropolis-Hastings $\mathcal{B}$ and $\delta$, respectively, considering slower mixing. Time-related parameters $\boldsymbol{\eta}$ and $\sigma_T^2$ both employ conjugate prior, thus we sample from their respective gauranteed posterior distributions, multivariate normal and inverse-Gamma sampling with $n_4$ inner iterations. When summarizing model results, we only use the samples from the last (i.e., $O^{th}$) outer loop. The detailed derivation of sampling equations can be found in Appendix \ref{subsec:Sampling Equations}. 
+ 
  \begin{algorithm}[H]
  	\SetAlgoLined
  	\caption{MCMC}
- 	set initial values $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, $ and $(\mathcal{B}^{(0)}, \delta^{(0)})$\\
+ 	set initial values of $\mathcal{Z}^{(0)}, \mathcal{C}^{(0)}, \mathcal{B}^{(0)}, \delta^{(0)}, \boldsymbol{\eta}^{(0)}, \sigma_T^2$\\
  	\For{o=1 to O}{
  			\For{n=1 to $n_1$}{
  		optimize $\alpha$ and $\boldsymbol{m}$ using hyperparameter optimization in \cite{wallach2008structured}
@@ -303,10 +302,15 @@ Our inference goal is to draw samples from the posterior distribution
  			sample $\mathcal{B}$ using Metropolis-Hastings following Section \ref{subsec: Resampling B}
  		}
  		\For{n=1 to $n_3$}{
- 			sample $\delta$ using Metropolis-Hastings following Section \ref{subsec: Resampling delta}\\
- 				sample $\eta$ using Metropolis-Hastings following Section \ref{subsec: Resampling eta}
+ 			sample $\delta$ using Metropolis-Hastings following Section \ref{subsec: Resampling delta}
   		}
- 	}	Summarize the results with: last sample of $\mathcal{C}$, last sample of $\mathcal{Z}$, last chain of $\mathcal{B}$, last chain of $\delta$ 
+  		\For{n=1 to $n_4$}{
+  				sample $\boldsymbol{\eta}$ from multivariate normal posterior distribution\\  	
+  							sample $\sigma_T^2$ from inverse-Gamma posterior distribution
+  		}
+		}
+ 	Summarize the results with: \\
+ 	last sample of $\mathcal{C}$, last sample of $\mathcal{Z}$, last chain of $\mathcal{B}$, last chain of $\delta$, and last chain of $\boldsymbol{\eta}$ and $\sigma_T^2$ 
  \end{algorithm}
  
    \section{Getting It Right (GiR) Test}
@@ -319,19 +323,20 @@ In the forward samples, both observable and unobservable variables are generated
       	\item[1.] Mean of network effect parameters $(\boldsymbol{b}_p^{(1)},...,\boldsymbol{b}_p^{(C)})$ for every $p = 1,...,P$,
       	      	\item[2.] Network statistic `send' calculated for the last $D^{th}$ document for every $l=1,...,3$
       	      	\item[3.] $\delta$ value used to generate the samples
-      	      		\item[4.] $\eta$ value used to generate the samples
-      	      	\item[5.] Mean of the observed recipient size $ \lVert J_o^{(d)} \rVert_1 $ across $d=1,...,D$,
-      	\item[6.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ across $d=1,...,D$,
-      	\item[7.] Mean topic-interaction pattern assignment $c_k$ across $k=1,...,K$, 
-      	\item[8.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$,
-      	\item[9.] Number of tokens assigned to each topic $k=1,...,K$, 
-       \item[10.] Number of tokens assigned to each unique word type $w=1,...,W$.
+      	      	\item[4.] Mean of the observed recipient size $ \lVert J_o^{(d)} \rVert_1 $ across $d=1,...,D$,
+      	\item[5.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ across $d=1,...,D$,
+      	\item[6.] Mean topic-interaction pattern assignment $c_k$ across $k=1,...,K$, 
+      	\item[7.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$,
+      	\item[8.] Number of tokens assigned to each topic $k=1,...,K$, 
+       \item[9.] Number of tokens assigned to each unique word type $w=1,...,W$,
+         \item[10.] Time-increment parameter $\boldsymbol{\eta}$ used to generate the samples, for every $q=1,..,Q$
+         \item[11.] Log-normal variance parameter $\sigma_T^2$ used to generate the samples
       	      \end{itemize}
       	      
 To keep the computational burden of re-running thousands of rounds of inference manageable, we run GiR using a relatively small artificial sample, consisting of 5 documents, 4 tokens per document, 4 actors, 5 unique word types, 2 interaction patterns, and 4 topics per each forward or backward samples. For detailed settings including the prior specifications, see Appendix \ref{subsubsec: GiR implementation}. 
 We generated $10^5$ sets of forward and backward samples, and then calculated 1,000 quantiles for each of the network effect parameters, and 50 quantiles for the rest of the statistics. We also calculated t-test and Mann-Whitney test p-values in order to test for differences in the distributions generated in the forward and backward samples. Before we calculated these statistics, we thinned our samples 
 by taking every 9th sample starting at the 10,000th sample for a resulting sample size of 10,000, in order to reduce the autocorrelation in the Markov chains. In each case, if we observe a large p-value, this gives us evidence that the distributions generated under forward and backward sampling have the same locations. We depict the GiR results using probability-probability (PP) plots. To compare two samples with a PP-plot we calculate the empirical quantile in each sample of a set of values observed across the two samples, then plot the sets of quantiles in the two samples against each other. If the two samples are from equivalent distributions, the quantiles should line up on a line with zero $y$-intercept, and unit slope (i.e., a 45-degree line). The GiR test results are depicted in Figure 2, which show that we pass the test on every statistic.
-\begin{figure}[ht]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=1\textwidth]{plots/GiReta.pdf} 
 	\label{fig:PPplot}
@@ -341,7 +346,7 @@ by taking every 9th sample starting at the 10,000th sample for a resulting sampl
 In our application of the IPTM, we use a subset of the North Carolina county government e-mail dataset collected by \citet{ben2017transparency}. This dataset includes internal e-mail corpora covering the inboxes and outboxes of managerial-level employees of North Carolina county governments. Each county corpus covers a three-month span in 2012. The full dataset covers over twenty counties, but we focus on one county, Dare County, for which the time span included a notable national emergency---Hurricane Sandy (October 26, 2012---October 30, 2012). We chose Dare County, (1) in order to see whether and how communication networks surrounding Hurricane Sandy differed from those surrounding other governmental functions, and (2) to limit the scope of this initial application.
   \begin{figure}[ht]
   	\centering
-  	     	\includegraphics[width=0.4\textwidth]{plots/Dare.png} 
+  	     	\includegraphics[width=0.5\textwidth]{plots/Dare.png} 
   	\label{fig:VanceDare}
   	\caption{Geographical location of Dare County in North Carolina}
   \end{figure}
@@ -359,7 +364,7 @@ In Dare county, we saw considerable change in email sending/receiving behaviors 
        \end{figure}
     
     The network plots in Figure 5 illustrated same patterns we found in Figure 4. Again, the manager from the emergency services department became highly central in the network during the Sandy period, and it maintained this pattern after Sandy. Hurricane related conversations continued after Sandy passed the county, since there remained post-hurricane issues from the damage.
-         \begin{figure}[ht]
+         \begin{figure}[H]
          	\centering
          	\includegraphics[width=0.75\textwidth]{plots/DareNetwork-1.png} 
          	\label{fig:NetworkDare}
@@ -367,7 +372,7 @@ In Dare county, we saw considerable change in email sending/receiving behaviors 
          \end{figure}
          
 Figure 6 reflects the hurricane's effects on email exchanges as well, and it matches our interpretations from the network aspects. Usage of the two words, `hurricane' and `Sandy', exploded starting a few days before Sandy arrived in Dare County, and multiple emails used the words again in November, implying the continuous discussions on hurricane-related topics.
-            \begin{figure}[ht]
+            \begin{figure}[H]
             	\centering
             	\includegraphics[width=0.55\textwidth]{plots/DareWord-1.png}  
             	\label{fig:WordDare}
@@ -481,9 +486,9 @@ For both data sets, Dare County and Enron, we randomly selected 200 documents fr
 Figure 7 demonstrates the ability IPTM in predicting the sender, receiver(s), and timetsamps of email. We currently do not have solid conclusion from this prediction experiment, however, we plan to further improve our model to achieve better predictibility.
 \section{Topic Coherence} \label{sec:topiccoherence}
 Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to test whether the IPTM's incorporation of network properties improves or impairs the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using the latent dirichlet allocation (LDA). Instead of re-fit the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which simply makes the IPTM reduced to LDA in terms of topic assignments by unlinking the text and networks (same analogy as ablation study in Section \ref{subsec:ComparisonModels}). For each model, we varied the number of topics from 1 to 100 and drew five samples from the joint posterior distribution over the unobserved random variables in that model. We evaluated the topics resulting from each sample and averaged over the five samples, where the result is shown in Figure 8.\footnote{\noindent Currently, Enron data used two samples, varying the number of topics from 1 to 75.} For Dare County data, our model works significantly better than LDA in terms of topic coherence, for any choice of the number of topics greater than or equal to 10. For Enron data, although the IPTM did not outperform LDA, still the topic coherence scores using the IPTM were not significantly different from LDA for all three cases, $C=3$, $C=2$, and $C=1$. This result, when combined with the results in Section 6, demonstrates that our model can achieve goo predictive performance while producing coherent topics. 
-\begin{figure}[ht]
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=1\textwidth]{plots/topic_coherence.pdf}  
+	\includegraphics[width=0.8\textwidth]{plots/topic_coherence.pdf}  
 	\label{fig:Daretopic}
 	\caption{Average topic coherence scores for the Dare County email network (left) and the Enron dataset (right).}
 \end{figure}
@@ -503,7 +508,7 @@ and the pseudocode for generating new sets of data is given by Appendix \ref{sub
 We applied each discrepancy function to each synthetic network to yield the distributions over the values of the six network statistics and MI. If the IPTM is a suitable model for Dare County data, these distributions should be centered around the values of the corresponding discrepancy functions (except MI) when computed using the observed data. 
 
  Figure 9 illustrates the result of posterior predictive checks, showing IPTM's goodness of fit for Dare County data. (Mutual information plots are in Appendix \ref{subsec:MI_PPC})\footnote{\noindent Number of samples currently used: 80 simulated corpus.} Four plots, indegree distribution, multicast distribution, geodesic distance distribution, and edgewise shared partner distribution, reveal that IPTM captures some important work features of the data, including spreadness and transitivity. However, outdegree distribution and time-increments from the simulated data are not quite similar to those of the observed data. The two aspects of data, sender and time-increments, are directly related from the time-generating process from Exponential distribution, thus we again learn that the current time-modeling framework of IPTM is not fully able to reflect or capture the time-generating process of real-world data. We plan on further dive into this issue and make adjustments in the future work.
-\begin{figure}[ht]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=1\textwidth]{plots/PPC_plot.pdf}  
 	\label{fig:DarePPC}
@@ -560,80 +565,65 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
   	  \end{equation*}
   	  \subsection{Sampling Equations}\label{subsec:Sampling Equations}
   	     \subsubsection{Joint distribution of latent and observed tie variables}\label{subsubsec:Joint distribution of Tie}
-  	       As mentioned earlier in Section \ref{subsec: Tie Generating Process}, we use data augmentation in the tie generating process. Since we should include both the observed and augmented data to make inferences on the related latent variables, the derivation steps for the contribution of tie data is not as smiple as other variables. Therefore, here we provide the detailed derivation steps for the last term of joint posterior distribution in Equation (\ref{alg:jointposterior}), starting from the likelihood before integriting out the latent time $\mathcal{T}_{\mbox{a}}$: 
+  	       As mentioned earlier in Section \ref{subsec: Tie Generating Process}, we use data augmentation in the tie generating process. Since we should include both the observed and augmented data to make inferences on the related latent variables, the derivation steps for the contribution of tie data is not as smiple as other variables. Therefore, here we provide the detailed derivation steps for the last term of joint posterior distribution in Equation (\ref{alg:jointposterior}): 
   	       \begin{equation}
   	       \begin{aligned}
-  	       &P(\mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}},\mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta)
-  	       \\& \propto P(\mathcal{J}^{(1)}_{\mbox{a}}, ...,\mathcal{J}^{(D)}_{\mbox{a}}, \mathcal{T}^{(1)}_{\mbox{a}},...,\mathcal{T}^{(D)}_{\mbox{a}}, i^{(1)}_{\mbox{o}},...,i^{(D)}_{\mbox{o}}, J^{(1)}_{\mbox{o}},...,J^{(D)}_{\mbox{o}}, t^{(1)}_{\mbox{o}},...,t^{(D)}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\eta)
-  	       \\& \propto P(\mathcal{J}^{(D)}_{\mbox{a}}, \mathcal{T}^{(D)}_{\mbox{a}}, i^{(D)}_{\mbox{o}}, J^{(D)}_{\mbox{o}}, t^{(D)}_{\mbox{o}} |\mathcal{I}^{(<D)}_{\mbox{o}}, \mathcal{J}^{(<D)}_{\mbox{o}}, \mathcal{T}^{(<D)}_{\mbox{o}},\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\eta).
-  	       \end{aligned}
+  	       &P(\mathcal{J}_{\mbox{a}}, \mathcal{T}_{\mbox{a}},\mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)
+  	       \\& \propto P(\mathcal{J}^{(1)}_{\mbox{a}}, ...,\mathcal{J}^{(D)}_{\mbox{a}}, \mathcal{T}^{(1)}_{\mbox{a}},...,\mathcal{T}^{(D)}_{\mbox{a}}, i^{(1)}_{\mbox{o}},...,i^{(D)}_{\mbox{o}}, J^{(1)}_{\mbox{o}},...,J^{(D)}_{\mbox{o}}, t^{(1)}_{\mbox{o}},...,t^{(D)}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)
+  	       \\& \propto P(\mathcal{J}^{(D)}_{\mbox{a}}, \mathcal{T}^{(D)}_{\mbox{a}}, i^{(D)}_{\mbox{o}}, J^{(D)}_{\mbox{o}}, t^{(D)}_{\mbox{o}} |\mathcal{I}^{(<D)}_{\mbox{o}}, \mathcal{J}^{(<D)}_{\mbox{o}}, \mathcal{T}^{(<D)}_{\mbox{o}},\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{\eta}, \sigma_T^2).
+  	       \end{aligned}	  	\label{eqn:time}
   	       \end{equation}
   	       Note that the joint likelihood of document $d=1,...,D$ is proportional to the likelihood of $D^{th}$ document, since the documents are not independent; all tie variables in $D^{th}$ are conditioned on the earlier documents $(<D)$ via network covariates $\boldsymbol{x}$ or past interaction history. \\ \newline
-  	       Now we tackle the problem of evaluating the last line of Equation (9) by deriving the likelihood for $d^{th}$ document, $P(\mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta)$. There are three steps involved. First is the generation of the latent receivers $J_i$ for each $i$; second is the generation of the observed time increment $\Delta T^{(d)} = t^{(d)} - t^{(d-1)}$ from the observed sender-receiver pairs ($i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}$); and the last part is the simultaneous selection process of the observed sender, receivers, and timestamp, implying that the latent time increments generated from the latent sender-receiver pairs were greater than the observed time increment. Reflecting the three steps, the joint distribution is:\\
+  	       Now we tackle the problem of evaluating the last line of Equation \ref{eqn:time} by deriving the likelihood for $d^{th}$ document, $P(\mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, ,\boldsymbol{\eta}, \sigma_T^2)$. There are three steps involved. First is the generation of the latent receivers $J_i$ for each $i$; second is the generation of time increments $\Delta T^{(d)} = t^{(d)} - t^{(d-1)}$ for each $i$; and the last part is the simultaneous selection process of the observed sender, receivers, and timestamp, implying that the latent time increments generated from the latent sender-receiver pairs were greater than the observed time increment. Reflecting the three steps, the joint distribution is:\\
   	       \begin{equation}
   	       \begin{aligned}
-  	       &P(\mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\eta)\\&=P\Big(\mbox{latent receivers generation}\Big) \times P\Big(\mbox{latent time generation}\Big)\times P\Big(\mbox{choose the observed}\Big) \\&
-  	       =\prod_{i\in \mathcal{A}}\Big(J_{i}^{(d)}\sim \mbox{Gibbs measure}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)\Big) \times \prod_{i\in \mathcal{A}}\Big(\Delta T^{(d)}_{iJ_i}\sim\mbox{Exp}(\eta\lambda^{(d)}_{iJ_i})\Big) \times \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} P\Big(\Delta T^{(d)}_{i{J_i}} > \Delta T_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)\\&
-  	       =\Big(\prod_{i\in \mathcal{A}}\frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times \Big(\prod_{i \in\mathcal{A}}\eta\lambda^{(d)}_{iJ_i}e^{-\eta\Delta T^{(d)}_{iJ_i}\lambda^{(d)}_{iJ_i}}\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} e^{-\eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big)
+  	       &P(\mathcal{J}^{(d)}_{\mbox{a}}, \mathcal{T}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{\eta}, \sigma_T^2)\\&=P\Big(\mbox{latent receivers generation}\Big) \times P\Big(\mbox{latent time generation}\Big)\times P\Big(\mbox{choose the observed}\Big) \\&
+  	       =\prod_{i\in \mathcal{A}}\Big(J_{i}^{(d)}\sim \mbox{Gibbs}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)\Big) \times \prod_{i\in \mathcal{A}}\Big(\Delta T^{(d)}_{iJ_i}\sim\mbox{Lognormal}(\boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_i}, \sigma_T^2)\Big) \times \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} P \Big(\Delta T^{(d)}_{i{J_i}} > \Delta T^{(d)}_{i_{o}^{(d)}{J_{o}^{(d)}}}\Big)
   	       \\&
-  	       \propto \Big(\prod_{i\in \mathcal{A}}\frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times\Big(\eta\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}e^{-\eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}}}\Big)	\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} \eta\lambda^{(d)}_{iJ_i}e^{-\eta(\Delta T^{(d)}_{iJ_i} + \Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}})\lambda^{(d)}_{iJ_i}}\Big),
+  	       =\prod_{i\in \mathcal{A}}\Big(J_{i}^{(d)}\sim \mbox{Gibbs}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)\Big) \times \prod_{i\in \mathcal{A}}\Big(\Delta T^{(d)}_{iJ_i}\sim\mbox{Lognormal}(\boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_i}, \sigma_T^2)\Big) \times \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} \Big(1 -  P(\Delta T^{(d)}_{i{J_i}} \leq \Delta T^{(d)}_{i_{o}^{(d)}{J_{o}^{(d)}}})\Big)\\&
+  	       =\Big(\prod_{i\in \mathcal{A}}\frac{1}{Z(\delta,\mbox{log}(\lambda_i^{(d)}))} \exp\Big\{ \mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\times \Big(\prod_{i \in\mathcal{A}}\phi_l(\Delta T^{(d)}_{iJ_i}; \boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_i}, \sigma_T^2)\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} (1 - \Phi_l(\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}};\boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_i}, \sigma_T^2))\Big),
   	       \end{aligned}
   	       \end{equation}
-  	       We simplify further by integreting out the latent time $\mathcal{T}^{(d)}_{\mbox{a}}=\{\Delta T^{(d)}_{iJ_i}\}_{i \in \mathcal{A}_{\backslash i_o^{(d)}}}$ in the last term:
+  	       where $\phi_l(\cdot; \mu, \sigma^2)$ is lognormal density function (p.d.f) with mean $\mu$ and variance $\sigma^2$, and $\Phi_l(\cdot; \mu, \sigma^2)$ is lognormal cumulative density function (c.d.f), evaluating $P(x \leq \cdot) $ where $x$ comes from lognormal distribution with mean $\mu$ and variance $\sigma^2$. Plugging in the full Gibbs-measure equation, we obtain:
   	       \begin{equation}
   	       \begin{aligned}
-  	       &\int_{0}^\infty\cdots\int_{0}^\infty \Big(\prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} \eta\lambda^{(d)}_{iJ_i}e^{-\eta(\Delta T^{(d)}_{iJ_i} + \Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}})\lambda^{(d)}_{iJ_i}} \Big)d\Delta T^{(d)}_{1J_1}\cdots d\Delta T^{(d)}_{AJ_A}\\&
-  	       = \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} e^{- \eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ_i}} \Big(\int_{0}^\infty \eta\lambda^{(d)}_{iJ_i}e^{-\eta\Delta T^{(d)}_{iJ_i} \lambda^{(d)}_{iJ_i}}  d\Delta T^{(d)}_{iJ_i}\Big)
-  	       \\& =\prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} e^{-\eta \Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ_i}} \Big(\Big [ - e^{-\eta\Delta T^{(d)}_{iJ_i} \lambda^{(d)}_{iJ_i}}\Big]_{\Delta T^{(d)}_{iJ_i}  = 0} ^{\infty}\Big)
-  	       \\& = e^{- \eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum_{i\in \mathcal{A}_{\backslash i_o^{(d)}}}\lambda^{(d)}_{iJ_i}},
-  	       \end{aligned}
+  	       &P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{\eta}, \sigma_T^2)\\&\propto \Big(\prod_{i\in \mathcal{A}}\frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\& \quad\quad\quad\quad\quad\times \Big(\prod_{i \in\mathcal{A}}\phi_l(\Delta T^{(d)}_{iJ_i}; \boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_i}, \sigma_T^2)\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d)}}} (1 - \Phi_l(\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}};\boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_i}, \sigma_T^2))\Big),
+  	       \end{aligned}\label{eqn:jointIJT}
   	       \end{equation}
-  	       where $\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}$ is the observed time difference between $d^{th}$ and $(d-1)^{th}$ document. Therefore, we simplify Equation (13) as below:
-  	       \begin{equation}
-  	       \begin{aligned}
-  	       &P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\eta)\\&\propto \Big(\prod_{i\in \mathcal{A}}\frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times \Big(\eta\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times\Big( e^{-\eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i\in \mathcal{A}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
-  	       \end{aligned}
-  	       \end{equation}
-  	       where this joint distribution can be interpreted as `probability of latent and observed edges from non-empty Gibbs measure $\times$ probability of the observed time-increment comes from Exponential distribution $\times$ probability of all latent time greater than the observed time, given that the latent time-increments also come from Exponential distribution.'
-  	       Finally for implementation, we need to compute these equations in log space to prevent underflow:
-  	       \begin{equation}
-  	       \begin{aligned}
-  	       &\mbox{log}\Big(P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B},  \delta, \eta)\Big)\\&\propto \Big(\sum_{i\in \mathcal{A}}\Big(-\log\Big(\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1\Big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)}\Big)\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad +  \Big(\mbox{log}(\eta\lambda^{(d)}_{i_o^{(d)}J_o^{(d)}})\Big){ - \Big(\eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda^{(d)}_{i{J_i^{(d)}}}}\Big).
-  	       \end{aligned}
-  	       \end{equation}
+  	       where this joint distribution can be interpreted as `probability of latent and observed edges from non-empty Gibbs measure $\times$ probability of the time-increments come from lognormal distribution $\times$ probability of all latent time greater than the observed time.' Finally for implementation, we need to compute these equations in log space to prevent numerical underflow.
    \subsubsection{Resampling $\mathcal{J}_{\mbox{a}}$} \label{subsec: Data augmentation}
    First of all, for each document $d$, we sample the latent sender-receiver(s) pairs as in pseudocode (Algorithm 6). That is, given the observed sender of the document $i_o^{(d)}$, we sample the latent receivers for each sender $i \in \mathcal{A}_{\backslash i_o^{(d)}}$. Here we illustrate how each sender-receiver pair in the document $d$ is updated.\\\newline
    Define ${\mathcal{J}}^{(d)}_{i}$ be the $(A-1)$ length random vector of indicators with its realization being $J^{(d)}_{i}$, representing the latent receivers corresponding to the sender $i$ in the document $d$. For each latnet sender $i$, we are going to resample ${J}^{(d)}_{ij}$, which is the $j^{th}$ element of the receiver vector ${J}^{(d)}_{i}$, one at a time with random order. The full conditional probability of ${J}^{(d)}_{ij}$ is:
    \begin{equation}
    \begin{aligned}
-   & P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, \mathcal{Z}, \mathcal{C},   \mathcal{B}, \delta, \eta, \mathcal{W},  \mathcal{J}_{\mbox{a}, -i}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta),
+   & P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, \mathcal{Z}, \mathcal{C},   \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2, \mathcal{W},  \mathcal{J}_{\mbox{a}, -i}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T),
    \end{aligned}
    \end{equation}
    which we can drop some independent terms and move to 
    \begin{equation}
    \begin{aligned}
-   &P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta)\\&\propto P(\mathcal{J}^{(d)}_{ij} ={J}^{(d)}_{ij}, \mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta)
-   \\&\propto\Big( \frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{\mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) +\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times \Big( \eta\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}\Big)\times \Big(e^{- \eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big)
-   \\& \propto \Big(\exp\Big\{\mbox{log}\big(\text{I}( \lVert J_i^{(d)} \rVert_1 > 0 )\big) +\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times \Big(e^{- \eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
-   \end{aligned}
+   &P(\mathcal{J}^{(d)}_{ij} = {J}^{(d)}_{ij}|\mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)\\&\propto P(\mathcal{J}^{(d)}_{ij} ={J}^{(d)}_{ij}, \mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)
+   \\&\propto\Big( \frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{\mbox{log}\big(\text{I}( \sum_{j \in \mathcal{A}_{\backslash i}} J^{(d)}_{ij} > 0 )\big) +\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times \Big(\phi_l(\Delta T^{(d)}_{iJ_i}; \boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_i}, \sigma_T^2)\Big)\times \Big( 1 - \Phi_l(\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}};\boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_i}, \sigma_T^2)\Big)
+   \\& \propto \Big(\exp\Big\{\mbox{log}\big(\text{I}( \lVert J_i^{(d)} \rVert_1 > 0 )\big) +\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times \Big(\phi_l(\Delta T^{(d)}_{iJ_i}; \boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_i}, \sigma_T^2)\Big)\times \Big( 1 - \Phi_l(\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}};\boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_i}, \sigma_T^2)\Big),
+   \end{aligned}\label{eqn:latentreceiver}
    \end{equation}
-   where we replace typical use of $(-d)$ to $(<d)$ on the right hand side, due to the fact that $d^{(th)}$ document only depends on the past documents. The last line of Equation (18) is obtained by dropping the terms that do not include $J^{(d)}_{ij}$, such as the normalizing constant of Gibbs measure. 
+   where we replace typical use of $(-d)$ to $(<d)$ on the right hand side, due to the fact that $d^{(th)}$ document only depends on the past documents. The last line of Equation (\ref{eqn:latentreceiver}) is obtained by dropping the terms that do not include $J^{(d)}_{ij}$, such as the normalizing constant of Gibbs measure. 
    
    To be more specific, since ${J}^{(d)}_{ij}$ could be either 1 or 0, we divide into two cases as below:
    \begin{equation}
    \begin{aligned}
-   &P(\mathcal{J}^{(d)}_{ij}=1| \mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta)\\& \propto \mbox{exp}\Big(\log(1) +\sum_{j \in \mathcal{A}_{\backslash i}} ( \delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{i[+j]}^{(d)} - \eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{ i[+j]}}\Big)
-   \\& \propto \mbox{exp}\Big(\delta+\mbox{log}(\lambda_{ij}^{(d)})- \eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{ i[+j]}}\Big),
-   \end{aligned}
+   &P(\mathcal{J}^{(d)}_{ij}=1| \mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)\\& \propto \mbox{exp}\Big(\log(1) +\sum_{j \in \mathcal{A}_{\backslash i}} ( \delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{i[+j]}^{(d)}\Big) \times \Big(\phi_l(\Delta T^{(d)}_{iJ_i}; \boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_{i[+j]}}, \sigma_T^2)\Big)\times \Big( 1 - \Phi_l(\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}};\boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_{i[+j]}}, \sigma_T^2)\Big)
+   \\& \propto \mbox{exp}\Big(\delta+\mbox{log}(\lambda_{ij}^{(d)})\Big)\times \Big(\phi_l(\Delta T^{(d)}_{iJ_i}; \boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_{i[+j]}}, \sigma_T^2)\Big)\times \Big( 1 - \Phi_l(\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}};\boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_{i[+j]}}, \sigma_T^2)\Big),
+   \end{aligned}\label{eqn:Jij1}
    \end{equation}
    where $J^{(d)}_{i[+j]}$ meaning that the $j^{th}$ element of $J_{i}^{(d)}$ is fixed as 1 (thus making $\mbox{log}\big(\text{I}(\lVert J_{i}^{(d)} \rVert_1 > 0 )\big) = 0$ for sure). On the other hand, 
    \begin{equation}
    \begin{aligned}
-   &P(\mathcal{J}^{(d)}_{ij}=0| \mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta)\\& \propto \mbox{exp}\Big(\mbox{log}\big(\text{I}( \lVert J_{i[-j]}^{(d)} \rVert_1> 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{i[-j]}^{(d)} - \eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{ i[-j]}}\Big)
-   \\& \propto \mbox{exp}\Big(\mbox{log}\big(\text{I}( \lVert J_{i[-j]}^{(d)} \rVert_1 > 0 )\big) - \eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\lambda^{(d)}_{iJ^{(d)}_{ i[-j]}}\Big),
-   \end{aligned}
+   &P(\mathcal{J}^{(d)}_{ij}=0| \mathcal{J}^{(d)}_{i\backslash j}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)\\& \propto \mbox{exp}\Big(\mbox{log}\big(\text{I}( \lVert J_{i[-j]}^{(d)} \rVert_1> 0 )\big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{i[-j]}^{(d)} \Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times \Big(\phi_l(\Delta T^{(d)}_{iJ_i}; \boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_{i[-j]}}, \sigma_T^2)\Big)\times \Big( 1 - \Phi_l(\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}};\boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_{i[-j]}}, \sigma_T^2)\Big)
+   \\& \propto \mbox{exp}\Big(\mbox{log}\big(\text{I}( \lVert J_{i[-j]}^{(d)} \rVert_1 > 0 )\big) \Big)\times \Big(\phi_l(\Delta T^{(d)}_{iJ_i}; \boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_{i[-j]}}, \sigma_T^2)\Big)\times \Big( 1 - \Phi_l(\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}};\boldsymbol{\eta}^T\boldsymbol{y}^{(d)}_{iJ_{i[-j]}}, \sigma_T^2)\Big),
+   \end{aligned}\label{eqn:Jij0}
    \end{equation}
-   where $J^{(d)}_{i[-j]}$ meaning similarly that the $j^{th}$ element of $J_{i}^{(d)}$ is fixed as 0. In this case, we cannot guarantee $\text{I}( \lVert J_{i[-j]}^{(d)} \rVert_1 > 0)=1$, so we have to leave the term. When it is zero, $\exp\{\mbox{log}\big(\text{I}( \lVert J_{i[-j]}^{(d)} \rVert_1 > 0 )\big)\} = 0$, thus we will sample 1 with probability 1. From this property of non-empty Gibbs measure, we prevent from the instances where the sender has no recipients to send the document. Now we can use multinomial sampling using the two probabilities, Equation (19) and Equation (20), which is equivalent to Bernoulli sampling with probability $\frac{P(\mathcal{J}^{(d)}_{ij}=1)}{P(\mathcal{J}^{(d)}_{ij}=0)+ P(\mathcal{J}^{(d)}_{ij}=0)}$. 
+   where $J^{(d)}_{i[-j]}$ meaning similarly that the $j^{th}$ element of $J_{i}^{(d)}$ is fixed as 0. In this case, we cannot guarantee $\text{I}( \lVert J_{i[-j]}^{(d)} \rVert_1 > 0)=1$, so we have to leave the term. When it is zero, $\exp\{\mbox{log}\big(\text{I}( \lVert J_{i[-j]}^{(d)} \rVert_1 > 0 )\big)\} = 0$, thus we will sample 1 with probability 1. From this property of non-empty Gibbs measure, we prevent from the instances where the sender has no recipients to send the document. Now we can use multinomial sampling using the two probabilities, Equation (\ref{eqn:Jij1}) and Equation (\ref{eqn:Jij0}), which is equivalent to Bernoulli sampling with probability $\frac{P(\mathcal{J}^{(d)}_{ij}=1)}{P(\mathcal{J}^{(d)}_{ij}=0)+ P(\mathcal{J}^{(d)}_{ij}=0)}$. 
    \subsubsection{Resampling $\mathcal{Z}$}  \label{subsec: Resampling Z}
    
    Second, we resample the topic assignments, one words in a document at a time.  The new values of $z^{(d)}_n$ are sampled using the conditional posterior probability of being topic $k$, and we derive the sampling equation from the conditional distribution in Latent Dirichlet allocation \citep{Blei2003}:
@@ -661,10 +651,10 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
      Now, considering the modeling framework of IPTM, we re-derive the sampling equation reflecting the network effects as well:
    \begin{equation}
    \begin{aligned} & 
-   P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \eta, \mathcal{W},  \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta,\mu_\eta, \sigma^2_\eta)\\
-   & \propto P(z^{(d)}_n=k, w^{(d)}_n, \mathcal{J}^{(\geq d)}_{\mbox{a}}, i^{(\geq d)}_{\mbox{o}}, J^{(\geq d)}_{\mbox{o}}, t^{(\geq d)}_{\mbox{o}}|\mathcal{Z}_{\backslash d, n}, \mathcal{C},   \mathcal{B},\delta,\mathcal{W}_{\backslash d, n}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m})\\
-   &\propto P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n}, \alpha, \boldsymbol{m})P(w^{(d)}_n|z^{(d)}_n=k, \mathcal{W}_{\backslash d, n}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{u} )\times P(\mathcal{J}^{(d ^*)}_{\mbox{a}}, i^{(d^*)}_{\mbox{o}}, J^{(d^*)}_{\mbox{o}}, t^{(d^*)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \delta, 
-  \eta),
+   P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2, \mathcal{W},  \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta,\mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)\\
+   & \propto P(z^{(d)}_n=k, w^{(d)}_n, \mathcal{J}^{(\geq d)}_{\mbox{a}}, i^{(\geq d)}_{\mbox{o}}, J^{(\geq d)}_{\mbox{o}}, t^{(\geq d)}_{\mbox{o}}|\mathcal{Z}_{\backslash d, n}, \mathcal{C},   \mathcal{B},\delta,\boldsymbol{\eta}, \sigma_T^2,\mathcal{W}_{\backslash d, n}, \mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m})\\
+   &\propto P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n}, \alpha, \boldsymbol{m})P(w^{(d)}_n|z^{(d)}_n=k, \mathcal{W}_{\backslash d, n}, \mathcal{Z}_{\backslash d, n}, \beta, \boldsymbol{u} )\\&\quad\quad\quad\quad\quad\quad\times P(\mathcal{J}^{(d ^*)}_{\mbox{a}}, i^{(d^*)}_{\mbox{o}}, J^{(d^*)}_{\mbox{o}}, t^{(d^*)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \delta, 
+  \boldsymbol{\eta}, \sigma_T^2),
    \end{aligned}
    \end{equation}
    where the subscript $``{\backslash d, n}"$ denotes the exclsuion of position $n$ in $d^{th}$ document. Note that since selecting a topic for any token influences the histories acting on documents from the current one $d$ to the future ones with the timepoints less than $t_o^{(d)}+384$, we define $d^*=\mbox{argmax}_{d^\prime} \{t_o^{(d^\prime)} \leq t_o^{(d)}+384\}$ to correctly evaluate tie contribution part. From Equation (22), we know that:
@@ -679,40 +669,36 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
    \end{aligned}
    \end{equation}
    where $N^{(w_n^{(d)}|k)}$ is the number of tokens assigned to topic $k$ whose type is the same as that of $w_n^{(d)}$, excluding $w_n^{(d)}$ itself, and $N^{(k)}_{\backslash d, n}=\sum_{w=1}^W N_{\backslash d, n}^{(w_n^{(d)}|k)}$. We already have shown in Section \ref{subsubsec:Joint distribution of Tie} that
+ $P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)$ is Equation (\ref{eqn:jointIJT})
+   where every part includes $p_c^{(d)}$ such that we cannot simplify any further. Therefore, assuming $N^{(d)} > 0$, the conditional probability of $n^{th}$ word in document $d$ being topic $k$ is:
    \begin{equation}
    \begin{aligned}
-   & P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}}| z^{(d)}_n=k, \mathcal{Z}_{\backslash d, n}, \mathcal{C}, \mathcal{B}, \delta, \eta)\\&=\Big( \prod_{i\in \mathcal{A}}\frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times \Big(\eta\lambda^{(d)}_{i_o^{(d)}J_{o}^{(d)}}e^{-\eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda^{(d)}_{iJ^{(d)}_{i}}}\Big),
-   \end{aligned}
-   \end{equation}
-   where every part includes $\lambda_{ij}^{(d)}$ such that we cannot simplify any further. Therefore, assuming $N^{(d)} > 0$, the conditional probability of $n^{th}$ word in document $d$ being topic $k$ is:
-   \begin{equation}
-   \begin{aligned}
-   &P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta)\\&\propto (N^{(k|d)}_{\backslash d, n}+\alpha \boldsymbol{m}_k)\times \frac{N^{(w_n^{(d)}|k)}_{\backslash d, n}+\frac{\beta}{W} }{N^{(k)}_{\backslash d, n}+\beta}\times
-   \Big(\prod_{i\in \mathcal{A}} \frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d^*)})\} + 1\Big)\Big)-1}\exp\Big\{\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d^*)}))J_{ij}^{(d^*)} \Big\}\Big) \\&\times \Big(\eta\lambda^{(d^*)}_{i_o^{(d^*)}J_{o}^{(d^*)}}e^{-\eta\Delta T^{(d^*)}_{i_o^{(d^*)}J_o^{(d^*)}}\sum\limits_{i \in \mathcal{A}}\lambda^{(d^*)}_{iJ^{(d^*)}_{i}}}\Big).
+   &P(z^{(d)}_n=k|\mathcal{Z}_{\backslash d, n},   \mathcal{C},   \mathcal{B}, \delta,\boldsymbol{\eta}, \sigma_T^2,  \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)\\&\propto (N^{(k|d)}_{\backslash d, n}+\alpha \boldsymbol{m}_k)\times \frac{N^{(w_n^{(d)}|k)}_{\backslash d, n}+\frac{\beta}{W} }{N^{(k)}_{\backslash d, n}+\beta}\\&\quad\quad\quad\times
+   \Big(\prod_{i\in \mathcal{A}} \frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d^*)})\} + 1\Big)\Big)-1}\exp\Big\{\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d^*)}))J_{ij}^{(d^*)} \Big\}\Big) \\&\quad\quad\quad\quad\quad\quad\times  \Big(\prod_{i \in\mathcal{A}}\phi_l(\Delta T^{(d^*)}_{iJ_i}; \boldsymbol{\eta}^T\boldsymbol{y}^{(d^*)}_{iJ_i}, \sigma_T^2)\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(d^*)}}} (1 - \Phi_l(\Delta T^{(d^*)}_{i_o^{(d^*)}J_o^{(d^*)}};\boldsymbol{\eta}^T\boldsymbol{y}^{(d^*)}_{iJ_i}, \sigma_T^2))\Big).
    \end{aligned}
    \end{equation}
    
       \subsubsection{Resampling $\mathcal{C}$} \label{subsec: Resampling C}
    The next variable to resample is the topic-interaction pattern assignments, one topic at a time. We derive the posterior conditional probability for the interaction pattern $\mathcal{C}$ for $k^{th}$ topic as below:
    \begin{equation}
-   \begin{aligned} & P(c_k=c|\mathcal{Z},   \mathcal{C}_{\backslash k},   \mathcal{B},\delta,\eta, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta,  \mu_\eta, \sigma^2_\eta)\\
-   &\propto P(c_k=c, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}|\mathcal{Z}, \mathcal{C}_{\backslash k},   \mathcal{B},\delta, \eta)\\
-   & \propto P(c_k=c)P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}| \mathcal{Z}, c_k=c, \mathcal{C}_{\backslash k}, \mathcal{B}, \delta, \eta)
+   \begin{aligned} & P(c_k=c|\mathcal{Z},   \mathcal{C}_{\backslash k},   \mathcal{B},\delta,\boldsymbol{\eta}, \sigma_T^2,  \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta,  \mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)\\
+   &\propto P(c_k=c, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}|\mathcal{Z}, \mathcal{C}_{\backslash k},   \mathcal{B},\delta, \boldsymbol{\eta}, \sigma_T^2 )\\
+   & \propto P(c_k=c)P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}| \mathcal{Z}, c_k=c, \mathcal{C}_{\backslash k}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)
    \end{aligned}
    \end{equation}
    where $P(c_k=c) = \frac{1}{C}$ so this term disappears. Therefore, throughout $c_k=c$:
    \begin{equation}
    \begin{aligned}
-   &P(c_k=c|\mathcal{Z},   \mathcal{C}_{\backslash k},   \mathcal{B}, \delta, \eta, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_\eta, \sigma^2_\eta)\\&\propto P( \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}| \mathcal{Z}, c_k=c, \mathcal{C}_{\backslash k}, \mathcal{B}, \delta)\\&=\Big(\prod_{i\in \mathcal{A}} \frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(D)})\} + 1\Big)\Big)-1}\exp\Big\{\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(D)}))J_{ij}^{(D)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times \Big(\eta\lambda^{(D)}_{i_o^{(D)}J_{o}^{(D)}}\Big)\times \Big(e^{-\eta\Delta T^{(D)}_{i_o^{(D)}J_o^{(D)}}\sum\limits_{i \in \mathcal{A}}\lambda^{(D)}_{iJ^{(D)}_{i}}}\Big).
+   &P(c_k=c|\mathcal{Z},   \mathcal{C}_{\backslash k},   \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2, \mathcal{W}, \mathcal{I}_{\mbox{a}}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},  \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta,\mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)\\&\propto P( \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}| \mathcal{Z}, c_k=c, \mathcal{C}_{\backslash k}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)\\&=\Big(\prod_{i\in \mathcal{A}} \frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(D)})\} + 1\Big)\Big)-1}\exp\Big\{\sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(D)}))J_{ij}^{(D)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\times  \Big(\prod_{i \in\mathcal{A}}\phi_l(\Delta T^{(D)}_{iJ_i}; \boldsymbol{\eta}^T\boldsymbol{y}^{(D)}_{iJ_i}, \sigma_T^2)\Big)\times \Big( \prod_{i\in \mathcal{A}_{\backslash i_o^{(D)}}} (1 - \Phi_l(\Delta T^{(D)}_{i_o^{(D)}J_o^{(D)}};\boldsymbol{\eta}^T\boldsymbol{y}^{(D)}_{iJ_i}, \sigma_T^2))\Big).
    \end{aligned}
    \end{equation} 
-   Note that for this one, $\mathcal{C}$, we need to consider all documents so we used the likelihood of the last $D^{th}$ document.
+   Note that for this one, $\mathcal{C}$, we need to consider all documents so we use the likelihood of the last $D^{th}$ document.
    \subsubsection{Resampling $\mathcal{B}$ }  \label{subsec: Resampling B}
    Next, we update $\mathcal{B}=\{\boldsymbol{b}^{(c)}\}_{c=1}^C$. For this, we use the Metropolis-Hastings algorithm with a proposal density $Q$ being the multivariate Gaussian distribution, with a diagonal covariance matrix multiplied by $\sigma^2_Q$ (proposal distribution variance parameters set by the user), centered on the current values of $\mathcal{B}=\{\boldsymbol{b}^{(c)}\}_{c=1}^C$. Under the symmetric proposal distribution, we cancel out Q-ratio and then accept the new proposed value $\mathcal{B}^\prime=\{\boldsymbol{b}^{\prime(c)}\}_{c=1}^C$ with probability equal to:
    \begin{equation}
    \begin{split}
    & \mbox{Acceptance Probability}=
-   \begin{cases}  \frac{P(\mathcal{B}^\prime|\mathcal{Z},   \mathcal{C}, \delta, \eta, \mathcal{W},  \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},\mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_\eta, \sigma^2_\eta)}{P(\mathcal{B}|\mathcal{Z},   \mathcal{C}, \delta,  \eta,\mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_\eta, \sigma^2_\eta)}\quad\text{if}  <1\\
+   \begin{cases}  \frac{P(\mathcal{B}^\prime|\mathcal{Z},   \mathcal{C}, \delta, \boldsymbol{\eta}, \sigma_T^2, \mathcal{W},  \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m},\mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)}{P(\mathcal{B}|\mathcal{Z},   \mathcal{C}, \delta,  \boldsymbol{\eta}, \sigma_T^2,\mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)}\quad\text{if}  <1\\
    1 \quad \text{else}
    \end{cases}
    \end{split}
@@ -720,23 +706,23 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
    After factorization, we get
    \begin{equation}
    \begin{aligned}
-   & \frac{P(\mathcal{B}^\prime|\mathcal{Z},   \mathcal{C},  \delta, \eta, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_\eta, \sigma^2_\eta)}{P(\mathcal{B}|\mathcal{Z},   \mathcal{C}, \delta,  \eta,\mathcal{W}, \mathcal{J}_{\mbox{a}},\mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_\eta, \sigma^2_\eta)}\\=&\frac{P(\mathcal{Z}, \mathcal{C}, \mathcal{B}^\prime, \delta, \eta, \mathcal{W},  \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_\eta, \sigma^2_\eta)}{P(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,  \eta,\mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_\eta, \sigma^2_\eta)}\\=&\frac{P(\mathcal{B}^\prime|\mathcal{C}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}^\prime, \delta, \eta)}{P(\mathcal{B}|\mathcal{C}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta)},
-   \end{aligned}
+   & \frac{P(\mathcal{B}^\prime|\mathcal{Z},   \mathcal{C},  \delta, \boldsymbol{\eta}, \sigma_T^2, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)}{P(\mathcal{B}|\mathcal{Z},   \mathcal{C}, \delta,  \boldsymbol{\eta}, \sigma_T^2,\mathcal{W}, \mathcal{J}_{\mbox{a}},\mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)}\\=&\frac{P(\mathcal{Z}, \mathcal{C}, \mathcal{B}^\prime, \delta, \boldsymbol{\eta}, \sigma_T^2,\mathcal{W},  \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta,\mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)}{P(\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,  \boldsymbol{\eta}, \sigma_T^2,\mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta,\mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)}\\=&\frac{P(\mathcal{B}^\prime|\mathcal{C}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}^\prime, \delta, \boldsymbol{\eta}, \sigma_T^2)}{P(\mathcal{B}|\mathcal{C}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta,\boldsymbol{\eta}, \sigma_T^2)},
+   \end{aligned}\label{eqn:acceptanceprob}
    \end{equation}
-   where $P(\mathcal{B}|\mathcal{C}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})$ is calculated from the product of $\boldsymbol{b}^{(c)}\sim \mbox{Multivariate Normal}(\mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}$) over the interaction patterns $c \in \{1,...,C\}$ (as defined in Section \ref{sec: Generative Process}) and $P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta)$ is the same as Equation (29). Again, we take the log and obtain the log of acceptance ratio:
+   where $P(\mathcal{B}|\mathcal{C}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})$ is calculated from the product of $\boldsymbol{b}^{(c)}\sim \mbox{Multivariate Normal}(\mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}$) over the interaction patterns $c \in \{1,...,C\}$ (as defined in Section \ref{sec: Generative Process}) and $P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)$ is the same as Equation (\ref{eqn:acceptanceprob}). Again, we take the log and obtain the log of acceptance ratio:
    \begin{equation}
    \begin{aligned} 
-   &\sum_{c=1}^C\mbox{log}\Big(\mathcal{N}(\boldsymbol{b}^{\prime(c)};\mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})\Big)-\sum_{c=1}^C\mbox{log}\Big(\mathcal{N}(\boldsymbol{b}^{(c)};\mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})\Big)\\&+ \Bigg(\Big(\sum_{i\in \mathcal{A}}\Big(-\log\Big(\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(D)})\} + 1\Big)\Big)-1\Big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(D)}))J_{ij}^{(D)}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad +  \Big(\mbox{log}(\eta\lambda^{(D)}_{i_o^{(D)}J_o^{(D)}}){ - \eta\Delta T^{(D)}_{i_o^{(D)}J_o^{(D)}}\sum\limits_{i \in \mathcal{A}}\lambda^{(D)}_{i{J_i^{(D)}}}} \Big)\mbox{ given }  \boldsymbol{b}^\prime\Bigg)
-   \\& -\Bigg(\Big(\sum_{i\in \mathcal{A}}\Big(-\log\Big(\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(D)})\} + 1\Big)\Big)-1\Big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(D)}))J_{ij}^{(D)}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad +  \Big(\mbox{log}(\eta\lambda^{(D)}_{i_o^{(D)}J_o^{(D)}}){ - \eta\Delta T^{(D)}_{i_o^{(D)}J_o^{(D)}}\sum\limits_{i \in \mathcal{A}}\lambda^{(D)}_{i{J_i^{(D)}}}} \Big)\mbox{ given }  \boldsymbol{b}\Bigg),
-   \end{aligned}
+   &\sum_{c=1}^C\mbox{log}\Big(\mathcal{N}(\boldsymbol{b}^{\prime(c)};\mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})\Big)-\sum_{c=1}^C\mbox{log}\Big(\mathcal{N}(\boldsymbol{b}^{(c)};\mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}})\Big)\\&+ \Bigg(\Big(\sum_{i\in \mathcal{A}}\Big(-\log\Big(\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(D)})\} + 1\Big)\Big)-1\Big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(D)}))J_{ij}^{(D)}\Big)\mbox{ given }  \boldsymbol{b}^\prime\Bigg)
+   \\& -\Bigg(\Big(\sum_{i\in \mathcal{A}}\Big(-\log\Big(\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(D)})\} + 1\Big)\Big)-1\Big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(D)}))J_{ij}^{(D)}\Big)\mbox{ given }  \boldsymbol{b}\Bigg),
+   \end{aligned}\label{eqn:logaccepprob}
    \end{equation}
    where $\mathcal{N}$ is the multivariate normal density. Then the log of acceptance ratio we have is:
    \begin{equation}
-   \mbox{log(Acceptance Probability) = min(Equation (32), 0). }
+   \mbox{log(Acceptance Probability) = min(Equation (\ref{eqn:logaccepprob}), 0). }
    \end{equation}
-   Use the log of acceptance ratio, if the log of a sample from Uniform(0,1) is less than the log-acceptance probability (31), we accept the proposal $\boldsymbol{b}^\prime$. Otherwise, we reject.
+   Use the log of acceptance ratio, if the log of a sample from Uniform(0,1) is less than the log-acceptance probability (29), we accept the proposal $\boldsymbol{b}^\prime$. Otherwise, we reject.
    \subsubsection{Resampling $\delta$ }  \label{subsec: Resampling delta}
-   We move on to the updates of $\delta$, which is very similar to the steps illustrated in Section \ref{subsec: Resampling B}. Again we use Metropolis-Hastings algorithm with Normal proposal distribution such that we can cancel out the Q-ratio. We may change the proposal variance $\sigma^2_\delta$ to ensure appropriate level of acceptance rate. To calculate the acceptance probability $\frac{P(\delta^\prime|\mu_\delta, \sigma^2_\delta) P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta^\prime, \eta)}{P(\delta|\mu_\delta, \sigma^2_\delta) P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta)}$,
+   We move on to the updates of $\delta$, which is very similar to the steps illustrated in Section \ref{subsec: Resampling B}. Again we use Metropolis-Hastings algorithm with Normal proposal distribution such that we can cancel out the Q-ratio. We may change the proposal variance $\sigma^2_\delta$ to ensure appropriate level of acceptance rate. To calculate the acceptance probability $\frac{P(\delta^\prime|\mu_\delta, \sigma^2_\delta) P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta^\prime, \boldsymbol{\eta}, \sigma_T^2)}{P(\delta|\mu_\delta, \sigma^2_\delta) P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \boldsymbol{\eta}, \sigma_T^2)}$,
    we take the log and obtain the log of acceptance ratio:
    \begin{equation}
    \begin{aligned} 
@@ -744,48 +730,26 @@ Z^{l}(\delta,\mbox{log}(\lambda_{ij}^{(d)})) &= \frac{1}{\prod_{j \in \mathcal{A
    \\&\quad\quad -\sum_{i\in \mathcal{A}}\Big(-\log\Big(\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(D)})\} + 1\Big)\Big)-1\Big) + \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(D)}))J_{ij}^{(D)}\Big)\Bigg),
    \end{aligned}
    \end{equation}
-   and determine whether to accept or reject using the log of acceptance ratio   $min(\mbox{Equation} (34), 0).$
- \subsubsection{Resampling $\eta$ }  \label{subsec: Resampling eta}
-      Finally we update $\eta$, intercept parameter for Exponential time function. Same as before, we use Metropolis-Hastings algorithm with Normal proposal distribution such that we can cancel out the Q-ratio. To calculate the acceptance probability  $\frac{P(\eta^\prime|\mu_\eta, \sigma^2_\eta) P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta^\prime)}{P(\eta|\mu_\eta, \sigma^2_\eta) P(\mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}} |\mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta)}$, we take the log and obtain the log of acceptance ratio:
+   and determine whether to accept or reject using the log of acceptance ratio   $\mbox{min}(\mbox{Equation } (31), 0).$
+ \subsubsection{Resampling $\boldsymbol{\eta}$ }  \label{subsec: Resampling eta}
+     We also update $\boldsymbol{\eta}$, time-increment related lognormal mean parameter. By employing conjugate prior for lognormal distribution, we can derive simple multivariate normal posterior distribution:
       \begin{equation}
       \begin{aligned} 
       &\mbox{log}\Big(\mathcal{N}(\eta^\prime;\mu_\eta, \sigma^2_\eta)\Big)-\mbox{log}\Big(\mathcal{N}(\eta; \mu_\eta, \sigma^2_\eta)\Big)\\&+ \Big(\mbox{log}(\eta^\prime\lambda^{(D)}_{i_o^{(D)}J_o^{(D)}}){ - \eta^\prime\Delta T^{(D)}_{i_o^{(D)}J_o^{(D)}}\sum\limits_{i \in \mathcal{A}}\lambda^{(D)}_{i{J_i^{(D)}}}} \Big)-\Big(\mbox{log}(\eta\lambda^{(D)}_{i_o^{(D)}J_o^{(D)}}){ - \eta\Delta T^{(D)}_{i_o^{(D)}J_o^{(D)}}\sum\limits_{i \in \mathcal{A}}\lambda^{(D)}_{i{J_i^{(D)}}}} \Big),
       \end{aligned}
       \end{equation}
       and determine whether to accept or reject using the log of acceptance ratio $min(\mbox{Equation} (35), 0).$
+       \subsubsection{Resampling $\sigma_T^2$ }  \label{subsec: Resampling sigmaT}
+           Finally, we update $\sigma_T^2$, the variance parameter of lognormal distribution. Again, we use conjugate prior for lognormal distribution, thus derive simple inverse-Gamma posterior distribution:
+           \begin{equation}
+           \begin{aligned}
+           &P(\sigma_T^2|\mathcal{Z},   \mathcal{C},   \mathcal{B}, \delta, \boldsymbol{\eta}, \mathcal{W}, \mathcal{J}_{\mbox{a}}, \mathcal{I}_{\mbox{o}}, \mathcal{J}_{\mbox{o}}, \mathcal{T}_{\mbox{o}}, \beta, \boldsymbol{u}, \alpha, \boldsymbol{m}, \mu_{\boldsymbol{b}}, \Sigma_{\boldsymbol{b}}, \mu_\delta, \sigma^2_\delta, \mu_{\boldsymbol{\eta}}, \Sigma_{\boldsymbol{\eta}}, a_T, b_T)\\&
+           \propto P(\mathcal{T}_{\mbox{o}},\mathcal{T}_{\mbox{a}} | \boldsymbol{\eta},  \sigma_T^2, \mathcal{Z},   \mathcal{C})
+           \end{aligned}
+           \end{equation}
+      \newpage
    \subsection{Details on Getting It Right Test}\label{subsec:Details on GiR}
-        \subsubsection{Collapsed-time Tie Generating Process} \label{subsubsec: collapsed time Generative Process}
-        Considering that we integrated out latent time $\mathcal{T}_{\mbox{a}}$ in the inference, we develop the new generative process for tie data with the latent time variable integrated out. Note that this is built upon the property of the minimum of independent Exponential random variables, where the probability $\Delta T_{i{J_i}}$ being the minimum is $\frac{\lambda_{i{J_i}}^{(d)}}{\sum_{i=1}^A\lambda_{i{J_i}}^{(d)}}$. Details are illustrated in Algorithm 7.
-        \begin{algorithm}[H]
-        	\SetAlgoLined
-        	\caption{Collapsed-time Tie Generating Process}
-        	\For{d=1 to D}{
-        		\For{i=1 to $A$}{
-        			\For{j=1 to $A$}{
-        				\If {j $\neq$ i} {
-        					calculate $\boldsymbol{x}_{t_+^{(d-1)}}^{(c)}(i, j)$, the network statisitcs evaluated at time $t_+^{(d-1)}$  \\
-        					set $\lambda^{(d)}_{ij}=\sum\limits_{c=1}^{C} p^{(d)}_c\cdot\mbox{exp}\Big\{\boldsymbol{b}^{(c)T}\boldsymbol{x}^{(c)}_{t^{(d-1)}_+}(i, j)\Big\}\cdot 1\{j \in \mathcal{A}_{\backslash i}\}$}  
-        			}
-        			draw $J_i^{(d)} \sim \mbox{Gibbs measure}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)$
-        		}
-        		draw $i^{(d)} \sim {\mbox{Multinomial}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)}$\\
-        		set $J^{(d)} = J_{i^{(d)}}$\\
-        		draw $\Delta T_{i^{(d)}J^{(d)}} \sim \mbox{Exponential}(\eta\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})$ \\
-        		set $t^{(d)} = t^{(d-1)} + \Delta T_{i^{(d)}J^{(d)}}$
-        	}
-        \end{algorithm}
-        \noindent With this generative process, the joint likelihood becomes:
-        \begin{equation}
-        	\begin{aligned}
-        		&P(\mathcal{J}^{(d)}_{\mbox{a}}, i^{(d)}_{\mbox{o}}, J^{(d)}_{\mbox{o}}, t^{(d)}_{\mbox{o}} |\mathcal{I}^{(<d)}_{\mbox{o}}, \mathcal{J}^{(<d)}_{\mbox{o}}, \mathcal{T}^{(<d)}_{\mbox{o}}, \mathcal{Z}, \mathcal{C}, \mathcal{B}, \delta, \eta)\\&=P\Big(\mbox{latent receivers generation}\Big) \times P\Big(\mbox{choose the sender}\Big)\times P\Big(\mbox{observed minimum time generation}\Big) \\&
-        		=\prod_{i\in \mathcal{A}}\Big(J_{i}^{(d)}\sim \mbox{Gibbs measure}(\{\lambda_{ij}^{(d)}\}_{j=1}^A,\delta)\Big) \times \Big(i_o^{(d)} \sim \mbox{Multinom}(\{\frac{\lambda_{i{J_i}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\}_{i=1}^A)\Big) \times\Big(\Delta T^{(d)}_{i^{(d)}{J^{(d)}}} \sim \mbox{Exp}(\eta\sum\limits_{i \in \mathcal{A}}\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)})\Big)\\&
-        		=\Big(\prod_{i\in \mathcal{A}}\frac{1}{Z(\delta, \log(\lambda^{(d)}_i)}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times \Big(\frac{\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)\times \Big(\eta(\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})e^{-\eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)
-        		\\&
-        		=\Big(\prod_{i\in \mathcal{A}}\frac{1}{Z(\delta, \log(\lambda^{(d)}_i)}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\times\Big(\frac{\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)}}{\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)\times \Big( (\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)})e^{-\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big)\\& \propto \Big(\prod_{i\in \mathcal{A}}\frac{1}{\Big(\prod_{j \in \mathcal{A}_{\backslash i}} \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{ij}^{(d)})\} + 1\Big)\Big)-1}\exp\Big\{ \sum_{j \in \mathcal{A}_{\backslash i}} (\delta+\mbox{log}(\lambda_{ij}^{(d)}))J_{ij}^{(d)} \Big\}\Big)\\&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\times\Big(\eta\lambda_{i_o^{(d)}J_o^{(d)}}^{(d)}\Big)\times \Big( e^{-\eta\Delta T^{(d)}_{i_o^{(d)}J_o^{(d)}}\sum\limits_{i \in \mathcal{A}}\lambda_{i{J_i}}^{(d)}}\Big),
-        	\end{aligned}
-        \end{equation}
-        which is exactly the same as Equation (13), thus we use this collpased-time generative process as a forward/backward generative process in Geweke’s ``Getting it Right" test in Section \ref{subsubsec: Backward Generative Process}.
-            \subsubsection{Backward Generating Process} \label{subsubsec: Backward Generative Process}
+                  \subsubsection{Backward Generating Process} \label{subsubsec: Backward Generative Process}
         For backward sampling, we let $NKV$ be a $V\times K$ dimensional matrix where each entry will record the count of the number of tokens of word-type $v$ that are currently assigned to topic $k$. Also let $NK$ be a $K$ dimensional vector recording the total count of tokens currently assigned to topic $k$. Word-assignments are implemented via collapsed Gibbs sampling \citep{griffiths2002gibbs}, while the generation of tie data directly follows the generating process in Section \ref{subsec: Tie Generating Process}, only with the latent time integrated out. This ``backward" version of the generative process is detailed below in Algorithm 8.
         \begin{algorithm}[H]
         	\SetAlgoLined
