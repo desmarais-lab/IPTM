@@ -58,9 +58,9 @@ for (D in commondocs) {
 
 
 
-table_sum = matrix(rep(colMeans(tables), 7), 3)
-rownames(table_sum) =  c("sender", "receiver", "time")
-colnames(table_sum) = c("2", "5", "10", "25", "50", "75", "100")
+table_sum2 = matrix(rep(colMeans(tables), 7), 3)
+rownames(table_sum2) =  c("sender", "receiver", "time")
+colnames(table_sum2) = c("2", "5", "10", "25", "50", "75", "100")
 
 
 
@@ -100,23 +100,23 @@ for (D in commondocs) {
   }
   d = d+1
 }
-all = Reduce('+', tables2) / length(tables2)
+all2 = Reduce('+', tables2) / length(tables2)
 
 par(mfrow = c(1,3))
-plot(colnames(table_sum), table_sum[1,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Sender AUC", ylim = c(0.5, 0.56))
-lines(colnames(table_sum), all[1:7,1], lty = 3,col = "blue", type = 'b', pch = 19)
-lines(colnames(table_sum), all[8:14,1], lty = 4,col = "green",type = 'b', pch = 19)
-lines(colnames(table_sum), all[15:21,1], lty = 5,col = "purple",type = 'b', pch = 19)
+plot(colnames(table_sum2), table_sum2[1,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Sender AUC", ylim = c(0.51, 0.56), main = "Enron")
+lines(colnames(table_sum2), all2[1:7,1], lty = 3,col = "blue", type = 'b', pch = 19)
+lines(colnames(table_sum2), all2[8:14,1], lty = 4,col = "green",type = 'b', pch = 19)
+lines(colnames(table_sum2), all2[15:21,1], lty = 5,col = "purple",type = 'b', pch = 19)
 legend(60, 0.56, pch = 19, bty = "n", lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))
 
-plot(colnames(table_sum), table_sum[2,], type = 'b', pch = 19,  col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Receiver F1Score", ylim = c(0.935, 0.955))
-lines(colnames(table_sum), all[1:7,2], lty = 3,col = "blue",type = 'b', pch = 19)
-lines(colnames(table_sum), all[8:14,2], lty = 4,col = "green",type = 'b', pch = 19)
-lines(colnames(table_sum), all[15:21,2], lty = 5,col = "purple",type = 'b', pch = 19)
+plot(colnames(table_sum2), table_sum2[2,], type = 'b', pch = 19,  col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Receiver F1Score", ylim = c(0.935, 0.955))
+lines(colnames(table_sum2), all2[1:7,2], lty = 3,col = "blue",type = 'b', pch = 19)
+lines(colnames(table_sum2), all2[8:14,2], lty = 4,col = "green",type = 'b', pch = 19)
+lines(colnames(table_sum2), all2[15:21,2], lty = 5,col = "purple",type = 'b', pch = 19)
 legend(60, 0.955,  pch = 19,bty = "n", lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))
 
-plot(colnames(table_sum), table_sum[3,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Time MAD", ylim = c(9.5, 10.0))
-lines(colnames(table_sum), all[1:7,3], lty = 3,col = "blue",type = 'b', pch = 19)
-lines(colnames(table_sum), all[8:14,3], lty = 4,col = "green",type = 'b', pch = 19)
-lines(colnames(table_sum), all[15:21,3], lty = 5,col = "purple",type = 'b', pch = 19)
+plot(colnames(table_sum2), table_sum2[3,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Time MAD", ylim = c(9.5, 10.0))
+lines(colnames(table_sum2), all2[1:7,3], lty = 3,col = "blue",type = 'b', pch = 19)
+lines(colnames(table_sum2), all2[8:14,3], lty = 4,col = "green",type = 'b', pch = 19)
+lines(colnames(table_sum2), all2[15:21,3], lty = 5,col = "purple",type = 'b', pch = 19)
 legend(60, 10.0,  pch = 19, bty = "n",lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))

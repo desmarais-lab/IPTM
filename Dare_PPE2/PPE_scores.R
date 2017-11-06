@@ -90,8 +90,10 @@ for (D in commondocs) {
 
 all = Reduce('+', tables2) / length(tables2)
 
-par(mfrow = c(1,3))
-plot(colnames(table_sum), table_sum[1,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Sender AUC", ylim = c(0.49, 0.55))
+par(mfrow = c(3,2))
+par(mar=c(2, 3, 1, 1), mfrow=c(3,2),
+     oma = c(1, 1, 0.5, 0.3))
+plot(colnames(table_sum), table_sum[1,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Sender AUC", ylim = c(0.5, 0.55), main = "Dare")
 lines(colnames(table_sum), all[1:7,1], lty = 3,col = "blue", type = 'b', pch = 19)
 lines(colnames(table_sum), all[8:14,1], lty = 4,col = "green",type = 'b', pch = 19)
 lines(colnames(table_sum), all[15:21,1], lty = 5,col = "purple",type = 'b', pch = 19)
@@ -103,10 +105,10 @@ lines(colnames(table_sum), all[8:14,2], lty = 4,col = "green",type = 'b', pch = 
 lines(colnames(table_sum), all[15:21,2], lty = 5,col = "purple",type = 'b', pch = 19)
 legend(60, 1.1,  pch = 19,bty = "n", lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))
 
-plot(colnames(table_sum), table_sum[3,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Time MAE", ylim = c(1.0, 1.25))
+plot(colnames(table_sum), table_sum[3,], type = 'b', pch = 19, col = 'red', xlab = "Number of Topics", lty = 2, ylab = "Time MAE", ylim = c(0.98, 1.15))
 lines(colnames(table_sum), all[1:7,3], lty = 3,col = "blue",type = 'b', pch = 19)
 lines(colnames(table_sum), all[8:14,3], lty = 4,col = "green",type = 'b', pch = 19)
 lines(colnames(table_sum), all[15:21,3], lty = 5,col = "purple",type = 'b', pch = 19)
-legend(60, 1.25,  pch = 19, bty = "n",lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))
+legend(60, 1.15,  pch = 19, bty = "n",lty = 2:5, legend = c("IPTM with C = 3","IPTM with C = 2","IPTM with C = 1", "Regressions"), col = c("purple", "green", "blue", "red"))
 
 
