@@ -79,6 +79,12 @@ Griffiths, T.~L. and Steyvers, M. (2004).
 \newblock {\em Proceedings of the National academy of Sciences}, 101(suppl
   1):5228--5235.
 
+\bibitem[Hand and Till, 2001]{hand2001simple}
+Hand, D.~J. and Till, R.~J. (2001).
+\newblock A simple generalisation of the area under the roc curve for multiple
+  class classification problems.
+\newblock {\em Machine learning}, 45(2):171--186.
+
 \bibitem[Hunter et~al., 2008]{hunter2008ergm}
 Hunter, D.~R., Handcock, M.~S., Butts, C.~T., Goodreau, S.~M., and Morris, M.
   (2008).
@@ -96,6 +102,11 @@ Kinne, B.~J. (2016).
 \newblock Agreeing to arm: Bilateral weapons agreements and the global arms
   trade.
 \newblock {\em Journal of Peace Research}, 53(3):359--377.
+
+\bibitem[Klimt and Yang, 2004]{klimt2004introducing}
+Klimt, B. and Yang, Y. (2004).
+\newblock Introducing the enron corpus.
+\newblock In {\em CEAS}.
 
 \bibitem[Krafft et~al., 2012]{Krafft2012}
 Krafft, P., Moore, J., Desmarais, B., and Wallach, H.~M. (2012).

@@ -6,11 +6,10 @@ agam0 <- lm(Y~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19
 
 
 #first try lognormal
-norm <- glm(log(Y)~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+D+W, family = gaussian(link = "identity"),control = glm.control(maxit = 1000), start = as.numeric(coef(agam0)))
+norm <- glm(log(Y)~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+D+W, family = gaussian(link = "identity"),control = glm.control(maxit = 100), start = as.numeric(coef(agam0)))
 normpred <- predict(norm, type = "response", se =T)
 par(mfrow = c(2,2))
-plot(norm)
-
+plot(norm) 
 
 #try Gamma
 agam <- glm(Y~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+D+W, family = Gamma(link = "identity"),control = glm.control(maxit = 100), start = c(rep(1, 25), coef(agam0)[-1:-25]))
@@ -20,8 +19,32 @@ plot(agam)
 
 library(MASS)
 myshape<- gamma.shape(agam)
-summary(agam, dispersion = 1/myshape$alpha)
+summary(agam, dispersion = 1 / myshape$alpha)     # different dispersion parameter changes the significance level
 gampred <- predict(agam, type = "response", se =T, dispersion = 1/myshape$alpha)
+
+
+par(mfrow = c(1,2))
+qqplot(normpred$fit, log(Daresurv$Y))
+qqplot(gampred$fit, Daresurv$Y)  # maximum time generated is 3.1354
+
+
+
+#Gamma has convergence issue -> how about trying W and D only?
+
+agam <- glm(Y~D+W, family = Gamma(link = "identity"),control = glm.control(maxit = 100), start =rep(0.1, 10))
+summary(agam)
+par(mfrow = c(2,2))
+plot(agam)
+
+library(MASS)
+myshape<- gamma.shape(agam)
+summary(agam, dispersion = 1 / myshape$alpha)     # different dispersion parameter changes the significance level
+gampred <- predict(agam, type = "response", se =T, dispersion = 1/myshape$alpha)
+qqplot(gampred$fit, Daresurv$Y)  # maximum time generated is 2.2576
+
+
+
+
 
 
 #How can we parameterize alpha and beta as Aaron's paper?
@@ -53,8 +76,7 @@ Gamma = function(link = "inverse") {
         0, 1, y/mu)) - (y - mu)/mu)
     aic <- function(y, n, mu, wt, dev) {
         n <- sum(wt)
-        disp <- dev / n
-        #disp <- 10000
+        disp <- dev / n                                      # probably change this part... but nothing worked
         -2 * sum(dgamma(y, 1/disp, scale = mu * disp, log = TRUE) * 
             wt) + 2
     }

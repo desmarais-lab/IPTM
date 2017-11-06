@@ -46,7 +46,10 @@ We introduce the interaction-partitioned topic model
  what, and when. Broadly speaking, the IPTM partitions time-stamped
  textual communications, according to both the network
  dynamics that they reflect and their content. To define the IPTM, we
- integrate a dynamic version of the exponential random graph model and latent Dirichlet allocation. The IPTM assigns each topic to an ``interaction
+ integrate a dynamic version of the exponential random graph model---a
+ generative model for ties that tend toward structural features such as
+ triangles---and latent Dirichlet allocation---a generative model for
+ topic-based content. The IPTM assigns each topic to an ``interaction
  pattern"---a generative process for ties that is governed by a set of
  dynamic network features. Each communication is then modeled as a
  mixture of topics and their corresponding interaction patterns. We use
@@ -57,7 +60,7 @@ We introduce the interaction-partitioned topic model
 
 \section{Introduction}
 
-In recent decades, real-time digitized textual communication has developed into a ubiquitous form of social and professional interaction \citep[see, e.g.,][]{kanungo2008modeling, szostek2011dealing, burgess2004email, pew2016}. From the perspective of the computational social scientist, this has lead to a growing need for methods of modeling interactions that manifest as text exchanged in continuous time (e.g., e-mails). A number of models that build upon topic modeling through Latent Dirichlet Allocation \citep{Blei2003} to incorporate link data as well as textual content have been developed recently \citep{mccallum2005author,lim2013twitter,Krafft2012}. These models are innovative in their extensions that incorporate network tie information. However, none of the models that are currently available in the literature integrate the rich random-graph structure offered by state of the art models for network structure---in particular, the exponential random graph model (ERGM) \citep{robins2007introduction,chatterjee2013estimating,hunter2008ergm}. The ERGM is the canonical model for network structure, as it is flexible enough to specify a generative model that accounts for nearly any pattern of tie formation (e.g., reciprocity, clustering, popularity effects) \citep{desmarais2017statistical}. We build upon recent extensions of ERGM that model time-stamped ties \citep{PerryWolfe2012,Butts2008}, and develop the interaction-partitioned topic model (IPTM) to simultaneously model the network structural patterns that govern tie formation, and the content in the communications.
+In recent decades, real-time digitized textual communication has developed into a ubiquitous form of social and professional interaction \citep[see, e.g.,][]{kanungo2008modeling, szostek2011dealing, burgess2004email, pew2016}. From the perspective of the computational social scientist, this has lead to a growing need for methods of modeling interactions that manifest as text exchanged in continuous time. A number of models that build upon topic modeling through Latent Dirichlet Allocation \citep{Blei2003} to incorporate link data as well as textual content have been developed recently \citep{mccallum2005author,lim2013twitter,Krafft2012}. These models are innovative in their extensions that incorporate network tie information. However, none of the models that are currently available in the literature integrate the rich random-graph structure offered by state of the art models for network structure---in particular, the exponential random graph model (ERGM) \citep{robins2007introduction,chatterjee2013estimating,hunter2008ergm}. The ERGM is the canonical model for network structure, as it is flexible enough to specify a generative model that accounts for nearly any pattern of tie formation (e.g., reciprocity, clustering, popularity effects) \citep{desmarais2017statistical}. We build upon recent extensions of ERGM that model time-stamped ties \citep{PerryWolfe2012,Butts2008}, and develop the interaction-partitioned topic model (IPTM) to simultaneously model the network structural patterns that govern tie formation, and the content in the communications.
 
 ERGM, and models based on ERGM, provide a framework for explaining or predicting ties between nodes using the network sub-structures in which the two nodes are embedded (e.g., an ERGM specification may predict ties between two nodes that have many shared partners). ERGM-style models have been used for many applications in which the ties between nodes are annotated with text. The text, despite providing rich information regarding the strength, scope, and character of the ties, has been largely excluded from these analyses, due to the inability of ERGM-style models to incorporate textual attributes of ties. These application domains include, among other applicaitons, the study of legislative networks in which networks reflect legislators' co-support of bills, but exclude bill text \citep{bratton2011networks,aleman2013explaining}; the study of alliance networks in which networks reflect countries' co-signing of treaties, but exclude treaty text \citep{camber2010geometry,cranmer2012complex,cranmer2012toward,kinne2016agreeing}; the study of scientific co-authorship networks that exclude the text of the co-authored papers \citep{kronegger2011collaboration,liang2015changing,fahmy2016gender}; and the study of text-based interaction on social media (e.g., users tied via `mentions' on twitter) \citep{yoon2014strategies,peng2016follower,lai2017connecting}.
 
@@ -74,7 +77,7 @@ In this section, we illustrate how the words $\boldsymbol{w}_d$ are generated ac
 
 For each topic $k=1,\ldots,K$:
 \begin{itemize}
-	\item Choose a discrete distribution over $V$ word types $$\boldsymbol{\phi}^{(k)} \sim \mbox{Dirichlet}\Big(\beta, (\frac{1}{V},\ldots,\frac{1}{V})\Big).$$
+	\item Choose a discrete distribution over $V$ word types $$\boldsymbol{\phi}_k \sim \mbox{Dirichlet}\Big(\beta, (\frac{1}{V},\ldots,\frac{1}{V})\Big).$$
 \end{itemize}
 Next, given that the number of words $N_d$ is known, we generate each token by drawing a topic from the document-topic distribution and then drawing a word from the chosen topic. 
 
@@ -109,21 +112,21 @@ For each topic $k = 1,\ldots,K$:
 The IPTM generates ties and timestamps using a continuous-time process
 that depends on the interaction patterns' various features and
 corresponding coefficients. Conditioned on the content generated from Section \ref{subsec:Content generating process}, we assume the following four steps of tie generating process for each document $d$ in a corpus of $D$ documents.
-\subsubsection{Stochastic Intensity}\label{subsubsec:Stochastic Intensity}
-We start by computing a stochastic intensity for every possible author--recipient
-pair by combining information about content and network structures. 
+\subsubsection{Hypothetical Recipients}\label{subsubsec:Hypothetical Recipients}
+We start the recipient generating process by first computing a stochastic intensity for every possible author--recipient
+pair, combining information about content and network structures. 
 
-For $i = 1,\ldots,A$, $j = 1,\ldots,A$ ($i \neq j$) and $c=1,\ldots,C$, we define the interaction-pattern-specific intensity:
+For each author $i = 1,\ldots,A$, receiver $j = 1,\ldots,A$ ($i \neq j$) and interaction pattern $c=1,\ldots,C$, we define the interaction-pattern-specific intensity:
 \begin{align*}
 \nu_{idjc} = \mbox{exp}\Big({\boldsymbol{b}_c}^{\top}\boldsymbol{x}_{idjc}\Big),
 \end{align*}
-where $\boldsymbol{b}_c$ is the interaction-pattern-specific coefficients with prior $\boldsymbol{b}_c \sim N(\boldsymbol{\mu}_b,\Sigma_b)$, and $\boldsymbol{x}_{idjc}$ is the interaction patterns' dynamic network features which vary depending on the hypotheses regarding canonical processes relevant to network theory such as popularity, reciprocity, and transitivity. 
+where $\boldsymbol{b}_c$ is the interaction-pattern-specific coefficients with the prior $\boldsymbol{b}_c \sim N(\boldsymbol{\mu}_b,\Sigma_b)$, and $\boldsymbol{x}_{idjc}$ is the interaction patterns' dynamic network features which vary depending on the hypotheses regarding canonical processes relevant to network theory such as popularity, reciprocity, and transitivity. 
 
 We then compute the weighted average of $\{\nu_{idjc}\}_{c=1}^C$ and obtain the stochastic intensity---the likelihood of document $d$ being sent from $i$ to $j$--- using the the document's distribution over interaction patterns as mixture weights:
 \begin{align*}
 \lambda_{idj} =\sum_{c=1}^{C} \pi_{dc}\, \nu_{idjc}.
 \end{align*}
-\subsubsection{Hypothetical Recipients}\label{subsubsec:Hypothetical Recipients}
+
 Next, we generate a set of latent recpients for each
 possible author. In other words, we hypothesize ``If $i$ were the
 author of document $d$, who would its recipients be?" To do this, we draw each author's set of recipients from a non-empty Gibbs measure \citep{fellows2017removing}, which is a probability measure we defined in order to prevent from obtaining zero recipient as well as intractible normalizing constants. Derivation of the normalizing constant is given in Appendix A. 
@@ -136,24 +139,26 @@ For each author $i =1,\ldots,A$:
 \mbox{Gibbs}(\delta, \boldsymbol{\lambda}_{id}),
 \end{align*}
 \end{itemize}
-	where $\delta$ is a real-valued parameter with prior $\delta \sim N(\mu_\delta,\sigma^2_\delta)$ that controls the mean number of recipients, and $\boldsymbol{\lambda}_{id}=(\lambda_{id1},\ldots\lambda_{idA})$ are the stochoastic intensities for the author $i$. In particular, the log-likelihood of $\mbox{Gibbs}(\delta, \boldsymbol{\lambda}_{id})$ is defined as
-	$$l_{gibbs}(\boldsymbol{u}_{id}) \propto \mbox{log}\Big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\Big) + \sum_{j \neq i} \Big(\delta+\mbox{log}(\lambda_{idj})\Big)u_{idj},$$ 
+	where $\delta$ is a real-valued parameter that controls the average number of recipients, with the prior specified as $\delta \sim N(\mu_\delta,\sigma^2_\delta)$, and $\boldsymbol{\lambda}_{id}=(\lambda_{id1},\ldots\lambda_{idA})$ is the vector of the stochoastic intensities for the author $i$. In particular, the likelihood of $\mbox{Gibbs}(\delta, \boldsymbol{\lambda}_{id})$ is defined as
+	\begin{align*}
+	&L_{gibbs}(\boldsymbol{u}_{id}) \\&\propto \exp\Big\{\mbox{log}\Big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\Big) + \sum_{j \neq i} \Big(\delta+\mbox{log}(\lambda_{idj})\Big)u_{idj}\Big\},
+	\end{align*}
 where $\lVert \boldsymbol{u}_{id}\rVert_1$ is the $l_1$-norm of the binary vector $\boldsymbol{u}_{id}$.
 \subsubsection{Hypothetical Timestamps}\label{subsubsec:Hypothetical Timestamps}
-We then generate a hypothetical timestamp for each author--recipient-set pair by saying, ``If $i$ were the author of document $d$ and its recipients were $\boldsymbol{u}_{id}$, when would it be sent?"  
+We then generate a hypothetical timestamp for each author--recipient-set pair by saying, ``If $i$ were the author of document $d$ and its recipients were $\boldsymbol{u}_{id}$, when would it be sent?" Similar to Section \ref{subsubsec:Hypothetical Recipients}, we define the interaction-pattern-specific rate as below.
 
-Similar to Section \ref{subsubsec:Stochastic Intensity}, for each author $i =1,\ldots,A$, we define the interaction-pattern-specific rate:
+For each author $i =1,\ldots,A$:
 \begin{align*}
 \xi_{idc}& = \exp\Big(\boldsymbol{\eta}_c^\top\mbox{GeomMean}(\{ \boldsymbol{y}_{idjc}\}_{j:u_{idj}= 1})\Big),
 \end{align*}
-where $\boldsymbol{\eta}_c$ is the interaction-pattern-specific coefficients with prior $\boldsymbol{\eta}_c \sim N(\boldsymbol{\mu}_\eta,\Sigma_\eta)$, and $\boldsymbol{y}_{idjc}$ is the interaction patterns' time-related linear predictors, which are not limited to dynamic network features. We take the geometric mean of the predictors over the chosen recipients in order to compute the averaged vector of predictors. 
+where $\boldsymbol{\eta}_c$ is the interaction-pattern-specific coefficients with the prior $\boldsymbol{\eta}_c \sim N(\boldsymbol{\mu}_\eta,\Sigma_\eta)$, and $\boldsymbol{y}_{idjc}$ is the interaction patterns' time-related linear predictors, which are not limited to dynamic network features. We take the geometric mean of the predictors over the chosen recipients in order to obtain a single vector of the averaged predictors. 
 
 We then calculate the expected value of timestamp as
 \begin{align*}\mu_{id} &= \sum_{c=1}^C \pi_{dc}\xi_{idc},
 \end{align*}
-which is again the weighted average of $\{\xi_{idc}\}_{c=1}^C$ that combines information about content (via $\{\pi_{dc}\}_{c=1}^C$) and the linear predictors.
+which is the weighted average of $\{\xi_{idc}\}_{c=1}^C$ that combines information about content (via $\{\pi_{dc}\}_{c=1}^C$) and the linear predictors.
 
-In modeling the timestamps, we do not assume specific distribution; instead, we provide huge flexibility and follow the generalized linear model approach as below.
+In modeling the timestamps, we do not assume specific distribution; instead, we provide huge flexibility by following the generalized linear model approach with identity link function:
 \begin{align*}
 E(\tau_{id}) &= \mu_{id},\\
 V(\tau_{id}) &= V(\mu_{id}),
@@ -164,23 +169,25 @@ Finally, we choose the document's actual author, recipients, and timestamp by se
 \begin{align*}
 a_d &= \mbox{argmin}_{i}(\tau_{id}),\\
 \boldsymbol{r}_d &= \boldsymbol{u}_{a_d d},\\
-t_d &=t_{d-1} + t_{a_d d}.
+t_d &=t_{d-1} + \tau_{a_d d}.
 \end{align*}
-Therefore, it is an author-driven process in that the author of a document determines its recipients and its timestamp, based on the author's urgency to send the document to chosen recipients.
+Therefore, it is an author-driven process in that the author of a document determines its recipients and its timestamp, based on the author's urgency to send the document to chosen recipients. 
 \section{Inference}\label{sec:Inference}
-In this section we consider model inference and parameter estimation based on the IPTM. We take a Bayesian approach to infer the latent variables including the topics, the
-topic--interaction pattern assignments, and the interaction patterns'
-coefficients, given the content,
-authors, recipients, and timestamps of the observed real data. Our inference goal is to draw samples from the joint posterior distribution
+The generative process is a nice way of describing how a set of documents could theoretically have been generated. However,
+real documents are not actually generated via this process. As a result, for real-world documents, we only observe the authors $\boldsymbol{a}= \{a_d\}_{d=1}^D$, recipients $\boldsymbol{r}=\ \{\boldsymbol{r}_d\}_{d=1}^D$, timestamps $\boldsymbol{t}= \{t_d\}_{d=1}^D$ and tokens $\boldsymbol{w}= \{\boldsymbol{w}_d\}_{d=1}^D$. On the other hand, the topic-word distributions $\Phi =  \{\phi_k\}_{k=1}^K$, document-topic distributions $\Theta = \{\boldsymbol{\theta}_d\}_{d=1}^D$, topics $\boldsymbol{z}=\ \{\boldsymbol{z}_d\}_{d=1}^D$, topic-interaction pattern assignments $\boldsymbol{l}=\ \{l_k\}_{k=1}^K$, interaction pattern coefficients $\boldsymbol{b}=\ \{\boldsymbol{b}_c\}_{c=1}^C$ and $\boldsymbol{\eta}=\ \{\boldsymbol{\eta}_c\}_{c=1}^C$, hypothetical recipients $\boldsymbol{u}=\ \{\{\boldsymbol{u}_{id}\}_{i=1}^A\}_{d=1}^D$, and mean recipient size $\delta$ are unobserved. We take a Bayesian approach to infer the latent variables given the observed data. 
+
+Our inference goal is to draw samples from the joint posterior distribution
   \begin{equation*}
   \begin{aligned}
-  &p(\boldsymbol{z},\boldsymbol{l},\boldsymbol{b}, \boldsymbol{\eta}, \boldsymbol{u}, \delta|\boldsymbol{w}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{\tau}, \alpha, \beta, \boldsymbol{m}, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta)\\
+  &p(\boldsymbol{z},\boldsymbol{l},\boldsymbol{b}, \boldsymbol{\eta}, \boldsymbol{u}, \delta|\boldsymbol{w}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}, \alpha, \beta, \boldsymbol{m}, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta)\\
   & \propto p(\boldsymbol{z}|\alpha, \boldsymbol{m})p(\boldsymbol{w}|\boldsymbol{z}, \beta)p(\boldsymbol{l})p(\boldsymbol{b}|\boldsymbol{\mu}_b, \Sigma_b)p( \boldsymbol{\eta}|\boldsymbol{\mu}_\eta \Sigma_\eta)\\
-  & \quad\quad\quad\quad\quad\quad\times p(\delta| {\mu}_\delta,\sigma^2_\delta)p(\boldsymbol{u}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{\tau}|\boldsymbol{z},\boldsymbol{l}, \boldsymbol{b}, \boldsymbol{\eta}, \delta),
+  & \quad\quad\quad\quad\quad\quad\times p(\delta| {\mu}_\delta,\sigma^2_\delta)p(\boldsymbol{u}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}|\boldsymbol{z},\boldsymbol{l}, \boldsymbol{b}, \boldsymbol{\eta}, \delta),
   \end{aligned}
   \label{eqn:jointposterior}
   \end{equation*}
-  where $\boldsymbol{\phi}$ and $\boldsymbol{\theta}$ are integrated out using Dirichlet-multinomial conjugacy \citep{griffiths2004finding}. The remaining unobserved variables are sequentially sampled from their joint posterior distribution using Markov chain Monte Carlo (MCMC) methods. Note that we draw the hypothetical recipients $\boldsymbol{u}$ and impute the data by employing data augmentation schemes \citep{tanner1987calculation}. A straightforward Gibbs sampling method are applied for categorical variables ($\boldsymbol{z},\boldsymbol{l},\boldsymbol{u}$), while we rely on Metropolis-Hasting for the rest of latent variables that do not have exact conditional posterior distributions. We omit large part of the sampling equations for the sake of brevity, however, here we illustrate the derivation of the joint posterior distribution of tie variables for d$^{th}$ document, $p(\boldsymbol{u}_{\cdot d}, a_d, \boldsymbol{r}_d, t_d|\boldsymbol{z}_d,\boldsymbol{l}, \boldsymbol{b}, \boldsymbol{\eta}, \delta)$, which is the term involved in most of the sampling equations. 
+  where $\Phi$ and $\Theta$ are integrated out using Dirichlet-multinomial conjugacy \citep{griffiths2004finding}. The remaining unobserved variables are sequentially sampled from their joint posterior distribution using Markov chain Monte Carlo (MCMC) methods. Note that we draw the hypothetical recipients $\boldsymbol{u}$ and impute the data by employing data augmentation schemes \citep{tanner1987calculation}. A straightforward Gibbs sampling method are applied for categorical variables ($\boldsymbol{z},\boldsymbol{l},\boldsymbol{u}$), while we rely on Metropolis-Hasting for the rest of latent variables that do not have exact conditional posterior distributions.
+  
+   We omit large part of the sampling equations for the sake of brevity, however, here we illustrate the derivation of the joint posterior distribution of tie variables for d$^{th}$ document, $p(\boldsymbol{u}_{\cdot d}, a_d, \boldsymbol{r}_d, t_d|\boldsymbol{z}_d,\boldsymbol{l}, \boldsymbol{b}, \boldsymbol{\eta}, \delta)$, which is the term involved in most of the sampling equations. 
   \begin{equation*}
   \begin{aligned}
   &p(\boldsymbol{u}_{\cdot d}, a_d, \boldsymbol{r}_d, t_d|\boldsymbol{z}_d,\boldsymbol{l}, \boldsymbol{b}, \boldsymbol{\eta}, \delta) \\&= \prod_{i=1}^A p(\boldsymbol{u}_{id}|\boldsymbol{z}_d,\boldsymbol{l}, \boldsymbol{b}, \delta)\times p(\tau_{a_d d}|\boldsymbol{z}_d,\boldsymbol{l}, \boldsymbol{\eta})\\&\quad\quad\quad \times \prod_{i\neq a_d} p(\tau_{id} >\tau_{a_d d}|\boldsymbol{z}_d,\boldsymbol{l}, \boldsymbol{\eta}) \\& 
@@ -188,35 +195,49 @@ authors, recipients, and timestamps of the observed real data. Our inference goa
   \end{aligned}
     \label{eqn:tieposterior}
 \end{equation*}  
-  where $L_{gibbs}$ is the likelihood of non-empty Gibbs measure in Section \ref{subsubsec:Hypothetical Recipients}, $\varphi_\tau$ and $\Phi_\tau$ are the probability density function (pdf) and cumulative distribution function (cdf) of the specified distribution of timestamps in Section \ref{subsubsec:Hypothetical Timestamps}, respecitvely.
-According to the tie generative process, this joint distribution can be interpreted as `probability of the observed and latent recipients come from Gibbs measure $\times$ probability of the observed timestamp generated from the specified distribution of timestamps $\times$ probability of all hypothetical timestamps greater than the observed time given the specified distribution of timestamps.' For further details, see Appendix B.
+  where $L_{gibbs}$ is the likelihood of non-empty Gibbs measure in Section \ref{subsubsec:Hypothetical Recipients}, $\varphi_\tau$ and $\Phi_\tau$ are the probability density function (pdf) and cumulative distribution function (cdf) of the specified distribution of timestamps in Section \ref{subsubsec:Hypothetical Timestamps}, respecitvely, and $\tau_{a_d d}$ is the observed time-increments $t_d - t_{d-1}$. According to the tie generative process, this joint distribution can be interpreted as `probability of the observed and latent recipients come from Gibbs measure $\times$ probability of the observed timestamp generated from the specified distribution of timestamps $\times$ probability of all hypothetical timestamps greater than the observed time given the specified distribution of timestamps.' For further details, see Appendix B.
 \section{Applications}\label{sec:Application}
 The IPTM is intended for any network with timestamped, text-valued ties, however, in our application of the model we focus on the analysis of email network, which is the canonical example of dynamic textual communication. 
 \subsection{Data}\label{subsec:Data}
-We use a subset of the North Carolina county government email dataset collected by \citet{ben2017transparency} that includes internal email corpora covering the inboxes and outboxes of managerial-level employees of North Carolina county governments. Out of over twenty counties, we chose Dare County, (1) in order to see whether and how communication networks surrounding a notable national emergency---Hurricane Sandy---differed from those surrounding other governmental functions, and (2) to limit the scope of this initial application. The Dare County email network contains around 2,210 emails, sent and received by 27 department managers over a period of 3 months in 2012. 
+We use a subset of the North Carolina county government email dataset collected by \citet{ben2017transparency} that includes internal email corpora covering the inboxes and outboxes of managerial-level employees of North Carolina county governments. Out of over twenty counties, we chose Dare County, (1) in order to see whether and how communication networks surrounding a notable national emergency---Hurricane Sandy---differed from those surrounding other governmental functions, and (2) to limit the scope of this initial application. The Dare County email network contains around 2,210 emails, sent and received by 27 department managers over a period of 3 months in 2012. To verify that our model is applicable beyond the Dare County email network, we also performed two validation experiments using the Enron email data set \citep{klimt2004introducing}. For this dataset, we took a subset of the original data such that we only include emails between actors who sent over 100 emails, and actors who received over 100 emails from the chosen senders. Emails that were not sent to at least one other active actor were discarded, and also preprocessed to remove any stop words, URLs, quoted text, and signatures. These steps resulted in a total of 3,925 emails involving 33 actors. 
 \subsection{Dynamic Network Statistics}\label{subsec:Dynamic Network Statistics}
-In this Section, we introduce detailed specifications of the dynamic network statsitics in our model. We develop a suite of nine different effects to be used as the components of $\boldsymbol{x}^{(c)}_t(i, j)$, (intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling).  These statistics capture common network properties such as popularity, centrality, reciprocity, and transitivity. Each network statistic is calculated for each interaction pattern $c=1,...,C$, which means that each interaction pattern can be understood in terms of the ways that network dynamics shape tie formation within the interaction pattern. In addition to assigning interaction-pattern specific intercepts, we introduce the degree, dyadic, and triadic network statistics in this paper, and below are the detailed specifications.
+In Section \ref{subsubsec:Hypothetical Recipients} and \ref{subsubsec:Hypothetical Timestamps}, we introduced the dynamic network features $\boldsymbol{x}_{idjc}$ and time-related predictors $\boldsymbol{y}_{idjc}$, which could be flexibly specified according to the researcher's interest. Here, we introduce our specifications of the dynamic network statsitics, tailored for the Dare County email network. Following \cite{PerryWolfe2012}, we develop a suite of nine different effects to be used as the components of  $\boldsymbol{x}_{idjc}$ and $\boldsymbol{y}_{idjc}$---intercept, outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling---to capture common network properties such as popularity, centrality, reciprocity, and transitivity.
 
-We follow \cite{PerryWolfe2012} and define each network feature to have potentially different effects within a number of intervals of recency in the formation of the ties that contribute to the network feature. We partition the interval $[-\infty, t)$ into $L=4$ sub-intervals with equal length in the log-scale, by setting $\Delta_l$ = (6 hours) $\times  4^l$ for $l=1,...,L-1$ such that $\Delta_l$ takes the values 24 hours (=1 day), 96 hours (=4 days), 384 hours (=16 days).
+Under the assumption that each network feature has potentially different effects within a number of intervals of recency in the formation of the ties that contribute to the network feature. We partition the interval $[-\infty, t)$ into $L=4$ sub-intervals with equal length in the log-scale, by setting $\Delta_l$ = (6 hours) $\times  4^l$ for $l=1,...,L-1$ such that $\Delta_l$ takes the values 24 hours (=1 day), 96 hours (=4 days), 384 hours (=16 days).
+Each network statistic is calculated for each interaction pattern $c=1,...,C$, which means that each interaction pattern can be understood in terms of the ways that network dynamics shape tie formation within the interaction pattern. In addition to assigning interaction-pattern specific intercepts, we introduce the degree, dyadic, and triadic network statistics in this paper, and below are the detailed specifications.
+
+
 \section{Experiments}\label{sec:Experiments}
 In this section, we conduct a set of posterior predictive experiments using the Dare County email network and the Enron dataset, to showcase the IPTM's predictive performance as compared to alternative modeling approaches.
 \subsection{Tie Prediction}\label{subsec:Tie Prediction}
- For a randomly chosen document $d \in \{M,M+1,\hdots, D\}$, we fit the IPTM to the corpus consisting of the first $d = \{1,\hdots,D-1\}$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data for document $D$ conditional on the content in document $D$, $\boldsymbol{w}^{(D)}$.  A reasonable choice for $M$ would be $D/2$, to assure a sufficient size training set for the first document in the test set. The variables that need to be sampled are the tie data ($i_o^{(D)}, J_o^{(D)}, t_o^{(D)}$), and we would compare the simulated ones to the observed data. We compared the IPTM's predictions to those made by some simple
- baseline regression models. 
+ For a randomly chosen document $d^* \in \{M, M+1,\ldots, D\}$, we fit the IPTM to the corpus consisting of the first $d = \{1,\hdots,d^*-1\}$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($a_{d^*}, \boldsymbol{r}_{d^*}, t_{d^*}$) conditional on the content in the document   $\boldsymbol{w}_{d^*}$, and compare the simulated ones to the observed data. We also compare the IPTM to the alternative model that is built upon two separate regression models for the recipients and timestamps, in order to test if the IPTM has any benefit over other existing models by jointly inferring the parameters that govern the generation of tie data---authors, recipients, and timestamps. Detailed pseudocodes for generating predicted tie data using the IPTM and the regression model are demonstrated in Appendix C.
+ 
+ For both data sets, the Dare County email network and Enron dataset, we randomly selected 200 documents from the later half of the corpus (\textit{i.e.} $M = \frac{D}{2}$) and generated 100 samples of predicted tie data for every document $d^*$. We ran the same predictive experiments with 21 unique combinations of the number of interaction patterns ($C = 1, 2, 3$) and the number of topics ($K = 2, 5, 10, 25, 50, 75, 100$) as a grid-search based hyperparameter selection process. We compare the predictions in terms of classification accuracy in predicting the authors and recipients, as well as prediction error in the timestamps. Figure \ref{fig:PPE} presents the $F_1$ scores on author predictions, multiclass version of the area under the ROC curve (AUC) measure \citep{hand2001simple} on reciptient predictions, and median absolute error (MAE) on timestamp predictions for each document we predicted, all averaged over the entire samples. The outcomes demonstrate the ability IPTM in predicting the author, recipient, and timetsamps of email. \textbf{Further comments after we conduct experiment again.}
+ \begin{figure}[h]
+ 	\centering
+	\includegraphics[width=0.5\textwidth]{plots/Dare_PPE_35.pdf}  
+	\includegraphics[width=0.5\textwidth]{plots/Enron_PPE_full.pdf}  
+ 	\caption{Average AUC, F1 score, MAE: (\textit{top}) Dare County email network. (\textit{bottom}) Enron dataset.}
+ 	 	\label{fig:PPE}	
+ 	 \end{figure}
 \subsection{Topic Coherence}\label{subsec:Topic Coherence}
-Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to test whether the IPTM's incorporation of network features improves the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using the latent dirichlet allocation (LDA). Instead of re-fit the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which simply makes the IPTM reduced to LDA in terms of topic assignments by unlinking the text and networks. For each model, we varied the number of topics from 1 to 100 and draw five samples from the joint posterior distribution over the latent variable. We evaluated the topics resulting from each sample and averaged over the five samples, where the results are shown in Figure 1. Combined with the results in Section \ref{subsec:Tie Prediction}, this result demonstrates that the IPTM can achieve good predictive performance while producing coherent topics. 
+Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to test whether the IPTM's incorporation of network features improves the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using the latent dirichlet allocation (LDA). Instead of re-fit the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which simply makes the IPTM reduced to LDA in terms of topic assignments by unlinking the text and networks. For each model, we varied the number of topics from 1 to 100 and draw five samples from the joint posterior distribution over the latent variable. We evaluated the topics resulting from each sample and averaged over the five samples, where the results are shown in Figure \ref{fig:topic}. Combined with the results in Section \ref{subsec:Tie Prediction}, this result demonstrates that the IPTM can achieve good predictive performance while producing coherent topics. 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width = 0.49\textwidth]{plots/topic_coherence.pdf}
+	\includegraphics[width = 0.5\textwidth]{plots/topic_coherence.pdf}
 	\caption{Average topic coherence scores: (\textit{left}) Dare County email network. (\textit{right}) Enron dataset.}
+	\label{fig:topic}
 	\end{figure}
 \subsection{Posterior Predictive Checks}
-We finally perform posterior predictive checks \cite{rubin1984bayesianly} in order to evaluate the appropriateness of the model specification for the Dare County email network. For the test of goodness-of-fit in terms of network dynamics, we defined multiple network statistics that summarize meaningful aspects of the Dare County email networks: indegree distribution for author activities, outdegree distribution for recipient activities, recipient size distribution, document time-increment distributions, the edgewise shared partner distribution, and the geodesic distance distribution. For content-wise goodness-of-fit, we employed mutual information (MI) in \cite{mimno2011bayesian}, which is often used to evaluate ``bag of words" model assumptions. We then generated 1,000 synthetic networks and texts from the posterior predictive distribution implied by the IPTM and Dare County email network.
+We finally perform posterior predictive checks \cite{rubin1984bayesianly} in order to evaluate the appropriateness of the model specification for the Dare County email network. Formally, we generated entirely new data, by simulating $\{(a_{d}, \boldsymbol{r}_{d}, t_{d}, \boldsymbol{w}_{d})\}_{d=1}^D$ from the genenerative process in Section \ref{subsec:Content generating process} and \ref{subsec:Tie generating process}, conditional upon a set of inferred parameter values from the inference in Section \ref{sec:Inference}. For the test of goodness-of-fit in terms of network dynamics, we defined multiple network statistics that summarize meaningful aspects of the Dare County email networks: indegree distribution for author activities, outdegree distribution for recipient activities, recipient size distribution, document time-increment distributions, the edgewise shared partner distribution, and the geodesic distance distribution. For content-wise goodness-of-fit, we employed mutual information (MI) in \cite{mimno2011bayesian}, which is often used to evaluate ``bag of words" model assumptions. We then generated 1,000 synthetic networks and texts from the posterior predictive distribution implied by the IPTM and Dare County email network.
 We applied each discrepancy function to each synthetic network to yield the distributions over the values of the six network statistics and MI. If the model is appropriate, the observed data should not be an outlier with respect to distributions of new data drawn from the posterior predictive distribution. 
+
+Figure \ref{fig:PPC} illustrates the result of posterior predictive checks, showing IPTM's goodness of fit for Dare County data. The results reveal that IPTM captures some important work features of the data, including spreadness and transitivity. \textbf{Further comments after we conduct PPC again.}
 	\begin{figure}[h]
 		\centering
-		\includegraphics[width = 0.49\textwidth]{plots/PPC_plot.pdf}
+		\includegraphics[width = 0.5\textwidth]{plots/PPC_plot.pdf}
 		\caption{Posterior predictive checks for the Dare County email network: (a) outdegree, (b) indegree, (c) recipient size, (d) QQplot of time-increments, (e) geodesic distance, and (f) edgewise shared partners.}
+		\label{fig:PPC}
 	\end{figure}
 \section{Conclusions}
 The IPTM is, to our knowledge, the first model to be capable of jointly modeling the author, recipients, timestamps and contents in time stamped text-valued networks. The IPTM incorporates innovative components, including the modeling of multicast tie formation and the conditioning of ERGM style network generative features on topic-based content. The application to North Carolina county government email data demonstrates, among other capabilities, the effectiveness at the IPTM in separating out both the content and relational structure underlying the normal day-to-day function of an organization and the management of a highly time-sensitive event---Hurricane Sandy. The IPTM is applicable to a variety of networks in which ties are attributed with textual documents. These include, for example, economic sanctions sent between countries and legislation attributed with sponsors and co-sponsors. 
