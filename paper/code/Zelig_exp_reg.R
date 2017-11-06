@@ -359,3 +359,47 @@ what = summary(z.out, t = Daresurv$Y, fn = mean.gengamma)
 	
 	
 	
+attach(Daresurv)	
+hi = lm(Y~D+W)
+agam1 <- glm(Y~D+W, family = gaussian(link = "identity"), control = glm.control(maxit = 1000), start = as.numeric(coef(hi)))
+
+agam <- glm(Y~D+W, family = Gamma(link = "identity"), control = glm.control(maxit = 1000), start = as.numeric(coef(agam1)))
+library(MASS)
+myshape<- gamma.shape(agam)
+gampred <- predict(agam, type = "response", se =T, dispersion = 1/myshape$alpha)
+summary(agam, dispersion = 1/myshape$alpha)
+
+quantileMat <- predict(agam,type="response",se =T)$fit
+
+
+all= c(quantileMat, Daresurv$Y)
+ uniqueValues = quantile(all,seq(0, 1, length = 100))
+    qx1 = numeric(length(uniqueValues))
+  	qx2 = numeric(length(uniqueValues))
+	for (j in 1:length(uniqueValues)) {
+  		qx1[j] = mean(quantileMat <= uniqueValues[j])
+  		qx2[j] = mean(Daresurv$Y<= uniqueValues[j])
+  	}
+qqplot(x = qx1,
+           y = qx2,
+           ylim = c(0, 1),
+           xlim = c(0, 1),
+           ylab = "Observed",
+           xlab = "Simulated",
+           col = "blue",
+           pch = 19,
+           cex = 0.25,
+           main = "sender+X+W+D (Lognormal)",
+           cex.lab = 0.25,
+           cex.axis = 0.25,
+           cex.main = 0.5)
+    abline(0, 1, lty = 1, col = "red", lwd = 1)
+    
+
+agam <- glm(Y~D+W, family = Gaussian(link = "log"))
+library(MASS)
+myshape<- gamma.shape(agam)
+gampred <- predict(agam, type = "response", se =T)
+summary(agam, dispersion = 1/myshape$alpha)
+plot(1:1814, gampred$fit)
+lines(Daresurv$Y, col = 'red')
