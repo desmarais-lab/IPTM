@@ -122,7 +122,7 @@ hist(c(indegree), freq = FALSE,  ylim = c(0, 0.003))
 lines(density(o_indegree, from = 0), col = 'red')
 
 
-par(mar=c(2, 3, 1, 1), mfrow=c(3,2),
+par(mar=c(4, 4, 1, 1), mfrow=c(3,2),
      oma = c(1, 1, 0.5, 0.3))
 sortedoutdegree = sort(o_outdegree, decreasing = TRUE)
 outdegree = outdegree[, as.numeric(names(sortedoutdegree))]
