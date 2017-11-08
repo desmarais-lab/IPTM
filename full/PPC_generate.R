@@ -12,7 +12,7 @@ for (n in 1:length(Dare$edge)){
 }
 Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
-for (i in 2) {
+for (i in 1:5) {
     filename = paste0("Dare_full_",2,"_",25,"_ver",i,".RData")
 	load(filename)
 	nIP = 2
