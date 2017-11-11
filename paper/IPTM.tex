@@ -388,22 +388,26 @@ This work was supported in part by the University of Massachusetts Amherst Cente
   	 \end{equation*}
   	 This is straightforward to verify by looking at 
   	 \begin{equation*}
+  	   	 \footnotesize
   	 \begin{aligned}
   &P(u_{idj}=1|\boldsymbol{u}_{id[-j]}, \delta, \boldsymbol{\lambda}_{id})
   	 =\frac{ \exp{\Big(\delta+\log(\lambda_{idj})\Big)}}{\exp{\Big(\delta+\log(\lambda_{idj})\Big)} + 1}.\end{aligned}\end{equation*}
   	 We denote the logistic-Bernoulli normalizing constant as $Z^{l}(\delta,\boldsymbol{\lambda}_{id})$, which is defined as 
   	 \begin{equation*}
+  	   	 \footnotesize
   	 Z^{l}(\delta,\boldsymbol{\lambda}_{id})=\sum_{\boldsymbol{u}_{id} \in [0,1]^{A}} \exp\Big\{\sum_{j\neq i} \Big(\delta+\log(\lambda_{idj})\Big)u_{idj}\Big\}.
   	 \end{equation*}
   	 
   	 Now, since 
   	 \begin{equation*}
+  	   	 \footnotesize
   	 \begin{aligned}
   	 &\exp\Big\{ \mbox{log}\Big(\text{I}(\lVert \boldsymbol{u}_{id} \rVert_1 > 0)\Big) + \sum_{j \neq i} \Big(\delta+\mbox{log}(\lambda_{idj})\Big)u_{idj} \Big\}\\&= \exp\Big\{  \sum_{j \neq i} \Big(\delta+\mbox{log}(\lambda_{idj})\Big)u_{idj} \Big\},
 \end{aligned}
  	 \end{equation*}
  	  except when $\lVert \boldsymbol{u}_{id} \rVert_1=0$, we note that 
   	 \begin{equation*}
+  	   	 \footnotesize
   	 \begin{aligned}
   	 Z(\delta,\boldsymbol{\lambda}_{id})& = Z^{l}(\delta,\boldsymbol{\lambda}_{id}) -  \exp\Big\{ \sum\limits_{\forall u_{idj}=0}\Big(\delta+\log(\lambda_{idj})\Big)u_{idj} \Big\}
   	 \\& = Z^{l}(\delta,\mbox{log}(\lambda_{i}^{(d)})) -  1.
@@ -418,11 +422,13 @@ This work was supported in part by the University of Massachusetts Amherst Cente
   	  \end{equation*}
   	  Then, we have 
   	    	 \begin{equation*}
+  	    	   	 \footnotesize
   	    	 \begin{aligned}
   	& Z^{l}(\delta,\boldsymbol{\lambda}_{id}) &= \frac{1}{\prod\limits_{j \neq i}   \frac{ \exp\{-(\delta+\mbox{log}(\lambda_{idj}))\}}{\exp\{-(\delta+\mbox{log}(\lambda_{idj}))\} + 1}}.
   	 \end{aligned}  
   	 \end{equation*}
   	 The closed form expression for the normalizing constant under the non-empty Gibbs measure is  \begin{equation*}
+  	   	 \footnotesize
   	 \begin{aligned}Z(\delta,\boldsymbol{\lambda}_{id}) = \prod_{j \neq i } \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{idj})\} + 1\Big)-1.
   	 \end{aligned}  
   	 \end{equation*}
@@ -433,6 +439,7 @@ This work was supported in part by the University of Massachusetts Amherst Cente
   	  
   	  For each latent author $i$, we are going to resample $u_{idj}$, which is the $j^{th}$ element of the binary vector $\boldsymbol{u}_{id}$, one at a time with random order. The full conditional probability of $u_{idj}$ is:
   	  \begin{equation*}
+  	    	 \footnotesize
   	  \begin{aligned}
   	  p(u_{idj}|\boldsymbol{u}_{id\backslash j},  \boldsymbol{z},\boldsymbol{l},\boldsymbol{b}, \delta)&\propto p(u_{idj}, \boldsymbol{u}_{id\backslash j}|\boldsymbol{z}_d,\boldsymbol{l},\boldsymbol{b}, \delta)
   	  \\&\propto p(\boldsymbol{u}_{id}|\delta, \boldsymbol{\lambda}_{id}),
@@ -443,6 +450,7 @@ This work was supported in part by the University of Massachusetts Amherst Cente
   	  
   	  To be more specific, since $u_{idj}$ could be either 0 or 1, we divide into two cases as below:
   	  \begin{equation*}
+  	    	 \footnotesize
   	  \begin{aligned}
   	  &p(u_{idj}=1| \boldsymbol{u}_{id\backslash j}, \boldsymbol{z},\boldsymbol{l},\boldsymbol{b}, \delta)\\& \propto \frac{\mbox{exp}\Big\{\log(1) +\sum\limits_{j \neq i } \Big(\delta+\mbox{log}(\lambda_{idj})\Big){u}_{id[j=1]}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})}  
   	  \\& \propto \mbox{exp}\Big\{\delta+\mbox{log}(\lambda_{idj})\Big\},
@@ -450,6 +458,7 @@ This work was supported in part by the University of Massachusetts Amherst Cente
   	  \end{equation*}
   	  where ${u}_{id[j=1]}$ meaning that the $j^{th}$ element of $\boldsymbol{u}_{id}$ is fixed as 1 (thus making $\mbox{log}\big(\text{I}(\lVert\boldsymbol{u}_{id}\rVert_1 > 0 )\big) = 0$). On the other hand, 
   	  \begin{equation*}
+  	    	 \footnotesize
   	  \begin{aligned}
   	  &p(u_{idj}=0| \boldsymbol{u}_{id\backslash j}, \boldsymbol{z},\boldsymbol{l},\boldsymbol{b}, \delta)\\& \propto \frac{ \mbox{exp}\Big\{\mbox{log}\big(\text{I}(\lVert\boldsymbol{u}_{id}\rVert_1 > 0 )\big) +\sum\limits_{j \neq i } \Big(\delta+\mbox{log}(\lambda_{idj})\Big){u}_{id[j=0]}\Big\} }{Z(\delta,\boldsymbol{\lambda}_{id})}
   	  \\& \propto \mbox{exp}\Big\{\mbox{log}\big(\text{I}(\lVert\boldsymbol{u}_{id}\rVert_1 > 0 )\big) \Big\},
@@ -461,6 +470,7 @@ This work was supported in part by the University of Massachusetts Amherst Cente
 Next, we resample the topic assignments, one words in a document at a time. Since our content generative process exactly follows that of Latent Dirichlet allocation \citep{Blei2003}, we use 
  \iffalse from its conditional distribution in :
   	  \begin{equation*}
+  	    	 \footnotesize
   	  \begin{aligned}
   	  & p(\boldsymbol{w}_{d}, \boldsymbol{z}_{d}|\boldsymbol{w}_{\backslash d}, \boldsymbol{z}_{\backslash d},\alpha,  \beta, \boldsymbol{m}) \\& \propto \prod_{n=1}^{{N_d}}p(z_{dn}=k, w_{dn}=w| \boldsymbol{w}_{\backslash dn}, \boldsymbol{z}_{\backslash dn},\alpha,  \beta, \boldsymbol{m}),
   	  \end{aligned}
@@ -468,6 +478,7 @@ Next, we resample the topic assignments, one words in a document at a time. Sinc
   	  where the subsscript $\backslash d$ and $\backslash dn$ denote the exclusion of document $d$ and $n^{th}$ element in document $d$, respectively.  
   	  To obtain the Gibbs sampling equation, we apply Bayes' theorem and Gamma identity $\Gamma(k+1)=k\Gamma(k)$,
   	  \begin{equation*}
+  	    	 \footnotesize
   	  \begin{aligned}
   	  & p(z_{dn}=k, w_{dn}=w| \boldsymbol{w}_{\backslash dn}, \boldsymbol{z}_{\backslash dn},\alpha,  \beta, \boldsymbol{m})\\& \propto 
   	  \frac{p(\boldsymbol{w},\boldsymbol{z}|\alpha, \beta, \boldsymbol{m})}{p(\boldsymbol{w}_{\backslash dn}, \boldsymbol{z}_{\backslash dn}|\alpha, \beta, \boldsymbol{m})}\\& \propto \frac{\prod_{k=1}^{K}\frac{\prod_{w=1}^W\Gamma(N_{wk}^{WK}+\beta/V)}{\Gamma(\sum_{w=1}^WN_{wk}^{WK}+\beta )}\times\prod_{k=1}^K\frac{\Gamma(N_{k|d}+\alpha m_k)}{\Gamma(N_{\cdot|d}+\alpha)}}{\prod_{k=1}^{K}\frac{\prod_{w=1}^W\Gamma(N_{wk, \backslash dn}^{WK}+\beta/V)}{\Gamma(\sum_{w=1}^WN_{wk, \backslash dn}^{WK}+\beta )}\times\prod_{k=1}^K\frac{\Gamma(N_{k|d, \backslash dn}+\alpha m_k)}{\Gamma(N_{\cdot|d, \backslash dn}+\alpha)}}\\ & \propto 
@@ -478,6 +489,7 @@ Next, we resample the topic assignments, one words in a document at a time. Sinc
   	  \fi
   	  the two sampling equations of LDA:
   	  \begin{equation*}
+  	    	 \footnotesize
   	  \begin{aligned}
   	  &p(z_{dn}=k | w_{dn}=w,\boldsymbol{w}_{\backslash dn}, \boldsymbol{z}_{\backslash dn},\alpha, \boldsymbol{m})\\&\propto
   	  \frac{N_{dk, \backslash dn}+\alpha m_k}{N_d-1+\alpha},
@@ -485,6 +497,7 @@ Next, we resample the topic assignments, one words in a document at a time. Sinc
   	   \end{equation*}
   	   where the subsscript $\backslash d$ and $\backslash dn$ denote the exclusion of document $d$ and $n^{th}$ element in document $d$, respectively, and
   	   \begin{equation*}
+  	     	 \footnotesize
   	   \begin{aligned}  
   	   	  &p(w_{dn}| z_{dn}=k,\boldsymbol{w}_{\backslash dn}, \boldsymbol{z}_{\backslash dn},\beta)\\&\propto
   	   	  \frac{N_{w_{dn}k, \backslash dn}+\frac{\beta}{V}}{N_{k, \backslash dn}+\beta},
@@ -494,6 +507,7 @@ Next, we resample the topic assignments, one words in a document at a time. Sinc
   	  
   	  Now, we re-derive the sampling equation reflecting the dynamic network effects as well:
   	   \begin{equation*}
+  	   \footnotesize
   	   \begin{aligned}
   	   &p(z_{dn}=k | \boldsymbol{z}_{\backslash dn}, \boldsymbol{l}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}, \boldsymbol{w}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}, \alpha, \beta, \boldsymbol{m})\\&\propto
   	   p(z_{dn}=k| \boldsymbol{z}_{\backslash dn}, \alpha, \boldsymbol{m}) p(w_{dn}| z_{dn}=k,\boldsymbol{w}_{\backslash dn}, \boldsymbol{z}_{\backslash dn},\beta) \\&\quad\times\prod_{i=1}^A  p(\boldsymbol{u}_{id}|\boldsymbol{z}_d, \boldsymbol{l}, \boldsymbol{b}, \delta)p({a}_d, \boldsymbol{r}_d, {t}_d|\boldsymbol{u}_d,\boldsymbol{z}_d, \boldsymbol{l}, \boldsymbol{\eta} )\\&\propto
@@ -507,6 +521,7 @@ Next, we resample the topic assignments, one words in a document at a time. Sinc
   	    \subsubsection{Resampling Interaction-Patterns}  \label{subsubsec: Resampling C}
   	   The next variable to resample is the topic-interaction pattern assignments, one topic at a time. We derive the posterior conditional probability for $l_k$ as below:
   	     \begin{equation*}
+  	       	 \footnotesize
   	     \begin{aligned} & 
   	     p(l_k=c|\boldsymbol{l}_{\backslash k}, \boldsymbol{z}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t})\\
   	     &\propto p(l_k=c)\prod_{d=1}^D\prod_{i=1}^A p(\boldsymbol{u}_{id}| \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{b}, \delta) \prod_{d=1}^Dp({a}_d, \boldsymbol{r}_d, {t}_d|\boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}),
@@ -531,6 +546,7 @@ density $Q$ being the multivariate Normal distribution, with a diagonal covarian
 
 When we update the recipient coefficients $\boldsymbol{b} =\{\boldsymbol{b}_c\}_{c=1}^C$, we jointly sample $\delta$ because they share the sampling equations. We accept the new proposed value $\boldsymbol{b}^\prime =\{\boldsymbol{b}^\prime_c\}_{c=1}^C$ and $\delta^\prime$ with probability equal to:
    \begin{equation*}
+     	 \footnotesize
    \begin{split}
    & p(\mbox{Accept})=
    \begin{cases}  \frac{p(\boldsymbol{b}^\prime, \delta^\prime|\boldsymbol{z},  \boldsymbol{l},\boldsymbol{u},  \boldsymbol{\mu}_b, \Sigma_b, \mu_\delta, \sigma^2_\delta)}{p(\boldsymbol{b}, \delta|\boldsymbol{z},  \boldsymbol{l},\boldsymbol{u},  \boldsymbol{\mu}_b, \Sigma_b, \mu_\delta, \sigma^2_\delta)}\quad\text{if}  <1\\
@@ -540,6 +556,7 @@ When we update the recipient coefficients $\boldsymbol{b} =\{\boldsymbol{b}_c\}_
    \end{equation*}
    After factorization, we get 
      	     \begin{equation*}
+     	    \footnotesize
      	     \begin{aligned} 
      	     &\frac{p(\boldsymbol{b}^\prime, \delta^\prime|\boldsymbol{z},  \boldsymbol{l},\boldsymbol{u},  \boldsymbol{\mu}_b, \Sigma_b, \mu_\delta, \sigma^2_\delta)}{p(\boldsymbol{b}, \delta|\boldsymbol{z},  \boldsymbol{l},\boldsymbol{u},  \boldsymbol{\mu}_b, \Sigma_b, \mu_\delta, \sigma^2_\delta)}
      	     \\& = \frac{p(\boldsymbol{b}^\prime|\boldsymbol{\mu}_b, \Sigma_b) p(\delta^\prime|\mu_\delta, \sigma^2_\delta)\prod\limits_{d=1}^D\prod\limits_{i=1}^A p(\boldsymbol{u}_{id}| \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{b}^\prime, \delta^\prime)}{p(\boldsymbol{b}|\boldsymbol{\mu}_b, \Sigma_b) p(\delta|\mu_\delta, \sigma^2_\delta)\prod\limits_{d=1}^D\prod\limits_{i=1}^A p(\boldsymbol{u}_{id}| \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{b}, \delta)},
@@ -549,9 +566,10 @@ When we update the recipient coefficients $\boldsymbol{b} =\{\boldsymbol{b}_c\}_
      	       
   For the timing coefficients $\boldsymbol{\eta} =\{\boldsymbol{\eta}_c\}_{c=1}^C$, we also jointly sample the variance parameter, only if the specified distribution requires any parameter that controls variance (\textit{e.g.} lognormal or Gamma). In this section, we assume lognormal distribution, which we used in our application, and define the variance parameter with $\sigma_\tau^2$ from the prior $\sigma_\tau^2 \sim \mbox{Inverse-Gamma}(a_\tau, b_\tau)$. Then, the acceptance probability $p(\mbox{Accept})$ becomes
     \begin{equation*}
+    \footnotesize
     \begin{aligned}
        &\frac{p(\boldsymbol{\eta}^\prime,\sigma_\tau^{2\prime}|  \boldsymbol{z},\boldsymbol{l}, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t},\boldsymbol{\mu}_\eta, \Sigma_\eta, a_\tau, b_\tau)}{p(\boldsymbol{\eta}, \sigma_\tau^{2}|\boldsymbol{z},\boldsymbol{l}, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t},\boldsymbol{\mu}_\eta, \Sigma_\eta, a_\tau, b_\tau)}
-       \\& =\frac{p(\boldsymbol{\eta}^\prime|\boldsymbol{\mu}_\eta, \Sigma_\eta) p(\sigma_\tau^{2\prime}|a_\tau, b_\tau)\prod\limits_{d=1}^D p({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}^\prime, \sigma_\tau^{2\prime})}{p(\boldsymbol{\eta}|\boldsymbol{\mu}_\eta, \Sigma_\eta) p(\sigma_\tau^2|a_\tau, b_\tau)\prod\limits_{i=1}^A p({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}, \sigma_\tau^{2})},
+       \\& =\frac{p(\boldsymbol{\eta}^\prime|\boldsymbol{\mu}_\eta, \Sigma_\eta) p(\sigma_\tau^{2\prime}|a_\tau, b_\tau)\prod\limits_{d=1}^D p({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}^\prime, \sigma_\tau^{2\prime})}{p(\boldsymbol{\eta}|\boldsymbol{\mu}_\eta, \Sigma_\eta) p(\sigma_\tau^2|a_\tau, b_\tau)\prod\limits_{d=1}^Dp({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}, \sigma_\tau^{2})},
     \end{aligned}
     \end{equation*}
        where $p(\boldsymbol{\eta}|\boldsymbol{\mu}_\eta, \Sigma_\eta)$ is the product of $\boldsymbol{\eta}_c\sim N(\mu_{\eta}, \Sigma_{\eta})$ over the interaction patterns $c =1,\ldots, C$, $p(\sigma_\tau^{2}|a_\tau, b_\tau)$ is calculated from inverse-Gamma density with $a_\tau$ and $b_\tau$, and $p({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}, \sigma_\tau^{2})$ is again the same as what is used in Section \ref{subsubsec: Resampling C}. 
@@ -573,11 +591,13 @@ When we update the recipient coefficients $\boldsymbol{b} =\{\boldsymbol{b}_c\}_
     
     Then, for each time interval $l=1,\ldots,3$:
     \begin{itemize}
+    	  	 \footnotesize
     	\item [1.]  $\mbox{\textbf{outdegree}}^l_{id\cdot c}=\sum\limits_{d \in I_{d}^{l}}\pi_{dc}I\{i\rightarrow \forall j\}$
     	\item [2.] $\mbox{\textbf{indegree}}^l_{\cdot dj c}=\sum\limits_{d \in I_{d}^{l}}\pi_{dc}I\{\forall i \rightarrow j\}$	 	 	
     	\item [3.]  $\mbox{\textbf{send}}^l_{idjc}=\sum\limits_{d \in I_{d}^{l}}\pi_{dc} I\{i\rightarrow j\}$
     	\item [4.] $\mbox{\textbf{receive}}^l_{idjc}=\sum\limits_{d\in I_{d}^{l}}\pi_{dc} I\{j\rightarrow i\}$
     \end{itemize}
+    \normalsize
     Next, we define four triadic statistics involving pairs of messages, which are analogous to 2-path statistics commonly used in the network science literature. While \cite{PerryWolfe2012} adapted full sets of triadic statistics for each combination of time intervals (e.g. $3 \times 3=9$), we maintain 3 intervals per each statistic, by defining $3 \times 3$ time windows and sum the combination-specific statistics based on the interval where the triads are closed (Refer to Figure 6). As a result, our interval-adjusted definitions of triadic effects become
     \begin{itemize}
     	\footnotesize
@@ -648,12 +668,14 @@ When we update the recipient coefficients $\boldsymbol{b} =\{\boldsymbol{b}_c\}_
      \subsubsection{Prediction using Regressions} \label{subsubsec: Prediction using Regressions}
      We compare the IPTM to the comparative model that is built upon two regression models, which we combine established existing models to make comparable predictions using the same inputs. We train two separate models to use in predicting the recipients and timing of document $d^*$, respectively. These models are selected to closely mirror the structure of the corresponding components of the IPTM. In each model the documents used for training include $d=1,\ldots, (d^*-1)$. The model of the recipients is a logistic regression model in which the dependent variable is the observed value of $\boldsymbol{r}_{d}$. The same network statistics are used as the covariates, with all $c=1$ (\textit{i.e. } all past interactions are within the single interaction pattern). Specifically, the model used for predicting recipients of document $d^*$ have the form 
      \begin{equation*}
+       	 \footnotesize
      p(u_{id^*j}=1|\boldsymbol{b}, \delta)=\frac{1}{1+\exp\left(-(\delta+\boldsymbol{b}^T\boldsymbol{x}_{id^*j})\right)}.
      \label{eqn:predrec}
      \end{equation*}
      
      The model of timing is via generalized linear model in which the dependent variable is $t_{d}$. It is the same approach as the IPTM, except that we fix $c=1$. In other words, we use
      \begin{equation*}
+       	 \footnotesize
      E(\tau_{id^*}|\boldsymbol{u}_{d^*}, \boldsymbol{\eta}, \sigma_\tau^2) = g^{-1}(\boldsymbol{\eta}^T\mbox{GeomMean}(\{\boldsymbol{y}_{id^*j}\}_{j:u_{id^*j = 1}})),
      \label{eqn:predtime}
      \end{equation*}
@@ -689,6 +711,7 @@ When we update the recipient coefficients $\boldsymbol{b} =\{\boldsymbol{b}_c\}_
      
      Formally, we generate new data, which we denote ($\boldsymbol{a}^*, \boldsymbol{r}^*, \boldsymbol{t}^*, \boldsymbol{w}^*$), conditional upon a set of inferred parameter values from
      \begin{equation*}
+       	 \footnotesize
  p(\boldsymbol{a}^*, \boldsymbol{r}^*, \boldsymbol{t}^*, \boldsymbol{w}^* |\boldsymbol{z},  \boldsymbol{l}, \boldsymbol{b}, \boldsymbol{\eta}, \delta, \boldsymbol{u}),
      \label{eqn:PPC}
      \end{equation*}

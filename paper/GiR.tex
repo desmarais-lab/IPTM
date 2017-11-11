@@ -53,7 +53,8 @@
 \maketitle
 \begin{abstract}
 	
-	\noindent Software development is integral to the objective of applying the IPTM ---the interaction-partitioned topic model--- to real world data. Code review is a valuable process in any research computing context, and the prevalence of software bugs in statistical software is well documented \citep[e.g., ][]{altman2004numerical,mccullough2009accuracy}.  With highly complex models such as the IPTM, there are many ways in which software bugs can be introduced and go unnoticed. As such, we present a joint analysis of the integrity of our generative model, sampling equations, and software implementation for the IPTM.  
+	\noindent Software development is integral to the objective of applying the IPTM ---the interaction-partitioned topic model--- to real world data. Code review is a valuable process in any research computing context, and the prevalence of software bugs in statistical software is well documented \citep[e.g., ][]{altman2004numerical,mccullough2009accuracy}.  With highly complex models such as the IPTM, there are many ways in which software bugs can be introduced and go unnoticed. As such, we present a joint analysis of the integrity of our generative model, sampling equations, and software implementation for the IPTM. ``Getting it Right" \citep{geweke2004getting} test is very simple to implement, yet very powerful because it amplifies subtle
+	misktakes, either in the sampling equations or code. We hope that all researchers should be using GiR whenever they derive and implement Markov Chain Monte Carlo (MCMC) inference for a Bayesian latent variable model.
 \end{abstract}
   \section{Getting It Right (GiR) Test}
  \cite{geweke2004getting} introduced the ``Getting it Right'' (GiR) test---a joint distribution test of posterior simulators which can detect errors in sampling equations as well as coding errors.  The test involves comparing the distributions of variables simulated from two joint distribution samplers, which we call ``forward" and ``backward" samples. The forward sampler draws unobservable variables from the prior and then generates the observable data conditional on the unobservables. The backward sampler alternates between the inference and an observables simulator, by running the inference code on observable data to obtain posterior estimates of the unobervable variables and then re-generating the observables given the inferred unobservables. The backward sampler is initialized by running an iteration of inference on observables drawn directly from the prior. Since the only information on which both the forward and backward samplers are based is the prior, if the sampling equations are correct and the code is implemented without bugs, each variable should have the same distribution in the forward and backward samples. In other words, if there are no mistakes, then the
@@ -135,7 +136,7 @@ In order to draw forward samples, we first draw all unobservable variables, \tex
                   	
                   	\textbf{Inference on one forward sample}\\
                   	\For{o = 1 to O}{
-                  			Run inference code according to Algorithm 1 in IPTM paper (Appendix B.5)\\
+                  			Run inference code according to Algorithm 1 in IPTM paper (see Section 3)\\
                   			(NOTE: ensure full convergence on all latent variables)
                   		}
                   	\vspace{4mm}              	             
@@ -191,88 +192,74 @@ In order to draw forward samples, we first draw all unobservable variables, \tex
                   \end{algorithm}
         
 \section{Statistics to Use}
-To compare the forward and backward samples, we need some discrepancy functions that measure various properties of generated data. For each forward and backward sample that consists of $D$ number of documents, we save these statistics:
+To compare the forward and backward samples, we need some discrepancy functions that measure important properties of generated data. It is recommended to specify various statistics such that we can not only compare the observables (\textit{i.e.} generated data), but also compare the unobservables (\textit{i.e.} latent variables).  For each forward and backward sample from the IPTM that consists of $D$ number of documents, we save the statistics below.
       \begin{itemize}
-      	\item[1.] Mean of network effect parameters $(\boldsymbol{b}_p^{(1)},...,\boldsymbol{b}_p^{(C)})$ for every $p = 1,...,P$,
-      	      	\item[2.] Network statistic `send' calculated for the last $D^{th}$ document for every $l=1,...,3$
-      	      	\item[3.] $\delta$ value used to generate the samples
-      	      	\item[4.] Mean of the observed recipient size $ \lVert J_o^{(d)} \rVert_1 $ across $d=1,...,D$,
-      	\item[5.] Mean of time-increments $t^{(d)}-t^{(d-1)}$ across $d=1,...,D$,
-      	\item[6.] Mean topic-interaction pattern assignment $c_k$ across $k=1,...,K$, 
-      	\item[7.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$,
-      	\item[8.] Number of tokens assigned to each topic $k=1,...,K$, 
-       \item[9.] Number of tokens assigned to each unique word type $w=1,...,W$,
-         \item[10.] Time-increment parameter $\boldsymbol{\eta}$ used to generate the samples, for every $q=1,..,Q$
-         \item[11.] Log-normal variance parameter $\sigma_T^2$ used to generate the samples
-      	      \end{itemize}
-
+      	\item[1.] Mean of interaciton-pattern-specific recipient coefficients $(\boldsymbol{b}_1,\ldots,\boldsymbol{b}_C)$,
+      	\item[2.] Mean of interaciton-pattern-specific timestamp coefficients $(\boldsymbol{\eta}_1,\ldots,\boldsymbol{\eta}_C)$,
+      	\item[3.] Recipient size parameter $\delta$ value used to generate forward/backward samples
+      	\item[4.] Timestamp variance parameter $\sigma_\tau^2$ used to generate the samples
+        \item[5.] Mean of the observed recipient size $ \lVert\boldsymbol{r}_d\rVert_1 $ across $d=1,...,D$,
+      	\item[6.] Mean of time-increments $t_d-t_{d-1}$ across $d=1,...,D$,
+      	\item[7.] Mean topic-interaction pattern assignment $l_k$ across $k=1,...,K$, 
+      	\item[8.] Number of tokens in topics assigned to each interaction pattern $c=1,...,C$,
+      	\item[9.] Number of tokens assigned to each topic $k=1,...,K$, 
+       \item[10.] Number of tokens assigned to each unique word type $w=1,...,W$,
+      	 \end{itemize}
+where the statistics 1--4 directly measure the unobservables, while the rest 5--10 examine some features of the observed data.
 \section{Results}
-\subsection{Schein Test}      	      
+To keep the computational burden of re-running thousands of rounds of inference manageable, we ran the GiR using a relatively small artificial sample, consisting of 5 documents, 4 tokens per document, 4 actors, 5 unique word types, 2 interaction patterns, and 4 topics per each forward or backward samples. For detailed settings including the prior specifications, see Appendix \ref{subsec: GiR implementation}.
+We generated $10^5$ sets of forward and backward samples, and then calculated 1,000 quantiles for each of the coefficients, $\boldsymbol{b}$ and $\boldsymbol{\eta}$, and 50 quantiles for the rest of the statistics. We also calculated t-test and Mann-Whitney test p-values in order to test for differences in the distributions generated in the forward and backward samples. Before we calculated these statistics, we thinned our samples by taking every 9th sample starting at the 10,000th sample for a resulting sample size of 10,000, in order to reduce the autocorrelation in the Markov chains. In each case, if we observe a large p-value, this gives us evidence that the distributions generated under forward and backward sampling have the same locations. 
 
-
-\subsection{GiR Test}      	 
-These are our results. All the blue dots lie on the
-45-degree red line, so our derivations and code pass the test. I do
-want to note that they didn't originally pass the test. In fact, when
-Bruce presented our work at PolMeth they were still failing! But we've
-now tracked down and fixed the mistakes that were responsible.
-
-To keep the computational burden of re-running thousands of rounds of inference manageable, we run GiR using a relatively small artificial sample, consisting of 5 documents, 4 tokens per document, 4 actors, 5 unique word types, 2 interaction patterns, and 4 topics per each forward or backward samples. For detailed settings including the prior specifications, see Appendix \ref{subsubsec: GiR implementation}. 
-We generated $10^5$ sets of forward and backward samples, and then calculated 1,000 quantiles for each of the network effect parameters, and 50 quantiles for the rest of the statistics. We also calculated t-test and Mann-Whitney test p-values in order to test for differences in the distributions generated in the forward and backward samples. Before we calculated these statistics, we thinned our samples 
-by taking every 9th sample starting at the 10,000th sample for a resulting sample size of 10,000, in order to reduce the autocorrelation in the Markov chains. In each case, if we observe a large p-value, this gives us evidence that the distributions generated under forward and backward sampling have the same locations. We depict the GiR results using probability-probability (PP) plots. To compare two samples with a PP-plot we calculate the empirical quantile in each sample of a set of values observed across the two samples, then plot the sets of quantiles in the two samples against each other. If the two samples are from equivalent distributions, the quantiles should line up on a line with zero $y$-intercept, and unit slope (i.e., a 45-degree line). The GiR test results are depicted in Figure 2, which show that we pass the test on every statistic.
+We depict the GiR results using probability-probability (PP) plots. To compare two samples with a PP-plot we calculate the empirical quantile in each sample of a set of values observed across the two samples, then plot the sets of quantiles in the two samples against each other. If the two samples are from equivalent distributions, the quantiles should line up on a line with zero $y$-intercept, and unit slope (\textit{i.e.} a 45-degree line). Figure \ref{fig:PPplot2} presents our results. All the blue dots lie on the
+45-degree red line, so our derivations and code pass the test.
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1\textwidth]{plots/GiReta.pdf} 
-	\label{fig:PPplot}
+	\includegraphics[width=1.1\textwidth]{plots/GiReta.pdf} 
+	\label{fig:PPplot2}
 	\caption{Probability-Probability plot for the 25 GiR test statistics.}
 \end{figure}
-\section{Conclusion} 
-``Getting it Right" test is very simple to implement, yet very powerful because it amplifies subtle
-misktakes, either in the sampling equations or code. We hope that all researchers should be using GiR whenever they derive and implement Markov Chain Monte Carlo (MCMC) inference for a Bayesian latent variable model.
- \clearpage
 \bibliographystyle{apalike}
 \bibliography{IPTM}
 \appendix
  \section*{Appendix}
  \renewcommand{\thesubsection}{\Alph{subsection}}
-         \subsection{Details on Getting It Right Test}\label{subsec:Details on GiR}
-
-        \subsubsection{Intitialization of History $\boldsymbol{x}_t^{(c)}$} \label{subsubsec: Initial history issue}
+  \subsection{GiR Implementation Details} \label{subsec: GiR implementation}
+  While we tried a number of different parameter combinations in the course of testing, we outline our standard setup. We selected the following parameter values:
+  \begin{itemize}
+  	\begin{minipage}{0.49\textwidth}
+  		\item[-] $D$ (number of documents) = 5
+  		\item[-] $N^{(d)}$ (tokens per document) = 4
+  		\item[-] $A$ (number of actors)= 4
+  		\item[-] $W$ (unique word types) = 5
+  		\item[-] $C$ (number of interaction patterns) = 2
+  		\item[-] $K$ (number of topics) = 4
+  		\item[-] $\alpha$ (Dirichlet concentration prior) = 2
+  		\item[-] $\boldsymbol{m}$ (Dirichlet base prior) = $\boldsymbol{u}$ 
+  		\item[-] $\beta$ (Dirichlet concentration prior)= 2
+  		\item[-] $\boldsymbol{n}$ (Dirichlet base prior) = $\boldsymbol{u}$
+  		\item[-] netstat = ``intercept" and ``dyadic"
+  	\end{minipage}
+  	\begin{minipage}{0.49\textwidth}
+  		\item[-] prior for $\boldsymbol{b}^{(c)}$: $\mu_{\boldsymbol{b}^{(c)}} = (-3,\boldsymbol{0}_6), \Sigma_{\boldsymbol{b}^{(c)}} = 0.05\times I_7$
+  		\item[-] prior for $\delta$: $\mu_\delta = 2.5$, $\sigma^2_\delta = 0.0001$
+  		\item[-] prior for $\eta$: $\mu_\eta = 2.5$, $\sigma^2_\eta = 0.0001$
+  		\item[-] $I$ (outer iteration) = 5
+  		\item[-] $n_1$ (hyperparamter optimization) = 0
+  		\item[-] $n_2$ (M-H sampling iteration of $\mathcal{B}$) = 5500
+  		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 500
+  		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 5
+  		\item[-] $\sigma_{Q1}^2$ (proposal variance for $\mathcal{B}$) = 0.1
+  		\item[-] $n_3$ (M-H sampling iteration of $\delta$) = 500
+  		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 0.0002
+  	\end{minipage}
+  \end{itemize}        
+        \subsection{Intitialization of History $\boldsymbol{x}_t^{(c)}$} \label{subsec: Initial history issue}
         Considering that our network statistics $\boldsymbol{x}_t^{(c)}$ are generated as a function of the network history, it is necessary to use the same initial value of $\boldsymbol{x}_t^{(c)}$ across the forward and backward samples. If not, when we generate fixed number of documents, we cannot guarantee the same number of documents used for the inference, since only the documents with its timestamp greater than 384 hours are used in the inference. In the extreme cases, we may end up with two types of failure:
         \begin{itemize}
         	\item[1.] Zero document generated after 384 hours (i.e. $t^{(10)} < 384$), making no documents to be used for inference,
         	\item[2.] Zero document generated before 384 hours (i.e. $t^{(1)} > 384$), making the estimate of $\mathcal{B}$ totally biased since $\forall  \boldsymbol{x}_t^{(c)}(i, j) = 0$. 
         \end{itemize}
         Therefore, we fix the initial state of $\boldsymbol{x}_t^{(c)}$ over the entire GiR process. Specifically, we fix some baseline documents where the timestamps are all smaller than 384 and use as an input for forward sampling, backward sampling, and the inference. Then, in the forward and backward generative process, we set the starting point of the timestamp as $t^{(0)} = 384$ and generate fixed number of documents given the initial $\boldsymbol{x}_{t^{(0)} = 384}^{(c)}$ so that we can acheive consistency in the generated number of documents with $t^{(d)} > 384$.
-        \subsubsection{GiR Implementation Details} \label{subsubsec: GiR implementation}
-        While we tried a number of different parameter combinations in the course of testing, we outline our standard setup. We selected the following parameter values:
-        \begin{itemize}
-        	\begin{minipage}{0.49\textwidth}
-        		\item[-] $D$ (number of documents) = 5
-        		\item[-] $N^{(d)}$ (tokens per document) = 4
-        		\item[-] $A$ (number of actors)= 4
-        		\item[-] $W$ (unique word types) = 5
-        		\item[-] $C$ (number of interaction patterns) = 2
-        		\item[-] $K$ (number of topics) = 4
-        		\item[-] $\alpha$ (Dirichlet concentration prior) = 2
-        		\item[-] $\boldsymbol{m}$ (Dirichlet base prior) = $\boldsymbol{u}$ 
-        		\item[-] $\beta$ (Dirichlet concentration prior)= 2
-        		\item[-] $\boldsymbol{n}$ (Dirichlet base prior) = $\boldsymbol{u}$
-        		\item[-] netstat = ``intercept" and ``dyadic"
-        	\end{minipage}
-        	\begin{minipage}{0.49\textwidth}
-        		\item[-] prior for $\boldsymbol{b}^{(c)}$: $\mu_{\boldsymbol{b}^{(c)}} = (-3,\boldsymbol{0}_6), \Sigma_{\boldsymbol{b}^{(c)}} = 0.05\times I_7$
-        		\item[-] prior for $\delta$: $\mu_\delta = 2.5$, $\sigma^2_\delta = 0.0001$
-        		\item[-] prior for $\eta$: $\mu_\eta = 2.5$, $\sigma^2_\eta = 0.0001$
-        		\item[-] $I$ (outer iteration) = 5
-        		\item[-] $n_1$ (hyperparamter optimization) = 0
-        		\item[-] $n_2$ (M-H sampling iteration of $\mathcal{B}$) = 5500
-        		\item[-] burn (M-H sampling burn-in of $\mathcal{B}$)= 500
-        		\item[-] thin (M-H sampling thinning of $\mathcal{B}$)= 5
-        		\item[-] $\sigma_{Q1}^2$ (proposal variance for $\mathcal{B}$) = 0.1
-        		\item[-] $n_3$ (M-H sampling iteration of $\delta$) = 500
-        		\item[-] $\sigma_{Q2}^2$ (proposal variance for $\delta$) = 0.0002
-        	\end{minipage}
-        \end{itemize}        
+      
                 \end{document}
 
