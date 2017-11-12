@@ -1,0 +1,42 @@
+library(IPTM2)
+library(FastGP)
+library(MCMCpack)
+set.seed(1234)
+nDocs = 5
+node = 1:4
+vocabulary = c("hi", "hello", "fine", "bye", "what")
+
+nIP = 2
+K = 4
+nwords = 5
+alpha = 2
+mvec = rep(1/4, 4)
+betas = 2
+nvec = rep(1/5,5)
+netstat = c("dyadic")
+P =  3 * (2 * ("dyadic" %in% netstat) + 4 * ("triadic" %in% netstat) + 2 *("degree" %in% netstat))
+prior.b.mean = rep(0, P)
+prior.b.var = 0.05 * diag(P)
+prior.delta = c(-2.5, 0.1)
+sigma_Q = c(0.01, 0.001, 0.01)
+niters = c(3, 5500, 500, 500, 5)
+
+b = lapply(1:nIP, function(IP) {
+    prior.b.mean
+    })
+delta = prior.delta[1]
+eta = exp(prior.delta[1])
+
+currentC = sample(1L:nIP, K, replace = TRUE)
+supportD = gibbs.measure.support(length(node) - 1)
+base.data = GenerateDocs.Gibbs(1000, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, b, delta, eta, currentC, netstat, base.edge = list(),  base.text = list(), base = TRUE, support = supportD) 
+base.edge = base.data$edge	   
+base.text = base.data$text
+
+set.seed(100)
+sigma_Q = c(0.1, 5, 5)
+niters = c(5, 2, 2, 0, 1)
+
+TrySchein<- Schein.Gibbs(100000, nDocs, node, vocabulary, nIP, K, nwords, alpha, mvec, betas, nvec, 
+					prior.b.mean, prior.b.var, prior.delta, sigma_Q, niters, netstat)
+
