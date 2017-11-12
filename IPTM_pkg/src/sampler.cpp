@@ -410,7 +410,7 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 //                Multiply matrix X and vector B             //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericVector MultiplyYeta(List Y, List eta){
+List MultiplyYeta(List Y, List eta){
   List Yeta(Y.size());
     for (int IP = 0; IP < Y.size(); IP++) {
         arma::vec Y_IP = Y[IP];
@@ -517,7 +517,7 @@ arma::mat lambda_cpp(arma::vec p_d, List XB) {
 //              Calculate mu matrix for document d           //
 // **********************************************************//
 // [[Rcpp::export]]
-arma::mat mu_cpp(arma::vec p_d, List xi) {
+double mu_cpp(arma::vec p_d, List xi) {
     int nIP = xi.size();
     double ximat = 0;
     for (int IP = 0; IP < nIP; IP++) {
@@ -654,10 +654,11 @@ double Edgepart(arma::mat u, arma::mat lambda, double delta){
 // **********************************************************//
 // [[Rcpp::export]]
 double Timepart(arma::vec mu, double sigma2_tau, double a_d, double t_d){
-    double timesum = R::dnorm(t_d, mu[i], sqrt(sigma2_tau), log = TRUE);
+    double timesum = R::dnorm(t_d, mu[a_d-1], sqrt(sigma2_tau), TRUE);
     for (unsigned int i = 0; i < mu.size(); i++) {
-    		if (i != a_d) {
-    			timesum += 1-R::pnorm(t_d, mu[i], sqrt(sigma2_tau), log = TRUE);	
+    		if (i != (a_d-1)) {
+                double cdf = R::pnorm(t_d, mu[i-1], sqrt(sigma2_tau), TRUE, TRUE);
+                timesum += 1-cdf;
     		}    		
     }
     return timesum;

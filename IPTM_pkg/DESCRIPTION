@@ -1,0 +1,25 @@
+Package: IPTM
+Title: Interaction-Partitioned Topic Models
+Version: 0.0.0.9000
+Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Description: R package to implement the interaction-partitioned topic model (IPTM). Include the generative code and inference code.
+Depends: R (>= 3.4.0)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    FastGP,
+    Rcpp,
+    reshape,
+    coda,
+    MCMCpack,
+    combinat,
+    mgcv,
+    psych,
+    anytime,
+    lubridate,
+    RcppArmadillo
+LinkingTo:
+    Rcpp,
+    RcppArmadillo 
+RoxygenNote: 6.0.1.9000

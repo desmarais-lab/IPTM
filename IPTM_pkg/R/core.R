@@ -170,7 +170,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   L = 3
   P = L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
   Q = length(timestat)
-  V = length(vocabulary)
+  V = length(vocab)
   phi = lapply(1:K, function(k) {rdirichlet_cpp(1, beta/V)})						 	
   if (length(initial) == 0) {
   theta = rdirichlet_cpp(length(edge), alpha*mvec)
@@ -254,7 +254,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       table.W = lapply(1:K, function(k) {tabulateC(textlist.raw[which(unlist(z) == k)], V)})
       for (d in 1:(edge.trim[1]-1)) {
 	   	textlist.d = textlist[[d]]
-	   	for (w in 1:length(z[d]])) {
+	   	for (w in 1:length(z[[d]])) {
 	   		zw.old = z[[d]][w]
           	if (length(textlist.d) > 0) {
           		table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]]-1
@@ -357,7 +357,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     	    XB = MultiplyXBList(X, b.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
     	     for (i in node) {
-            	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d][i,]==1),]})
+            	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
             	if (nrow(X_u[[1]]) > 1) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
@@ -371,7 +371,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     if (o > 1) {
     	accept.rates[1] = accept.rates[1]/Inner[1]
     	accept.rates[2] = accept.rates[2]/Inner[2]
-    sigma.Q = adaptive_MH(sigma.Q, accept.rates, update_size = 0.2*sigma.Q)
+    sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
       if (accept.rates[1] > 1/Inner[1]) { 
         for (IP in 1:nIP) {
           proposal.var1[[IP]] = var(uniquecombs(t(bmat[[IP]])))
@@ -421,16 +421,16 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     }
 	
 	prior.old2 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.eta[2], prior.eta[1], eta.old[[IP]], FALSE)}, c(1)))+
-    				 dinvgamma(sigma2_tau, prior.tau[1], prior.tau[2], TRUE)
+    				 log(dinvgamma(sigma2_tau, prior.tau[1], prior.tau[2]))
     post.old2 = Timepart(mu[max.edge,], sigma2_tau, edge[[max.edge]][[1]], timeinc[max.edge]) 
-    for (inner in 1:Inner[2]]) {
+    for (inner in 1:Inner[2]) {
       eta.new = lapply(1:nIP, function(IP) {
         c(rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2[[IP]], eta.old[[IP]]))
       }) 
-      sigma2_tau.new = rnorm(1, simga2_tau, sqrt(sigma.Q[2]))
+      sigma2_tau.new = rnorm(1, sigma2_tau, sqrt(sigma.Q[2]))
       for (d in max.edge) {
        for (i in node) {
-            	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d][i,]==1),]})
+            	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
             	if (nrow(X_u[[1]]) > 1) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
@@ -440,7 +440,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       	}   
       }
     prior.new2 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.eta[2], prior.eta[1], eta.new[[IP]], FALSE)}, c(1)))+
-    			 dinvgamma(sigma2_tau.new, prior.tau[1], prior.tau[2], TRUE)
+    			 log(dinvgamma(sigma2_tau.new, prior.tau[1], prior.tau[2]))
     post.new2 =Timepart(mu[max.edge,], sigma2_tau.new, edge[[max.edge]][[1]], timeinc[max.edge])
     loglike.diff = prior.new2+post.new2-prior.old2-post.old2
       if (log(runif(1, 0, 1)) < loglike.diff) {
@@ -470,7 +470,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     	    XB = MultiplyXBList(X, b.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
     	     for (i in node) {
-            	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d][i,]==1),]})
+            	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
             	if (nrow(X_u[[1]]) > 1) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
