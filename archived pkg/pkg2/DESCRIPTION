@@ -1,10 +1,7 @@
 Package: IPTM2
 Title: Interaction-Partitioned Topic Models
 Version: 0.1
-Authors@R: c(person("Bomin", "Kim", email = "bzk147@psu.edu", role = c("aut", "cre")),
-  person("Jones", "Zachary", email = "zmj@zmjones.com", role = c("aut", "adp")),
-  person("Desmarais", "Bruce", email = "bdesmarais@psu.edu", role = c("aut", "adp")),
-  person("Wallach", "Hanna", email = "hanna@dirichlet.net", role = c("aut", "adp")))
+Authors@R: person("Bomin", "Kim", email = "bzk147@psu.edu", role = c("aut", "cre”))
 URL: https://github.com/bomin8319/IPTM
 BugReports: https://github.com/bomin8319/IPTM/issues
 Encoding: UTF-8
