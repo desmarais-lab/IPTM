@@ -4,10 +4,12 @@
 \alias{GiR_stats}
 \title{GiR_stats}
 \usage{
-GiR_stats(GiR_sample)
+GiR_stats(GiR_sample, V)
 }
 \arguments{
 \item{GiR_sample}{one sample from generative process}
+
+\item{V}{number of unique words}
 }
 \value{
 A vector of statistics calculated from one GiR sample

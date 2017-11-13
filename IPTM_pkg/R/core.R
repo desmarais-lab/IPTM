@@ -10,8 +10,7 @@
 #' @importFrom combinat permn
 #' @importFrom mgcv uniquecombs
 #' @importFrom psych geometric.mean
-#' @importFrom anytime anytime
-#' @importFrom lubridate wday hour ymd_hms
+#' @importFrom lubridate wday hour
 #' @importFrom FastGP rcpp_rmvnorm rcpp_log_dmvnorm
 
 #' @title gibbs.measure.support
@@ -144,19 +143,18 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
 				 prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FALSE, initial = NULL) {
   
   # trim the edge so that we only model edges after 384 hours
-  timestamps = vapply(edge, function(d) { (d[[3]] - edge[[1]][[3]])/3600 }, c(1))
-  edge.trim = which_int(384, timestamps) : length(edge)
+  timestamps = vapply(edge, function(d) { d[[3]]/3600 }, c(1))
+  edge.trim = which_int(384, timestamps):length(edge)
   max.edge = max(edge.trim)
   timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])
   timeinc[timeinc==0] = exp(-745)
-  
   # initialization
   convergence = c()
   netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic") %in% netstat)
   timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
   timemat = matrix(0, nrow = length(edge), ncol = sum(timestat))
   if (sum(timestat) > 0) {
-      time_ymd = anytime(vapply(edge, function(d) {d[[3]]}, c(1)), tz = "America/New_York")
+      time_ymd = as.POSIXct(vapply(edge, function(d) {d[[3]]}, c(1)), tz = "America/New_York", origin="1970-01-01")
       if (timestat[1] > 0) {
           days = vapply(time_ymd, function(d) {wday(d)}, c(1))
           days[days==1] = 8
@@ -164,7 +162,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
           it = 1
       }
       if (timestat[2] > 0) {
-          hours = vapply(time_ymd, function(d) {hour(ymd_hms(d))}, c(1))
+          hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
           timemat[,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
       }     
   }
@@ -172,7 +170,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   P = netstat[1]+L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
   Q = length(timestat)
   V = length(vocab)
-  phi = lapply(1:K, function(k) {rdirichlet_cpp(1, beta/V)})						 	
+  phi = lapply(1:K, function(k) {rdirichlet_cpp(1, rep(beta/V, V))})						 	
   if (length(initial) == 0) {
   theta = rdirichlet_cpp(length(edge), alpha*mvec)
   delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
@@ -226,7 +224,6 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
 
   #start outer iteration
     for (o in 1:Outer) {
-    	  print(o)
       if (optimize & o > 1) {
       #update the hyperparameter alpha and mvec
       vec = AlphamvecOpt(K, z[edge.trim], alpha, mvec, 5)
@@ -521,23 +518,24 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
                         base.edge = NULL, base.text = NULL, topic_token_assignments = NULL,
                         backward = FALSE, base = FALSE) { 
   V = length(vocab)
-  phi = lapply(1:K, function(k) {rdirichlet_cpp(1, beta/V)})
+  phi = lapply(1:K, function(k) {rdirichlet_cpp(1, rep(beta/V, V))})
   netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
   timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
   L = 3
   P = netstat[1]+L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
-  t.d = ifelse(base, 0, 384)
+  t.d = ifelse(base, 0, 384*3600)
   edge = base.edge
   text = base.text
   base.length = length(edge)
   p.d = matrix(NA, nrow = D+base.length, ncol = nIP)
+  timemat = matrix(0, nrow = D+base.length, ncol = sum(timestat))
+
   if (!base) {
   for (d in 1:base.length) {
   	 p.d[d, ] = pdmat(list(as.integer(names(text[[d]]))), l, nIP)
   }
-  timemat = matrix(0, nrow = D+base.length, ncol = sum(timestat))
     if (sum(timestat) > 0) {
-      time_ymd = anytime(vapply(base.edge, function(d) {d[[3]]}, c(1)), tz = "America/New_York")
+      time_ymd = as.POSIXct(vapply(base.edge, function(d) {d[[3]]}, c(1)), tz = "America/New_York", origin = "1970-01-01")
       if (timestat[1] > 0) {
           days = vapply(time_ymd, function(d) {wday(d)}, c(1))
           days[days==1] = 8
@@ -545,7 +543,7 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
           it = 1
       }
       if (timestat[2] > 0) {
-          hours = vapply(time_ymd, function(d) {hour(ymd_hms(d))}, c(1))
+          hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
           timemat[1:base.length,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
       }     
     }
@@ -558,6 +556,7 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
   u = list()
   timestamps = matrix(0, nrow = D, ncol = length(node))
   for (d in 1:D) {
+    u[[d]] = matrix(0, length(node), length(node))
     text[[base.length+d]] = rep(NA, n.d)
     if (!backward) {
       theta.d = rdirichlet_cpp(1, alpha*mvec)	
@@ -578,9 +577,8 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
       }
       names(text[[base.length+d]]) = topic.d
     }
-    
     p.d[base.length+d, ] = pdmat(list(as.integer(names(text[[base.length+d]]))), l, nIP)
-    if (t.d >= 384) {
+    if (t.d >= 384*3600) {
       history.t = History(edge, p.d, node, t.d+exp(-745))
     }
     X = Netstats_cpp(history.t, node, netstat)
@@ -591,32 +589,36 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
     		X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
            if (length(X_u[[1]]) > P) {
            		X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
-           }
+           } 
            Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[base.length+d-1,])})
            xi = MultiplyYeta(Y, eta)
            mu = mu_cpp(p.d[base.length+d,], xi)
-           timestamps[d,i] = exp(rnorm(1, log(mu), sqrt(sigma2_tau))) 
+           timestamps[d,i] = exp(rnorm(1, mu, sqrt(sigma2_tau)))*3600
 	}
     i.d = which(timestamps[d,] == min(timestamps[d,]))
     j.d = which(u[[d]][i.d,] == 1)
     t.d = t.d+timestamps[d,i.d]
     edge[[base.length+d]] = list(author = i.d, recipients = j.d, timestamp = t.d)
     if (sum(timestat) > 0) {
-      time_ymd = anytime(t.d, tz = "America/New_York")
+    	it = 0
+      time_ymd = as.POSIXct(edge[[base.length+d]][[3]], tz = "America/New_York", origin="1970-01-01")
+      if (!is.na(time_ymd)) {
       if (timestat[1] > 0) {
+      	    it = it + 1
           days = vapply(time_ymd, function(d) {wday(d)}, c(1))
           days[days==1] = 8
-          timemat[base.length+d,1] = as.numeric(cut(days, c(1,6,8), c("weekdays","weekends")))-1
-          it = 1
+          timemat[base.length+d,it] = as.numeric(cut(days, c(1,6,8), c("weekdays","weekends")))-1
       }
       if (timestat[2] > 0) {
-          hours = vapply(time_ymd, function(d) {hour(ymd_hms(d))}, c(1))
-          timemat[base.length+d,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
+      	    it = it + 1
+          hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
+          timemat[base.length+d,it] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
+      }
       }     
     } 		
   }
-   if (base == TRUE & t.d > 384) {
-    cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1)))-1
+   if (base == TRUE & t.d > 384*3600) {
+    cutoff = which_int(384*3600, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1)))-1
     edge = edge[1:cutoff]
     text = text[1:cutoff]
    }
@@ -630,12 +632,13 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
 #' @description Calculate several statistics from samples generated from forward or backward sampling
 #'
 #' @param GiR_sample one sample from generative process
+#' @param V number of unique words
 #'
 #' @return A vector of statistics calculated from one GiR sample
 #'
 #' @export
 
-GiR_stats = function(GiR_sample) {
+GiR_stats = function(GiR_sample, V) {
   edge = GiR_sample$edge
   text = GiR_sample$text
   edge = edge[-(1:GiR_sample$base)]
@@ -648,14 +651,13 @@ GiR_stats = function(GiR_sample) {
   K = length(GiR_sample$l)
   nIP = length(GiR_sample$b)
   n.d = length(text[[1]])
-  V = length(unique(unlist(text)))
   
   GiR_stats[1:P] = Reduce('+', GiR_sample$b) / nIP 
   GiR_stats[(P+1):(P+Q)] = Reduce('+', GiR_sample$eta) / nIP 
   GiR_stats[P+Q+1] = GiR_sample$delta
   GiR_stats[P+Q+2] = GiR_sample$sigma2_tau
   GiR_stats[P+Q+3] = mean(vapply(1:D, function(d) {length(edge[[d]][[2]])}, c(1)))
-  GiR_stats[P+Q+4] = mean(vapply(2:D, function(d) {edge[[d]][[3]]-edge[[d-1]][[3]]}, c(1))) 			
+  GiR_stats[P+Q+4] = median(vapply(2:D, function(d) {edge[[d]][[3]]-edge[[d-1]][[3]]}, c(1))) 			
   GiR_stats[P+Q+5] = mean(GiR_sample$l)
   Tokens_in_Topic = tabulate(vapply(1:D, function(d){as.numeric(names(text[[d]]))}, rep(0, n.d)), K)
   GiR_stats[(P+Q+6):(P+Q+5+nIP)] = vapply(1:nIP, function(IP) {Tokens_in_Topic %*% (GiR_sample$l == IP)}, c(1))
@@ -773,11 +775,11 @@ GiR = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
               netstat = c("intercept", "dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE) {
   
-  netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic") %in% netstat)
-  timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
+  netstat2 = as.numeric(c("intercept", "degree", "dyadic", "triadic") %in% netstat)
+  timestat2 = as.numeric(c("dayofweek","timeofday") %in% timestat)
   L = 3
-  P = netstat[1]+L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
-  Q = length(timestat)
+  P = netstat2[1]+L*(2*netstat2[2]+2*netstat2[3]+4*netstat2[4])
+  Q = length(timestat2)
   V = length(vocab)
   support = gibbs.measure.support(length(node)-1)
   
@@ -796,9 +798,8 @@ GiR = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
     Forward_sample = GenerateDocs(D, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma2_tau, l, support, netstat, timestat,
                         base.edge = base.edge, base.text = base.text, topic_token_assignments = NULL, 
                         	     backward = FALSE, base = FALSE)
-    Forward_stats[i, ] = GiR_stats(Forward_sample)
+    Forward_stats[i, ] = GiR_stats(Forward_sample, V)
   }
-  
   #Backward sampling
   Backward_stats = matrix(NA, nrow = Nsamp, ncol = ncol(Forward_stats))
   Backward_sample = GenerateDocs(D, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma2_tau, l, support, netstat, timestat,
@@ -820,11 +821,11 @@ GiR = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
     Backward_sample = GenerateDocs(D, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma2_tau, l, support, netstat, timestat,
                         base.edge = base.edge, base.text = base.text, topic_token_assignments = z, 
                         	     backward = TRUE, base = FALSE)
-    Backward_stats[i, ] = GiR_stats(Backward_sample)
+    Backward_stats[i, ] = GiR_stats(Backward_sample, V)
     }
   				
   if (generate_PP_plots) {
-    par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
+    par(mfrow=c(4,8), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats))
