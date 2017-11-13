@@ -148,7 +148,8 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   edge.trim = which_int(384, timestamps) : length(edge)
   max.edge = max(edge.trim)
   timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])
-
+  timeinc[timeinc==0] = exp(-745)
+  
   # initialization
   convergence = c()
   netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic") %in% netstat)
@@ -168,7 +169,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       }     
   }
   L = 3
-  P = L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
+  P = 1 + L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
   Q = length(timestat)
   V = length(vocab)
   phi = lapply(1:K, function(k) {rdirichlet_cpp(1, beta/V)})						 	
@@ -176,8 +177,8 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   theta = rdirichlet_cpp(length(edge), alpha*mvec)
   delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
   sigma2_tau = 1/rgamma(1, prior.tau[1], prior.tau[2])
-  b.old = lapply(1:nIP, function(IP) {prior.b[1]})
-  eta.old = lapply(1:nIP, function(IP) {prior.eta[1]})
+  b.old = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.b[[2]], prior.b[[1]]))}) 
+  eta.old = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.eta[[2]], prior.eta[[1]]))})
   l = sample(1:nIP, K, replace = TRUE) 
   z = lapply(seq(along = edge), function(d) {
   	multinom_vec(max(1, length(textlist[[d]])), theta[d, ])})
@@ -239,7 +240,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       for (d in edge.trim) {
       	history.t = History(edge, p.d, node, edge[[d-1]][[3]]+exp(-745))
       	X = Netstats_cpp(history.t, node, netstat)
-      	vu = MultiplyXBList(X, b.old)    
+      	vu = MultiplyXBList(X, b.old)
      	lambda[[d]] = lambda_cpp(p.d[d,], vu)
      	for (i in node[-edge[[d]][[1]]]) {
      		for (j in sample(node[-i], length(node)-1)) {
@@ -303,7 +304,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     	    lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
     	    for (i in node) {
             X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[hist.d]][i,]==1),]})
-            if (nrow(X_u[[1]]) > 1) {
+            if (length(X_u[[1]]) > P) {
                 X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             }
             Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[hist.d,])})
@@ -337,7 +338,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
            	lambda[[max.edge]] = lambda_cpp(p.d[max.edge,], XB)
 		    for (i in node) {
             	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[max.edge]][i,]==1),]})
-            	if (nrow(X_u[[1]]) > 1) {
+            	if (length(X_u[[1]]) > P) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
             	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[max.edge,])})
@@ -358,7 +359,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
     	     for (i in node) {
             	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
-            	if (nrow(X_u[[1]]) > 1) {
+            	if (length(X_u[[1]]) > P) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
             	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[d,])})
@@ -387,7 +388,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     }
     accept.rates = rep(0, 2)
     
-    prior.old1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b[2], prior.b[1], b.old[[IP]], FALSE)}, c(1)))+
+    prior.old1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b[[2]], prior.b[[1]], b.old[[IP]], FALSE)}, c(1)))+
     				 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
     post.old1 = Edgepart(u[[max.edge]], lambda[[max.edge]], delta)   
     for (inner in 1:Inner[1]) {
@@ -399,10 +400,11 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
         XB = MultiplyXBList(X, b.new)
         lambda[[d]] = lambda_cpp(p.d[d,], XB)    
       }
-    prior.new1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b[2], prior.b[1], b.new[[IP]], FALSE)}, c(1)))+
+    prior.new1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b[[2]], prior.b[[1]], b.new[[IP]], FALSE)}, c(1)))+
     				 dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), TRUE)
     post.new1 = Edgepart(u[[max.edge]], lambda[[max.edge]], delta.new)
     loglike.diff = prior.new1+post.new1-prior.old1-post.old1
+    if (is.na(loglike.diff)) {browser()}
       if (log(runif(1, 0, 1)) < loglike.diff) {
         for (IP in 1:nIP) {
           b.old[[IP]] = b.new[[IP]]
@@ -420,7 +422,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       }
     }
 	
-	prior.old2 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.eta[2], prior.eta[1], eta.old[[IP]], FALSE)}, c(1)))+
+	prior.old2 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.eta[[2]], prior.eta[[1]], eta.old[[IP]], FALSE)}, c(1)))+
     				 log(dinvgamma(sigma2_tau, prior.tau[1], prior.tau[2]))
     post.old2 = Timepart(mu[max.edge,], sigma2_tau, edge[[max.edge]][[1]], timeinc[max.edge]) 
     for (inner in 1:Inner[2]) {
@@ -431,7 +433,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       for (d in max.edge) {
        for (i in node) {
             	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
-            	if (nrow(X_u[[1]]) > 1) {
+            	if (length(X_u[[1]]) > P) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
             	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[d,])})
@@ -439,10 +441,11 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             	mu[d, i] = mu_cpp(p.d[d,], xi)
       	}   
       }
-    prior.new2 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.eta[2], prior.eta[1], eta.new[[IP]], FALSE)}, c(1)))+
+    prior.new2 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.eta[[2]], prior.eta[[1]], eta.new[[IP]], FALSE)}, c(1)))+
     			 log(dinvgamma(sigma2_tau.new, prior.tau[1], prior.tau[2]))
     post.new2 =Timepart(mu[max.edge,], sigma2_tau.new, edge[[max.edge]][[1]], timeinc[max.edge])
     loglike.diff = prior.new2+post.new2-prior.old2-post.old2
+    if (is.na(loglike.diff)) {browser()}
       if (log(runif(1, 0, 1)) < loglike.diff) {
         for (IP in 1:nIP) {
           b.old[[IP]] = b.new[[IP]]
@@ -471,7 +474,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
     	     for (i in node) {
             	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
-            	if (nrow(X_u[[1]]) > 1) {
+            	if (length(X_u[[1]]) > P) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
             	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[d,])})

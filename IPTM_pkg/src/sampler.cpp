@@ -654,11 +654,11 @@ double Edgepart(arma::mat u, arma::mat lambda, double delta){
 // **********************************************************//
 // [[Rcpp::export]]
 double Timepart(arma::vec mu, double sigma2_tau, double a_d, double t_d){
-    double timesum = R::dnorm(t_d, mu[a_d-1], sqrt(sigma2_tau), TRUE);
+    int observed = a_d-1;
+    double timesum = R::dnorm(log(t_d), mu[observed], sqrt(sigma2_tau), TRUE);
     for (unsigned int i = 0; i < mu.size(); i++) {
-    		if (i != (a_d-1)) {
-                double cdf = R::pnorm(t_d, mu[i-1], sqrt(sigma2_tau), TRUE, TRUE);
-                timesum += 1-cdf;
+    		if (i != observed) {
+                timesum += R::pnorm(log(t_d), mu[i], sqrt(sigma2_tau), FALSE, TRUE);
     		}    		
     }
     return timesum;
