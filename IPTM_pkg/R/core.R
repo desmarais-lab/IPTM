@@ -307,7 +307,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             if (length(X_u[[1]]) > P) {
                 X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             }
-            Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[hist.d,])})
+            Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[hist.d-1,])})
             xi = MultiplyYeta(Y, eta.old)
             mu[hist.d, i] = mu_cpp(p.d[hist.d,], xi)
       	}
@@ -341,7 +341,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             	if (length(X_u[[1]]) > P) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
-            	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[max.edge,])})
+            	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[max.edge-1,])})
             	xi = MultiplyYeta(Y, eta.old)
             	mu[max.edge, i] = mu_cpp(p.d[max.edge,], xi)
       		}
@@ -362,29 +362,28 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             	if (length(X_u[[1]]) > P) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
-            	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[d,])})
+            	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[d-1,])})
             	xi = MultiplyYeta(Y, eta.old)
             	mu[d, i] = mu_cpp(p.d[d,], xi)
       	}
 	}
-	       
 	# adaptive M-H   
     if (o > 1) {
     	accept.rates[1] = accept.rates[1]/Inner[1]
     	accept.rates[2] = accept.rates[2]/Inner[2]
     sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
-      if (accept.rates[1] > 1/Inner[1]) { 
-        for (IP in 1:nIP) {
-          proposal.var1[[IP]] = var(uniquecombs(t(bmat[[IP]])))
-          proposal.var1[[IP]] = proposal.var1[[IP]]/max(abs(proposal.var1[[IP]]))
-          }
-      }
-      if (accept.rates[2] > 1/Inner[2]) { 
-        for (IP in 1:nIP) {
-          proposal.var2[[IP]] = var(uniquecombs(t(etamat[[IP]])))
-          proposal.var2[[IP]] = proposal.var2[[IP]]/max(abs(proposal.var2[[IP]]))
-        }
-      }
+    #  if (accept.rates[1] > 1/Inner[1]) { 
+    #    for (IP in 1:nIP) {
+    #      proposal.var1[[IP]] = var(uniquecombs(t(bmat[[IP]])))
+    #      proposal.var1[[IP]] = proposal.var1[[IP]]/max(abs(proposal.var1[[IP]]))
+    #      }
+    #  }
+    #  if (accept.rates[2] > 1/Inner[2]) { 
+    #    for (IP in 1:nIP) {
+    #      proposal.var2[[IP]] = var(uniquecombs(t(etamat[[IP]])))
+    #      proposal.var2[[IP]] = proposal.var2[[IP]]/max(abs(proposal.var2[[IP]]))
+    #    }
+    #  }
     }
     accept.rates = rep(0, 2)
     
@@ -404,7 +403,6 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     				 dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), TRUE)
     post.new1 = Edgepart(u[[max.edge]], lambda[[max.edge]], delta.new)
     loglike.diff = prior.new1+post.new1-prior.old1-post.old1
-    if (is.na(loglike.diff)) {browser()}
       if (log(runif(1, 0, 1)) < loglike.diff) {
         for (IP in 1:nIP) {
           b.old[[IP]] = b.new[[IP]]
@@ -436,7 +434,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             	if (length(X_u[[1]]) > P) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
-            	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[d,])})
+            	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[d-1,])})
             	xi = MultiplyYeta(Y, eta.old)
             	mu[d, i] = mu_cpp(p.d[d,], xi)
       	}   
@@ -445,10 +443,9 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     			 log(dinvgamma(sigma2_tau.new, prior.tau[1], prior.tau[2]))
     post.new2 =Timepart(mu[max.edge,], sigma2_tau.new, edge[[max.edge]][[1]], timeinc[max.edge])
     loglike.diff = prior.new2+post.new2-prior.old2-post.old2
-    if (is.na(loglike.diff)) {browser()}
       if (log(runif(1, 0, 1)) < loglike.diff) {
         for (IP in 1:nIP) {
-          b.old[[IP]] = b.new[[IP]]
+          eta.old[[IP]] = eta.new[[IP]]
         }
        	sigma2_tau = sigma2_tau.new
         prior.old2 = prior.new2
@@ -477,7 +474,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             	if (length(X_u[[1]]) > P) {
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
-            	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[d,])})
+            	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[d-1,])})
             	xi = MultiplyYeta(Y, eta.old)
             	mu[d, i] = mu_cpp(p.d[d,], xi)
       	}
@@ -488,3 +485,348 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
                      proposal.var1= proposal.var1, proposal.var2= proposal.var2, convergence = convergence)
   return(chain.final)
 }	
+
+
+#' @title GenerateDocs
+#' @description Generate a collection of documents according to the generative process of IPTM
+#'
+#' @param D number of documents to be generated
+#' @param node vector of node id's (ID starting from 1)
+#' @param vocab all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns
+#' @param K total number of topics
+#' @param n.d number of words in a document (fixed constant for now)
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param beta Dirichlet concentration prior for topic-word distribution
+#' @param b coefficients for recipients
+#' @param eta coefficients for timestamps
+#' @param delta tuning parameter for the number of recipients
+#' @param sigma2_tau variance parameter for the timestamps
+#' @param l topic-interaction pattern assignment
+#' @param support support of latent recipients
+#' @param netstat which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")
+#' @param timestat additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")
+#' @param base.edge edges before 384 hours that is used to calculate initial history of interactions
+#' @param base.text texts corresponding to base.edge
+#' @param topic_token_assignments matrix of topic-token assignments
+#' @param backward Logigal indicating whether we are generating backward samples (if FALSE -> forward)
+#' @param base Logical indicating whether or not we are generating base edges (< 384)
+#'
+#' @return generated data including (author, recipients, timestamp, words)
+#'
+#' @export
+GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
+                        b, eta, delta, sigma2_tau, l, support, netstat, timestat,
+                        base.edge = NULL, base.text = NULL, topic_token_assignments = NULL,
+                        backward = FALSE, base = FALSE) { 
+  V = length(vocab)
+  phi = lapply(1:K, function(k) {rdirichlet_cpp(1, beta/V)})
+  netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
+  timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
+  L = 3
+  P = netstat[1]+L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
+  t.d = ifelse(base, 0, 384)
+  edge = base.edge
+  text = base.text
+  base.length = length(edge)
+  p.d = matrix(NA, nrow = D+base.length, ncol = nIP)
+  if (!base) {
+  for (d in 1:base.length) {
+  	 p.d[d, ] = pdmat(list(as.integer(names(text[[d]]))), l, nIP)
+  }
+  timemat = matrix(0, nrow = D+base.length, ncol = sum(timestat))
+    if (sum(timestat) > 0) {
+      time_ymd = anytime(vapply(base.edge, function(d) {d[[3]]}, c(1)), tz = "America/New_York")
+      if (timestat[1] > 0) {
+          days = vapply(time_ymd, function(d) {wday(d)}, c(1))
+          days[days==1] = 8
+          timemat[1:base.length,1] = as.numeric(cut(days, c(1,6,8), c("weekdays","weekends")))-1
+          it = 1
+      }
+      if (timestat[2] > 0) {
+          hours = vapply(time_ymd, function(d) {hour(ymd_hms(d))}, c(1))
+          timemat[1:base.length,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
+      }     
+    }
+  }
+  history.t = lapply(1:nIP, function(IP) {
+        	   lapply(1:3, function(x){
+         	   matrix(0, length(node), length(node))
+       	   })})  
+  VKmat = matrix(0, V, K)
+  u = list()
+  timestamps = matrix(0, nrow = D, ncol = length(node))
+  for (d in 1:D) {
+    text[[base.length+d]] = rep(NA, n.d)
+    if (!backward) {
+      theta.d = rdirichlet_cpp(1, alpha*mvec)	
+      topic.d = multinom_vec(max(1, n.d), theta.d)
+        for (n in 1:n.d){
+          text[[base.length+d]][n] = multinom_vec(1, phi[[topic.d[n]]])
+        }
+        names(text[[base.length+d]]) = topic.d
+    } else {
+      phi.k = rep(NA, K)
+      topic.d = topic_token_assignments[[d]]
+      for (n in 1:n.d){
+          for (w in 1:V) {
+            phi.k[w] = (VKmat[w, topic.d[n]]+beta/V)/(sum(VKmat[,topic.d[n]])+beta)
+          } 
+          text[[base.length+d]][n] = multinom_vec(1, phi.k)
+          VKmat[text[[base.length+d]][n], topic.d[n]] = VKmat[text[[base.length+d]][n], topic.d[n]]+1
+      }
+      names(text[[base.length+d]]) = topic.d
+    }
+    
+    p.d[base.length+d, ] = pdmat(list(as.integer(names(text[[base.length+d]]))), l, nIP)
+    if (t.d >= 384) {
+      history.t = History(edge, p.d, node, t.d+exp(-745))
+    }
+    X = Netstats_cpp(history.t, node, netstat)
+    vu = MultiplyXBList(X, b)     
+    lambda = lambda_cpp(p.d[base.length+d,], vu)
+    	for (i in node) {
+    		u[[d]][i,-i] = r.gibbs.measure(1, lambda[i,-i], delta, support)
+    		X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
+           if (length(X_u[[1]]) > P) {
+           		X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
+           }
+           Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[base.length+d-1,])})
+           xi = MultiplyYeta(Y, eta)
+           mu = mu_cpp(p.d[base.length+d,], xi)
+           timestamps[d,i] = exp(rnorm(1, log(mu), sqrt(sigma2_tau))) 
+	}
+    i.d = which(timestamps[d,] == min(timestamps[d,]))
+    j.d = which(u[[d]][i.d,] == 1)
+    t.d = t.d+timestamps[d,i.d]
+    edge[[base.length+d]] = list(author = i.d, recipients = j.d, timestamp = t.d)
+    if (sum(timestat) > 0) {
+      time_ymd = anytime(t.d, tz = "America/New_York")
+      if (timestat[1] > 0) {
+          days = vapply(time_ymd, function(d) {wday(d)}, c(1))
+          days[days==1] = 8
+          timemat[base.length+d,1] = as.numeric(cut(days, c(1,6,8), c("weekdays","weekends")))-1
+          it = 1
+      }
+      if (timestat[2] > 0) {
+          hours = vapply(time_ymd, function(d) {hour(ymd_hms(d))}, c(1))
+          timemat[base.length+d,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
+      }     
+    } 		
+  }
+   if (base == TRUE & t.d > 384) {
+    cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1)))-1
+    edge = edge[1:cutoff]
+    text = text[1:cutoff]
+   }
+  return(list(edge = edge, text = text, base = base.length, 
+  		b = b, eta = eta, delta = delta, sigma2_tau = sigma2_tau, l = l))							
+} 
+
+
+
+#' @title GiR_stats
+#' @description Calculate several statistics from samples generated from forward or backward sampling
+#'
+#' @param GiR_sample one sample from generative process
+#'
+#' @return A vector of statistics calculated from one GiR sample
+#'
+#' @export
+
+GiR_stats = function(GiR_sample) {
+  edge = GiR_sample$edge
+  text = GiR_sample$text
+  edge = edge[-(1:GiR_sample$base)]
+  text = text[-(1:GiR_sample$base)]
+  
+  GiR_stats = c()
+  D = length(edge)
+  P = length(GiR_sample$b[[1]])
+  Q = length(GiR_sample$eta[[1]])
+  K = length(GiR_sample$l)
+  nIP = length(GiR_sample$b)
+  n.d = length(text[[1]])
+  V = length(unique(unlist(text)))
+  
+  GiR_stats[1:P] = Reduce('+', GiR_sample$b) / nIP 
+  GiR_stats[(P+1):(P+Q)] = Reduce('+', GiR_sample$eta) / nIP 
+  GiR_stats[P+Q+1] = GiR_sample$delta
+  GiR_stats[P+Q+2] = GiR_sample$sigma2_tau
+  GiR_stats[P+Q+3] = mean(vapply(1:D, function(d) {length(edge[[d]][[2]])}, c(1)))
+  GiR_stats[P+Q+4] = mean(vapply(2:D, function(d) {edge[[d]][[3]]-edge[[d-1]][[3]]}, c(1))) 			
+  GiR_stats[P+Q+5] = mean(GiR_sample$l)
+  Tokens_in_Topic = tabulate(vapply(1:D, function(d){as.numeric(names(text[[d]]))}, rep(0, n.d)), K)
+  GiR_stats[(P+Q+6):(P+Q+5+nIP)] = vapply(1:nIP, function(IP) {Tokens_in_Topic %*% (GiR_sample$l == IP)}, c(1))
+  GiR_stats[(P+Q+6+nIP):(P+Q+5+nIP+K)] = Tokens_in_Topic
+  GiR_stats[(P+Q+6+nIP+K):(P+Q+5+nIP+K+V)] = tabulate(unlist(text), V)
+  return(GiR_stats)
+}
+
+
+#' @title GiR_PP_Plots
+#' @description Generate PP-plots (probability-probability plot) for Gettig it Right test
+#'
+#' @param Forward_stats statistics obtained from forward sampling
+#' @param Backward_stats statistics obtained from backward sampling
+#'
+#' @return PP-plots for different GiR statistics of interest
+#'
+#' @export
+GiR_PP_Plots = function(Forward_stats, Backward_stats) {
+  nms = colnames(Forward_stats)
+  
+  for (i in 1:ncol(Forward_stats)) {
+    all = c(Backward_stats[, i], Forward_stats[, i])
+    
+    quantiles = 100
+    if (grepl("b_", nms[i]) ) {
+      quantiles = 1000
+    }
+    if (grepl("eta_", nms[i]) ) {
+      quantiles = 1000
+    }
+    if (grepl("delta", nms[i]) ) {
+      quantiles = 1000
+    }
+    if (grepl("sigma2_tau", nms[i]) ) {
+      quantiles = 1000
+    }
+      
+    uniqueValues = quantile(all,seq(0, 1, length = quantiles))
+    qx1 = numeric(length(uniqueValues))
+  	qx2 = numeric(length(uniqueValues))
+  		
+  	for (j in 1:length(uniqueValues)) {
+  		qx1[j] = mean(Forward_stats[, i] <= uniqueValues[j])
+  		qx2[j] = mean(Backward_stats[, i] <= uniqueValues[j])
+  	}
+    
+    qqplot(x = qx1,
+           y = qx2,
+           ylim = c(0, 1),
+           xlim = c(0, 1),
+           ylab = "Backward",
+           xlab = "Forward",
+           col = "blue",
+           pch = 19,
+           cex = 0.25,
+           main = nms[i],
+           cex.lab = 0.25,
+           cex.axis = 0.25,
+           cex.main = 0.5)
+    abline(0, 1, lty = 1, col = "red", lwd = 1)
+    
+      if (nrow(Forward_stats) > 10000) {
+       thinning2 = seq(from = floor(nrow(Forward_stats) / 10), to = nrow(Forward_stats), length.out = 10000)
+       Forward_test2 = Forward_stats[thinning2, i]
+       Backward_test2 = Backward_stats[thinning2, i]
+       } else {
+        Forward_test2 = Forward_stats[, i]
+        Backward_test2 = Backward_stats[, i]    	
+      }
+      text(paste("Backward Mean:", round(mean(Backward_stats[, i]), 4),
+                "\nForward Mean:", round(mean(Forward_stats[, i]), 4),
+                "\nt-test p-value:", round(t.test(Backward_test2, Forward_test2)$p.value, 4),
+                "\nMann-Whitney p-value:", round(wilcox.test(Backward_test2, Forward_test2)$p.value, 4)),
+           x = 0.65,
+           y = 0.15,
+           cex = 0.4)
+  }
+}      
+     
+     
+#' @title GiR
+#' @description Getting it Right test for the IPTM
+#'
+#' @param Nsamp number of GiR samples to be generated 
+#' @param D number of documents to be generated per each sample
+#' @param node vector of node id's (ID starting from 1)
+#' @param vocab all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns
+#' @param K total number of topics
+#' @param n.d number of words in a document (fixed constant for now)
+#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param mvec Dirichlet base prior for document-topic distribution
+#' @param beta Dirichlet concentration prior for topic-word distribution
+#' @param prior.b prior mean and covariance of b in multivariate Normal distribution
+#' @param prior.delta prior mean and variance of delta in Normal distribution
+#' @param prior.eta prior mean and covariance of eta in multivariate Normal distribution
+#' @param prior.tau prior shape and scale parameter of sigma2_tau in inverse-Gamma distribution
+#' @param sigma.Q proposal distribution variance parameter
+#' @param Outer size of outer iterations 
+#' @param Inner size of inner iteration for Metropolis-Hastings updates
+#' @param burn iterations to be discarded at the beginning of Metropolis-Hastings chains
+#' @param thin the thinning interval of Metropolis-Hastings chains
+#' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
+#' @param timestat additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")
+#' @param base.edge artificial collection of documents to be used as initial state of history
+#' @param base.text artificial collection of documents to be used as initial state of history
+#' @param generate_PP_plots Logical indicating whether to draw PP plots
+#'
+#' @return Forward and Backward samples and corresponding test results
+#'
+#' @export
+GiR = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+              prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
+              netstat = c("intercept", "dyadic"), timestat = c("timeofday", "dayofweek"),
+              base.edge, base.text, generate_PP_plots = TRUE) {
+  
+  netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic") %in% netstat)
+  timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
+  L = 3
+  P = netstat[1]+L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
+  Q = length(timestat)
+  V = length(vocab)
+  support = gibbs.measure.support(length(node)-1)
+  
+  #Forward sampling
+  Forward_stats = matrix(NA, nrow = Nsamp, ncol = P+(P+Q)+5+nIP+K+V)
+  colnames(Forward_stats) = c(paste0("b_",1:P), paste0("eta_",1:(P+Q)), "delta", "simga2_tau", "Mean_recipients", "Mean_timediff", 
+  					 "Mean_TopicIP", paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), paste0("Tokens_in_Word",1:V))
+  for (i in 1:Nsamp) { 
+    if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
+    b = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.b[[2]], prior.b[[1]]))}) 
+    eta = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.eta[[2]], prior.eta[[1]]))})
+    delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
+    sigma2_tau = 1/rgamma(1, prior.tau[1], prior.tau[2])
+
+    l = sample(1:nIP, K, replace = TRUE)
+    Forward_sample = GenerateDocs(D, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma2_tau, l, support, netstat, timestat,
+                        base.edge = base.edge, base.text = base.text, topic_token_assignments = NULL, 
+                        	     backward = FALSE, base = FALSE)
+    Forward_stats[i, ] = GiR_stats(Forward_sample)
+  }
+  
+  #Backward sampling
+  Backward_stats = matrix(NA, nrow = Nsamp, ncol = ncol(Forward_stats))
+  Backward_sample = GenerateDocs(D, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma2_tau, l, support, netstat, timestat,
+                        base.edge = base.edge, base.text = base.text, topic_token_assignments = NULL, backward = FALSE, base = FALSE)
+  for (i in 1:Nsamp) { 
+     if (i %% 100 == 0) {cat("Backward Sampling", i, "\n")}
+    Inference_samp = IPTM.inference(Backward_sample$edge, node, Backward_sample$text, vocab, nIP, K, sigma.Q, alpha, mvec, beta, 
+    			    prior.b, prior.delta,prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FALSE, initial = NULL)
+    b = lapply(1:nIP, function(IP) {Inference_samp$b[[IP]][,ncol(Inference_samp$b[[IP]])]})
+    eta = lapply(1:nIP, function(IP) {Inference_samp$eta[[IP]][,ncol(Inference_samp$eta[[IP]])]})
+    delta = Inference_samp$delta[length(Inference_samp$delta)]
+    sigma2_tau = Inference_samp$sigma2_tau[length(Inference_samp$sigma2_tau)]
+    l = Inference_samp$l
+    z = Inference_samp$z
+    for (d in 1:length(z)) {
+      names(z[[d]]) = Backward_sample$text[[d]]
+    }
+    
+    Backward_sample = GenerateDocs(D, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma2_tau, l, support, netstat, timestat,
+                        base.edge = base.edge, base.text = base.text, topic_token_assignments = z, 
+                        	     backward = TRUE, base = FALSE)
+    Backward_stats[i, ] = GiR_stats(Backward_sample)
+    }
+  				
+  if (generate_PP_plots) {
+    par(mfrow=c(5,5), oma = c(3,3,3,3), mar = c(2,1,1,1))
+    GiR_PP_Plots(Forward_stats, Backward_stats)
+  }			
+  return(list(Forward = Forward_stats, Backward = Backward_stats))
+}                         	          
+      
