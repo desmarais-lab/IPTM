@@ -144,7 +144,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
 				 prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FALSE, initial = NULL) {
   
   # trim the edge so that we only model edges after 384 hours
-  timestamps = vapply(edge, function(d) { d[[3]] }, c(1))
+  timestamps = vapply(edge, function(d) { (d[[3]] - edge[[1]][[3]])/3600 }, c(1))
   edge.trim = which_int(384, timestamps) : length(edge)
   max.edge = max(edge.trim)
   timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])
@@ -156,20 +156,20 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
   timemat = matrix(0, nrow = length(edge), ncol = sum(timestat))
   if (sum(timestat) > 0) {
-      time_ymd = anytime(timestamps, tz = "America/New_York")
+      time_ymd = anytime(vapply(edge, function(d) {d[[3]]}, c(1)), tz = "America/New_York")
       if (timestat[1] > 0) {
           days = vapply(time_ymd, function(d) {wday(d)}, c(1))
           days[days==1] = 8
-          timemat[,1] = cut(days, c(1,6,8), c("weekdays", "weekends"))
+          timemat[,1] = as.numeric(cut(days, c(1,6,8), c("weekdays","weekends")))-1
           it = 1
       }
       if (timestat[2] > 0) {
           hours = vapply(time_ymd, function(d) {hour(ymd_hms(d))}, c(1))
-          timemat[,it+1] = cut(hours, c(-1,12,24), c("AM", "PM"))
+          timemat[,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
       }     
   }
   L = 3
-  P = 1 + L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
+  P = netstat[1]+L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
   Q = length(timestat)
   V = length(vocab)
   phi = lapply(1:K, function(k) {rdirichlet_cpp(1, beta/V)})						 	
@@ -223,7 +223,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   alphavec = c()
   mvecmat = matrix(NA, nrow = 0, ncol = K)
   accept.rates = rep(0, 2)
-  
+
   #start outer iteration
     for (o in 1:Outer) {
     	  print(o)
@@ -238,7 +238,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       
       # Data augmentation
       for (d in edge.trim) {
-      	history.t = History(edge, p.d, node, edge[[d-1]][[3]]+exp(-745))
+      	history.t = History(edge, p.d, node, timestamps[d-1]+exp(-745))
       	X = Netstats_cpp(history.t, node, netstat)
       	vu = MultiplyXBList(X, b.old)
      	lambda[[d]] = lambda_cpp(p.d[d,], vu)
@@ -278,10 +278,10 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
      }
      for (d in edge.trim) {
        textlist.d = textlist[[d]]
-       if (edge[[d]][[3]]+384 > edge[[max.edge]][[3]]) {
+       if (timestamps[d]+384 > timestamps[max.edge]) {
       	 hist.d = max.edge
        } else {
-      	 hist.d = which_num(edge[[d]][[3]]+384, timestamps)
+      	 hist.d = which_num(timestamps[d]+384, timestamps)
        }
        edgetime.d = rep(NA, K)
        for (w in 1:length(z[[d]])) {
@@ -298,7 +298,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
 	  	lK = which(l == IP)
        	z[[d]][w] = min(lK)
        	p.d[d, ] = pdmat(list(z[[d]]), l, nIP)           
-        history.t = History(edge, p.d, node, edge[[hist.d-1]][[3]]+exp(-745))
+        history.t = History(edge, p.d, node, timestamps[hist.d-1]+exp(-745))
     	   	X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, b.old)
     	    lambda[[hist.d]] = lambda_cpp(p.d[hist.d,], XB)
@@ -332,7 +332,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
         for (IP in 1:nIP) {
           	l[k] = IP
           	p.d = pdmat(z, l, nIP) 
- 		 	history.t = History(edge, p.d, node, edge[[max.edge-1]][[3]]+exp(-745))
+ 		 	history.t = History(edge, p.d, node, timestamps[max.edge-1]+exp(-745))
     	   		X = Netstats_cpp(history.t, node, netstat)
     	   		XB = MultiplyXBList(X, b.old)    
            	lambda[[max.edge]] = lambda_cpp(p.d[max.edge,], XB)
@@ -353,7 +353,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
 	}    
  	p.d = pdmat(z, l, nIP)  
     for (d in max.edge) {
-        	history.t = History(edge, p.d, node, edge[[d-1]][[3]]+exp(-745))
+        	history.t = History(edge, p.d, node, timestamps[d-1]+exp(-745))
     	    X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, b.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
@@ -429,7 +429,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       eta.new = lapply(1:nIP, function(IP) {
         c(rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2[[IP]], eta.old[[IP]]))
       }) 
-      sigma2_tau.new = rnorm(1, sigma2_tau, sqrt(sigma.Q[2]))
+      sigma2_tau.new = exp(rnorm(1, log(sigma2_tau), sqrt(sigma.Q[2])))
       for (d in max.edge) {
        for (i in node) {
             	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
@@ -468,7 +468,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
    }
    
    for (d in max.edge) {
-        	history.t = History(edge, p.d, node, edge[[d-1]][[3]]+exp(-745))
+        	history.t = History(edge, p.d, node, timestamps[d-1]+exp(-745))
     	    X = Netstats_cpp(history.t, node, netstat)
     	    XB = MultiplyXBList(X, b.old)   
     	    lambda[[d]] = lambda_cpp(p.d[d,], XB)
