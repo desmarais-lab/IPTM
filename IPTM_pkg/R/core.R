@@ -154,7 +154,8 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
   timemat = matrix(0, nrow = length(edge), ncol = sum(timestat))
   if (sum(timestat) > 0) {
-      time_ymd = as.POSIXct(vapply(edge, function(d) {d[[3]]}, c(1)), tz = "America/New_York", origin="1970-01-01")
+      Sys.setenv(TZ="America/New_York")
+      time_ymd = as.POSIXct(vapply(edge, function(d) {d[[3]]}, c(1)), tz = getOption("tz"), origin = "1970-01-01")
       if (timestat[1] > 0) {
           days = vapply(time_ymd, function(d) {wday(d)}, c(1))
           days[days==1] = 8
@@ -422,11 +423,12 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     				 log(dinvgamma(sigma2_tau, prior.tau[1], prior.tau[2]))
     post.old2 = Timepart(mu[max.edge,], sigma2_tau, edge[[max.edge]][[1]], timeinc[max.edge]) 
     for (inner in 1:Inner[2]) {
-      #eta.new = lapply(1:nIP, function(IP) {
-      #  c(rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2[[IP]], eta.old[[IP]]))
-      #})
-      eta.new = eta.old 
+      eta.new = lapply(1:nIP, function(IP) {
+        c(rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2[[IP]], eta.old[[IP]]))
+      })
+      #eta.new = eta.old 
       sigma2_tau.new = exp(rnorm(1, log(sigma2_tau), sqrt(sigma.Q[2])))
+      #sigma2_tau.new = sigma2_tau
       for (d in max.edge) {
        for (i in node) {
             	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
@@ -536,7 +538,8 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
   	 p.d[d, ] = pdmat(list(as.integer(names(text[[d]]))), l, nIP)
   }
     if (sum(timestat) > 0) {
-      time_ymd = as.POSIXct(vapply(base.edge, function(d) {d[[3]]}, c(1)), tz = "America/New_York", origin = "1970-01-01")
+      Sys.setenv(TZ = "America/New_York")
+      time_ymd = as.POSIXct(vapply(base.edge, function(d) {d[[3]]}, c(1)), tz = getOption("tz"), origin = "1970-01-01")
       if (timestat[1] > 0) {
           days = vapply(time_ymd, function(d) {wday(d)}, c(1))
           days[days==1] = 8
@@ -602,7 +605,7 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
     edge[[base.length+d]] = list(author = i.d, recipients = j.d, timestamp = t.d)
     if (sum(timestat) > 0) {
     	it = 0
-      time_ymd = as.POSIXct(edge[[base.length+d]][[3]], tz = "America/New_York", origin="1970-01-01")
+      time_ymd = as.POSIXct(edge[[base.length+d]][[3]], tz = getOption("tz"), origin = "1970-01-01")
       if (!is.na(time_ymd)) {
       if (timestat[1] > 0) {
       	    it = it + 1

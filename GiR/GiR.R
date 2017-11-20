@@ -23,7 +23,7 @@ prior.b = list(rep(0, P), diag(P))
 prior.delta = c(-2.5, 0.1)
 prior.eta = list(rep(1, P+2), diag(P+2))
 prior.tau = c(2,1)
-sigma.Q = c(0.01, 0.01)
+sigma.Q = c(0.01, 0.005)
 
 b = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.b[[2]], prior.b[[1]]))}) 
 eta = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.eta[[2]], prior.eta[[1]]))})
@@ -43,10 +43,10 @@ Outer = 1
 Inner = c(1,1)
 burn = c(0,0)
 thin = c(1,1)
-Outer = 3
-Inner = c(1100,1100)
-burn = c(100,100)
-thin = c(1,1)
+Outer = 5
+Inner = c(3300,3300)
+burn = c(300,300)
+thin = c(3,3)
 
 Schein <- Schein(10000, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
@@ -59,7 +59,7 @@ Inner = c(5500,5500)
 burn = c(500,500)
 thin = c(5,5)
 
-GettingItRight <- GiR(500, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+GettingItRight <- GiR(5000, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("intercept", "dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)
