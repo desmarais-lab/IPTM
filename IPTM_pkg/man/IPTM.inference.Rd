@@ -45,7 +45,7 @@ IPTM.inference(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, mvec, beta,
 
 \item{thin}{the thinning interval of Metropolis-Hastings chains}
 
-\item{netstat}{which type of network statistics to use ("intercept", dyadic", "triadic", "degree")}
+\item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 
 \item{timestat}{additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")}
 

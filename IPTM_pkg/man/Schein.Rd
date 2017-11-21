@@ -6,8 +6,8 @@
 \usage{
 Schein(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, prior.b,
   prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
-  netstat = c("intercept", "dyadic"), timestat = c("timeofday",
-  "dayofweek"), base.edge, base.text, generate_PP_plots = TRUE)
+  netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"), base.edge,
+  base.text, generate_PP_plots = TRUE)
 }
 \arguments{
 \item{Nsamp}{number of GiR samples to be generated}
@@ -48,7 +48,7 @@ Schein(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, prior.b,
 
 \item{thin}{the thinning interval of Metropolis-Hastings chains}
 
-\item{netstat}{which type of network statistics to use ("intercept", dyadic", "triadic", "degree")}
+\item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 
 \item{timestat}{additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")}
 

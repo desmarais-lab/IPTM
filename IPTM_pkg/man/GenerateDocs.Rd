@@ -40,7 +40,7 @@ GenerateDocs(D, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
 
 \item{support}{support of latent recipients}
 
-\item{netstat}{which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")}
+\item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 
 \item{timestat}{additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")}
 

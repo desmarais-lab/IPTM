@@ -130,7 +130,7 @@ AlphamvecOpt =  function(K, z, alpha, mvec, niter) {
 #' @param Inner size of inner iteration for Metropolis-Hastings updates
 #' @param burn iterations to be discarded at the beginning of Metropolis-Hastings chains
 #' @param thin the thinning interval of Metropolis-Hastings chains
-#' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
+#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
 #' @param timestat additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")
 #' @param optimize logical to optimize alpha (Dirichlet concentration prior for document-topic distribution)
 #' @param initial list of initial values user wants to assign including (alpha, mvec, delta, b, eta, l, z, u, sigma2_tau, proposal.var1, proposal.var2)
@@ -150,7 +150,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   timeinc[timeinc==0] = exp(-745)
   # initialization
   convergence = c()
-  netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic") %in% netstat)
+  netstat = as.numeric(c("degree", "dyadic", "triadic") %in% netstat)
   timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
   timemat = matrix(0, nrow = length(edge), ncol = sum(timestat))
   if (sum(timestat) > 0) {
@@ -168,7 +168,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       }     
   }
   L = 3
-  P = netstat[1]+L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
+  P = L*(2*netstat[1]+2*netstat[2]+4*netstat[3])
   Q = length(timestat)
   V = length(vocab)
   phi = lapply(1:K, function(k) {rdirichlet_cpp(1, rep(beta/V, V))})						 	
@@ -213,7 +213,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     etamat[[IP]] = matrix(eta.old[[IP]], nrow = P+Q, ncol = (Inner[2]-burn[2])/thin[2])
   }
   deltamat = rep(delta, (Inner[1]-burn[1])/thin[1])
-  sigma2_taumat = rep(sigma2_tau, (Inner[2]-burn[2])/thin[2])
+  sigma2_taumat = rep(sigma2_tau, (Inner[3]-burn[3])/thin[3])
 						 
   lambda = list()
   mu = matrix(0, nrow = length(edge), ncol = length(node))
@@ -222,7 +222,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   textlist.raw = unlist(textlist[edge.trim])
   alphavec = c()
   mvecmat = matrix(NA, nrow = 0, ncol = K)
-  accept.rates = rep(0, 2)
+  accept.rates = rep(0, 3)
 
   #start outer iteration
     for (o in 1:Outer) {
@@ -370,6 +370,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     if (o > 1) {
     	accept.rates[1] = accept.rates[1]/Inner[1]
     	accept.rates[2] = accept.rates[2]/Inner[2]
+        accept.rates[3] = accept.rates[3]/Inner[3]
     	sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
     #  if (accept.rates[1] > 1/Inner[1]) { 
     #    for (IP in 1:nIP) {
@@ -384,7 +385,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     #    }
     #  }
     }
-    accept.rates = rep(0, 2)
+    accept.rates = rep(0, 3)
     
     prior.old1 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.b[[2]], prior.b[[1]], b.old[[IP]], FALSE)}, c(1)))+
     				 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
@@ -419,16 +420,12 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       }
     }
 	
-	prior.old2 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.eta[[2]], prior.eta[[1]], eta.old[[IP]], FALSE)}, c(1)))+
-    				 log(dinvgamma(sigma2_tau, prior.tau[1], prior.tau[2]))
-    post.old2 = Timepart(mu[max.edge,], sigma2_tau, edge[[max.edge]][[1]], timeinc[max.edge]) 
+	prior.old2 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.eta[[2]], prior.eta[[1]], eta.old[[IP]], FALSE)}, c(1)))
+    post.old2 = Timepart(mu[max.edge,], sigma2_tau, edge[[max.edge]][[1]], timeinc[max.edge])
     for (inner in 1:Inner[2]) {
-      eta.new = lapply(1:nIP, function(IP) {
-        c(rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2[[IP]], eta.old[[IP]]))
-      })
-      #eta.new = eta.old 
-      sigma2_tau.new = exp(rnorm(1, log(sigma2_tau), sqrt(sigma.Q[2])))
-      #sigma2_tau.new = sigma2_tau
+        eta.new = lapply(1:nIP, function(IP) {
+          c(rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2[[IP]], eta.old[[IP]]))
+        })
       for (d in max.edge) {
        for (i in node) {
             	X_u = lapply(X[[i]], function(X_IP) {X_IP[which(u[[d]][i,]==1),]})
@@ -436,19 +433,17 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
                 	X_u = lapply(X_u, function(X_u_IP) {geometric.mean(X_u_IP)})
             	}
             	Y = lapply(X_u, function(X_u_IP) {c(X_u_IP, timemat[d-1,])})
-            	xi = MultiplyYeta(Y, eta.old)
+            	xi = MultiplyYeta(Y, eta.new)
             	mu[d, i] = mu_cpp(p.d[d,], xi)
       	}   
       }
-    prior.new2 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.eta[[2]], prior.eta[[1]], eta.new[[IP]], FALSE)}, c(1)))+
-    			 log(dinvgamma(sigma2_tau.new, prior.tau[1], prior.tau[2]))
-    post.new2 =Timepart(mu[max.edge,], sigma2_tau.new, edge[[max.edge]][[1]], timeinc[max.edge])
+    prior.new2 = sum(vapply(1:nIP, function(IP) {rcpp_log_dmvnorm(prior.eta[[2]], prior.eta[[1]], eta.new[[IP]], FALSE)}, c(1)))
+    post.new2 = Timepart(mu[max.edge,], sigma2_tau, edge[[max.edge]][[1]], timeinc[max.edge])
     loglike.diff = prior.new2+post.new2-prior.old2-post.old2
       if (log(runif(1, 0, 1)) < loglike.diff) {
         for (IP in 1:nIP) {
           eta.old[[IP]] = eta.new[[IP]]
         }
-       	sigma2_tau = sigma2_tau.new
         prior.old2 = prior.new2
         post.old2 = post.new2
         accept.rates[2] = accept.rates[2]+1
@@ -457,10 +452,30 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
         for (IP in 1:nIP) {
           etamat[[IP]][ ,(inner-burn[2])/thin[2]] = eta.old[[IP]]
         }
-        sigma2_taumat[(inner-burn[2])/thin[2]] = sigma2_tau
       }
     }
-   
+    
+    prior.old3 = log(dinvgamma(sigma2_tau, prior.tau[1], prior.tau[2]))
+    post.old3 = Timepart(mu[max.edge,], sigma2_tau, edge[[max.edge]][[1]], timeinc[max.edge])
+    for (inner in 1:Inner[3]) {
+        repeat {
+        sigma2_tau.new = rnorm(1, sigma2_tau, sqrt(sigma.Q[2]))
+        if (sigma2_tau.new > 0) break
+        }
+    prior.new3 = log(dinvgamma(sigma2_tau.new, prior.tau[1], prior.tau[2]))
+    post.new3 = Timepart(mu[max.edge,], sigma2_tau.new, edge[[max.edge]][[1]], timeinc[max.edge])
+    loglike.diff = prior.new3+post.new3-prior.old3-post.old3
+        if (log(runif(1, 0, 1)) < loglike.diff) {
+            sigma2_tau = sigma2_tau.new
+            prior.old3 = prior.new3
+            post.old3 = post.new3
+            accept.rates[3] = accept.rates[3]+1
+        }
+        if (inner > burn[3] & inner %% (thin[3]) == 0) {
+            sigma2_taumat[(inner-burn[3])/thin[3]] = sigma2_tau
+        }
+    }
+
     convergence[o] = Edgepart(u[[max.edge]], lambda[[max.edge]], delta)+
     					 Timepart(mu[max.edge,], sigma2_tau, edge[[max.edge]][[1]], timeinc[max.edge]) 
    }   
@@ -505,7 +520,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
 #' @param sigma2_tau variance parameter for the timestamps
 #' @param l topic-interaction pattern assignment
 #' @param support support of latent recipients
-#' @param netstat which type of network statistics to use ("intercept", "dyadic", "triadic", "degree")
+#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
 #' @param timestat additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")
 #' @param base.edge edges before 384 hours that is used to calculate initial history of interactions
 #' @param base.text texts corresponding to base.edge
@@ -522,10 +537,10 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
                         backward = FALSE, base = FALSE) { 
   V = length(vocab)
   phi = lapply(1:K, function(k) {rdirichlet_cpp(1, rep(beta/V, V))})
-  netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic" ) %in% netstat)
+  netstat = as.numeric(c("degree", "dyadic", "triadic" ) %in% netstat)
   timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
   L = 3
-  P = netstat[1]+L*(2*netstat[2]+2*netstat[3]+4*netstat[4])
+  P = L*(2*netstat[1]+2*netstat[2]+4*netstat[3])
   t.d = ifelse(base, 0, 384*3600)
   edge = base.edge
   text = base.text
@@ -765,7 +780,7 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 #' @param Inner size of inner iteration for Metropolis-Hastings updates
 #' @param burn iterations to be discarded at the beginning of Metropolis-Hastings chains
 #' @param thin the thinning interval of Metropolis-Hastings chains
-#' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
+#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
 #' @param timestat additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")
 #' @param base.edge artificial collection of documents to be used as initial state of history
 #' @param base.text artificial collection of documents to be used as initial state of history
@@ -776,13 +791,13 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 #' @export
 GiR = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
-              netstat = c("intercept", "dyadic"), timestat = c("timeofday", "dayofweek"),
+              netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE) {
   
-  netstat2 = as.numeric(c("intercept", "degree", "dyadic", "triadic") %in% netstat)
+  netstat2 = as.numeric(c("degree", "dyadic", "triadic") %in% netstat)
   timestat2 = as.numeric(c("dayofweek","timeofday") %in% timestat)
   L = 3
-  P = netstat2[1]+L*(2*netstat2[2]+2*netstat2[3]+4*netstat2[4])
+  P = L*(2*netstat2[1]+2*netstat2[2]+4*netstat2[3])
   Q = length(timestat2)
   V = length(vocab)
   support = gibbs.measure.support(length(node)-1)
@@ -858,7 +873,7 @@ GiR = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
 #' @param Inner size of inner iteration for Metropolis-Hastings updates
 #' @param burn iterations to be discarded at the beginning of Metropolis-Hastings chains
 #' @param thin the thinning interval of Metropolis-Hastings chains
-#' @param netstat which type of network statistics to use ("intercept", dyadic", "triadic", "degree")
+#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
 #' @param timestat additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")
 #' @param base.edge artificial collection of documents to be used as initial state of history
 #' @param base.text artificial collection of documents to be used as initial state of history
@@ -869,13 +884,13 @@ GiR = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
 #' @export
 Schein = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
-              netstat = c("intercept", "dyadic"), timestat = c("timeofday", "dayofweek"),
+              netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE) {
   
-  netstat2 = as.numeric(c("intercept", "degree", "dyadic", "triadic") %in% netstat)
+  netstat2 = as.numeric(c("degree", "dyadic", "triadic") %in% netstat)
   timestat2 = as.numeric(c("dayofweek","timeofday") %in% timestat)
   L = 3
-  P = netstat2[1]+L*(2*netstat2[2]+2*netstat2[3]+4*netstat2[4])
+  P = L*(2*netstat2[1]+2*netstat2[2]+4*netstat2[3])
   Q = length(timestat2)
   V = length(vocab)
   support = gibbs.measure.support(length(node)-1)
@@ -917,9 +932,9 @@ Schein = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
     Backward_sample = GenerateDocs(D, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma2_tau, l, support, netstat, timestat,
                         base.edge = base.edge, base.text = base.text, topic_token_assignments = z, backward = TRUE, base = FALSE)
     Backward_stats[i, ] = GiR_stats(Backward_sample, V)
-    }
+  }
   if (generate_PP_plots) {
-    par(mfrow=c(4,8), oma = c(3,3,3,3), mar = c(2,1,1,1))
+    par(mfrow=c(5,6), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats))

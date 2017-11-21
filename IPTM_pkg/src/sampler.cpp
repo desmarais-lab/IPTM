@@ -336,7 +336,7 @@ List Triadic_reduced(List triadic) {
 // [[Rcpp::export]]
 List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 	int A = node.size();
-	int P = netstat[0]+3*(2*netstat[1]+2*netstat[2]+4*netstat[3]);
+	int P = 3*(2*netstat[0]+2*netstat[1]+4*netstat[2]);
 	int nIP = historyIP.size();
 	List out(A);	
 	for (int a = 0; a < A; a++) {
@@ -347,16 +347,6 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 		}
 		int iter = 0;
 		if (netstat[0] == 1) {
-			arma::vec intercept(A);
-			intercept.fill(1);
-			for (int IP = 0; IP < nIP; IP++){
-				arma::mat aoutIP = aout[IP];
-			    aoutIP.col(iter) = intercept;
-			    aout[IP] = aoutIP;
-			}
-			iter += 1;
-		}
-		if (netstat[1] == 1) {
 			List degree = Degree(historyIP, node, a+1);
 			for (int IP = 0; IP < nIP; IP++){
 				arma::mat aoutIP = aout[IP];
@@ -370,7 +360,7 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 			}
 			iter += 6;
 		}
-		if (netstat[2] == 1) {
+		if (netstat[1] == 1) {
 			List dyadic = Dyadic(historyIP, node, a+1);
 			for (int IP = 0; IP < nIP; IP++){
 				arma::mat aoutIP = aout[IP];
@@ -384,7 +374,7 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 			}
 			iter += 6;			
 		}	
-		if (netstat[3] == 1) {
+		if (netstat[2] == 1) {
 			List triadic0 = Triadic(historyIP, node, a+1);
 			List triadic = Triadic_reduced(triadic0);
 			for (int IP = 0; IP < nIP; IP++){
