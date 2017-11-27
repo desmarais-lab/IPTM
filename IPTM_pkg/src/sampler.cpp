@@ -155,9 +155,9 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
 	    int sender = document2[0];
 	    IntegerVector receiver = document2[1];
 	    double time = Rcpp::as<double>(document2[2]);
-	    double time1 = when-384;
-	  	double time2 = when-96;
-		double time3 = when-24; 
+	    double time1 = when-384*3600;
+	  	double time2 = when-96*3600;
+		double time3 = when-24*3600;
 	    for (int r = 0; r < receiver.size(); r++){
 	       for (int IP = 0; IP < nIP; IP++) {
   			  List IPlist_IP = IPmat[IP];

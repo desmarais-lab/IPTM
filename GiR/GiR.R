@@ -1,7 +1,7 @@
 library(IPTM)
 library(FastGP)
 library(MCMCpack)
-set.seed(12345)
+set.seed(1234)
 D = 5
 node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
@@ -14,16 +14,14 @@ mvec = rep(1/4, 4)
 beta = 2
 netstat = c("dyadic")
 timestat = c("timeofday", "dayofweek")
-#netstat = as.numeric(c("intercept", "degree", "dyadic", "triadic") %in% netstat)
-#timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
 
 L = 3
 P = 6
-prior.b = list(rep(0, P), diag(P))
+prior.b = list(rep(3, P), 0.1 * diag(P))
 prior.delta = c(-2.5, 0.1)
-prior.eta = list(rep(1, P+2), diag(P+2))
-prior.tau = c(2,1)
-sigma.Q = c(0.01, 0.007, 0.01)
+prior.eta = list(rep(3, P+2), 0.1 * diag(P+2))
+prior.tau = c(4,1)
+sigma.Q = c(0.01, 0.007, 0.02)
 
 b = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.b[[2]], prior.b[[1]]))}) 
 eta = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.eta[[2]], prior.eta[[1]]))})
@@ -47,8 +45,11 @@ Outer = 5
 Inner = c(3300,3300, 330)
 burn = c(300,300, 30)
 thin = c(3,3, 1)
-
-Schein <- Schein(500, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+Outer = 5
+Inner = c(3300,3300,3300)
+burn = c(300,300, 300)
+thin = c(3,3, 3)
+Schein <- Schein(100, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)
