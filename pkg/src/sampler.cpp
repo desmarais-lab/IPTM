@@ -69,7 +69,7 @@ int which_num(int value, NumericVector x) {
   int n = x.size();
   for (int i = 0; i < n; i++) {
     if (x[i] >= value) {
-      return i;
+      return i+1;
     }
   }
   return 0;
@@ -163,17 +163,17 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
   			  List IPlist_IP = IPmat[IP];
   			  if (time >= time3) {
 				    NumericMatrix IP_l = IPlist_IP[0];
-				    IP_l(sender-1, receiver[r] -1) += p_d(i, IP);
+				    IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
 				    IPlist_IP[0] = IP_l;
 			    }
   			  if (time >= time2 && time < time3) {
   				  NumericMatrix IP_l = IPlist_IP[1];
-				    IP_l(sender-1, receiver[r] -1) += p_d(i, IP);
+				    IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
 				    IPlist_IP[1] = IP_l;
 			    }  				
 			    if (time >= time1 && time < time2) {
   			  	NumericMatrix IP_l = IPlist_IP[2];
-				    IP_l(sender-1, receiver[r] -1) += p_d(i, IP);
+				    IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
 				    IPlist_IP[2] = IP_l;
 			    } 		
 			    IPmat[IP] = IPlist_IP;

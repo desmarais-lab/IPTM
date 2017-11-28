@@ -144,7 +144,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   
   # trim the edge so that we only model edges after 384 hours
   timestamps = vapply(edge, function(d) { d[[3]]/3600 }, c(1))
-  edge.trim = which_int(384, timestamps-timestamps[1]):length(edge)
+  edge.trim = which_num(384, timestamps-timestamps[1]):length(edge)
   max.edge = max(edge.trim)
   timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])
   timeinc[timeinc==0] = exp(-745)
@@ -535,7 +535,7 @@ prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FA
     
     # trim the edge so that we only model edges after 384 hours
     timestamps = vapply(edge, function(d) { d[[3]]/3600 }, c(1))
-    edge.trim = which_int(384, timestamps-timestamps[1]):length(edge)
+    edge.trim = which_num(384, timestamps-timestamps[1]):length(edge)
     max.edge = max(edge.trim)
     timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])
     timeinc[timeinc==0] = exp(-745)
@@ -558,6 +558,7 @@ prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FA
             timemat[,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
         }
     }
+
     L = 3
     P = L*(2*netstat[1]+2*netstat[2]+4*netstat[3])
     Q = length(timestat)
@@ -639,7 +640,6 @@ prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FA
             }
             u[[d]][edge[[d]][[1]],] = tabulateC(as.numeric(unlist(edge[[d]][2])), length(node))
         }
-        
         # Z update
         table.W = lapply(1:K, function(k) {tabulateC(textlist.raw[which(unlist(z[edge.trim]) == k)], V)})
         for (d in edge.trim) {
@@ -691,7 +691,6 @@ prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FA
                 }
             }
         }
-        
         # C update
         for (k in sort(unique(unlist(z[edge.trim])))) {
             const.C = rep(NA, nIP)
@@ -974,7 +973,6 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
     if (sum(timestat) > 0) {
     	it = 0
       time_ymd = as.POSIXct(edge[[base.length+d]][[3]], tz = getOption("tz"), origin = "1970-01-01")
-      if (!is.na(time_ymd)) {
       if (timestat[1] > 0) {
       	    it = it + 1
           days = vapply(time_ymd, function(d) {wday(d)}, c(1))
@@ -985,12 +983,11 @@ GenerateDocs = function(D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
       	    it = it + 1
           hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
           timemat[base.length+d,it] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
-      }
       }     
     } 		
   }
    if (base == TRUE & t.d > 384*3600) {
-    cutoff = which_int(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]/3600}, c(1)))-1
+    cutoff = which_num(384, vapply(1:length(edge), function(d) {edge[[d]][[3]]/3600}, c(1)))-1
     edge = edge[1:cutoff]
     text = text[1:cutoff]
  }
@@ -1289,6 +1286,7 @@ Schein = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
   if (generate_PP_plots) {
     par(mfrow=c(5,6), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
+    browser()
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats))
 }                         	          

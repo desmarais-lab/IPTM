@@ -1,7 +1,7 @@
 library(IPTM)
 library(FastGP)
 library(MCMCpack)
-set.seed(1234)
+set.seed(14)
 D = 5
 node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
@@ -17,10 +17,10 @@ timestat = c("timeofday", "dayofweek")
 
 L = 3
 P = 6
-prior.b = list(rep(3, P), 0.1 * diag(P))
+prior.b = list(rep(0, P), 0.1 * diag(P))
 prior.delta = c(-2.5, 0.1)
-prior.eta = list(rep(3, P+2), 0.1 * diag(P+2))
-prior.tau = c(4,1)
+prior.eta = list(rep(5, P+2), 0.1 * diag(P+2))
+prior.tau = c(5,1)
 sigma.Q = c(0.01, 0.007, 0.02)
 
 b = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.b[[2]], prior.b[[1]]))}) 
@@ -29,8 +29,8 @@ delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
 sigma2_tau = 1/rgamma(1, prior.tau[1], prior.tau[2])
 
  l = sample(1:nIP, K, replace = TRUE)
- support = gibbs.measure.support(length(node) - 1)
-base.data = GenerateDocs(1000, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma2_tau, l, support, netstat, timestat,
+ support = gibbs.measure.support(length(node)-1)
+base.data = GenerateDocs(100, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma2_tau, l, support, netstat, timestat,
                         base.edge = NULL, base.text = NULL, topic_token_assignments = NULL, 
                         backward = FALSE, base = TRUE) 
 base.edge = base.data$edge	   
@@ -49,7 +49,7 @@ Outer = 5
 Inner = c(3300,3300,3300)
 burn = c(300,300, 300)
 thin = c(3,3, 3)
-Schein <- Schein(100, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+Schein <- Schein(5000, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)
