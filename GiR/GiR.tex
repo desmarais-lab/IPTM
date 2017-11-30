@@ -190,8 +190,8 @@ In order to draw forward samples, we first draw all unobservable variables, \tex
                   	}
                   	\label{alg:backward}
                   \end{algorithm}
-        
-\section{Statistics to Use}
+\section{Fixing Mathematical Errors and Computational Bugs}  
+\subsection{Statistics to Use}
 To compare the forward and backward samples, we need some discrepancy functions that measure important properties of generated data. It is recommended to specify various statistics such that we can not only compare the observables (\textit{i.e.} generated data), but also compare the unobservables (\textit{i.e.} latent variables).  For each forward and backward sample from the IPTM that consists of $D$ number of documents, we save the statistics below.
       \begin{itemize}
       	\item[1.] Mean of interaciton-pattern-specific recipient coefficients $(\boldsymbol{b}_1,\ldots,\boldsymbol{b}_C)$,
@@ -206,7 +206,9 @@ To compare the forward and backward samples, we need some discrepancy functions 
        \item[10.] Number of tokens assigned to each unique word type $w=1,...,W$,
       	 \end{itemize}
 where the statistics 1--4 directly measure the unobservables, while the rest 5--10 examine some features of the observed data.
-\section{Results}
+\subsection{Experience with Mathematical Errors}
+\subsection{Experience with Software Bugs}
+\section{Final Results}
 To keep the computational burden of re-running thousands of rounds of inference manageable, we ran the GiR using a relatively small artificial sample, consisting of 5 documents, 4 tokens per document, 4 actors, 5 unique word types, 2 interaction patterns, and 4 topics per each forward or backward samples. For detailed settings including the prior specifications, see Appendix \ref{subsec: GiR implementation}.
 We generated $10^5$ sets of forward and backward samples, and then calculated 1,000 quantiles for each of the coefficients, $\boldsymbol{b}$ and $\boldsymbol{\eta}$, and 50 quantiles for the rest of the statistics. We also calculated t-test and Mann-Whitney test p-values in order to test for differences in the distributions generated in the forward and backward samples. Before we calculated these statistics, we thinned our samples by taking every 9th sample starting at the 10,000th sample for a resulting sample size of 10,000, in order to reduce the autocorrelation in the Markov chains. In each case, if we observe a large p-value, this gives us evidence that the distributions generated under forward and backward sampling have the same locations. 
 

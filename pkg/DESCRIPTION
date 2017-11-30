@@ -17,7 +17,8 @@ Imports:
     mgcv,
     psych,
     lubridate,
-    RcppArmadillo
+    RcppArmadillo,
+    truncnorm
 LinkingTo:
     Rcpp,
     RcppArmadillo 

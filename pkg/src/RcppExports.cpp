@@ -42,12 +42,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // which_num
-int which_num(int value, NumericVector x);
+int which_num(double value, NumericVector x);
 RcppExport SEXP _IPTM_which_num(SEXP valueSEXP, SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type value(valueSEXP);
+    Rcpp::traits::input_parameter< double >::type value(valueSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(which_num(value, x));
     return rcpp_result_gen;

@@ -65,7 +65,7 @@ int which_int(int value, IntegerVector x) {
 //       Function to search for cutoff point in History      //
 // **********************************************************//
 // [[Rcpp::export]]
-int which_num(int value, NumericVector x) {
+int which_num(double value, NumericVector x) {
   int n = x.size();
   for (int i = 0; i < n; i++) {
     if (x[i] >= value) {

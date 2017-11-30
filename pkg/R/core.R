@@ -12,6 +12,7 @@
 #' @importFrom psych geometric.mean
 #' @importFrom lubridate wday hour
 #' @importFrom FastGP rcpp_rmvnorm rcpp_log_dmvnorm
+#' @importFrom truncnorm rtruncnorm dtruncnorm
 
 #' @title gibbs.measure.support
 #' @description List out the support of Gibbs measure
@@ -280,7 +281,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
        if (timestamps[d]+384 > timestamps[max.edge]) {
       	 hist.d = max.edge
        } else {
-      	 hist.d = which_num(timestamps[d]+384, timestamps)
+      	 hist.d = which_num(timestamps[d]+384, timestamps)-1
        }
        edgetime.d = rep(NA, K)
        for (w in 1:length(z[[d]])) {
@@ -472,13 +473,12 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     prior.old3 = log(dinvgamma(sigma2_tau, prior.tau[1], prior.tau[2]))
     post.old3 = Timepart(mu[max.edge,], sigma2_tau, edge[[max.edge]][[1]], timeinc[max.edge])
     for (inner in 1:Inner[3]) {
-        repeat {
-        sigma2_tau.new = rnorm(1, sigma2_tau, sqrt(sigma.Q[3]))
-        if (sigma2_tau.new > 0) break
-        }
+    sigma2_tau.new = rtruncnorm(1, 0, Inf, sigma2_tau, sqrt(sigma.Q[3]))
     prior.new3 = log(dinvgamma(sigma2_tau.new, prior.tau[1], prior.tau[2]))
     post.new3 = Timepart(mu[max.edge,], sigma2_tau.new, edge[[max.edge]][[1]], timeinc[max.edge])
-    loglike.diff = prior.new3+post.new3-prior.old3-post.old3
+    loglike.diff = dtruncnorm(sigma2_tau, 0, Inf, sigma2_tau.new, sqrt(sigma.Q[3]))-
+                   dtruncnorm(sigma2_tau.new, 0, Inf, sigma2_tau, sqrt(sigma.Q[3]))+
+                prior.new3+post.new3-prior.old3-post.old3
         if (log(runif(1, 0, 1)) < loglike.diff) {
             sigma2_tau = sigma2_tau.new
             prior.old3 = prior.new3
@@ -539,6 +539,7 @@ prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FA
     max.edge = max(edge.trim)
     timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])
     timeinc[timeinc==0] = exp(-745)
+
     # initialization
     convergence = c()
     netstat = as.numeric(c("degree", "dyadic", "triadic") %in% netstat)
@@ -647,8 +648,9 @@ prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FA
             if (timestamps[d]+384 > timestamps[max.edge]) {
                 hist.d = max.edge
             } else {
-                hist.d = which_num(timestamps[d]+384, timestamps)
+                hist.d = which_num(timestamps[d]+384, timestamps)-1
             }
+            if (hist.d ==0) browser()
             edgetime.d = rep(NA, K)
             for (w in 1:length(z[[d]])) {
                 zw.old = z[[d]][w]
@@ -826,13 +828,12 @@ prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FA
         prior.old3 = log(dinvgamma(sigma2_tau, prior.tau[1], prior.tau[2]))
         post.old3 = Timepart(mu[max.edge,], sigma2_tau, edge[[max.edge]][[1]], timeinc[max.edge])
         for (inner in 1:Inner[3]) {
-            repeat {
-                sigma2_tau.new = rnorm(1, sigma2_tau, sqrt(sigma.Q[3]))
-                if (sigma2_tau.new > 0) break
-            }
+            sigma2_tau.new = rtruncnorm(1, 0, Inf, sigma2_tau, sqrt(sigma.Q[3]))
             prior.new3 = log(dinvgamma(sigma2_tau.new, prior.tau[1], prior.tau[2]))
             post.new3 = Timepart(mu[max.edge,], sigma2_tau.new, edge[[max.edge]][[1]], timeinc[max.edge])
-            loglike.diff = prior.new3+post.new3-prior.old3-post.old3
+            loglike.diff = dtruncnorm(sigma2_tau, 0, Inf, sigma2_tau.new, sqrt(sigma.Q[3]))-
+                           dtruncnorm(sigma2_tau.new, 0, Inf, sigma2_tau, sqrt(sigma.Q[3]))+
+                           prior.new3+post.new3-prior.old3-post.old3
             if (log(runif(1, 0, 1)) < loglike.diff) {
                 sigma2_tau = sigma2_tau.new
                 prior.old3 = prior.new3
@@ -1286,7 +1287,6 @@ Schein = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
   if (generate_PP_plots) {
     par(mfrow=c(5,6), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
-    browser()
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats))
 }                         	          

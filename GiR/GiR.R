@@ -1,7 +1,7 @@
 library(IPTM)
 library(FastGP)
 library(MCMCpack)
-set.seed(14)
+set.seed(1455)
 D = 5
 node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
@@ -19,7 +19,7 @@ L = 3
 P = 6
 prior.b = list(rep(0, P), 0.1 * diag(P))
 prior.delta = c(-2.5, 0.1)
-prior.eta = list(rep(5, P+2), 0.1 * diag(P+2))
+prior.eta = list(rep(3, P+2), 0.1 * diag(P+2))
 prior.tau = c(5,1)
 sigma.Q = c(0.01, 0.007, 0.02)
 
