@@ -211,36 +211,7 @@ Our inference goal is to draw samples from the joint posterior distribution
 \end{equation*}  
   where $\varphi_\tau$ and $\Phi_\tau$ are the probability density function (pdf) and cumulative distribution function (cdf) of the specified distribution of timestamps in Section \ref{subsubsec:Hypothetical Timestamps}, respecitvely, and $\tau_{a_d d}$ is the observed time-increments $t_d - t_{d-1}$. According to the tie generative process, this joint distribution can be interpreted as `(probability of the observed timestamp generated from the specified distribution of timestamps) $\times$ (probability of all hypothetical timestamps greater than the observed time given the specified distribution of timestamps).' 
  
-For better performance and interpretability of the topics we infer, we run $n_1$ iterations of the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured}, for every outer iteration $o$. In addition, we specify a larger number of inner iterations ($n_2$ and $n_3$) for theose that require Metropolis-Hastings, considering slower mixing. Algorithm \ref{alg:Infernece} provides pseudocode for MCMC sampling. See Appendix B for sampling equations.
-  \begin{algorithm}[H]
-  	\footnotesize
-  	\SetAlgoLined
-  	\caption{Inference}
-  	set initial values\\
-  	\For{o=1 to O}{
-  		\For{n=1 to $n_1$}{
-  			optimize $\alpha$ and $\boldsymbol{m}$ using \cite{wallach2008structured}
-  		}
-  		\For{d=1 to D}{
-  			\For{i $\in (1:A)_{\backslash a_d}$}{
-  				\For{j $\neq$ i }{
-  					draw $\boldsymbol{u}_{idj}$ (Section \ref{subsubsec: Resampling Hypothetical Recipients})
-  				}
-  			}
-  			\For{n=1 to $N_d$}{
-  				draw $z_{dn}$ (Section \ref{subsubsec: Resampling Z})}}
-  		\For{k=1 to K}{
-  			draw $l_k$ (Section \ref{subsubsec: Resampling C})
-  		}
-  		\For{n=1 to $n_2$}{
-  			sample $\boldsymbol{b}$ and $\delta$ (Section \ref{subsubsec: Resampling Coefficients})} 
-  		\For{n=1 to $n_3$}{
-  			sample $\boldsymbol{\eta}$ and $\sigma_\tau^2$ (Section \ref{subsubsec: Resampling Coefficients})
-  		}
-  	}
-  	\label{alg:Infernece}
-  \end{algorithm}
-  
+For better performance and interpretability of the topics we infer, we run $n_1$ iterations of the hyperparameter optimization technique called ``new fixed-point iterations using the Digamma recurrence relation'' in \cite{wallach2008structured}, for every outer iteration $o$. In addition, we specify a larger number of inner iterations ($n_2$, $n_3$, and $n_4$) for theose that require Metropolis-Hastings, considering slower mixing. See Appendix B for pseudocode and sampling equations.  
 
 \section{Applications to Email Network}\label{sec:Application}
 The IPTM is intended for any network with timestamped, text-valued ties, however, in our application of the model we focus on the analysis of email network, which is the canonical example of dynamic textual communication. Via this application, we demonstrate that the IPTM is effective at predicting
@@ -433,7 +404,40 @@ This work was supported in part by the University of Massachusetts Amherst Cente
   	 \end{aligned}  
   	 \end{equation*}
   	
-  	 \subsection{Sampling Equations}\label{subsec:Sampling Equations}
+  	 \subsection{MCMC updates}\label{subsec:Sampling Equations}
+  	  	  \subsubsection{Psuedocode} \label{subsubsec: Pseudocode}
+  	  \begin{algorithm}[H]
+  	  	\footnotesize
+  	  	\SetAlgoLined
+  	  	\caption{Markov Chain Monte Carlo updates}
+  	  	set initial values\\
+  	  	\For{o=1 to O}{
+  	  		\For{n=1 to $n_1$}{
+  	  			optimize $\alpha$ and $\boldsymbol{m}$ using \cite{wallach2008structured}
+  	  		}
+  	  		\For{d=1 to D}{
+  	  			\For{i $\in (1:A)_{\backslash a_d}$}{
+  	  				\For{j $\neq$ i }{
+  	  					draw $\boldsymbol{u}_{idj}$ (Section \ref{subsubsec: Resampling Hypothetical Recipients})
+  	  				}
+  	  			}
+  	  			\For{n=1 to $N_d$}{
+  	  				draw $z_{dn}$ (Section \ref{subsubsec: Resampling Z})}}
+  	  		\For{k=1 to K}{
+  	  			draw $l_k$ (Section \ref{subsubsec: Resampling C})
+  	  		}
+  	  		\For{n=1 to $n_2$}{
+  	  			sample $\boldsymbol{b}$ and $\delta$ (Section \ref{subsubsec: Resampling Coefficients})} 
+  	  		\For{n=1 to $n_3$}{
+  	  			sample $\boldsymbol{\eta}$ (Section \ref{subsubsec: Resampling Coefficients})
+  	  		}
+  	  		\For{n=1 to $n_4$}{
+  	  			sample $\sigma_\tau^2$ (Section \ref{subsubsec: Resampling Coefficients})
+  	  		}
+  	  	}
+  	  	\label{alg:Infernece}
+  	  \end{algorithm}
+  	  
   	  \subsubsection{Resampling Hypothetical Recipients} \label{subsubsec: Resampling Hypothetical Recipients}
   	  First of all, for each document $d=1,\ldots, D$, we sample the latent recipients for each author other than the observed one (\textit{i.e.} $i \neq a_d$). 
   	  
@@ -564,15 +568,25 @@ When we update the recipient coefficients $\boldsymbol{b} =\{\boldsymbol{b}_c\}_
      	    \end{equation*}
      	      where $p(\boldsymbol{b}|\boldsymbol{\mu}_b, \Sigma_b)$ is the product of $\boldsymbol{b}_c\sim N(\mu_{b}, \Sigma_{b})$ over the interaction patterns $c =1,\ldots, C$, $p(\delta|\mu_\delta, \sigma^2_\delta)$ is also calculated from $N(\mu_\delta, \sigma^2_\delta)$, and $p(\boldsymbol{u}_{id}| \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{b}, \delta)$ is the same as what is used in Section \ref{subsubsec: Resampling C}. 
      	       
-  For the timing coefficients $\boldsymbol{\eta} =\{\boldsymbol{\eta}_c\}_{c=1}^C$, we also jointly sample the variance parameter, only if the specified distribution requires any parameter that controls variance (\textit{e.g.} lognormal or Gamma). In this section, we assume lognormal distribution, which we used in our application, and define the variance parameter with $\sigma_\tau^2$ from the prior $\sigma_\tau^2 \sim \mbox{Inverse-Gamma}(a_\tau, b_\tau)$. Then, the acceptance probability $p(\mbox{Accept})$ becomes
+  For the timing coefficients $\boldsymbol{\eta} =\{\boldsymbol{\eta}_c\}_{c=1}^C$, we assume lognormal distribution, which we used in our application. Then, the acceptance probability $p(\mbox{Accept})$ becomes
     \begin{equation*}
     \footnotesize
     \begin{aligned}
-       &\frac{p(\boldsymbol{\eta}^\prime,\sigma_\tau^{2\prime}|  \boldsymbol{z},\boldsymbol{l}, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t},\boldsymbol{\mu}_\eta, \Sigma_\eta, a_\tau, b_\tau)}{p(\boldsymbol{\eta}, \sigma_\tau^{2}|\boldsymbol{z},\boldsymbol{l}, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t},\boldsymbol{\mu}_\eta, \Sigma_\eta, a_\tau, b_\tau)}
-       \\& =\frac{p(\boldsymbol{\eta}^\prime|\boldsymbol{\mu}_\eta, \Sigma_\eta) p(\sigma_\tau^{2\prime}|a_\tau, b_\tau)\prod\limits_{d=1}^D p({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}^\prime, \sigma_\tau^{2\prime})}{p(\boldsymbol{\eta}|\boldsymbol{\mu}_\eta, \Sigma_\eta) p(\sigma_\tau^2|a_\tau, b_\tau)\prod\limits_{d=1}^Dp({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}, \sigma_\tau^{2})},
+       &\frac{p(\boldsymbol{\eta}^\prime|  \boldsymbol{z},\boldsymbol{l}, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t},\boldsymbol{\mu}_\eta, \Sigma_\eta, {\sigma_\tau^2})}{p(\boldsymbol{\eta}|\boldsymbol{z},\boldsymbol{l}, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t},\boldsymbol{\mu}_\eta, \Sigma_\eta, {\sigma_\tau^2})}
+       \\& =\frac{p(\boldsymbol{\eta}^\prime|\boldsymbol{\mu}_\eta, \Sigma_\eta) \prod\limits_{d=1}^D p({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}^\prime, {\sigma_\tau^2})}{p(\boldsymbol{\eta}|\boldsymbol{\mu}_\eta, \Sigma_\eta) \prod\limits_{d=1}^Dp({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}, {\sigma_\tau^2})},
     \end{aligned}
     \end{equation*}
-       where $p(\boldsymbol{\eta}|\boldsymbol{\mu}_\eta, \Sigma_\eta)$ is the product of $\boldsymbol{\eta}_c\sim N(\mu_{\eta}, \Sigma_{\eta})$ over the interaction patterns $c =1,\ldots, C$, $p(\sigma_\tau^{2}|a_\tau, b_\tau)$ is calculated from inverse-Gamma density with $a_\tau$ and $b_\tau$, and $p({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}, \sigma_\tau^{2})$ is again the same as what is used in Section \ref{subsubsec: Resampling C}. 
+       where $p(\boldsymbol{\eta}|\boldsymbol{\mu}_\eta, \Sigma_\eta)$ is the product of $\boldsymbol{\eta}_c\sim N(\mu_{\eta}, \Sigma_{\eta})$ over the interaction patterns $c =1,\ldots, C$, and $p({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}, \sigma_\tau^{2})$ is again the same as what is used in Section \ref{subsubsec: Resampling C}. 
+       
+        We also need to sample variance parameter if the specified distribution for timing requires any parameter that controls variance (\textit{e.g.} lognormal or Gamma). Assuming lognormal distribution, we define the variance parameter with $\sigma_\tau^2$ from the prior $\sigma_\tau^2 \sim \mbox{Inverse-Gamma}(a_\tau, b_\tau)$. This time we use truncated Normal propoposal ($\sigma_\tau^2 > 0$), thus we cannot cancel out Q-ratio. The acceptance probability $p(\mbox{Accept})$ is
+        \begin{equation*}
+        \footnotesize
+        \begin{aligned}
+        &\frac{p({\sigma_\tau^2}^\prime|  \boldsymbol{z},\boldsymbol{l}, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t},\boldsymbol{\eta}, a_\tau, b_\tau)}{p(\sigma_\tau^2|\boldsymbol{z},\boldsymbol{l}, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t},\boldsymbol{\eta}, a_\tau, b_\tau)}
+        \\& =\frac{p({\sigma_\tau^2}^\prime|a_\tau, b_\tau) \prod\limits_{d=1}^D p({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta},{\sigma_\tau^2}^\prime)}{p(\sigma_\tau^2|a_\tau, b_\tau) \prod\limits_{d=1}^Dp({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta},{\sigma_\tau^2})},
+        \end{aligned}
+        \end{equation*}
+      where $p(\sigma_\tau^{2}|a_\tau, b_\tau)$ is calculated from inverse-Gamma density with $a_\tau$ and $b_\tau$, and $p({a}_{d}, \boldsymbol{r}_d, t_d| \boldsymbol{u}_d, \boldsymbol{z}_d,  \boldsymbol{l}, \boldsymbol{\eta}, \sigma_\tau^{2})$ is the same earlier ones.
        
     To avoid computational overflow/underflow, we obtain the log of acceptance ratio by taking the log of $p(\mbox{Accept})$ above. If the log of a sample from Uniform(0,1) is less than the log-acceptance probability, we accept the proposed values. Otherwise, we reject.
          
@@ -609,7 +623,7 @@ When we update the recipient coefficients $\boldsymbol{b} =\{\boldsymbol{b}_c\}_
     where $l_1=1,\ldots,3$ and $l_2=1,\ldots,3$. 
     \begin{figure}[ht]
     	\centering
-    	\includegraphics[width=0.47\textwidth]{plots/triadtable.jpg} 
+    	\includegraphics[width=0.45\textwidth]{plots/triadtable.jpg} 
     	\label{fig:triadtable}
     	\caption{2-send defined for each interval $l=1,\ldots,3$. Cells with same shades sum up to one statistic.}
     \end{figure}
