@@ -402,11 +402,11 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 // [[Rcpp::export]]
 List MultiplyYeta(List Y, List eta){
   List Yeta(Y.size());
-    for (int IP = 0; IP < Y.size(); IP++) {
+    for (unsigned int IP = 0; IP < Y.size(); IP++) {
         arma::vec Y_IP = Y[IP];
         arma::vec eta_IP = eta[IP];
         double sum = 0;
-        for (int j = 0; j < Y_IP.size(); j++) {
+        for (unsigned int j = 0; j < Y_IP.size(); j++) {
             sum = sum+Y_IP[j]*eta_IP[j];
         }
         Yeta[IP] = sum;
@@ -511,7 +511,8 @@ double mu_cpp(arma::vec p_d, List xi) {
     int nIP = xi.size();
     double ximat = 0;
     for (int IP = 0; IP < nIP; IP++) {
-        if (p_d[IP] > 0) {
+        double pdIP = p_d[IP];
+        if (pdIP > 0) {
             double xi_IP = xi[IP];
             ximat += p_d[IP]*xi_IP;
         }
@@ -644,7 +645,7 @@ double Edgepart(arma::mat u, arma::mat lambda, double delta){
 // **********************************************************//
 // [[Rcpp::export]]
 double Timepart(arma::vec mu, double sigma2_tau, double a_d, double t_d){
-    int observed = a_d-1;
+    unsigned int observed = a_d-1;
     double timesum = R::dnorm(log(t_d), mu[observed], sqrt(sigma2_tau), TRUE);
     for (unsigned int i = 0; i < mu.size(); i++) {
     		if (i != observed) {
