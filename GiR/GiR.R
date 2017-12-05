@@ -1,9 +1,9 @@
 library(IPTM)
 library(FastGP)
 library(MCMCpack)
-set.seed(1455)
+set.seed(123455)
 D = 5
-node = 1:4
+node = 1:8
 vocab = c("hi", "hello", "fine", "bye", "what")
 
 nIP = 2
@@ -54,13 +54,11 @@ Schein <- Schein(10000, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)
 
-
 Outer = 3
-Inner = c(5500,5500,550)
-burn = c(500,500,50)
-thin = c(5,5,1)
-
-GettingItRight <- GiR(5000, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+Inner = c(3300,3300,550)
+burn = c(300,300, 50)
+thin = c(3,3, 1)
+GettingItRight <- GiR(10000, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)

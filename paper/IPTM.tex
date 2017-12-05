@@ -224,8 +224,8 @@ We use a subset of the North Carolina county government email dataset collected 
 In Section \ref{subsubsec:Hypothetical Recipients}, we introduced the dynamic network features $\boldsymbol{x}_{idjc}$, which could be flexibly specified according to the researcher's interest. Here, we outline our specifications of the dynamic network statsitics, tailored for the Dare County email network. We follow roughly the same approach as \cite{PerryWolfe2012}, we employ a suite of eight different effects to be used as the components of $\boldsymbol{x}_{idjc}$---outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling---to capture common network properties such as popularity, centrality, reciprocity, and transitivity. Visualization of each dynamic network statistics are described in Figure \ref{fig:dynamic network statistics}, where the upper four features are ``dyadic", involving exactly two actors, while the lower four are ``triadic", involving exactly three actors.
  \begin{figure}[h]
  	\centering
- 	\includegraphics[height= 1.5cm, trim= 0cm 0cm 14cm 0cm, clip=true]{plots/netstats.pdf} \vspace{-.3cm}
- 	\includegraphics[height=1.5cm,, trim= 10cm 0cm 0cm 0cm, clip=true]{plots/netstats.pdf}
+ 	\includegraphics[height= 1.5cm, trim= 0cm 0cm 14cm 0cm, clip=true]{plots/netstats-1.png} \vspace{-.3cm}
+ 	\includegraphics[height=1.5cm,, trim= 10cm 0cm 0cm 0cm, clip=true]{plots/netstats-1.png}
  	\caption{Eight dynamic network statistics used for the Dare County email network and Enron dataset.}
  	\label{fig:dynamic network statistics}	
  \end{figure}
@@ -247,7 +247,7 @@ In this section, we conduct a set of posterior predictive experiments using the 
  For both data sets, the Dare County email network and Enron dataset, we randomly selected 200 documents from the later half of the corpus (\textit{i.e.} $M = \frac{D}{2}$) and generated 100 samples of predicted tie data for every document $d^*$. We ran the same predictive experiments with 21 unique combinations of the number of interaction patterns ($C = 1, 2, 3$) and the number of topics ($K = 2, 5, 10, 25, 50, 75, 100$) as a grid-search based hyperparameter selection process. We compare the predictions in terms of classification accuracy in predicting the authors and recipients, as well as prediction error in the timestamps. Figure \ref{fig:PPE} presents the $F_1$ scores on author predictions, multiclass version of the area under the ROC curve (AUC) measure \citep{hand2001simple} on reciptient predictions, and median absolute error (MAE) on timestamp predictions for each document we predicted, all averaged over the entire samples. The outcomes demonstrate the ability IPTM in predicting the author, recipient, and timetsamps of email. \textbf{Further comments after we conduct experiment again.}
  \begin{figure}[h]
  	\centering
-	\includegraphics[width=0.49\textwidth, trim= 0.7cm 0cm 0cm 0cm, clip=true]{plots/PPE.pdf}  
+	\includegraphics[width=0.49\textwidth, trim= 0.7cm 0cm 0cm 0cm, clip=true]{plots/PPE-1.png}  
  	\caption{Average AUC, F1 score, MAE: (\textit{top}) Dare County email network. (\textit{bottom}) Enron dataset.}
  	 	\label{fig:PPE}	
  	 \end{figure}
@@ -255,7 +255,7 @@ In this section, we conduct a set of posterior predictive experiments using the 
 Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to test whether the IPTM's incorporation of network features improves the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using the latent dirichlet allocation (LDA). Instead of re-fit the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which simply makes the IPTM reduced to LDA in terms of topic assignments by unlinking the text and networks. For each model, we varied the number of topics from 1 to 100 and draw five samples from the joint posterior distribution over the latent variable. We evaluated the topics resulting from each sample and averaged over the five samples, where the results are shown in Figure \ref{fig:topic}. Combined with the results in Section \ref{subsec:Tie Prediction}, this result demonstrates that the IPTM can achieve good predictive performance while producing coherent topics. 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width = 0.47\textwidth]{plots/topic_coherence.pdf}
+	\includegraphics[width = 0.47\textwidth]{plots/topic_coherence-1.png}
 	\caption{Average topic coherence scores: (\textit{left}) Dare County email network. (\textit{right}) Enron dataset.}
 	\label{fig:topic}
 	\end{figure}
@@ -266,7 +266,7 @@ We applied each discrepancy function to each synthetic network to yield the dist
 Figure \ref{fig:PPC} illustrates the result of posterior predictive checks, showing IPTM's goodness of fit for Dare County data. The results reveal that IPTM captures some important work features of the data, including spreadness and transitivity. \textbf{Further comments after we conduct PPC again.}
 	\begin{figure}[h]
 		\centering
-		\includegraphics[width = 0.47\textwidth]{plots/PPC_plot.pdf}
+		\includegraphics[width = 0.47\textwidth]{plots/PPC_plot-1.png}
 		\caption{Posterior predictive checks for the Dare County email network: (a) outdegree, (b) indegree, (c) recipient size, (d) QQplot of time-increments, (e) geodesic distance, and (f) edgewise shared partners.}
 		\label{fig:PPC}
 	\end{figure}
@@ -331,7 +331,7 @@ In theory, we should be able to use the inferred coefficients to
 understand each interaction pattern's characteristics.
 \begin{figure}[h]
 	\centering
-\includegraphics[width=.235\textwidth]{plots/receive.pdf} \includegraphics[width=.235\textwidth]{plots/2receive.pdf}
+\includegraphics[width=.235\textwidth]{plots/receive-1.png} \includegraphics[width=.235\textwidth]{plots/2receive-1.png}
 	\caption{95\% credible intervals of the posterior estimates of $\{\boldsymbol{b}_c\}_{c=1}^C$ using Dare County data: (\textit{left}) Recieve. (\textit{right}) 2-Recieve. }
 	\label{fig:b}
 \end{figure}

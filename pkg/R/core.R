@@ -1155,7 +1155,7 @@ GiR = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
   
   #Forward sampling
   Forward_stats = matrix(NA, nrow = Nsamp, ncol = P+(P+Q)+5+nIP+K+V)
-  colnames(Forward_stats) = c(paste0("b_",1:P), paste0("eta_",1:(P+Q)), "delta", "simga2_tau", "Mean_recipients", "Mean_timediff", 
+  colnames(Forward_stats) = c(paste0("b_",1:P), paste0("eta_",1:(P+Q)), "delta", "sigma2_tau", "Mean_recipients", "Mean_timediff", 
   					 "Mean_TopicIP", paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), paste0("Tokens_in_Word",1:V))
   for (i in 1:Nsamp) { 
     if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
@@ -1194,7 +1194,7 @@ GiR = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
   }
   				
   if (generate_PP_plots) {
-    par(mfrow=c(4,8), oma = c(3,3,3,3), mar = c(2,1,1,1))
+    par(mfrow=c(5,6), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }			
   return(list(Forward = Forward_stats, Backward = Backward_stats))
@@ -1248,7 +1248,7 @@ Schein = function(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
   
   #Forward sampling
   Forward_stats = matrix(NA, nrow = Nsamp, ncol = P+(P+Q)+5+nIP+K+V)
-  colnames(Forward_stats) = c(paste0("b_",1:P), paste0("eta_",1:(P+Q)), "delta", "simga2_tau", "Mean_recipients", "Mean_timediff", 
+  colnames(Forward_stats) = c(paste0("b_",1:P), paste0("eta_",1:(P+Q)), "delta", "sigma2_tau", "Mean_recipients", "Mean_timediff",
   					 "Mean_TopicIP", paste0("Tokens_in_IP_", 1:nIP), paste0("Tokens_in_Topic", 1:K), paste0("Tokens_in_Word",1:V))
   #Backward sampling
   Backward_stats = matrix(NA, nrow = Nsamp, ncol = ncol(Forward_stats))
