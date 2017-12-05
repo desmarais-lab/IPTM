@@ -513,8 +513,8 @@ double mu_cpp(arma::vec p_d, List xi) {
     for (int IP = 0; IP < nIP; IP++) {
         double pdIP = p_d[IP];
         if (pdIP > 0) {
-            double xi_IP = xi[IP];
-            ximat += p_d[IP]*xi_IP;
+            NumericVector xi_IP = xi[IP];
+            ximat += sum(p_d[IP]*xi_IP);
         }
     }
     return ximat;
