@@ -50,7 +50,7 @@ Schein(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, prior.b,
 
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 
-\item{timestat}{additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")}
+\item{timestat}{additional statistics to be used for timestamps other than netstat ("sender", "receiver", "timeofday", "dayofweek")}
 
 \item{base.edge}{artificial collection of documents to be used as initial state of history}
 

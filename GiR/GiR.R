@@ -1,9 +1,9 @@
 library(IPTM)
 library(FastGP)
 library(MCMCpack)
-set.seed(123455)
+set.seed(123)
 D = 5
-node = 1:8
+node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
 
 nIP = 2
@@ -17,9 +17,9 @@ timestat = c("timeofday", "dayofweek")
 
 L = 3
 P = 6
-prior.b = list(rep(0, P), 0.1 * diag(P))
+prior.b = list(rep(0, P), 0.5* diag(P))
 prior.delta = c(-2.5, 0.1)
-prior.eta = list(rep(3, P+2), 0.1 * diag(P+2))
+prior.eta = list(rep(3, length(node) + 2), 0.5* diag(length(node) +2))
 prior.tau = c(4,1)
 sigma.Q = c(0.01, 0.007, 0.02)
 
@@ -41,15 +41,11 @@ Outer = 1
 Inner = c(1,1,1)
 burn = c(0,0,0)
 thin = c(1,1,1)
-Outer = 5
-Inner = c(3300,3300, 330)
-burn = c(300,300, 30)
-thin = c(3,3, 1)
 Outer = 3
-Inner = c(3300,3300,550)
-burn = c(300,300, 50)
-thin = c(3,3, 1)
-Schein <- Schein(1000, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+Inner = c(3300,3300,1100)
+burn = c(300,300, 100)
+thin = c(3, 3, 2)
+Schein <- Schein(5000, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)

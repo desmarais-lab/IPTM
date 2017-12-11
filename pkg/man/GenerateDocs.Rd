@@ -42,7 +42,7 @@ GenerateDocs(D, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
 
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 
-\item{timestat}{additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")}
+\item{timestat}{additional statistics to be used for timestamps other than netstat ("sender", "receiver", "timeofday", "dayofweek")}
 
 \item{base.edge}{edges before 384 hours that is used to calculate initial history of interactions}
 

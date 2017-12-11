@@ -168,7 +168,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // MultiplyYeta
-List MultiplyYeta(List Y, List eta);
+NumericVector MultiplyYeta(List Y, List eta);
 RcppExport SEXP _IPTM_MultiplyYeta(SEXP YSEXP, SEXP etaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -240,13 +240,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // mu_cpp
-double mu_cpp(arma::vec p_d, List xi);
+double mu_cpp(arma::vec p_d, NumericVector xi);
 RcppExport SEXP _IPTM_mu_cpp(SEXP p_dSEXP, SEXP xiSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type p_d(p_dSEXP);
-    Rcpp::traits::input_parameter< List >::type xi(xiSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type xi(xiSEXP);
     rcpp_result_gen = Rcpp::wrap(mu_cpp(p_d, xi));
     return rcpp_result_gen;
 END_RCPP
@@ -332,6 +332,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// geometric_mean
+NumericVector geometric_mean(NumericMatrix data);
+RcppExport SEXP _IPTM_geometric_mean(SEXP dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
+    rcpp_result_gen = Rcpp::wrap(geometric_mean(data));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_callRMultinom", (DL_FUNC) &_IPTM_callRMultinom, 1},
@@ -360,6 +371,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_expconst", (DL_FUNC) &_IPTM_expconst, 1},
     {"_IPTM_Edgepart", (DL_FUNC) &_IPTM_Edgepart, 3},
     {"_IPTM_Timepart", (DL_FUNC) &_IPTM_Timepart, 4},
+    {"_IPTM_geometric_mean", (DL_FUNC) &_IPTM_geometric_mean, 1},
     {NULL, NULL, 0}
 };
 

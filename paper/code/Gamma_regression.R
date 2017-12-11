@@ -6,10 +6,24 @@ agam0 <- lm(Y~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19
 
 
 #first try lognormal
+norm <- glm(log(Y)~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+D+W, family = gaussian(link = "inverse"),control = glm.control(maxit = 100), start = as.numeric(coef(agam0)))
+normpred <- simulate(norm, type = "response", se =T)
+par(mfrow = c(2,2))
+plot(norm) 
+
+
 norm <- glm(log(Y)~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+D+W, family = gaussian(link = "identity"),control = glm.control(maxit = 100), start = as.numeric(coef(agam0)))
 normpred <- simulate(norm, type = "response", se =T)
 par(mfrow = c(2,2))
 plot(norm) 
+
+norm <- glm(log(Y)~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+D+W, family = inverse.gaussian(link = "log"),control = glm.control(maxit = 100), start = as.numeric(coef(agam0)))
+normpred <- simulate(norm, type = "response", se =T)
+par(mfrow = c(2,2))
+plot(norm) 
+
+
+
 
 #try Gamma
 agam <- glm(Y~X1+X2+X3+X4+X5+X6+X7+X8+X9+X10+X11+X12+X13+X14+X15+X16+X17+X18+X19+X20+X21+X22+X23+X24+D+W, family = Gamma(link = "identity"),control = glm.control(maxit = 100), start = c(rep(1, 25), coef(agam0)[-1:-25]))

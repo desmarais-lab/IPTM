@@ -105,3 +105,7 @@ Timepart <- function(mu, sigma2_tau, a_d, t_d) {
     .Call('_IPTM_Timepart', PACKAGE = 'IPTM', mu, sigma2_tau, a_d, t_d)
 }
 
+geometric_mean <- function(data) {
+    .Call('_IPTM_geometric_mean', PACKAGE = 'IPTM', data)
+}
+

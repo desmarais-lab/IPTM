@@ -15,7 +15,6 @@ Imports:
     MCMCpack,
     combinat,
     mgcv,
-    psych,
     lubridate,
     RcppArmadillo,
     truncnorm

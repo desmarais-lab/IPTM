@@ -400,8 +400,8 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 //                Multiply matrix X and vector B             //
 // **********************************************************//
 // [[Rcpp::export]]
-List MultiplyYeta(List Y, List eta){
-  List Yeta(Y.size());
+NumericVector MultiplyYeta(List Y, List eta){
+  NumericVector Yeta(Y.size());
     for (unsigned int IP = 0; IP < Y.size(); IP++) {
         arma::vec Y_IP = Y[IP];
         arma::vec eta_IP = eta[IP];
@@ -507,14 +507,13 @@ arma::mat lambda_cpp(arma::vec p_d, List XB) {
 //              Calculate mu matrix for document d           //
 // **********************************************************//
 // [[Rcpp::export]]
-double mu_cpp(arma::vec p_d, List xi) {
+double mu_cpp(arma::vec p_d, NumericVector xi) {
     int nIP = xi.size();
     double ximat = 0;
     for (int IP = 0; IP < nIP; IP++) {
         double pdIP = p_d[IP];
         if (pdIP > 0) {
-            NumericVector xi_IP = xi[IP];
-            ximat += sum(p_d[IP]*xi_IP);
+           ximat += p_d[IP]*xi[IP];
         }
     }
     return ximat;
@@ -655,3 +654,19 @@ double Timepart(arma::vec mu, double sigma2_tau, double a_d, double t_d){
     return timesum;
 }
 
+// **********************************************************//
+//          Geometric mean with exclusion of zeros           //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericVector geometric_mean(NumericMatrix data){
+    NumericVector geomean(data.ncol());
+    for (unsigned int i = 0; i < data.ncol(); i++) {
+        NumericVector datai = data(_,i);
+        if (sum(datai>0) ==0) {
+            geomean[i] = 0;
+        } else {
+        geomean[i] = exp(mean(log(datai[datai>0])));
+        }
+    }
+    return geomean;
+}

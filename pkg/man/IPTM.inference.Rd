@@ -47,7 +47,7 @@ IPTM.inference(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, mvec, beta,
 
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 
-\item{timestat}{additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")}
+\item{timestat}{additional statistics to be used for timestamps other than netstat ("sender", "receiver","timeofday", "dayofweek")}
 
 \item{optimize}{logical to optimize alpha (Dirichlet concentration prior for document-topic distribution)}
 
