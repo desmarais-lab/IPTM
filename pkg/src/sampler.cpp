@@ -82,7 +82,7 @@ IntegerVector callRMultinom (NumericVector x) {
 IntegerVector multinom_vec (int nSample, NumericVector props) {
 	IntegerVector multinom_vec(nSample);
 	NumericVector props_adj = props/sum(props);
-	for (unsigned int i = 0; i < nSample; i++) {
+	for (int i = 0; i < nSample; i++) {
 		IntegerVector multinom_i = callRMultinom(props_adj);
 		for (unsigned int j = 0; j < props.size(); j++) {
 			if (multinom_i[j] == 1) {
@@ -99,7 +99,7 @@ IntegerVector multinom_vec (int nSample, NumericVector props) {
 // [[Rcpp::export]]
 int which_int(int value, IntegerVector x) {
 	int n = x.size();
-	for (unsigned int i = 0; i < n; i++) {
+	for (int i = 0; i < n; i++) {
 		if (x[i] >= value) {
 			return i+1;
 		}
@@ -113,7 +113,7 @@ int which_int(int value, IntegerVector x) {
 // [[Rcpp::export]]
 int which_num(double value, NumericVector x) {
   int n = x.size();
-  for (unsigned int i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++) {
     if (x[i] >= value) {
       return i+1;
     }
@@ -129,14 +129,14 @@ arma::mat rdirichlet_cpp(int num_samples, arma::vec alpha_m) {
 	int dist_size = alpha_m.n_elem;
 	arma::mat distribution = arma::zeros(num_samples, dist_size);
 	
-	for (unsigned int i = 0; i < num_samples; ++i) {
+	for (int i = 0; i < num_samples; ++i) {
 		double sum_term = 0;
-		for (unsigned int j = 0; j < dist_size; ++j) {
+		for (int j = 0; j < dist_size; ++j) {
 			double cur = R::rgamma(alpha_m[j], 1.0);
 			distribution(i, j) = cur;
 			sum_term += cur;
 		}
-		for (unsigned int j = 0; j < dist_size; ++j) {
+		for (int j = 0; j < dist_size; ++j) {
 			distribution(i, j) = distribution(i, j)/sum_term;
 		}
 	}
@@ -159,7 +159,7 @@ IntegerVector which_cpp(int value, NumericVector x) {
 NumericMatrix pdmat(List z, NumericVector l, int nIP) {
 	int nDocs = z.size();
 	NumericMatrix pd(nDocs, nIP);
-	for (unsigned int IP = 1; IP < (nIP+1); IP++) {
+	for (int IP = 1; IP < (nIP+1); IP++) {
 		  IntegerVector IPvec = which_cpp(IP, l);
 		for (int d = 0; d < nDocs; d++) {
 			IntegerVector z_d = z[d];
@@ -180,7 +180,7 @@ NumericMatrix pdmat(List z, NumericVector l, int nIP) {
 List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
   int nIP = p_d.ncol();
   List IPmat(nIP);
-  for (unsigned int IP = 1; IP < (nIP+1); IP++) {
+  for (int IP = 1; IP < (nIP+1); IP++) {
   	List IPlist_IP(3);
   	for (unsigned int l = 0; l < 3; l++){
   		NumericMatrix IP_l(node.size(), node.size());
@@ -196,7 +196,7 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
   int iter = which_num(when, timestamps);
  
 	if (iter > 0) {
-	  for (unsigned int i = 0; i < iter; i++) {
+	  for (int i = 0; i < iter; i++) {
 	    List document2 = edge[i];
 	    int sender = document2[0];
 	    IntegerVector receiver = document2[1];
@@ -205,7 +205,7 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
 	  	double time2 = when-96*3600;
 		double time3 = when-24*3600;
 	    for (unsigned int r = 0; r < receiver.size(); r++){
-	       for (unsigned int IP = 0; IP < nIP; IP++) {
+	       for (int IP = 0; IP < nIP; IP++) {
   			  List IPlist_IP = IPmat[IP];
   			  if (time >= time3) {
 				    NumericMatrix IP_l = IPlist_IP[0];
@@ -238,7 +238,7 @@ List Degree(List history, IntegerVector node, int sender) {
   int nIP = history.size();
   List IPmat(nIP);
  
-  for (unsigned int IP = 0; IP < nIP; IP++) {
+  for (int IP = 0; IP < nIP; IP++) {
   	 NumericMatrix degreemat_IP(node.size(), 6);
   	 List historyIP = history[IP];
      NumericVector degree(6); 
@@ -276,7 +276,7 @@ List Dyadic(List history, IntegerVector node, int sender) {
   int nIP = history.size();
   List IPmat(nIP);  
   
-  for (unsigned int IP = 0; IP < nIP; IP++) {
+  for (int IP = 0; IP < nIP; IP++) {
   	 NumericMatrix dyadicmat_IP(node.size(), 6);
   	 List historyIP = history[IP];
      NumericVector dyadic(6); 
@@ -301,7 +301,7 @@ List Dyadic(List history, IntegerVector node, int sender) {
 List Triadic(List history, IntegerVector node, int sender) {
    int nIP = history.size();
    List IPmat(nIP);
-   for (unsigned int IP = 0; IP < nIP; IP++) {
+   for (int IP = 0; IP < nIP; IP++) {
       NumericMatrix triadmat_IP(node.size(), 36);
   	  List historyIP = history[IP];
   	  NumericVector triadic(36); 
@@ -349,10 +349,10 @@ List Triadic(List history, IntegerVector node, int sender) {
 List Triadic_reduced(List triadic) {
    int nIP = triadic.size();
    List IPmat(nIP);
-   for (unsigned int IP = 0; IP < nIP; IP++) {
+   for (int IP = 0; IP < nIP; IP++) {
    	NumericMatrix historyIP = triadic[IP];
    	NumericMatrix triadmat_IP(historyIP.nrow(), 12);
-   	for (unsigned int i = 0; i < historyIP.nrow(); i++) {
+   	for (int i = 0; i < historyIP.nrow(); i++) {
    	  triadmat_IP(i, 0) = historyIP(i, 0);
 	    triadmat_IP(i, 1) = historyIP(i, 1)+historyIP(i, 3)+historyIP(i, 4);
 	    triadmat_IP(i, 2) = historyIP(i, 2)+historyIP(i, 5)+historyIP(i, 6)+
@@ -385,7 +385,7 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 	int P = 3*(2*netstat[0]+2*netstat[1]+4*netstat[2]);
 	int nIP = historyIP.size();
 	List out(A);	
-	for (unsigned int a = 0; a < A; a++) {
+	for (int a = 0; a < A; a++) {
 		List aout(nIP);
 		for (int IP = 0; IP < nIP; IP++) {
 		arma::mat netstatIP(A, P);
@@ -394,11 +394,11 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 		int iter = 0;
 		if (netstat[0] == 1) {
 			List degree = Degree(historyIP, node, a+1);
-			for (unsigned int IP = 0; IP < nIP; IP++){
+			for (int IP = 0; IP < nIP; IP++){
 				arma::mat aoutIP = aout[IP];
 				arma::mat degreeIP = degree[IP];
 				int k = 0;
-				for (unsigned int c = iter; c < iter+6; c++) {
+				for (int c = iter; c < iter+6; c++) {
 			    	aoutIP.col(c) = degreeIP.col(k);
 			    	k += 1;
 			    }
@@ -408,11 +408,11 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 		}
 		if (netstat[1] == 1) {
 			List dyadic = Dyadic(historyIP, node, a+1);
-			for (unsigned int IP = 0; IP < nIP; IP++){
+			for (int IP = 0; IP < nIP; IP++){
 				arma::mat aoutIP = aout[IP];
 				arma::mat dyadicIP = dyadic[IP];
 				int k = 0;
-				for (unsigned int c = iter; c < iter+6; c++) {
+				for (int c = iter; c < iter+6; c++) {
 			    	aoutIP.col(c) = dyadicIP.col(k);
 			    	k += 1;
 			    }
@@ -423,11 +423,11 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 		if (netstat[2] == 1) {
 			List triadic0 = Triadic(historyIP, node, a+1);
 			List triadic = Triadic_reduced(triadic0);
-			for (unsigned int IP = 0; IP < nIP; IP++){
+			for (int IP = 0; IP < nIP; IP++){
 				arma::mat aoutIP = aout[IP];
 				arma::mat triadicIP = triadic[IP];
 				int k = 0;
-				for (unsigned int c = iter; c < iter+12; c++) {
+				for (int c = iter; c < iter+12; c++) {
 			    	aoutIP.col(c) = triadicIP.col(k);
 			    	k += 1;
 			    }
@@ -452,7 +452,7 @@ double inner (arma::vec x, arma::vec y) {
 NumericMatrix ximat(arma::vec timemat, NumericMatrix eta, NumericVector node) {
   NumericMatrix xi(node.size(), eta.nrow()); 
   IntegerVector idx = IntegerVector::create(node.size(), node.size()+1);
-  for (unsigned int IP = 0; IP < eta.nrow(); IP++) {
+  for (int IP = 0; IP < eta.nrow(); IP++) {
   	 	NumericVector eta_IP = eta(IP,_);
   	 	NumericVector etatime = eta_IP[idx];
   for (unsigned int i = 0; i < node.size(); i++) {
@@ -469,7 +469,7 @@ NumericMatrix ximat(arma::vec timemat, NumericMatrix eta, NumericVector node) {
 // [[Rcpp::export]]
 List xi_all(NumericMatrix timemat, NumericMatrix eta, NumericVector node, IntegerVector edgetrim) {
   List xi(timemat.nrow());
-  for (unsigned int i = (min(edgetrim)-1); i < max(edgetrim); i++) {
+  for (int i = (min(edgetrim)-1); i < max(edgetrim); i++) {
 		xi[i] = ximat(timemat(i-1,_), eta, node);
 	}
   return xi;
@@ -481,7 +481,7 @@ List xi_all(NumericMatrix timemat, NumericMatrix eta, NumericVector node, Intege
 // [[Rcpp::export]]
 NumericVector MultiplyYeta(NumericVector Y, NumericMatrix eta){
   NumericVector Yeta(eta.nrow());
-    for (unsigned int IP = 0; IP < eta.nrow(); IP++) {
+    for (int IP = 0; IP < eta.nrow(); IP++) {
         arma::vec eta_IP = eta(IP,_);
         double sum = 0;
         for (unsigned int j = 0; j < Y.size(); j++) {
@@ -498,7 +498,7 @@ NumericVector MultiplyYeta(NumericVector Y, NumericMatrix eta){
 // [[Rcpp::export]]
 List MultiplyXB(List X, NumericMatrix B){
 	List XB(B.nrow());
-	for (unsigned int IP = 0; IP < B.nrow(); IP++) {
+	for (int IP = 0; IP < B.nrow(); IP++) {
 		arma::mat XB_IP(X.size(), X.size());
 		arma::vec B_IP = B(IP, _);
 		for (unsigned int n = 0; n < X.size(); n++) {
@@ -568,7 +568,7 @@ arma::mat lambda_cpp(arma::vec p_d, List XB) {
   arma::mat example = XB[0];
   int node = example.n_rows;
   arma::mat lambdamat = arma::zeros(node, node);
-  for (unsigned int IP = 0; IP < nIP; IP++) {
+  for (int IP = 0; IP < nIP; IP++) {
   	if (p_d[IP] > 0) {
     arma::mat XB_IP = XB[IP];
   	arma::mat eXB_IP = exp(XB_IP);
@@ -588,7 +588,7 @@ arma::mat lambda_cpp(arma::vec p_d, List XB) {
 double mu_cpp(arma::vec p_d, NumericVector xi) {
     int nIP = xi.size();
     double ximat = 0;
-    for (unsigned int IP = 0; IP < nIP; IP++) {
+    for (int IP = 0; IP < nIP; IP++) {
         double pdIP = p_d[IP];
         if (pdIP > 0) {
            ximat += p_d[IP]*xi[IP];
@@ -604,9 +604,9 @@ double mu_cpp(arma::vec p_d, NumericVector xi) {
 NumericVector mu_vec(arma::vec p_d, NumericMatrix xi) {
     int nIP = xi.ncol();
     NumericVector muvec(xi.nrow());
-    for (unsigned int IP = 0; IP < nIP; IP++) {
+    for (int IP = 0; IP < nIP; IP++) {
         double pdIP = p_d[IP];
-        for (unsigned int i = 0; i < xi.nrow(); i++) {
+        for (int i = 0; i < xi.nrow(); i++) {
         	if (pdIP > 0) {
            		muvec[i] += p_d[IP]*xi(i,IP);
         	}
@@ -622,7 +622,7 @@ NumericVector mu_vec(arma::vec p_d, NumericMatrix xi) {
 NumericMatrix mu_mat(NumericMatrix p_d, List xi, IntegerVector edgetrim) {
 	NumericMatrix sample = xi[max(edgetrim)-1];
 	NumericMatrix mumat(xi.size(), sample.nrow());
-	for (unsigned int i = (min(edgetrim)-1); i < max(edgetrim); i++) {
+	for (int i = (min(edgetrim)-1); i < max(edgetrim); i++) {
 		mumat(i, _) = mu_vec(p_d(i, _), xi[i]);
 	}
     return mumat;
@@ -638,7 +638,7 @@ NumericVector TopicInEqZ(int K, IntegerVector z_d,
 	IntegerVector table_topics = tabulateC(z_d, K);
 	NumericVector table_topic_adj(K);
 	NumericVector alphamvec(K);
-	for (unsigned int i = 0; i < K; i++) {
+	for (int i = 0; i < K; i++) {
 		table_topic_adj[i] = table_topics[i];
 		alphamvec[i] = alpha*mvec[i];
 	} 
@@ -653,7 +653,7 @@ NumericVector TopicInEqZ(int K, IntegerVector z_d,
 NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW, 
                        double beta, int V){
   NumericMatrix consts(textlistd.size(), K);
-	for (unsigned int k = 0; k < K; k++){
+	for (int k = 0; k < K; k++){
 		NumericVector tablek = tableW[k];
 		NumericVector num(textlistd.size());
 		NumericVector denom(textlistd.size());
