@@ -141,7 +141,3 @@ Timepartsum <- function(mumat, sigma2_tau, senders, timeinc, edgetrim) {
     .Call('_IPTM_Timepartsum', PACKAGE = 'IPTM', mumat, sigma2_tau, senders, timeinc, edgetrim)
 }
 
-geometric_mean <- function(data) {
-    .Call('_IPTM_geometric_mean', PACKAGE = 'IPTM', data)
-}
-

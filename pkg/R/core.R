@@ -1045,17 +1045,16 @@ GiR_stats = function(GiR_sample, V) {
   text = GiR_sample$text
   edge = edge[-(1:GiR_sample$base)]
   text = text[-(1:GiR_sample$base)]
-  
   GiR_stats = c()
   D = length(edge)
-  P = length(GiR_sample$b[[1]])
-  Q = length(GiR_sample$eta[[1]])
+  P = ncol(GiR_sample$b)
+  Q = ncol(GiR_sample$eta)
   K = length(GiR_sample$l)
-  nIP = length(GiR_sample$b)
+  nIP = nrow(GiR_sample$b)
   n.d = length(text[[1]])
   
-  GiR_stats[1:P] = Reduce('+', GiR_sample$b) / nIP 
-  GiR_stats[(P+1):(P+Q)] = Reduce('+', GiR_sample$eta) / nIP 
+  GiR_stats[1:P] = colMeans(GiR_sample$b)
+  GiR_stats[(P+1):(P+Q)] = colMeans(GiR_sample$eta) 
   GiR_stats[P+Q+1] = GiR_sample$delta
   GiR_stats[P+Q+2] = GiR_sample$sigma2_tau
   GiR_stats[P+Q+3] = mean(vapply(1:D, function(d) {length(edge[[d]][[2]])}, c(1)))
