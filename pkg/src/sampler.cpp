@@ -770,7 +770,7 @@ double Timepart(arma::vec mu, double sigma2_tau, double a_d, double t_d){
 // [[Rcpp::export]]
 double Timepartsum(NumericMatrix mumat, double sigma2_tau, IntegerVector senders, NumericVector timeinc, IntegerVector edgetrim){
    double timesum = 0;
-	for (unsigned int i = min(edgetrim)-1; i < max(edgetrim); i++) {
+	for (int i = (min(edgetrim)-1); i < max(edgetrim); i++) {
 		double a_d = senders[i];
 		timesum += Timepart(mumat(i,_), sigma2_tau, a_d, timeinc[i]);
 	}
