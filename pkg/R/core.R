@@ -176,7 +176,10 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   P = L*(2*netstat[1]+2*netstat[2]+4*netstat[3])
   Q = length(prior.eta[[1]])
   V = length(vocab)
-  phi =tvapply(1:K, function(k) {rdirichlet_cpp(1, rep(beta/V, V))}, rep(0, V))	 	
+  phi = matrix(NA, K, V)
+    for (k in 1:K) {
+    		phi[k,] = rdirichlet_cpp(1, rep(beta/V, V))
+    }
   if (length(initial) == 0) {
   theta = rdirichlet_cpp(D, alpha*mvec)
   delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
@@ -359,10 +362,11 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
     				 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
     post.old1 = Edgepart(u[[max.edge]], lambda[[max.edge]], delta)   
-    for (inner in 1:Inner[1]) {
-      b.new = tvapply(1:nIP, function(IP) {
-          rcpp_rmvnorm(1, sigma.Q[1]*proposal.var1, b.old[IP,])
-        }, rep(0, P))
+    b.new = matrix(NA, nIP, P)
+      for (inner in 1:Inner[1]) {
+        for (IP in 1:nIP) {
+			b.new[IP, ] = rcpp_rmvnorm(1, sigma.Q[1]*proposal.var1, b.old[IP,])
+		}
       delta.new = rnorm(1, delta, sqrt(sigma.Q[1]))
       XB = MultiplyXB(X, b.new)
       lambda[[max.edge]] = lambda_cpp(p.d[max.edge,], XB)
@@ -387,10 +391,11 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
 	
 	prior.old2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
 	post.old2 = Timepartsum
-    for (inner in 1:Inner[2]) {
-        eta.new = tvapply(1:nIP, function(IP) {
-          rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2, eta.old[IP,])
-        }, rep(0, Q))
+      eta.new = matrix(NA, nIP, Q)
+      for (inner in 1:Inner[2]) {
+      	for (IP in 1:nIP) {
+			eta.new[IP, ] = rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2, eta.old[IP,])
+		}
 	  xi = xi_all(timemat, eta.new, node, edge.trim)	
       mu = mu_mat(p.d, xi, edge.trim)
       Timepartsum = Timepartsum(mu, sigma2_tau, senders, timeinc, edge.trim)
@@ -406,7 +411,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       }
       if (inner > burn[2] & inner %% (thin[2]) == 0) {
         for (IP in 1:nIP) {
-          etamat[[IP]][ ,(inner-burn[2])/thin[2]] = eta.old[[IP]]
+          etamat[[IP]][ ,(inner-burn[2])/thin[2]] = eta.old[IP,]
         }
       }
     }
@@ -510,8 +515,11 @@ prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FA
     P = L*(2*netstat[1]+2*netstat[2]+4*netstat[3])
     Q = length(prior.eta[[1]])
     V = length(vocab)
-    phi = tvapply(1:K, function(k) {rdirichlet_cpp(1, rep(beta/V, V))}, rep(0, V))
-    if (length(initial) == 0) {
+    phi = matrix(NA, K, V)
+    for (k in 1:K) {
+    		phi[k,] = rdirichlet_cpp(1, rep(beta/V, V))
+    }
+   if (length(initial) == 0) {
         theta = rdirichlet_cpp(D, alpha*mvec)
         delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
         sigma2_tau = 1/rgamma(1, prior.tau[1], prior.tau[2])
@@ -668,10 +676,11 @@ prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FA
       prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
         dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
       post.old1 = Edgepart(u[[max.edge]], lambda[[max.edge]], delta) 
+      b.new = matrix(NA, nIP, P)
       for (inner in 1:Inner[1]) {
-        b.new = tvapply(1:nIP, function(IP) {
-          rcpp_rmvnorm(1, sigma.Q[1]*proposal.var1, b.old[IP,])
-        }, rep(0, P))
+        for (IP in 1:nIP) {
+			b.new[IP, ] = rcpp_rmvnorm(1, sigma.Q[1]*proposal.var1, b.old[IP,])
+		}
         delta.new = rnorm(1, delta, sqrt(sigma.Q[1]))
         XB = MultiplyXB(X, b.new)
         lambda[[max.edge]] = lambda_cpp(p.d[max.edge,], XB)
@@ -696,10 +705,11 @@ prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FA
       
       prior.old2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
       post.old2 = Timepartsum
+      eta.new = matrix(NA, nIP, Q)
       for (inner in 1:Inner[2]) {
-        eta.new = tvapply(1:nIP, function(IP) {
-          rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2, eta.old[IP,])
-        }, rep(0, Q))
+      	for (IP in 1:nIP) {
+			eta.new[IP, ] = rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2, eta.old[IP,])
+		}
         xi = xi_all(timemat, eta.new, node, edge.trim)
 		mu = mu_mat(p.d, xi, edge.trim)
         Timepartsum = Timepartsum(mu, sigma2_tau, senders, timeinc, edge.trim)
@@ -787,7 +797,10 @@ GenerateDocs = function(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
                         backward = FALSE, base = FALSE) { 
   A = length(node)
   V = length(vocab)
-  phi = tvapply(1:K, function(k) {rdirichlet_cpp(1, rep(beta/V, V))}, rep(0, V))
+  phi = matrix(NA, K, V)
+    for (k in 1:K) {
+    		phi[k,] = rdirichlet_cpp(1, rep(beta/V, V))
+    }  
   netstat = as.numeric(c("degree", "dyadic", "triadic" ) %in% netstat)
   timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
   L = 3
@@ -924,7 +937,10 @@ GenerateDocs.PPC = function(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, et
  						    l, u, netstat, timestat, base.edge, base.text, z, word_type_topic_counts) {
     A = length(node)
 	V = length(vocab)
-    phi = tvapply(1:K, function(k) {rdirichlet_cpp(1, rep(beta/V, V))}, rep(0, V))
+    phi = matrix(NA, K, V)
+    for (k in 1:K) {
+    		phi[k,] = rdirichlet_cpp(1, rep(beta/V, V))
+    }
     netstat = as.numeric(c("degree", "dyadic", "triadic" ) %in% netstat)
     timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
     L = 3
@@ -1195,8 +1211,8 @@ GiR = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
      if (i %% 100 == 0) {cat("Backward Sampling", i, "\n")}
     Inference_samp = IPTM.inference.GiR(Backward_sample$edge, node, Backward_sample$text, vocab, nIP, K, sigma.Q, alpha, mvec, beta,
     			    prior.b, prior.delta,prior.eta, prior.tau, Outer, Inner, burn, thin, netstat, timestat, optimize = FALSE, initial = NULL)
-    b = lapply(1:nIP, function(IP) {Inference_samp$b[[IP]][,ncol(Inference_samp$b[[IP]])]})
-    eta = lapply(1:nIP, function(IP) {Inference_samp$eta[[IP]][,ncol(Inference_samp$eta[[IP]])]})
+  	b = tvapply(1:nIP, function(IP) {Inference_samp$b[[IP]][,ncol(Inference_samp$b[[IP]])]}, rep(0, P))
+    eta = tvapply(1:nIP, function(IP) {Inference_samp$eta[[IP]][,ncol(Inference_samp$eta[[IP]])]}, rep(0, Q))
     delta = Inference_samp$delta[length(Inference_samp$delta)]
     sigma2_tau = Inference_samp$sigma2_tau[length(Inference_samp$sigma2_tau)]
     l = Inference_samp$l

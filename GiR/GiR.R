@@ -45,7 +45,7 @@ Outer = 3
 Inner = c(3300,3300,1100)
 burn = c(300,300, 100)
 thin = c(3, 3, 2)
-Schein <- Schein(1000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+Schein <- Schein(10, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)
