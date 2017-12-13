@@ -7,6 +7,7 @@
 using std::log;
 using std::exp;
 using std::max;
+using std::min;
 using std::abs;
 using std::sqrt;
 using std::pow;
@@ -16,6 +17,51 @@ using namespace Rcpp;
 void R_init_markovchain(DllInfo* info) {
 	R_registerRoutines(info, NULL, NULL, NULL, NULL);
 	R_useDynamicSymbols(info, TRUE);	
+}
+
+// **********************************************************//
+//                 dmvnorm using Rcpp Armadillo              //
+// **********************************************************//
+const double log2pi = std::log(2.0 * M_PI);
+
+// [[Rcpp::depends("RcppArmadillo")]]
+// [[Rcpp::export]]
+double dmvnrm_arma(arma::rowvec x,  
+                      arma::rowvec mean,  
+                      arma::mat sigma, 
+                      bool logd = false) { 
+    int xdim = x.n_cols;
+    arma::mat rooti = arma::trans(arma::inv(trimatu(arma::chol(sigma))));
+    double rootisum = arma::sum(log(rooti.diag()));
+    double constants = -(static_cast<double>(xdim)/2.0) * log2pi;
+    
+        arma::vec z = rooti * arma::trans( x - mean) ;    
+        double out = constants - 0.5 * arma::sum(z%z) + rootisum;     
+      
+    if (logd == false) {
+        out = exp(out);
+    }
+    return(out);
+}
+
+// **********************************************************//
+//               Prior calculations for IP sum               //
+// **********************************************************//
+// [[Rcpp::export]]
+double priorsum (arma::mat var, arma::rowvec mu, arma::mat x) {
+	double priorsum = 0;
+	for (int IP = 0; IP < x.n_rows; IP++) {
+		priorsum += dmvnrm_arma(x.row(IP), mu, var, true);
+	}
+	return priorsum;
+}
+
+// **********************************************************//
+//                  Transpose                                //
+// **********************************************************//
+// [[Rcpp::export]]
+arma::mat transpose (arma::mat x) {
+	return x.t();
 }
 
 // **********************************************************//
@@ -393,21 +439,53 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 	return out;
 }
 
-
-
+// [[Rcpp::export]]
+double inner (arma::vec x, arma::vec y) {
+	arma::mat ip = x.t() * y;
+	return(ip(0));
+}
 
 // **********************************************************//
 //                Multiply matrix X and vector B             //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericVector MultiplyYeta(List Y, List eta){
-  NumericVector Yeta(Y.size());
-    for (unsigned int IP = 0; IP < Y.size(); IP++) {
-        arma::vec Y_IP = Y[IP];
-        arma::vec eta_IP = eta[IP];
+NumericMatrix ximat(arma::vec timemat, NumericMatrix eta, NumericVector node) {
+  NumericMatrix xi(node.size(), eta.nrow()); 
+  IntegerVector idx = IntegerVector::create(node.size(), node.size()+1);
+  for (unsigned int IP = 0; IP < eta.nrow(); IP++) {
+  	 	NumericVector eta_IP = eta(IP,_);
+  	 	NumericVector etatime = eta_IP[idx];
+  for (unsigned int i = 0; i < node.size(); i++) {
+  		xi(i, IP) = eta_IP[i];
+  	 	}
+  	 	xi(_, IP) = xi(_, IP) + inner(timemat, etatime);
+  }
+  return xi;
+}
+
+// **********************************************************//
+//            Calculate xi over the entire corpus            //
+// **********************************************************//
+// [[Rcpp::export]]
+List xi_all(NumericMatrix timemat, NumericMatrix eta, NumericVector node, IntegerVector edgetrim) {
+  List xi(timemat.nrow());
+  for (int i = min(edgetrim)-1; i < max(edgetrim); i++) {
+		xi[i] = ximat(timemat(i-1,_), eta, node);
+	}
+  return xi;
+}
+
+// **********************************************************//
+//                Multiply matrix Y and vector B             //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericVector MultiplyYeta(NumericVector Y, NumericMatrix eta){
+  NumericVector Yeta(eta.nrow());
+    for (unsigned int IP = 0; IP < eta.nrow(); IP++) {
+        arma::vec eta_IP = eta(IP,_);
         double sum = 0;
-        for (unsigned int j = 0; j < Y_IP.size(); j++) {
-            sum = sum+Y_IP[j]*eta_IP[j];
+        for (unsigned int j = 0; j < Y.size(); j++) {
+            sum = sum+Y[j]*eta_IP[j];
         }
         Yeta[IP] = sum;
     }
@@ -418,11 +496,11 @@ NumericVector MultiplyYeta(List Y, List eta){
 //      Multiply list of matrix X and list of vector B       //
 // **********************************************************//
 // [[Rcpp::export]]
-List MultiplyXBList(List X, List B){
-	List XB(B.size());
-	for (int IP = 0; IP < B.size(); IP++) {
+List MultiplyXB(List X, NumericMatrix B){
+	List XB(B.nrow());
+	for (int IP = 0; IP < B.nrow(); IP++) {
 		arma::mat XB_IP(X.size(), X.size());
-		arma::vec B_IP = B[IP];
+		arma::vec B_IP = B(IP, _);
 		for (int n = 0; n < X.size(); n++) {
 			List X_n = X[n];
 			arma::mat X_n_IP = X_n[IP];
@@ -518,6 +596,38 @@ double mu_cpp(arma::vec p_d, NumericVector xi) {
     }
     return ximat;
 }
+
+// **********************************************************//
+//              Calculate mu matrix for document d           //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericVector mu_vec(arma::vec p_d, NumericMatrix xi) {
+    int nIP = xi.ncol();
+    NumericVector muvec(xi.nrow());
+    for (int IP = 0; IP < nIP; IP++) {
+        double pdIP = p_d[IP];
+        for (int i = 0; i < xi.nrow(); i++) {
+        	if (pdIP > 0) {
+           		muvec[i] += p_d[IP]*xi(i,IP);
+        	}
+        }
+    }
+    return muvec;
+}
+
+// **********************************************************//
+//            Calculate mu matrix for entire document        //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericMatrix mu_mat(NumericMatrix p_d, List xi, IntegerVector edgetrim) {
+	NumericMatrix sample = xi[max(edgetrim)-1];
+	NumericMatrix mumat(xi.size(), sample.nrow());
+	for (int i = min(edgetrim)-1; i < max(edgetrim); i++) {
+		mumat(i, _) = mu_vec(p_d(i, _), xi[i]);
+	}
+    return mumat;
+}
+
 
 // **********************************************************//
 //              Topic contribution in update of Z            //
@@ -651,6 +761,19 @@ double Timepart(arma::vec mu, double sigma2_tau, double a_d, double t_d){
                 timesum += R::pnorm(log(t_d), mu[i], sqrt(sigma2_tau), FALSE, TRUE);
     		}    		
     }
+    return timesum;
+}
+
+// **********************************************************//
+//              Likelihood evaluation of Timepart            //
+// **********************************************************//
+// [[Rcpp::export]]
+double Timepartsum(NumericMatrix mumat, double sigma2_tau, IntegerVector senders, NumericVector timeinc, IntegerVector edgetrim){
+   double timesum = 0;
+	for (int i = min(edgetrim)-1; i < max(edgetrim); i++) {
+		double a_d = senders[i];
+		timesum += Timepart(mumat(i,_), sigma2_tau, a_d, timeinc[i]);
+	}
     return timesum;
 }
 

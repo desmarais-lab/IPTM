@@ -6,6 +6,44 @@
 
 using namespace Rcpp;
 
+// dmvnrm_arma
+double dmvnrm_arma(arma::rowvec x, arma::rowvec mean, arma::mat sigma, bool logd);
+RcppExport SEXP _IPTM_dmvnrm_arma(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP logdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::rowvec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmvnrm_arma(x, mean, sigma, logd));
+    return rcpp_result_gen;
+END_RCPP
+}
+// priorsum
+double priorsum(arma::mat var, arma::rowvec mu, arma::mat x);
+RcppExport SEXP _IPTM_priorsum(SEXP varSEXP, SEXP muSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type var(varSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(priorsum(var, mu, x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// transpose
+arma::mat transpose(arma::mat x);
+RcppExport SEXP _IPTM_transpose(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(transpose(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // callRMultinom
 IntegerVector callRMultinom(NumericVector x);
 RcppExport SEXP _IPTM_callRMultinom(SEXP xSEXP) {
@@ -167,27 +205,66 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// inner
+double inner(arma::vec x, arma::vec y);
+RcppExport SEXP _IPTM_inner(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(inner(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ximat
+NumericMatrix ximat(arma::vec timemat, NumericMatrix eta, NumericVector node);
+RcppExport SEXP _IPTM_ximat(SEXP timematSEXP, SEXP etaSEXP, SEXP nodeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type timemat(timematSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type eta(etaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type node(nodeSEXP);
+    rcpp_result_gen = Rcpp::wrap(ximat(timemat, eta, node));
+    return rcpp_result_gen;
+END_RCPP
+}
+// xi_all
+List xi_all(NumericMatrix timemat, NumericMatrix eta, NumericVector node, IntegerVector edgetrim);
+RcppExport SEXP _IPTM_xi_all(SEXP timematSEXP, SEXP etaSEXP, SEXP nodeSEXP, SEXP edgetrimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type timemat(timematSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type eta(etaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type node(nodeSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type edgetrim(edgetrimSEXP);
+    rcpp_result_gen = Rcpp::wrap(xi_all(timemat, eta, node, edgetrim));
+    return rcpp_result_gen;
+END_RCPP
+}
 // MultiplyYeta
-NumericVector MultiplyYeta(List Y, List eta);
+NumericVector MultiplyYeta(NumericVector Y, NumericMatrix eta);
 RcppExport SEXP _IPTM_MultiplyYeta(SEXP YSEXP, SEXP etaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< List >::type eta(etaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type eta(etaSEXP);
     rcpp_result_gen = Rcpp::wrap(MultiplyYeta(Y, eta));
     return rcpp_result_gen;
 END_RCPP
 }
-// MultiplyXBList
-List MultiplyXBList(List X, List B);
-RcppExport SEXP _IPTM_MultiplyXBList(SEXP XSEXP, SEXP BSEXP) {
+// MultiplyXB
+List MultiplyXB(List X, NumericMatrix B);
+RcppExport SEXP _IPTM_MultiplyXB(SEXP XSEXP, SEXP BSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type X(XSEXP);
-    Rcpp::traits::input_parameter< List >::type B(BSEXP);
-    rcpp_result_gen = Rcpp::wrap(MultiplyXBList(X, B));
+    Rcpp::traits::input_parameter< NumericMatrix >::type B(BSEXP);
+    rcpp_result_gen = Rcpp::wrap(MultiplyXB(X, B));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -248,6 +325,31 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type p_d(p_dSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type xi(xiSEXP);
     rcpp_result_gen = Rcpp::wrap(mu_cpp(p_d, xi));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mu_vec
+NumericVector mu_vec(arma::vec p_d, NumericMatrix xi);
+RcppExport SEXP _IPTM_mu_vec(SEXP p_dSEXP, SEXP xiSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type p_d(p_dSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type xi(xiSEXP);
+    rcpp_result_gen = Rcpp::wrap(mu_vec(p_d, xi));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mu_mat
+NumericMatrix mu_mat(NumericMatrix p_d, List xi, IntegerVector edgetrim);
+RcppExport SEXP _IPTM_mu_mat(SEXP p_dSEXP, SEXP xiSEXP, SEXP edgetrimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type p_d(p_dSEXP);
+    Rcpp::traits::input_parameter< List >::type xi(xiSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type edgetrim(edgetrimSEXP);
+    rcpp_result_gen = Rcpp::wrap(mu_mat(p_d, xi, edgetrim));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -332,6 +434,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Timepartsum
+double Timepartsum(NumericMatrix mumat, double sigma2_tau, IntegerVector senders, NumericVector timeinc, IntegerVector edgetrim);
+RcppExport SEXP _IPTM_Timepartsum(SEXP mumatSEXP, SEXP sigma2_tauSEXP, SEXP sendersSEXP, SEXP timeincSEXP, SEXP edgetrimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type mumat(mumatSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma2_tau(sigma2_tauSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type senders(sendersSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type timeinc(timeincSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type edgetrim(edgetrimSEXP);
+    rcpp_result_gen = Rcpp::wrap(Timepartsum(mumat, sigma2_tau, senders, timeinc, edgetrim));
+    return rcpp_result_gen;
+END_RCPP
+}
 // geometric_mean
 NumericVector geometric_mean(NumericMatrix data);
 RcppExport SEXP _IPTM_geometric_mean(SEXP dataSEXP) {
@@ -345,6 +462,9 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_IPTM_dmvnrm_arma", (DL_FUNC) &_IPTM_dmvnrm_arma, 4},
+    {"_IPTM_priorsum", (DL_FUNC) &_IPTM_priorsum, 3},
+    {"_IPTM_transpose", (DL_FUNC) &_IPTM_transpose, 1},
     {"_IPTM_callRMultinom", (DL_FUNC) &_IPTM_callRMultinom, 1},
     {"_IPTM_multinom_vec", (DL_FUNC) &_IPTM_multinom_vec, 2},
     {"_IPTM_which_int", (DL_FUNC) &_IPTM_which_int, 2},
@@ -358,19 +478,25 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_Triadic", (DL_FUNC) &_IPTM_Triadic, 3},
     {"_IPTM_Triadic_reduced", (DL_FUNC) &_IPTM_Triadic_reduced, 1},
     {"_IPTM_Netstats_cpp", (DL_FUNC) &_IPTM_Netstats_cpp, 3},
+    {"_IPTM_inner", (DL_FUNC) &_IPTM_inner, 2},
+    {"_IPTM_ximat", (DL_FUNC) &_IPTM_ximat, 3},
+    {"_IPTM_xi_all", (DL_FUNC) &_IPTM_xi_all, 4},
     {"_IPTM_MultiplyYeta", (DL_FUNC) &_IPTM_MultiplyYeta, 2},
-    {"_IPTM_MultiplyXBList", (DL_FUNC) &_IPTM_MultiplyXBList, 2},
+    {"_IPTM_MultiplyXB", (DL_FUNC) &_IPTM_MultiplyXB, 2},
     {"_IPTM_UpdateDenom", (DL_FUNC) &_IPTM_UpdateDenom, 2},
     {"_IPTM_UpdateNum", (DL_FUNC) &_IPTM_UpdateNum, 2},
     {"_IPTM_tabulateC", (DL_FUNC) &_IPTM_tabulateC, 2},
     {"_IPTM_lambda_cpp", (DL_FUNC) &_IPTM_lambda_cpp, 2},
     {"_IPTM_mu_cpp", (DL_FUNC) &_IPTM_mu_cpp, 2},
+    {"_IPTM_mu_vec", (DL_FUNC) &_IPTM_mu_vec, 2},
+    {"_IPTM_mu_mat", (DL_FUNC) &_IPTM_mu_mat, 3},
     {"_IPTM_TopicInEqZ", (DL_FUNC) &_IPTM_TopicInEqZ, 4},
     {"_IPTM_WordInEqZ", (DL_FUNC) &_IPTM_WordInEqZ, 5},
     {"_IPTM_u_Gibbs", (DL_FUNC) &_IPTM_u_Gibbs, 4},
     {"_IPTM_expconst", (DL_FUNC) &_IPTM_expconst, 1},
     {"_IPTM_Edgepart", (DL_FUNC) &_IPTM_Edgepart, 3},
     {"_IPTM_Timepart", (DL_FUNC) &_IPTM_Timepart, 4},
+    {"_IPTM_Timepartsum", (DL_FUNC) &_IPTM_Timepartsum, 5},
     {"_IPTM_geometric_mean", (DL_FUNC) &_IPTM_geometric_mean, 1},
     {NULL, NULL, 0}
 };

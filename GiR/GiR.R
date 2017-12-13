@@ -2,7 +2,7 @@ library(IPTM)
 library(FastGP)
 library(MCMCpack)
 set.seed(123)
-D = 5
+nDocs = 5
 node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
 
@@ -23,8 +23,8 @@ prior.eta = list(rep(3, length(node) + 2), 0.5* diag(length(node) +2))
 prior.tau = c(4,1)
 sigma.Q = c(0.01, 0.007, 0.02)
 
-b = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.b[[2]], prior.b[[1]]))}) 
-eta = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.eta[[2]], prior.eta[[1]]))})
+b = rcpp_rmvnorm(nIP, prior.b[[2]], prior.b[[1]])
+eta =  rcpp_rmvnorm(nIP, prior.eta[[2]], prior.eta[[1]])
 delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
 sigma2_tau = 1/rgamma(1, prior.tau[1], prior.tau[2])
 
@@ -45,7 +45,7 @@ Outer = 3
 Inner = c(3300,3300,1100)
 burn = c(300,300, 100)
 thin = c(3, 3, 2)
-Schein <- Schein(5000, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+Schein <- Schein(1000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)
@@ -54,7 +54,7 @@ Outer = 3
 Inner = c(3300,3300,550)
 burn = c(300,300, 50)
 thin = c(3,3, 1)
-GettingItRight <- GiR(10000, D, node, vocab, nIP, K, n.d, alpha, mvec, beta,
+GettingItRight <- GiR(10000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)

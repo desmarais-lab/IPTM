@@ -4,12 +4,12 @@
 \alias{GenerateDocs.PPC}
 \title{GenerateDocs.PPC}
 \usage{
-GenerateDocs.PPC(D, node, vocab, nIP, K, alpha, mvec, beta, b, eta, delta,
+GenerateDocs.PPC(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, eta, delta,
   sigma2_tau, l, u, netstat, timestat, base.edge, base.text, z,
   word_type_topic_counts)
 }
 \arguments{
-\item{D}{number of documents to be generated}
+\item{nDocs}{number of documents to be generated}
 
 \item{node}{vector of node id's (ID starting from 1)}
 

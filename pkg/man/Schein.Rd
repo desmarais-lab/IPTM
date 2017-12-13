@@ -4,7 +4,7 @@
 \alias{Schein}
 \title{Schein}
 \usage{
-Schein(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, prior.b,
+Schein(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, prior.b,
   prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
   netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"), base.edge,
   base.text, generate_PP_plots = TRUE)
@@ -12,7 +12,7 @@ Schein(Nsamp, D, node, vocab, nIP, K, n.d, alpha, mvec, beta, prior.b,
 \arguments{
 \item{Nsamp}{number of GiR samples to be generated}
 
-\item{D}{number of documents to be generated per each sample}
+\item{nDocs}{number of documents to be generated per each sample}
 
 \item{node}{vector of node id's (ID starting from 1)}
 

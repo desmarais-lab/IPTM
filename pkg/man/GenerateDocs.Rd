@@ -4,13 +4,13 @@
 \alias{GenerateDocs}
 \title{GenerateDocs}
 \usage{
-GenerateDocs(D, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
+GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
   sigma2_tau, l, support, netstat, timestat, base.edge = NULL,
   base.text = NULL, topic_token_assignments = NULL, backward = FALSE,
   base = FALSE)
 }
 \arguments{
-\item{D}{number of documents to be generated}
+\item{nDocs}{number of documents to be generated}
 
 \item{node}{vector of node id's (ID starting from 1)}
 
