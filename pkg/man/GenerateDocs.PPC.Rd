@@ -6,7 +6,7 @@
 \usage{
 GenerateDocs.PPC(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, eta, delta,
   sigma2_tau, l, u, netstat, timestat, base.edge, base.text, z,
-  word_type_topic_counts)
+  word_type_topic_counts, text.length)
 }
 \arguments{
 \item{nDocs}{number of documents to be generated}
@@ -45,9 +45,11 @@ GenerateDocs.PPC(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, eta, delta,
 
 \item{base.text}{texts corresponding to base.edge}
 
+\item{z}{list topic-token assignments}
+
 \item{word_type_topic_counts}{word_type_topic_counts from inference}
 
-\item{topic_token_assignments}{matrix of topic-token assignments}
+\item{text.length}{number of words in each document}
 }
 \value{
 generated edge and text

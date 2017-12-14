@@ -4,12 +4,10 @@
 \alias{IPTM.PPC}
 \title{IPTM.PPC}
 \usage{
-IPTM.PPC(O, edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, mvec, beta,
-  prior.b, prior.delta, prior.eta, prior.tau, Outer, Inner, burn, thin, netstat,
-  timestat, optimize = FALSE, initial = NULL, inference)
+IPTM.PPC(Out, edge, node, textlist, vocab, nIP, K, netstat, timestat, inference)
 }
 \arguments{
-\item{O}{number of outer iterations of inference from which to generate predictions}
+\item{Out}{number of outer iterations of inference from which to generate predictions}
 
 \item{edge}{list of document information with 3 elements (element 1 sender, element 2 receiver, element 3 time in unix.time format)}
 
@@ -23,37 +21,9 @@ IPTM.PPC(O, edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, mvec, beta,
 
 \item{K}{total number of topics}
 
-\item{sigma.Q}{proposal distribution variance parameter}
-
-\item{alpha}{Dirichlet concentration prior for document-topic distribution}
-
-\item{mvec}{Dirichlet base prior for document-topic distribution}
-
-\item{beta}{Dirichlet concentration prior for topic-word distribution}
-
-\item{prior.b}{prior mean and covariance of b in multivariate Normal distribution}
-
-\item{prior.delta}{prior mean and variance of delta in Normal distribution}
-
-\item{prior.eta}{prior mean and covariance of eta in multivariate Normal distribution}
-
-\item{prior.tau}{prior shape and scale parameter of sigma2_tau in inverse-Gamma distribution}
-
-\item{Outer}{size of outer iterations}
-
-\item{Inner}{size of inner iteration for Metropolis-Hastings updates}
-
-\item{burn}{iterations to be discarded at the beginning of Metropolis-Hastings chains}
-
-\item{thin}{the thinning interval of Metropolis-Hastings chains}
-
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 
 \item{timestat}{additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")}
-
-\item{optimize}{logical to optimize alpha (Dirichlet concentration prior for document-topic distribution)}
-
-\item{initial}{list of initial values user wants to assign including (alpha, mvec, delta, b, eta, l, z, u, sigma2_tau, proposal.var1, proposal.var2)}
 
 \item{inference}{inference result}
 }
