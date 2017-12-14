@@ -960,14 +960,16 @@ GenerateDocs.PPC = function(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, et
     text[[base.length+d]] = rep(NA, N.d)
     phi.k = rep(NA, V)
     topic.d = z[[base.length+d]]
-    for (n in 1:N.d){
+    if (N.d > 0) {
+    		for (n in 1:N.d){
           for (w in 1:V) {
             phi.k[w] = (word_type_topic_counts[w, topic.d[n]]+beta/V) / (sum(word_type_topic_counts[, topic.d[n]])+beta)
           }
           text[[base.length+d]][n] = multinom_vec(1, phi.k)
           word_type_topic_counts[text[[base.length+d]][n], topic.d[n]] = word_type_topic_counts[text[[base.length + d]][n], topic.d[n]]+1
-    }
-    names(text[[base.length+d]]) = topic.d
+   		}
+   		names(text[[base.length+d]]) = topic.d
+   	} 	
     history.t = History(edge, p.d, node, t.d+exp(-745))
     X = Netstats_cpp(history.t, node, netstat)
     vu = MultiplyXB(X, b)     
