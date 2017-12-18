@@ -11,7 +11,6 @@ using std::min;
 using std::abs;
 using std::sqrt;
 using std::pow;
-
 using namespace Rcpp; 
 
 void R_init_markovchain(DllInfo* info) {
@@ -224,7 +223,7 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
 			    } 		
 			    IPmat[IP] = IPlist_IP;
   			}
-	   }
+         }
 	  }
   }
 	return IPmat;
@@ -748,6 +747,25 @@ double Edgepart(arma::mat u, arma::mat lambda, double delta){
 	}
   	return edgesum;
 }
+
+// **********************************************************//
+//              Likelihood evaluation of Edgepart            //
+// **********************************************************//
+// [[Rcpp::export]]
+double Edgepartsum(List edge, NumericMatrix p_d, IntegerVector node, IntegerVector netstat, NumericMatrix B, List u, double delta, IntegerVector uniquehist){
+    double edgesum = 0;
+    for (IntegerVector::iterator it = uniquehist.begin(); it != uniquehist.end(); ++it) {
+        int it2 = *it-1;
+        List edge_d = edge[it2-1];
+        List history= History(edge, p_d, node, static_cast<double>(edge_d[2])+exp(-745));
+        List X = Netstats_cpp(history, node, netstat);
+        List XB = MultiplyXB(X, B);
+        arma::mat lambda = lambda_cpp(p_d(it2, _), XB);
+        edgesum += Edgepart(u[it2], lambda, delta);
+    }
+    return edgesum;
+}
+
 
 // **********************************************************//
 //              Likelihood evaluation of Timepart            //

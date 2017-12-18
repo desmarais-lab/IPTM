@@ -133,6 +133,10 @@ Edgepart <- function(u, lambda, delta) {
     .Call('_IPTM_Edgepart', PACKAGE = 'IPTM', u, lambda, delta)
 }
 
+Edgepartsum <- function(edge, p_d, node, netstat, B, u, delta, uniquehist) {
+    .Call('_IPTM_Edgepartsum', PACKAGE = 'IPTM', edge, p_d, node, netstat, B, u, delta, uniquehist)
+}
+
 Timepart <- function(mu, sigma2_tau, a_d, t_d) {
     .Call('_IPTM_Timepart', PACKAGE = 'IPTM', mu, sigma2_tau, a_d, t_d)
 }
