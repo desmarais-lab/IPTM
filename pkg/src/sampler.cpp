@@ -757,7 +757,8 @@ double Edgepartsum(List edge, NumericMatrix p_d, IntegerVector node, IntegerVect
     for (IntegerVector::iterator it = uniquehist.begin(); it != uniquehist.end(); ++it) {
         int it2 = *it-1;
         List edge_d = edge[it2-1];
-        List history= History(edge, p_d, node, edge_d[2]+exp(-745));
+        double prevtime = edge_d[2];
+        List history= History(edge, p_d, node, prevtime+exp(-745));
         List X = Netstats_cpp(history, node, netstat);
         List XB = MultiplyXB(X, B);
         arma::mat lambda = lambda_cpp(p_d(it2, _), XB);
