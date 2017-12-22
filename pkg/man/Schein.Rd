@@ -36,7 +36,7 @@ Schein(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, prior.b,
 
 \item{prior.eta}{prior mean and covariance of eta in multivariate Normal distribution}
 
-\item{prior.tau}{prior shape and scale parameter of sigma2_tau in inverse-Gamma distribution}
+\item{prior.tau}{prior shape and scale parameter of sigma_tau in inverse-Gamma distribution}
 
 \item{sigma.Q}{proposal distribution variance parameter}
 

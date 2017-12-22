@@ -468,8 +468,8 @@ NumericMatrix ximat(arma::vec timemat, NumericMatrix eta, NumericVector node) {
 // [[Rcpp::export]]
 List xi_all(NumericMatrix timemat, NumericMatrix eta, NumericVector node, IntegerVector edgetrim) {
   List xi(timemat.nrow());
-  for (int i = (min(edgetrim)-1); i < max(edgetrim); i++) {
-		xi[i] = ximat(timemat(i-1,_), eta, node);
+  for (IntegerVector::iterator it = edgetrim.begin(); it != edgetrim.end(); ++it) {
+ 		xi[*it-1] = ximat(timemat(*it-2,_), eta, node);
 	}
   return xi;
 }
@@ -570,10 +570,7 @@ arma::mat lambda_cpp(arma::vec p_d, List XB) {
   for (int IP = 0; IP < nIP; IP++) {
   	if (p_d[IP] > 0) {
     arma::mat XB_IP = XB[IP];
-  	arma::mat eXB_IP = exp(XB_IP);
-  	arma::umat uinf = find(eXB_IP == arma::datum::inf);
-  	eXB_IP.elem(uinf).fill(exp(700));
-    lambdamat += p_d[IP]*eXB_IP;
+    lambdamat += p_d[IP]*XB_IP;
   	}
   }
   lambdamat.diag().zeros();
@@ -621,8 +618,9 @@ NumericVector mu_vec(arma::vec p_d, NumericMatrix xi) {
 NumericMatrix mu_mat(NumericMatrix p_d, List xi, IntegerVector edgetrim) {
 	NumericMatrix sample = xi[max(edgetrim)-1];
 	NumericMatrix mumat(xi.size(), sample.nrow());
-	for (int i = (min(edgetrim)-1); i < max(edgetrim); i++) {
-		mumat(i, _) = mu_vec(p_d(i, _), xi[i]);
+	for (IntegerVector::iterator it = edgetrim.begin(); it != edgetrim.end(); ++it) {
+        int it2 = *it-1;
+		mumat(it2, _) = mu_vec(p_d(it2, _), xi[it2]);
 	}
     return mumat;
 }
@@ -665,6 +663,32 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 	return consts;
 }
 
+
+// **********************************************************//
+//        Topic and Word contribution in update of Z         //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericMatrix TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List tableW,
+                        double alpha, NumericVector mvec, double beta, int V){
+    IntegerVector table_topics = tabulateC(z_d, K);
+    NumericVector table_topic_adj(K);
+    NumericVector alphamvec(K);
+    NumericMatrix consts(textlistd.size(), K);
+    for (int k = 0; k < K; k++){
+        table_topic_adj[k] = table_topics[k];
+        alphamvec[k] = alpha*mvec[k];
+        NumericVector tablek = tableW[k];
+        NumericVector num(textlistd.size());
+        NumericVector denom(textlistd.size());
+        for (unsigned int w = 0; w < textlistd.size(); w++){
+            num[w] = log(tablek[textlistd[w]-1]+beta/V);
+            denom[w] = log(sum(tablek)+beta);
+        }
+        consts(_,k) = num-denom +log(table_topic_adj[k]+alphamvec[k]);
+    }
+    return consts;
+}
+
 // **********************************************************//
 //         Resampling the augmented data J_a (Sec 3.1)       //
 // **********************************************************//
@@ -674,17 +698,13 @@ arma::vec u_Gibbs(arma::vec u_di, arma::vec lambda_di, double delta, int j) {
 	arma::vec u_di0 = u_di;
 	u_di0[j-1] = 0;
 	double sumu0 = sum(u_di0);
-	if (lambda_di[j-1] < exp(-745)) {
-	  lambda_di[j-1] = exp(-745);
-	}
-	prob[1] = delta+log(lambda_di[j-1]);
+	prob[1] = delta+lambda_di[j-1];
 	if (sumu0 > 0) {
 		prob[0] = 0;
 	} else {
 		prob[0] = -arma::datum::inf;
 	}
-	prob = prob-max(prob);
-	return exp(prob);
+	return prob;
 }
 
 // **********************************************************//
@@ -710,15 +730,15 @@ NumericVector expconst(NumericVector consts) {
 // [[Rcpp::export]]
 double Edgepart(arma::mat u, arma::mat lambda, double delta){
   double edgesum = 0;
-  arma::umat uinf = find(log(lambda)==-arma::datum::inf);
-  lambda.elem(uinf).fill(exp(-745));
+  //arma::umat uinf = find(log(lambda)==-arma::datum::inf);
+  //lambda.elem(uinf).fill(exp(-745));
 	for (unsigned int i = 0; i < u.n_rows; i++) {
 		arma::vec normal = arma::zeros(u.n_rows-1);
 		double prob = 0;
 		int iter = 0;
 		for (unsigned int j = 0; j < u.n_rows; j++) {
 			if (i != j) {
-				double pre = delta+log(lambda(i, j));
+				double pre = delta+lambda(i, j);
 				if (pre > 35) {
 					normal[iter] = pre;
 				} else {
@@ -728,7 +748,7 @@ double Edgepart(arma::mat u, arma::mat lambda, double delta){
 						normal[iter] = log(exp(pre)+1);
 					}
 				}
-				prob += (delta+log(lambda(i, j)))*u(i, j);
+				prob += (delta+lambda(i, j))*u(i, j);
 				iter = iter+1;
 		  }
 		}
@@ -752,31 +772,27 @@ double Edgepart(arma::mat u, arma::mat lambda, double delta){
 //              Likelihood evaluation of Edgepart            //
 // **********************************************************//
 // [[Rcpp::export]]
-double Edgepartsum(List edge, NumericMatrix p_d, IntegerVector node, IntegerVector netstat, NumericMatrix B, List u, double delta, IntegerVector uniquehist){
+double Edgepartsum(List X, NumericMatrix p_d, NumericMatrix B, List u, double delta, IntegerVector uniquehist){
     double edgesum = 0;
     for (IntegerVector::iterator it = uniquehist.begin(); it != uniquehist.end(); ++it) {
         int it2 = *it-1;
-        List edge_d = edge[it2-1];
-        List history= History(edge, p_d, node, Rcpp::as<double>(edge_d[2])+exp(-745));
-        List X = Netstats_cpp(history, node, netstat);
-        List XB = MultiplyXB(X, B);
+        List XB = MultiplyXB(X[it2], B);
         arma::mat lambda = lambda_cpp(p_d(it2, _), XB);
         edgesum += Edgepart(u[it2], lambda, delta);
     }
     return edgesum;
 }
 
-
 // **********************************************************//
 //              Likelihood evaluation of Timepart            //
 // **********************************************************//
 // [[Rcpp::export]]
-double Timepart(arma::vec mu, double sigma2_tau, double a_d, double t_d){
+double Timepart(arma::vec mu, double sigma_tau, double a_d, double t_d){
     unsigned int observed = a_d-1;
-    double timesum = R::dnorm(log(t_d), mu[observed], sqrt(sigma2_tau), TRUE);
+    double timesum = R::dnorm(log(t_d), mu[observed], sigma_tau, TRUE);
     for (unsigned int i = 0; i < mu.size(); i++) {
     		if (i != observed) {
-                timesum += R::pnorm(log(t_d), mu[i], sqrt(sigma2_tau), FALSE, TRUE);
+                timesum += R::pnorm(log(t_d), mu[i], sigma_tau, FALSE, TRUE);
     		}    		
     }
     return timesum;
@@ -786,11 +802,13 @@ double Timepart(arma::vec mu, double sigma2_tau, double a_d, double t_d){
 //              Likelihood evaluation of Timepart            //
 // **********************************************************//
 // [[Rcpp::export]]
-double Timepartsum(NumericMatrix mumat, double sigma2_tau, IntegerVector senders, NumericVector timeinc, IntegerVector edgetrim){
+double Timepartsum(NumericMatrix mumat, double sigma_tau, IntegerVector senders, NumericVector timeinc, IntegerVector edgetrim){
    double timesum = 0;
-	for (int i = (min(edgetrim)-1); i < max(edgetrim); i++) {
-		double a_d = senders[i];
-		timesum += Timepart(mumat(i,_), sigma2_tau, a_d, timeinc[i]);
+    for (IntegerVector::iterator it = edgetrim.begin(); it != edgetrim.end(); ++it) {
+        int it2 = *it-1;
+        double a_d = senders[it2];
+		timesum += Timepart(mumat(it2,_), sigma_tau, a_d, timeinc[it2]);
 	}
     return timesum;
 }
+

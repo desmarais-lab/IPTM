@@ -5,7 +5,7 @@
 \title{GenerateDocs.PPC}
 \usage{
 GenerateDocs.PPC(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, eta, delta,
-  sigma2_tau, l, u, netstat, timestat, base.edge, base.text, z,
+  sigma_tau, l, u, netstat, timestat, base.edge, base.text, z,
   word_type_topic_counts, text.length)
 }
 \arguments{
@@ -31,7 +31,7 @@ GenerateDocs.PPC(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, eta, delta,
 
 \item{delta}{tuning parameter for the number of recipients}
 
-\item{sigma2_tau}{variance parameter for the timestamps}
+\item{sigma_tau}{variance parameter for the timestamps}
 
 \item{l}{topic-interaction pattern assignment}
 

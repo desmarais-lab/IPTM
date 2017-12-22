@@ -12,12 +12,12 @@ Imports:
     Rcpp,
     reshape,
     coda,
-    MCMCpack,
     combinat,
     mgcv,
     lubridate,
     RcppArmadillo,
-    truncnorm
+    truncnorm,
+    LaplacesDemon
 LinkingTo:
     Rcpp,
     RcppArmadillo 

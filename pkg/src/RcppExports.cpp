@@ -382,6 +382,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// TopicWord
+NumericMatrix TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List tableW, double alpha, NumericVector mvec, double beta, int V);
+RcppExport SEXP _IPTM_TopicWord(SEXP KSEXP, SEXP z_dSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP betaSEXP, SEXP VSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type K(KSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type z_d(z_dSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type textlistd(textlistdSEXP);
+    Rcpp::traits::input_parameter< List >::type tableW(tableWSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type mvec(mvecSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< int >::type V(VSEXP);
+    rcpp_result_gen = Rcpp::wrap(TopicWord(K, z_d, textlistd, tableW, alpha, mvec, beta, V));
+    return rcpp_result_gen;
+END_RCPP
+}
 // u_Gibbs
 arma::vec u_Gibbs(arma::vec u_di, arma::vec lambda_di, double delta, int j);
 RcppExport SEXP _IPTM_u_Gibbs(SEXP u_diSEXP, SEXP lambda_diSEXP, SEXP deltaSEXP, SEXP jSEXP) {
@@ -421,49 +439,47 @@ BEGIN_RCPP
 END_RCPP
 }
 // Edgepartsum
-double Edgepartsum(List edge, NumericMatrix p_d, IntegerVector node, IntegerVector netstat, NumericMatrix B, List u, double delta, IntegerVector uniquehist);
-RcppExport SEXP _IPTM_Edgepartsum(SEXP edgeSEXP, SEXP p_dSEXP, SEXP nodeSEXP, SEXP netstatSEXP, SEXP BSEXP, SEXP uSEXP, SEXP deltaSEXP, SEXP uniquehistSEXP) {
+double Edgepartsum(List X, NumericMatrix p_d, NumericMatrix B, List u, double delta, IntegerVector uniquehist);
+RcppExport SEXP _IPTM_Edgepartsum(SEXP XSEXP, SEXP p_dSEXP, SEXP BSEXP, SEXP uSEXP, SEXP deltaSEXP, SEXP uniquehistSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type edge(edgeSEXP);
+    Rcpp::traits::input_parameter< List >::type X(XSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type p_d(p_dSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type netstat(netstatSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type B(BSEXP);
     Rcpp::traits::input_parameter< List >::type u(uSEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type uniquehist(uniquehistSEXP);
-    rcpp_result_gen = Rcpp::wrap(Edgepartsum(edge, p_d, node, netstat, B, u, delta, uniquehist));
+    rcpp_result_gen = Rcpp::wrap(Edgepartsum(X, p_d, B, u, delta, uniquehist));
     return rcpp_result_gen;
 END_RCPP
 }
 // Timepart
-double Timepart(arma::vec mu, double sigma2_tau, double a_d, double t_d);
-RcppExport SEXP _IPTM_Timepart(SEXP muSEXP, SEXP sigma2_tauSEXP, SEXP a_dSEXP, SEXP t_dSEXP) {
+double Timepart(arma::vec mu, double sigma_tau, double a_d, double t_d);
+RcppExport SEXP _IPTM_Timepart(SEXP muSEXP, SEXP sigma_tauSEXP, SEXP a_dSEXP, SEXP t_dSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< double >::type sigma2_tau(sigma2_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma_tau(sigma_tauSEXP);
     Rcpp::traits::input_parameter< double >::type a_d(a_dSEXP);
     Rcpp::traits::input_parameter< double >::type t_d(t_dSEXP);
-    rcpp_result_gen = Rcpp::wrap(Timepart(mu, sigma2_tau, a_d, t_d));
+    rcpp_result_gen = Rcpp::wrap(Timepart(mu, sigma_tau, a_d, t_d));
     return rcpp_result_gen;
 END_RCPP
 }
 // Timepartsum
-double Timepartsum(NumericMatrix mumat, double sigma2_tau, IntegerVector senders, NumericVector timeinc, IntegerVector edgetrim);
-RcppExport SEXP _IPTM_Timepartsum(SEXP mumatSEXP, SEXP sigma2_tauSEXP, SEXP sendersSEXP, SEXP timeincSEXP, SEXP edgetrimSEXP) {
+double Timepartsum(NumericMatrix mumat, double sigma_tau, IntegerVector senders, NumericVector timeinc, IntegerVector edgetrim);
+RcppExport SEXP _IPTM_Timepartsum(SEXP mumatSEXP, SEXP sigma_tauSEXP, SEXP sendersSEXP, SEXP timeincSEXP, SEXP edgetrimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type mumat(mumatSEXP);
-    Rcpp::traits::input_parameter< double >::type sigma2_tau(sigma2_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma_tau(sigma_tauSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type senders(sendersSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type timeinc(timeincSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type edgetrim(edgetrimSEXP);
-    rcpp_result_gen = Rcpp::wrap(Timepartsum(mumat, sigma2_tau, senders, timeinc, edgetrim));
+    rcpp_result_gen = Rcpp::wrap(Timepartsum(mumat, sigma_tau, senders, timeinc, edgetrim));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -499,10 +515,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_mu_mat", (DL_FUNC) &_IPTM_mu_mat, 3},
     {"_IPTM_TopicInEqZ", (DL_FUNC) &_IPTM_TopicInEqZ, 4},
     {"_IPTM_WordInEqZ", (DL_FUNC) &_IPTM_WordInEqZ, 5},
+    {"_IPTM_TopicWord", (DL_FUNC) &_IPTM_TopicWord, 8},
     {"_IPTM_u_Gibbs", (DL_FUNC) &_IPTM_u_Gibbs, 4},
     {"_IPTM_expconst", (DL_FUNC) &_IPTM_expconst, 1},
     {"_IPTM_Edgepart", (DL_FUNC) &_IPTM_Edgepart, 3},
-    {"_IPTM_Edgepartsum", (DL_FUNC) &_IPTM_Edgepartsum, 8},
+    {"_IPTM_Edgepartsum", (DL_FUNC) &_IPTM_Edgepartsum, 6},
     {"_IPTM_Timepart", (DL_FUNC) &_IPTM_Timepart, 4},
     {"_IPTM_Timepartsum", (DL_FUNC) &_IPTM_Timepartsum, 5},
     {NULL, NULL, 0}

@@ -121,6 +121,10 @@ WordInEqZ <- function(K, textlistd, tableW, beta, V) {
     .Call('_IPTM_WordInEqZ', PACKAGE = 'IPTM', K, textlistd, tableW, beta, V)
 }
 
+TopicWord <- function(K, z_d, textlistd, tableW, alpha, mvec, beta, V) {
+    .Call('_IPTM_TopicWord', PACKAGE = 'IPTM', K, z_d, textlistd, tableW, alpha, mvec, beta, V)
+}
+
 u_Gibbs <- function(u_di, lambda_di, delta, j) {
     .Call('_IPTM_u_Gibbs', PACKAGE = 'IPTM', u_di, lambda_di, delta, j)
 }
@@ -133,15 +137,15 @@ Edgepart <- function(u, lambda, delta) {
     .Call('_IPTM_Edgepart', PACKAGE = 'IPTM', u, lambda, delta)
 }
 
-Edgepartsum <- function(edge, p_d, node, netstat, B, u, delta, uniquehist) {
-    .Call('_IPTM_Edgepartsum', PACKAGE = 'IPTM', edge, p_d, node, netstat, B, u, delta, uniquehist)
+Edgepartsum <- function(X, p_d, B, u, delta, uniquehist) {
+    .Call('_IPTM_Edgepartsum', PACKAGE = 'IPTM', X, p_d, B, u, delta, uniquehist)
 }
 
-Timepart <- function(mu, sigma2_tau, a_d, t_d) {
-    .Call('_IPTM_Timepart', PACKAGE = 'IPTM', mu, sigma2_tau, a_d, t_d)
+Timepart <- function(mu, sigma_tau, a_d, t_d) {
+    .Call('_IPTM_Timepart', PACKAGE = 'IPTM', mu, sigma_tau, a_d, t_d)
 }
 
-Timepartsum <- function(mumat, sigma2_tau, senders, timeinc, edgetrim) {
-    .Call('_IPTM_Timepartsum', PACKAGE = 'IPTM', mumat, sigma2_tau, senders, timeinc, edgetrim)
+Timepartsum <- function(mumat, sigma_tau, senders, timeinc, edgetrim) {
+    .Call('_IPTM_Timepartsum', PACKAGE = 'IPTM', mumat, sigma_tau, senders, timeinc, edgetrim)
 }
 

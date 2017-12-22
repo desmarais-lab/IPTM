@@ -35,7 +35,7 @@ IPTM.inference.GiR(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, mvec,
 
 \item{prior.eta}{prior mean and covariance of eta in multivariate Normal distribution}
 
-\item{prior.tau}{prior shape and scale parameter of sigma2_tau in inverse-Gamma distribution}
+\item{prior.tau}{prior shape and scale parameter of sigma_tau in inverse-Gamma distribution}
 
 \item{Outer}{size of outer iterations}
 
@@ -51,7 +51,7 @@ IPTM.inference.GiR(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, mvec,
 
 \item{optimize}{logical to optimize alpha (Dirichlet concentration prior for document-topic distribution)}
 
-\item{initial}{list of initial values user wants to assign including (alpha, mvec, delta, b, eta, l, z, u, sigma2_tau, proposal.var1, proposal.var2)}
+\item{initial}{list of initial values user wants to assign including (alpha, mvec, delta, b, eta, l, z, u, sigma_tau, proposal.var1, proposal.var2)}
 }
 \value{
 MCMC output containing all parameter estimates

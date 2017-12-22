@@ -5,7 +5,7 @@
 \title{GenerateDocs}
 \usage{
 GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
-  sigma2_tau, l, support, netstat, timestat, base.edge = NULL,
+  sigma_tau, l, support, netstat, timestat, base.edge = NULL,
   base.text = NULL, topic_token_assignments = NULL, backward = FALSE,
   base = FALSE)
 }
@@ -34,7 +34,7 @@ GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
 
 \item{delta}{tuning parameter for the number of recipients}
 
-\item{sigma2_tau}{variance parameter for the timestamps}
+\item{sigma_tau}{variance parameter for the timestamps}
 
 \item{l}{topic-interaction pattern assignment}
 

@@ -13,9 +13,9 @@ K = 25
 for (i in 1:5){
     set.seed(i)
     Daretest = IPTM.inference(edge = Dare$edge, node = Dare$node, textlist = Dare$text, vocab= Dare$vocab, nIP = nIP, K = K,
-    sigma.Q = c(0.0001, 0.001, 5), alpha = 2, mvec = rep(1/K, K), beta = 2, prior.b = list(rep(0, 24), 10*diag(24)),
-    prior.delta = c(-30, 1),  prior.eta = list(rep(0, length(Dare$node)+2), 10*diag(length(Dare$node)+2)), prior.tau = c(1,1),
-    Outer = 10, Inner = c(22000,22000, 1100), burn = c(2000,2000, 100), thin = c(20,10,1),
+    sigma.Q = c(0.00005, 0.001, 5, 0.5), alpha = 2, mvec = rep(1/K, K), beta = 2, prior.b = list(rep(0, 24), 10*diag(24)),
+    prior.delta = c(-1000, 5),  prior.eta = list(rep(10, length(Dare$node)+2), 10*diag(length(Dare$node)+2)), prior.tau = 25,
+    Outer = 3, Inner = c(2200,2200, 1100), burn = c(200,200, 100), thin = c(2,2,1),
     netstat = c("dyadic", "degree", "triadic"), timestat = c("dayofweek", "timeofday"), optimize = TRUE, initial = NULL)
     filename = paste0("Dare_full_",nIP,"_",K,"_ver",i,".RData")
     save(Daretest, file = filename)
