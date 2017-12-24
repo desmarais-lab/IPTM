@@ -2,7 +2,6 @@
 #include <cmath>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
-#include <lapacke.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 
 using std::log;
@@ -18,6 +17,8 @@ void R_init_markovchain(DllInfo* info) {
 	R_registerRoutines(info, NULL, NULL, NULL, NULL);
 	R_useDynamicSymbols(info, TRUE);	
 }
+
+extern "C"{ void dsyev( char* jobz, char* uplo, int* n, double* a, int* lda, double* w, double* work, int* lwork, int* info ); }
 
 const double log2pi = std::log(2.0 * M_PI);
 
