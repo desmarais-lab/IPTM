@@ -5,6 +5,10 @@ dmvnrm_arma <- function(x, mean, sigma, logd = FALSE) {
     .Call('_IPTM_dmvnrm_arma', PACKAGE = 'IPTM', x, mean, sigma, logd)
 }
 
+exponential <- function(x) {
+    .Call('_IPTM_exponential', PACKAGE = 'IPTM', x)
+}
+
 priorsum <- function(var, mu, x) {
     .Call('_IPTM_priorsum', PACKAGE = 'IPTM', var, mu, x)
 }
@@ -69,12 +73,12 @@ inner <- function(x, y) {
     .Call('_IPTM_inner', PACKAGE = 'IPTM', x, y)
 }
 
-ximat <- function(timemat, eta, node) {
-    .Call('_IPTM_ximat', PACKAGE = 'IPTM', timemat, eta, node)
+ximat <- function(timemat, eta1, eta2) {
+    .Call('_IPTM_ximat', PACKAGE = 'IPTM', timemat, eta1, eta2)
 }
 
-xi_all <- function(timemat, eta, node, edgetrim) {
-    .Call('_IPTM_xi_all', PACKAGE = 'IPTM', timemat, eta, node, edgetrim)
+xi_all <- function(timemat, eta1, eta2, edgetrim) {
+    .Call('_IPTM_xi_all', PACKAGE = 'IPTM', timemat, eta1, eta2, edgetrim)
 }
 
 MultiplyYeta <- function(Y, eta) {
@@ -137,8 +141,12 @@ Edgepart <- function(u, lambda, delta) {
     .Call('_IPTM_Edgepart', PACKAGE = 'IPTM', u, lambda, delta)
 }
 
-Edgepartsum <- function(X, p_d, B, u, delta, uniquehist) {
-    .Call('_IPTM_Edgepartsum', PACKAGE = 'IPTM', X, p_d, B, u, delta, uniquehist)
+Edgepartsum <- function(X, p_d, B, u, delta) {
+    .Call('_IPTM_Edgepartsum', PACKAGE = 'IPTM', X, p_d, B, u, delta)
+}
+
+Edgepartsum2 <- function(X, p_d, B, u, delta, uniquehist) {
+    .Call('_IPTM_Edgepartsum2', PACKAGE = 'IPTM', X, p_d, B, u, delta, uniquehist)
 }
 
 Timepart <- function(mu, sigma_tau, a_d, t_d) {

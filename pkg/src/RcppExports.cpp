@@ -20,6 +20,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// exponential
+float exponential(float x);
+RcppExport SEXP _IPTM_exponential(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< float >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(exponential(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // priorsum
 double priorsum(arma::mat var, arma::rowvec mu, arma::mat x);
 RcppExport SEXP _IPTM_priorsum(SEXP varSEXP, SEXP muSEXP, SEXP xSEXP) {
@@ -218,29 +229,29 @@ BEGIN_RCPP
 END_RCPP
 }
 // ximat
-NumericMatrix ximat(arma::vec timemat, NumericMatrix eta, NumericVector node);
-RcppExport SEXP _IPTM_ximat(SEXP timematSEXP, SEXP etaSEXP, SEXP nodeSEXP) {
+NumericMatrix ximat(NumericVector timemat, NumericMatrix eta1, NumericMatrix eta2);
+RcppExport SEXP _IPTM_ximat(SEXP timematSEXP, SEXP eta1SEXP, SEXP eta2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type timemat(timematSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type eta(etaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type node(nodeSEXP);
-    rcpp_result_gen = Rcpp::wrap(ximat(timemat, eta, node));
+    Rcpp::traits::input_parameter< NumericVector >::type timemat(timematSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type eta1(eta1SEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type eta2(eta2SEXP);
+    rcpp_result_gen = Rcpp::wrap(ximat(timemat, eta1, eta2));
     return rcpp_result_gen;
 END_RCPP
 }
 // xi_all
-List xi_all(NumericMatrix timemat, NumericMatrix eta, NumericVector node, IntegerVector edgetrim);
-RcppExport SEXP _IPTM_xi_all(SEXP timematSEXP, SEXP etaSEXP, SEXP nodeSEXP, SEXP edgetrimSEXP) {
+List xi_all(NumericMatrix timemat, NumericMatrix eta1, NumericMatrix eta2, IntegerVector edgetrim);
+RcppExport SEXP _IPTM_xi_all(SEXP timematSEXP, SEXP eta1SEXP, SEXP eta2SEXP, SEXP edgetrimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type timemat(timematSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type eta(etaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type node(nodeSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type eta1(eta1SEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type eta2(eta2SEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type edgetrim(edgetrimSEXP);
-    rcpp_result_gen = Rcpp::wrap(xi_all(timemat, eta, node, edgetrim));
+    rcpp_result_gen = Rcpp::wrap(xi_all(timemat, eta1, eta2, edgetrim));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -439,8 +450,23 @@ BEGIN_RCPP
 END_RCPP
 }
 // Edgepartsum
-double Edgepartsum(List X, NumericMatrix p_d, NumericMatrix B, List u, double delta, IntegerVector uniquehist);
-RcppExport SEXP _IPTM_Edgepartsum(SEXP XSEXP, SEXP p_dSEXP, SEXP BSEXP, SEXP uSEXP, SEXP deltaSEXP, SEXP uniquehistSEXP) {
+double Edgepartsum(List X, NumericVector p_d, NumericMatrix B, arma::mat u, double delta);
+RcppExport SEXP _IPTM_Edgepartsum(SEXP XSEXP, SEXP p_dSEXP, SEXP BSEXP, SEXP uSEXP, SEXP deltaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type p_d(p_dSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type B(BSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type u(uSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    rcpp_result_gen = Rcpp::wrap(Edgepartsum(X, p_d, B, u, delta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Edgepartsum2
+double Edgepartsum2(List X, NumericMatrix p_d, NumericMatrix B, List u, double delta, IntegerVector uniquehist);
+RcppExport SEXP _IPTM_Edgepartsum2(SEXP XSEXP, SEXP p_dSEXP, SEXP BSEXP, SEXP uSEXP, SEXP deltaSEXP, SEXP uniquehistSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -450,7 +476,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type u(uSEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type uniquehist(uniquehistSEXP);
-    rcpp_result_gen = Rcpp::wrap(Edgepartsum(X, p_d, B, u, delta, uniquehist));
+    rcpp_result_gen = Rcpp::wrap(Edgepartsum2(X, p_d, B, u, delta, uniquehist));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -486,6 +512,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_dmvnrm_arma", (DL_FUNC) &_IPTM_dmvnrm_arma, 4},
+    {"_IPTM_exponential", (DL_FUNC) &_IPTM_exponential, 1},
     {"_IPTM_priorsum", (DL_FUNC) &_IPTM_priorsum, 3},
     {"_IPTM_transpose", (DL_FUNC) &_IPTM_transpose, 1},
     {"_IPTM_callRMultinom", (DL_FUNC) &_IPTM_callRMultinom, 1},
@@ -519,7 +546,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_u_Gibbs", (DL_FUNC) &_IPTM_u_Gibbs, 4},
     {"_IPTM_expconst", (DL_FUNC) &_IPTM_expconst, 1},
     {"_IPTM_Edgepart", (DL_FUNC) &_IPTM_Edgepart, 3},
-    {"_IPTM_Edgepartsum", (DL_FUNC) &_IPTM_Edgepartsum, 6},
+    {"_IPTM_Edgepartsum", (DL_FUNC) &_IPTM_Edgepartsum, 5},
+    {"_IPTM_Edgepartsum2", (DL_FUNC) &_IPTM_Edgepartsum2, 6},
     {"_IPTM_Timepart", (DL_FUNC) &_IPTM_Timepart, 4},
     {"_IPTM_Timepartsum", (DL_FUNC) &_IPTM_Timepartsum, 5},
     {NULL, NULL, 0}

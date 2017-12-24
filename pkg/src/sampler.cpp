@@ -44,6 +44,21 @@ double dmvnrm_arma(arma::rowvec x,
 }
 
 // **********************************************************//
+//               exponential approximation                   //
+// **********************************************************//
+// [[Rcpp::export]]
+float exponential(float x)
+{   int n = 30;
+    float sum = 1.0f; // initialize sum of series
+    
+    for (int i = n - 1; i > 0; --i )
+        sum = 1 + x * sum / i;
+    
+    return sum;
+}
+
+
+// **********************************************************//
 //               Prior calculations for IP sum               //
 // **********************************************************//
 // [[Rcpp::export]]
@@ -448,16 +463,13 @@ double inner (arma::vec x, arma::vec y) {
 //                Multiply matrix X and vector B             //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericMatrix ximat(arma::vec timemat, NumericMatrix eta, NumericVector node) {
-  NumericMatrix xi(node.size(), eta.nrow()); 
-  IntegerVector idx = IntegerVector::create(node.size(), node.size()+1);
-  for (int IP = 0; IP < eta.nrow(); IP++) {
-  	 	NumericVector eta_IP = eta(IP,_);
-  	 	NumericVector etatime = eta_IP[idx];
-  for (unsigned int i = 0; i < node.size(); i++) {
-  		xi(i, IP) = eta_IP[i];
-  	 	}
-  	 	xi(_, IP) = xi(_, IP) + inner(timemat, etatime);
+NumericMatrix ximat(NumericVector timemat, NumericMatrix eta1, NumericMatrix eta2) {
+    int n_node = eta1.ncol();
+    NumericMatrix xi(n_node, eta1.nrow());
+    for (int IP = 0; IP < eta1.nrow(); IP++) {
+      NumericVector etanode = eta1(IP, _);
+      NumericVector etatime = eta2(IP, _);
+      xi(_, IP) = etanode+inner(timemat, etatime);
   }
   return xi;
 }
@@ -466,10 +478,10 @@ NumericMatrix ximat(arma::vec timemat, NumericMatrix eta, NumericVector node) {
 //            Calculate xi over the entire corpus            //
 // **********************************************************//
 // [[Rcpp::export]]
-List xi_all(NumericMatrix timemat, NumericMatrix eta, NumericVector node, IntegerVector edgetrim) {
+List xi_all(NumericMatrix timemat, NumericMatrix eta1,NumericMatrix eta2, IntegerVector edgetrim) {
   List xi(timemat.nrow());
   for (IntegerVector::iterator it = edgetrim.begin(); it != edgetrim.end(); ++it) {
- 		xi[*it-1] = ximat(timemat(*it-2,_), eta, node);
+ 		xi[*it-1] = ximat(timemat(*it-2, _), eta1, eta2);
 	}
   return xi;
 }
@@ -730,8 +742,6 @@ NumericVector expconst(NumericVector consts) {
 // [[Rcpp::export]]
 double Edgepart(arma::mat u, arma::mat lambda, double delta){
   double edgesum = 0;
-  //arma::umat uinf = find(log(lambda)==-arma::datum::inf);
-  //lambda.elem(uinf).fill(exp(-745));
 	for (unsigned int i = 0; i < u.n_rows; i++) {
 		arma::vec normal = arma::zeros(u.n_rows-1);
 		double prob = 0;
@@ -772,7 +782,18 @@ double Edgepart(arma::mat u, arma::mat lambda, double delta){
 //              Likelihood evaluation of Edgepart            //
 // **********************************************************//
 // [[Rcpp::export]]
-double Edgepartsum(List X, NumericMatrix p_d, NumericMatrix B, List u, double delta, IntegerVector uniquehist){
+double Edgepartsum(List X, NumericVector p_d, NumericMatrix B, arma::mat u, double delta){
+    List XB = MultiplyXB(X, B);
+    arma::mat lambda = lambda_cpp(p_d, XB);
+    double edgesum = Edgepart(u, lambda, delta);
+    return edgesum;
+}
+
+// **********************************************************//
+//              Likelihood evaluation of Edgepart            //
+// **********************************************************//
+// [[Rcpp::export]]
+double Edgepartsum2(List X, NumericMatrix p_d, NumericMatrix B, List u, double delta, IntegerVector uniquehist){
     double edgesum = 0;
     for (IntegerVector::iterator it = uniquehist.begin(); it != uniquehist.end(); ++it) {
         int it2 = *it-1;
