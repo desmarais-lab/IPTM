@@ -2,6 +2,7 @@
 #include <cmath>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
+#include <lapacke.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 
 using std::log;
