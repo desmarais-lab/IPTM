@@ -2,8 +2,8 @@
 #include <cmath>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
+// [[Rcpp::depends(RcppArmadillo)]]
 
-//[[Rcpp::depends(RcppArmadillo)]]
 using std::log;
 using std::exp;
 using std::max;
@@ -18,55 +18,44 @@ void R_init_markovchain(DllInfo* info) {
 	R_useDynamicSymbols(info, TRUE);	
 }
 
-// **********************************************************//
-//                 dmvnorm using Rcpp Armadillo              //
-// **********************************************************//
 const double log2pi = std::log(2.0 * M_PI);
 
-// [[Rcpp::depends("RcppArmadillo")]]
 // [[Rcpp::export]]
-double dmvnrm_arma(arma::rowvec x,  
-                      arma::rowvec mean,  
-                      arma::mat sigma, 
-                      bool logd = false) { 
-    int xdim = x.n_cols;
-    arma::mat rooti = arma::trans(arma::inv(trimatu(arma::chol(sigma))));
-    double rootisum = arma::sum(log(rooti.diag()));
-    double constants = -(static_cast<double>(xdim)/2.0) * log2pi;
-    
-        arma::vec z = rooti * arma::trans( x - mean) ;    
-        double out = constants - 0.5 * arma::sum(z%z) + rootisum;     
-      
-    if (logd == false) {
-        out = exp(out);
+arma::vec Mahalanobis(arma::mat x, arma::rowvec center, arma::mat cov){
+    int n = x.n_rows;
+    arma::mat x_cen;
+    x_cen.copy_size(x);
+    for (int i=0; i < n; i++) {
+        x_cen.row(i) = x.row(i) - center;
     }
-    return(out);
+    return sum((x_cen * cov.i()) % x_cen, 1);
 }
 
-// **********************************************************//
-//               exponential approximation                   //
-// **********************************************************//
 // [[Rcpp::export]]
-float exponential(float x)
-{   int n = 30;
-    float sum = 1.0f; // initialize sum of series
-    
-    for (int i = n - 1; i > 0; --i )
-        sum = 1 + x * sum / i;
-    
-    return sum;
+arma::vec dmvnorm_arma (arma::mat x,  arma::rowvec mean,  arma::mat sigma){
+    arma::vec distval = Mahalanobis(x, mean, sigma);
+    double logdet = sum(arma::log(arma::eig_sym(sigma)));
+    arma::vec logretval = -((x.n_cols * log2pi + logdet + distval)/2) ;
+    return(logretval);
 }
 
+// [[Rcpp::export]]
+arma::mat rmvnorm_arma(int n,
+                  const arma::vec& mu,
+                  const arma::mat& Sigma) {
+    unsigned int p = Sigma.n_cols;
+    Rcpp::NumericVector draw = Rcpp::rnorm(n*p);
+    arma::mat Z = arma::mat(draw.begin(), n, p, false, true);
+    arma::mat Y = arma::repmat(mu, 1, n).t()+Z * arma::chol(Sigma);
+    return Y;
+}
 
 // **********************************************************//
 //               Prior calculations for IP sum               //
 // **********************************************************//
 // [[Rcpp::export]]
 double priorsum (arma::mat var, arma::rowvec mu, arma::mat x) {
-	double priorsum = 0;
-	for (unsigned int IP = 0; IP < x.n_rows; IP++) {
-		priorsum += dmvnrm_arma(x.row(IP), mu, var, true);
-	}
+	double priorsum = sum(dmvnorm_arma(x, mu, var));
 	return priorsum;
 }
 

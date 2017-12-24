@@ -6,28 +6,42 @@
 
 using namespace Rcpp;
 
-// dmvnrm_arma
-double dmvnrm_arma(arma::rowvec x, arma::rowvec mean, arma::mat sigma, bool logd);
-RcppExport SEXP _IPTM_dmvnrm_arma(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP logdSEXP) {
+// Mahalanobis
+arma::vec Mahalanobis(arma::mat x, arma::rowvec center, arma::mat cov);
+RcppExport SEXP _IPTM_Mahalanobis(SEXP xSEXP, SEXP centerSEXP, SEXP covSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::rowvec >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::rowvec >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmvnrm_arma(x, mean, sigma, logd));
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type center(centerSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type cov(covSEXP);
+    rcpp_result_gen = Rcpp::wrap(Mahalanobis(x, center, cov));
     return rcpp_result_gen;
 END_RCPP
 }
-// exponential
-float exponential(float x);
-RcppExport SEXP _IPTM_exponential(SEXP xSEXP) {
+// dmvnorm_arma
+arma::vec dmvnorm_arma(arma::mat x, arma::rowvec mean, arma::mat sigma);
+RcppExport SEXP _IPTM_dmvnorm_arma(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< float >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(exponential(x));
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmvnorm_arma(x, mean, sigma));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rmvnorm_arma
+arma::mat rmvnorm_arma(int n, const arma::vec& mu, const arma::mat& Sigma);
+RcppExport SEXP _IPTM_rmvnorm_arma(SEXP nSEXP, SEXP muSEXP, SEXP SigmaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Sigma(SigmaSEXP);
+    rcpp_result_gen = Rcpp::wrap(rmvnorm_arma(n, mu, Sigma));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -511,8 +525,9 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_IPTM_dmvnrm_arma", (DL_FUNC) &_IPTM_dmvnrm_arma, 4},
-    {"_IPTM_exponential", (DL_FUNC) &_IPTM_exponential, 1},
+    {"_IPTM_Mahalanobis", (DL_FUNC) &_IPTM_Mahalanobis, 3},
+    {"_IPTM_dmvnorm_arma", (DL_FUNC) &_IPTM_dmvnorm_arma, 3},
+    {"_IPTM_rmvnorm_arma", (DL_FUNC) &_IPTM_rmvnorm_arma, 3},
     {"_IPTM_priorsum", (DL_FUNC) &_IPTM_priorsum, 3},
     {"_IPTM_transpose", (DL_FUNC) &_IPTM_transpose, 1},
     {"_IPTM_callRMultinom", (DL_FUNC) &_IPTM_callRMultinom, 1},

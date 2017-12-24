@@ -9,7 +9,6 @@
 #' @importFrom combinat permn
 #' @importFrom mgcv uniquecombs
 #' @importFrom lubridate wday hour
-#' @importFrom FastGP rcpp_rmvnorm rcpp_log_dmvnorm
 #' @importFrom LaplacesDemon dhalfcauchy rhalfcauchy
 #' @importFrom truncnorm rtruncnorm dtruncnorm
 
@@ -189,8 +188,8 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     theta = rdirichlet_cpp(D, alpha*mvec)
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     sigma_tau = rhalfcauchy(1, prior.tau)
-    b.old = rcpp_rmvnorm(nIP, prior.b[[2]], prior.b[[1]])
-    eta.old =  rcpp_rmvnorm(nIP, prior.eta[[2]], prior.eta[[1]])  
+    b.old = rmvnorm_arma(nIP, prior.b[[1]], prior.b[[2]])
+    eta.old = rmvnorm_arma(nIP, prior.eta[[1]], prior.eta[[2]])
     l = sample(1:nIP, K, replace = TRUE) 
     z = lapply(seq(along = edge), function(d) multinom_vec(max(1, length(textlist[[d]])), theta[d, ]))
     p.d = pdmat(z, l, nIP) 
@@ -365,7 +364,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     b.new = matrix(NA, nIP, P)
     for (inner in 1:Inner[1]) {
       for (IP in 1:nIP) {
-			  b.new[IP, ] = rcpp_rmvnorm(1, sigma.Q[1]*proposal.var1, b.old[IP,])
+			  b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
 	  }
       delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
       prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
@@ -392,7 +391,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       eta.new = matrix(NA, nIP, Q)
       for (inner in 1:Inner[2]) {
           for (IP in 1:nIP) {
-			  eta.new[IP, ] = rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2, eta.old[IP,])
+			  eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
 		  }
       xi = xi_all(timemat, eta.new[,node], eta.new[,-node], edge.trim)
       mu = mu_mat(p.d, xi, edge.trim)
@@ -512,8 +511,8 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
     theta = rdirichlet_cpp(D, alpha*mvec)
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     sigma_tau = rhalfcauchy(1, prior.tau)
-    b.old = rcpp_rmvnorm(nIP, prior.b[[2]], prior.b[[1]])
-    eta.old =  rcpp_rmvnorm(nIP, prior.eta[[2]], prior.eta[[1]])  
+    b.old = rmvnorm_arma(nIP, prior.b[[1]], prior.b[[2]])
+    eta.old = rmvnorm_arma(nIP, prior.eta[[1]], prior.eta[[2]])
     l = sample(1:nIP, K, replace = TRUE) 
     z = lapply(seq(along = edge), function(d) multinom_vec(max(1, length(textlist[[d]])), theta[d, ]))
     p.d = pdmat(z, l, nIP) 
@@ -723,7 +722,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
     b.new = matrix(NA, nIP, P)
     for (inner in 1:Inner[1]) {
       for (IP in 1:nIP) {
-			  b.new[IP, ] = rcpp_rmvnorm(1, sigma.Q[1]*proposal.var1, b.old[IP,])
+			  b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
 	  }
       delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
       prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
@@ -750,7 +749,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
       eta.new = matrix(NA, nIP, Q)
       for (inner in 1:Inner[2]) {
           for (IP in 1:nIP) {
-			  eta.new[IP, ] = rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2, eta.old[IP,])
+			  eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
 		  }
       xi = xi_all(timemat, eta.new[,node], eta.new[,-node], edge.trim)
       mu = mu_mat(p.d, xi, edge.trim)
@@ -879,8 +878,8 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
     theta = rdirichlet_cpp(D, alpha*mvec)
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     sigma_tau = rhalfcauchy(1, prior.tau)
-    b.old = rcpp_rmvnorm(nIP, prior.b[[2]], prior.b[[1]])
-    eta.old =  rcpp_rmvnorm(nIP, prior.eta[[2]], prior.eta[[1]])
+    b.old = rmvnorm_arma(nIP, prior.b[[1]], prior.b[[2]])
+    eta.old = rmvnorm_arma(nIP, prior.eta[[1]], prior.eta[[2]])
     l = sample(1:nIP, K, replace = TRUE)
     z = lapply(seq(along = edge), function(d) multinom_vec(max(1, length(textlist[[d]])), theta[d, ]))
     p.d = pdmat(z, l, nIP)
@@ -1033,7 +1032,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
     b.new = matrix(NA, nIP, P)
     for (inner in 1:Inner[1]) {
       for (IP in 1:nIP) {
- 			 b.new[IP, ] = rcpp_rmvnorm(1, sigma.Q[1]*proposal.var1, b.old[IP,])
+ 			 b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
  	  }
       delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
       prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
@@ -1060,7 +1059,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
      eta.new = matrix(NA, nIP, Q)
      for (inner in 1:Inner[2]) {
        for (IP in 1:nIP) {
- 			  eta.new[IP, ] = rcpp_rmvnorm(1, sigma.Q[2]*proposal.var2, eta.old[IP,])
+ 			  eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
  		  }
       xi = xi_all(timemat, eta.new[,node], eta.new[,-node], edge.trim)
       mu = mu_mat(p.d, xi, edge.trim)
@@ -1569,8 +1568,8 @@ GiR = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
                               paste0("Tokens_in_Topic", 1:K), paste0("Tokens_in_Word",1:V))
   for (i in 1:Nsamp) { 
     if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
-    b = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.b[[2]], prior.b[[1]]))}) 
-    eta = lapply(1:nIP, function(IP) {c(rcpp_rmvnorm(1, prior.eta[[2]], prior.eta[[1]]))})
+    b = lapply(1:nIP, function(IP) {c(rmvnorm_arma(1, prior.b[[1]], prior.b[[2]]))})
+    eta = lapply(1:nIP, function(IP) {c(rmvnorm_arma(1, prior.eta[[1]], prior.eta[[2]]))})
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     sigma_tau = rhalfcauchy(1, prior.tau)
     l = sample(1:nIP, K, replace = TRUE)
@@ -1668,8 +1667,8 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
 					 
   for (i in 1:Nsamp) { 
   	if (i %% 100 == 0) {cat("Sampling", i, "\n")}
-    b = rcpp_rmvnorm(nIP, prior.b[[2]], prior.b[[1]])
-    eta = rcpp_rmvnorm(nIP, prior.eta[[2]], prior.eta[[1]])
+    b = rmvnorm_arma(nIP, prior.b[[1]], prior.b[[2]])
+    eta = rmvnorm_arma(nIP, prior.eta[[1]], prior.eta[[2]])
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     sigma_tau = rhalfcauchy(1, prior.tau)
 	while (sigma_tau > 10) {sigma_tau = rhalfcauchy(1, prior.tau)}
