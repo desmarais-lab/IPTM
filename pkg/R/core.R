@@ -156,9 +156,8 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   edge.trim = which_num(384*timeunit, timestamps-timestamps[1]):D
   max.edge = max(edge.trim)
   timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])/timeunit
-  timeinc[timeinc==0] = exp(-745)
+  timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
   emptytext = which(sapply(textlist, function(d){length(d)})==0)
-  
   # initialization
   convergence = c()
   netstat = as.numeric(c("degree", "dyadic", "triadic") %in% netstat)
@@ -433,8 +432,8 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
       prior.new3 = log(dhalfcauchy(sigma_tau.new, prior.tau))
       post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc, edge.trim)
-      loglike.diff = dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3]))-
-                   dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))+
+      loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
+                   log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
                    prior.new3+post.new3-prior.old3-post.old3
       if (log(runif(1, 0, 1)) < loglike.diff) {
         sigma_tau = sigma_tau.new
@@ -502,7 +501,7 @@ IPTM.inference.noIP = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
   edge.trim = which_num(384*timeunit, timestamps-timestamps[1]):D
   max.edge = max(edge.trim)
   timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])/timeunit
-  timeinc[timeinc==0] = exp(-745)
+  timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
   emptytext = which(sapply(textlist, function(d){length(d)})==0)
   
   # initialization
@@ -758,8 +757,8 @@ IPTM.inference.noIP = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
       sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
       prior.new3 = log(dhalfcauchy(sigma_tau.new, prior.tau))
       post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc, edge.trim)
-      loglike.diff = dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3]))-
-                   dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))+
+      loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
+                   log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
                    prior.new3+post.new3-prior.old3-post.old3
       if (log(runif(1, 0, 1)) < loglike.diff) {
         sigma_tau = sigma_tau.new
@@ -828,7 +827,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
   edge.trim = which_num(384*timeunit, timestamps-timestamps[1]):D
   max.edge = max(edge.trim)
   timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])/timeunit
-  timeinc[timeinc==0] = exp(-745)
+  timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
   emptytext = which(sapply(textlist, function(d){length(d)})==0)
   
   # initialization
@@ -1117,8 +1116,8 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
       sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
       prior.new3 = log(dhalfcauchy(sigma_tau.new, prior.tau))
       post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc, edge.trim)
-      loglike.diff = dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3]))-
-                   dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))+
+      loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
+                   log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
                    prior.new3+post.new3-prior.old3-post.old3
       if (log(runif(1, 0, 1)) < loglike.diff) {
         sigma_tau = sigma_tau.new
@@ -1186,7 +1185,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
   edge.trim = which_num(384*timeunit, timestamps-timestamps[1]):D
   max.edge = max(edge.trim)
   timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])/timeunit
-  timeinc[timeinc==0] = exp(-745)
+  timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
   # initialization
   netstat = as.numeric(c("degree", "dyadic", "triadic") %in% netstat)
   timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
@@ -1429,8 +1428,8 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
       sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
       prior.new3 = log(dhalfcauchy(sigma_tau.new, prior.tau))
       post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc, edge.trim)
-      loglike.diff = dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3]))-
-                     dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))+
+      loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
+                     log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
                      prior.new3+post.new3-prior.old3-post.old3
       if (log(runif(1, 0, 1)) < loglike.diff) {
         sigma_tau = sigma_tau.new
