@@ -5,6 +5,10 @@ Mahalanobis <- function(x, center, cov) {
     .Call('_IPTM_Mahalanobis', PACKAGE = 'IPTM', x, center, cov)
 }
 
+ei <- function(M) {
+    .Call('_IPTM_ei', PACKAGE = 'IPTM', M)
+}
+
 dmvnorm_arma <- function(x, mean, sigma) {
     .Call('_IPTM_dmvnorm_arma', PACKAGE = 'IPTM', x, mean, sigma)
 }
@@ -49,8 +53,8 @@ pdmat <- function(z, l, nIP) {
     .Call('_IPTM_pdmat', PACKAGE = 'IPTM', z, l, nIP)
 }
 
-History <- function(edge, p_d, node, when) {
-    .Call('_IPTM_History', PACKAGE = 'IPTM', edge, p_d, node, when)
+History <- function(edge, p_d, node, when, timeunit) {
+    .Call('_IPTM_History', PACKAGE = 'IPTM', edge, p_d, node, when, timeunit)
 }
 
 Degree <- function(history, node, sender) {

@@ -7,7 +7,7 @@
 GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
   sigma_tau, l, support, netstat, timestat, base.edge = NULL,
   base.text = NULL, topic_token_assignments = NULL, backward = FALSE,
-  base = FALSE)
+  base = FALSE, timeunit = 3600, tz = "America/New_York")
 }
 \arguments{
 \item{nDocs}{number of documents to be generated}
@@ -53,6 +53,10 @@ GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
 \item{backward}{Logigal indicating whether we are generating backward samples (if FALSE -> forward)}
 
 \item{base}{Logical indicating whether or not we are generating base edges (< 384)}
+
+\item{timeunit}{hour (= 3600) or day (=3600*24) and so on}
+
+\item{tz}{timezone such as EST and PST}
 }
 \value{
 generated data including (author, recipients, timestamp, words)

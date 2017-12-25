@@ -33,11 +33,16 @@ arma::vec Mahalanobis(arma::mat x, arma::rowvec center, arma::mat cov){
     }
     return sum((x_cen * cov.i()) % x_cen, 1);
 }
+// [[Rcpp::export]]
+arma::vec ei(arma::mat M) {
+    return arma::eig_sym(M);
+}
 
 // [[Rcpp::export]]
 arma::vec dmvnorm_arma (arma::mat x,  arma::rowvec mean,  arma::mat sigma){
     arma::vec distval = Mahalanobis(x, mean, sigma);
-    double logdet = sum(arma::log(arma::eig_sym(sigma)));
+    arma::vec ei_sigma = ei(sigma);
+    double logdet = sum(arma::log(ei_sigma));
     arma::vec logretval = -((x.n_cols * log2pi + logdet + distval)/2) ;
     return(logretval);
 }
@@ -183,7 +188,7 @@ NumericMatrix pdmat(List z, NumericVector l, int nIP) {
 //              Construct the history of interaction         //
 // **********************************************************//
 // [[Rcpp::export]]
-List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
+List History(List edge, NumericMatrix p_d, IntegerVector node, double when, double timeunit) {
   int nIP = p_d.ncol();
   List IPmat(nIP);
   for (int IP = 1; IP < (nIP+1); IP++) {
@@ -207,9 +212,9 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when) {
 	    int sender = document2[0];
 	    IntegerVector receiver = document2[1];
 	    double time = Rcpp::as<double>(document2[2]);
-	    double time1 = when-384*3600;
-	  	double time2 = when-96*3600;
-		double time3 = when-24*3600;
+	    double time1 = when-384*timeunit;
+	  	double time2 = when-96*timeunit;
+		double time3 = when-24*timeunit;
 	    for (unsigned int r = 0; r < receiver.size(); r++){
 	       for (int IP = 0; IP < nIP; IP++) {
   			  List IPlist_IP = IPmat[IP];

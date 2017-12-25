@@ -1,3 +1,6 @@
+raw= read.csv("/Users/bomin8319/Desktop/IPTM/enron/enron.csv", header = FALSE )
+enron = raw[,c(2,3,1,4)]
+
 library(stringr)
 
 Clean_String <- function(string){
@@ -19,7 +22,6 @@ Clean_String <- function(string){
 }
 
 library(tm)
-load("/Users/bomin8319/Desktop/IPTM/enron/enron_raw.RData")
 Enron = list()
 edge = list()
 text = list()
@@ -27,7 +29,7 @@ reservedM<-c("re", "a", "b", "c", "d", "e", "g", "h", "q", "s", "t", "v","w","x"
              "l", "p", "r", "f", "n", "y", "u", "k", "j", "i", "m", "o")
 for (d in 1:dim(enron)[1]) {
   receivers =as.numeric(strsplit(Corpus(VectorSource(as.character(enron[d,2])))$content, ",")[[1]])
-  edge[[d]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3] / (3600 * 24))
+  edge[[d]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3])
   words = Clean_String(enron[d, 4])
   words = words[nchar(words) >= 3]
   words = tm_map(Corpus(VectorSource(words)), removeWords, c(stopwords('english'), reservedM))$content
@@ -41,13 +43,13 @@ for (d in 1:dim(enron)[1]) {
 sender = lapply(edge, function(i){i[[1]]})
 
 #top_ten_writers
-newsender = which(tabulate(unlist(sender)) > 100)
+newsender = which(tabulate(unlist(sender)) > 300)
 enron = enron[enron[,1] %in% newsender,]
 edge = list()
 text = list()
 for (d in 1:dim(enron)[1]) {
   receivers =as.numeric(strsplit(Corpus(VectorSource(as.character(enron[d,2])))$content, ",")[[1]])
-  edge[[d]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3] /(3600 * 24))
+  edge[[d]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3])
   words = Clean_String(enron[d, 4])
   words = words[nchar(words) >= 3]
   words = tm_map(Corpus(VectorSource(words)), removeWords, c(stopwords('english'), reservedM))$content
@@ -62,7 +64,7 @@ for (d in 1:dim(enron)[1]) {
 #only include receivers > 100 received emails
 receiver = lapply(edge, function(i){i[[2]]})
 
-newreceiver = which(tabulate(unlist(receiver)) > 100)
+newreceiver = which(tabulate(unlist(receiver)) > 300)
 oldedge = edge
 oldtext = text
 edge = list()
@@ -71,7 +73,7 @@ it = 1
 for (d in 1:dim(enron)[1]) {
   if (sum(oldedge[[d]]$receiver %in% newreceiver)==length(oldedge[[d]]$receiver)) {
   receivers =as.numeric(strsplit(Corpus(VectorSource(as.character(enron[d,2])))$content, ",")[[1]])
-  edge[[it]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3] / (3600 * 24))
+  edge[[it]] = list(sender = enron[d, 1], receiver = receivers, timestamp = enron[d, 3])
   words = Clean_String(enron[d, 4])
   words = words[nchar(words) >= 3]
   words = tm_map(Corpus(VectorSource(words)), removeWords, c(stopwords('english'), reservedM))$content
@@ -81,11 +83,11 @@ for (d in 1:dim(enron)[1]) {
   }
 }
 vocab = unique(unlist(text))
-delete = which(sapply(text, function(x){length(x)}) ==0 |sapply(text, function(x){length(x)}) ==6519 )
-edge2 = edge[-delete]
-text2 = text[-delete]
-edge = edge2
-text = text2
+#delete = which(sapply(text, function(x){length(x)}) ==0 |sapply(text, function(x){length(x)}) ==6519 )
+#edge2 = edge[-delete]
+#text2 = text[-delete]
+#edge = edge2
+#text = text2
 sender = lapply(edge, function(i){i[[1]]})
 receiver = lapply(edge, function(i){i[[2]]})
 node = union(unique(unlist(sender)), unique(unlist(receiver)))
@@ -99,9 +101,6 @@ for (d in 1:length(edge)) {
   }
    text2[[d]] = which(vocab %in% text[[d]])
   }
-edge[[36]]$timestamp = edge[[36]]$timestamp + 2 * exp(-20)
-edge[[677]]$timestamp = edge[[677]]$timestamp + 2 * exp(-20)
-edge[[684]]$timestamp = edge[[684]]$timestamp + 2 * exp(-20)
-
+  
 Enron = list(edge = edge, node = 1:length(node), text = text2, vocab = vocab)
 save(Enron, file = "/Users/bomin8319/Desktop/IPTM/enron/Enron.RData")

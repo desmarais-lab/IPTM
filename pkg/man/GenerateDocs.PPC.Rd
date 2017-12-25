@@ -6,7 +6,8 @@
 \usage{
 GenerateDocs.PPC(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, eta, delta,
   sigma_tau, l, u, netstat, timestat, base.edge, base.text, z,
-  word_type_topic_counts, text.length)
+  word_type_topic_counts, text.length, timeunit = 3600,
+  tz = "America/New_York")
 }
 \arguments{
 \item{nDocs}{number of documents to be generated}
@@ -50,6 +51,10 @@ GenerateDocs.PPC(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, eta, delta,
 \item{word_type_topic_counts}{word_type_topic_counts from inference}
 
 \item{text.length}{number of words in each document}
+
+\item{timeunit}{hour (= 3600) or day (=3600*24) and so on}
+
+\item{tz}{timezone such as EST and PST}
 }
 \value{
 generated edge and text

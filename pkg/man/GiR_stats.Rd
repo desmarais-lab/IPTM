@@ -4,12 +4,14 @@
 \alias{GiR_stats}
 \title{GiR_stats}
 \usage{
-GiR_stats(GiR_sample, V)
+GiR_stats(GiR_sample, V, timeunit = 3600)
 }
 \arguments{
 \item{GiR_sample}{one sample from generative process}
 
 \item{V}{number of unique words}
+
+\item{timeunit}{hour (= 3600) or day (=3600*24) and so on}
 }
 \value{
 A vector of statistics calculated from one GiR sample

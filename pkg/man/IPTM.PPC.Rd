@@ -4,7 +4,8 @@
 \alias{IPTM.PPC}
 \title{IPTM.PPC}
 \usage{
-IPTM.PPC(Out, edge, node, textlist, vocab, nIP, K, netstat, timestat, inference)
+IPTM.PPC(Out, edge, node, textlist, vocab, nIP, K, netstat, timestat, inference,
+  timeunit = 3600, tz = "America/New_York")
 }
 \arguments{
 \item{Out}{number of outer iterations of inference from which to generate predictions}
@@ -26,6 +27,10 @@ IPTM.PPC(Out, edge, node, textlist, vocab, nIP, K, netstat, timestat, inference)
 \item{timestat}{additional statistics to be used for timestamps other than netstat ("timeofday", "dayofweek")}
 
 \item{inference}{inference result}
+
+\item{timeunit}{hour (= 3600) or day (=3600*24) and so on}
+
+\item{tz}{timezone such as EST and PST}
 }
 \value{
 prediction output

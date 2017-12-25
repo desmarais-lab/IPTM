@@ -19,6 +19,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ei
+arma::vec ei(arma::mat M);
+RcppExport SEXP _IPTM_ei(SEXP MSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type M(MSEXP);
+    rcpp_result_gen = Rcpp::wrap(ei(M));
+    return rcpp_result_gen;
+END_RCPP
+}
 // dmvnorm_arma
 arma::vec dmvnorm_arma(arma::mat x, arma::rowvec mean, arma::mat sigma);
 RcppExport SEXP _IPTM_dmvnorm_arma(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP) {
@@ -154,8 +165,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // History
-List History(List edge, NumericMatrix p_d, IntegerVector node, double when);
-RcppExport SEXP _IPTM_History(SEXP edgeSEXP, SEXP p_dSEXP, SEXP nodeSEXP, SEXP whenSEXP) {
+List History(List edge, NumericMatrix p_d, IntegerVector node, double when, double timeunit);
+RcppExport SEXP _IPTM_History(SEXP edgeSEXP, SEXP p_dSEXP, SEXP nodeSEXP, SEXP whenSEXP, SEXP timeunitSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -163,7 +174,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type p_d(p_dSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
     Rcpp::traits::input_parameter< double >::type when(whenSEXP);
-    rcpp_result_gen = Rcpp::wrap(History(edge, p_d, node, when));
+    Rcpp::traits::input_parameter< double >::type timeunit(timeunitSEXP);
+    rcpp_result_gen = Rcpp::wrap(History(edge, p_d, node, when, timeunit));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -526,6 +538,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_Mahalanobis", (DL_FUNC) &_IPTM_Mahalanobis, 3},
+    {"_IPTM_ei", (DL_FUNC) &_IPTM_ei, 1},
     {"_IPTM_dmvnorm_arma", (DL_FUNC) &_IPTM_dmvnorm_arma, 3},
     {"_IPTM_rmvnorm_arma", (DL_FUNC) &_IPTM_rmvnorm_arma, 3},
     {"_IPTM_priorsum", (DL_FUNC) &_IPTM_priorsum, 3},
@@ -537,7 +550,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_rdirichlet_cpp", (DL_FUNC) &_IPTM_rdirichlet_cpp, 2},
     {"_IPTM_which_cpp", (DL_FUNC) &_IPTM_which_cpp, 2},
     {"_IPTM_pdmat", (DL_FUNC) &_IPTM_pdmat, 3},
-    {"_IPTM_History", (DL_FUNC) &_IPTM_History, 4},
+    {"_IPTM_History", (DL_FUNC) &_IPTM_History, 5},
     {"_IPTM_Degree", (DL_FUNC) &_IPTM_Degree, 3},
     {"_IPTM_Dyadic", (DL_FUNC) &_IPTM_Dyadic, 3},
     {"_IPTM_Triadic", (DL_FUNC) &_IPTM_Triadic, 3},

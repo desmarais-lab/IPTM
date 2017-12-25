@@ -6,7 +6,8 @@
 \usage{
 IPTM.inference.GiR(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, mvec,
   beta, prior.b, prior.delta, prior.eta, prior.tau, Outer, Inner, burn, thin,
-  netstat, timestat, optimize = FALSE, initial = NULL)
+  netstat, timestat, optimize = FALSE, initial = NULL, timeunit = 3600,
+  tz = "America/New_York")
 }
 \arguments{
 \item{edge}{list of tie data with 3 elements (1: author, 2: recipient, 3: timestamp in unix.time format)}
@@ -52,6 +53,10 @@ IPTM.inference.GiR(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, mvec,
 \item{optimize}{logical to optimize alpha (Dirichlet concentration prior for document-topic distribution)}
 
 \item{initial}{list of initial values user wants to assign including (alpha, mvec, delta, b, eta, l, z, u, sigma_tau, proposal.var1, proposal.var2)}
+
+\item{timeunit}{hour (= 3600) or day (=3600*24) and so on}
+
+\item{tz}{timezone such as EST and PST}
 }
 \value{
 MCMC output containing all parameter estimates
