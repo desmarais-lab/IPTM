@@ -427,11 +427,11 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     mu = mu_mat(p.d, xi, edge.trim)
     Timepartsum = Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
       
-    prior.old3 = dhalfcauchy(sigma_tau, prior.tau)
+    prior.old3 = log(dhalfcauchy(sigma_tau, prior.tau))
     post.old3 = Timepartsum
     for (inner in 1:Inner[3]) {
       sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
-      prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau)
+      prior.new3 = log(dhalfcauchy(sigma_tau.new, prior.tau))
       post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc, edge.trim)
       loglike.diff = dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3]))-
                    dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))+
@@ -752,11 +752,11 @@ IPTM.inference.noIP = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
     mu = mu_mat(p.d, xi, edge.trim)
     Timepartsum = Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
       
-    prior.old3 = dhalfcauchy(sigma_tau, prior.tau)
+    prior.old3 = log(dhalfcauchy(sigma_tau, prior.tau))
     post.old3 = Timepartsum
     for (inner in 1:Inner[3]) {
       sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
-      prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau)
+      prior.new3 = log(dhalfcauchy(sigma_tau.new, prior.tau))
       post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc, edge.trim)
       loglike.diff = dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3]))-
                    dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))+
@@ -1111,11 +1111,11 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
     mu = mu_mat(p.d, xi, edge.trim)
     Timepartsum = Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
 
-    prior.old3 = dhalfcauchy(sigma_tau, prior.tau)
+    prior.old3 = log(dhalfcauchy(sigma_tau, prior.tau))
     post.old3 = Timepartsum
     for (inner in 1:Inner[3]) {
       sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
-      prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau)
+      prior.new3 = log(dhalfcauchy(sigma_tau.new, prior.tau))
       post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc, edge.trim)
       loglike.diff = dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3]))-
                    dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))+
@@ -1338,7 +1338,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
       	for (IP in 1:nIP) {
         l[k] = IP
         p.dnew = pdmat(z, l, nIP)
-        	history.t = History(edge, p.dnew, node, edge[[max.edge-1]][[3]]+exp(-745), timeunit)
+        history.t = History(edge, p.dnew, node, edge[[max.edge-1]][[3]]+exp(-745), timeunit)
         Xnew = Netstats_cpp(history.t, node, netstat)
         Edgepartsum = Edgepartsum(Xnew, p.dnew[max.edge, ], b.old, u[[max.edge]], delta)
         mu = mu_mat(p.dnew, xi, edge.trim)
@@ -1419,15 +1419,15 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
          }
        }
      }
-	xi = xi_all(timemat, eta.old[,node], eta.old[,-node], edge.trim)
-	mu = mu_mat(p.d, xi, edge.trim)
+	  xi = xi_all(timemat, eta.old[,node], eta.old[,-node], edge.trim)
+	  mu = mu_mat(p.d, xi, edge.trim)
     Timepartsum = Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
 
-    prior.old3 = dhalfcauchy(sigma_tau, prior.tau)
+    prior.old3 = log(dhalfcauchy(sigma_tau, prior.tau))
     post.old3 = Timepartsum
     for (inner in 1:Inner[3]) {
       sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
-      prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau)
+      prior.new3 = log(dhalfcauchy(sigma_tau.new, prior.tau))
       post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc, edge.trim)
       loglike.diff = dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3]))-
                      dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))+
@@ -1653,7 +1653,8 @@ GenerateDocs.PPC = function(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, et
         hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
         timemat[1:base.length,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
       }
-  }  
+  } 
+  
   for (d in 1:nDocs) {
     N.d = text.length[base.length+d]
     text[[base.length+d]] = rep(NA, N.d)
@@ -1678,8 +1679,8 @@ GenerateDocs.PPC = function(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, et
           probij = u_Gibbs(u[[base.length+d]][i, ], lambda[i,], delta, j)
           u[[base.length+d]][i, j] = multinom_vec(1, expconst(probij))-1
         }
-    }
-    xi = ximat(timemat[base.length+d-1,], eta, node)
+    	}
+    xi = ximat(timemat[base.length+d-1,], eta[,node], eta[,-node])
     mu = mu_vec(p.d[base.length+d,], xi)
     timestamps = rlnorm(1, mu, sigma_tau)*timeunit
     i.d = which(timestamps == min(timestamps))
@@ -1741,7 +1742,7 @@ IPTM.PPC = function(Out, edge, node, textlist, vocab, nIP, K, netstat, timestat,
     delta = inference$delta[length(inference$delta)]
     sigma_tau = inference$sigma_tau[length(inference$sigma_tau)]
     l = inference$l
- 	u = inference$u
+ 	  u = inference$u
     for (k in 1:K) {
       word_type_topic_counts[,k] = tabulate(textlist.raw[which(unlist(z[-emptytext])==k)], length(vocab))
     }
@@ -1917,8 +1918,8 @@ GiR = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
                               paste0("Tokens_in_Topic", 1:K), paste0("Tokens_in_Word",1:V))
   for (i in 1:Nsamp) { 
     if (i %% 5000 == 0) {cat("Forward sampling", i, "\n")}
-    b = lapply(1:nIP, function(IP) {c(rmvnorm_arma(1, prior.b[[1]], prior.b[[2]]))})
-    eta = lapply(1:nIP, function(IP) {c(rmvnorm_arma(1, prior.eta[[1]], prior.eta[[2]]))})
+    b = rmvnorm_arma(nIP, prior.b[[1]], prior.b[[2]])
+    eta = rmvnorm_arma(nIP, prior.eta[[1]], prior.eta[[2]])
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     sigma_tau = rhalfcauchy(1, prior.tau)
     l = sample(1:nIP, K, replace = TRUE)
@@ -1933,18 +1934,18 @@ GiR = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
                     l, support, netstat, timestat, base.edge = base.edge, base.text = base.text, 
                     topic_token_assignments = NULL, backward = FALSE, base = FALSE)
   for (i in 1:Nsamp) { 
-    if (i %% 100 == 0) {cat("Backward Sampling", i, "\n")}
+    if (i %% 1 == 0) {cat("Backward Sampling", i, "\n")}
     Inference_samp = IPTM.inference.GiR(Backward_sample$edge, node, Backward_sample$text, vocab, nIP, K, sigma.Q, 
                      alpha, mvec, beta, prior.b, prior.delta,prior.eta, prior.tau, Outer, Inner, burn, thin, 
                      netstat, timestat, optimize = FALSE, initial = NULL)
-  	b = tvapply(1:nIP, function(IP) {Inference_samp$b[[IP]][,ncol(Inference_samp$b[[IP]])]}, rep(0, P))
+    b = tvapply(1:nIP, function(IP) {Inference_samp$b[[IP]][,ncol(Inference_samp$b[[IP]])]}, rep(0, P))
     eta = tvapply(1:nIP, function(IP) {Inference_samp$eta[[IP]][,ncol(Inference_samp$eta[[IP]])]}, rep(0, Q))
     delta = Inference_samp$delta[length(Inference_samp$delta)]
     sigma_tau = Inference_samp$sigma_tau[length(Inference_samp$sigma_tau)]
     l = Inference_samp$l
     z = Inference_samp$z
     for (d in 1:length(z)) {
-      names(z[[d]]) = Backward_sample$text[[d]]
+      names(z[[d]]) = Forward_sample$text[[d]]
     }
     Backward_sample = GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma_tau, 
                       l, support, netstat, timestat, base.edge = base.edge, base.text = base.text, 
@@ -2020,7 +2021,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
     eta = rmvnorm_arma(nIP, prior.eta[[1]], prior.eta[[2]])
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     sigma_tau = rhalfcauchy(1, prior.tau)
-	while (sigma_tau > 10) {sigma_tau = rhalfcauchy(1, prior.tau)}
+	  while (sigma_tau > 10) {sigma_tau = rhalfcauchy(1, prior.tau)}
     l = sample(1:nIP, K, replace = TRUE)
     Forward_sample = GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma_tau, 
                      l, support, netstat, timestat, base.edge = base.edge, base.text = base.text, 

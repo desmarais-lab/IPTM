@@ -46,7 +46,7 @@ Outer = 3
 Inner = c(3300,5500,1100)
 burn = c(300,500, 100)
 thin = c(3, 5, 2)
-Schein <- Schein(10000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+Schein <- Schein(20000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)
@@ -57,7 +57,7 @@ Outer = 3
 Inner = c(3300,3300,550)
 burn = c(300,300, 50)
 thin = c(3,3, 1)
-GettingItRight <- GiR(10000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
+GettingItRight <- GiR(1000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)
