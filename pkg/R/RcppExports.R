@@ -153,12 +153,12 @@ Edgepartsum <- function(X, p_d, B, u, delta) {
     .Call('_IPTM_Edgepartsum', PACKAGE = 'IPTM', X, p_d, B, u, delta)
 }
 
-Edgepartsum2 <- function(X, p_d, B, u, delta, uniquehist) {
-    .Call('_IPTM_Edgepartsum2', PACKAGE = 'IPTM', X, p_d, B, u, delta, uniquehist)
-}
-
 Timepart <- function(mu, sigma_tau, a_d, t_d) {
     .Call('_IPTM_Timepart', PACKAGE = 'IPTM', mu, sigma_tau, a_d, t_d)
+}
+
+Timepartindiv <- function(mu, sigma_tau, t_d) {
+    .Call('_IPTM_Timepartindiv', PACKAGE = 'IPTM', mu, sigma_tau, t_d)
 }
 
 Timepartsum <- function(mumat, sigma_tau, senders, timeinc, edgetrim) {

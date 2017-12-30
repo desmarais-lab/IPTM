@@ -787,21 +787,6 @@ double Edgepartsum(List X, NumericVector p_d, NumericMatrix B, arma::mat u, doub
 }
 
 // **********************************************************//
-//              Likelihood evaluation of Edgepart            //
-// **********************************************************//
-// [[Rcpp::export]]
-double Edgepartsum2(List X, NumericMatrix p_d, NumericMatrix B, List u, double delta, IntegerVector uniquehist){
-    double edgesum = 0;
-    for (IntegerVector::iterator it = uniquehist.begin(); it != uniquehist.end(); ++it) {
-        int it2 = *it-1;
-        List XB = MultiplyXB(X[it2], B);
-        arma::mat lambda = lambda_cpp(p_d(it2, _), XB);
-        edgesum += Edgepart(u[it2], lambda, delta);
-    }
-    return edgesum;
-}
-
-// **********************************************************//
 //              Likelihood evaluation of Timepart            //
 // **********************************************************//
 // [[Rcpp::export]]
@@ -812,6 +797,23 @@ double Timepart(arma::vec mu, double sigma_tau, double a_d, double t_d){
     		if (i != observed) {
                 timesum += R::pnorm(log(t_d), mu[i], sigma_tau, FALSE, TRUE);
     		}    		
+    }
+    return timesum;
+}
+
+// **********************************************************//
+//              Likelihood evaluation of Timepart            //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericVector Timepartindiv(arma::vec mu, double sigma_tau, double t_d){
+    NumericVector timesum(mu.size());
+    for (unsigned int i = 0; i < mu.size(); i++) {
+    timesum[i] = R::dnorm(log(t_d), mu[i], sigma_tau, TRUE);
+    for (unsigned int j = 0; j < mu.size(); j++) {
+        if (j != i) {
+            timesum[i] += R::pnorm(log(t_d), mu[j], sigma_tau, FALSE, TRUE);
+        }
+    }
     }
     return timesum;
 }

@@ -128,7 +128,7 @@ pair, combining information about content and network structures.
 
 For each author $i = 1,\ldots,A$, receiver $j = 1,\ldots,A$ ($i \neq j$) and interaction pattern $c=1,\ldots,C$, we define the interaction-pattern-specific intensity:
 \begin{align*}
-\nu_{idjc} = \mbox{exp}\Big({\boldsymbol{b}_c}^{\top}\boldsymbol{x}_{idjc}\Big),
+\nu_{idjc} = {\boldsymbol{b}_c}^{\top}\boldsymbol{x}_{idjc},
 \end{align*}
 where $\boldsymbol{b}_c$ is the interaction-pattern-specific coefficients with the prior $\boldsymbol{b}_c \sim N(\boldsymbol{\mu}_b,\Sigma_b)$, and $\boldsymbol{x}_{idjc}$ is the interaction patterns' dynamic network features which vary depending on the hypotheses regarding canonical processes relevant to network theory such as popularity, reciprocity, and transitivity. 
 
@@ -151,18 +151,28 @@ For each author $i =1,\ldots,A$:
 \end{itemize}
 	where $\delta$ is a real-valued parameter that controls the average number of recipients, with the prior specified as $\delta \sim N(\mu_\delta,\sigma^2_\delta)$, and $\boldsymbol{\lambda}_{id}=(\lambda_{id1},\ldots\lambda_{idA})$ is the vector of the stochoastic intensities for the author $i$. In particular, $\mbox{Gibbs}(\delta, \boldsymbol{\lambda}_{id})$ is defined as
 	\begin{align*}
-	&p(\boldsymbol{u}_{id}|\delta, \boldsymbol{\lambda}_{id}) \\&= \frac{\exp\Big\{\mbox{log}\Big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\Big) + \sum_{j \neq i} \Big(\delta+\mbox{log}(\lambda_{idj})\Big)u_{idj}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})} ,
+	&p(\boldsymbol{u}_{id}|\delta, \boldsymbol{\lambda}_{id}) \\&= \frac{\exp\Big\{\mbox{log}\Big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\Big) + \sum_{j \neq i} (\delta+\lambda_{idj})u_{idj}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})} ,
 	\end{align*}
 where $Z(\delta,\boldsymbol{\lambda}_{id})$ is the normalizing constant and $\lVert \boldsymbol{u}_{id}\rVert_1$ is the $l_1$-norm of the binary vector $\boldsymbol{u}_{id}$. Derivation of the normalizing constant is given in Appendix A. 
 
-\subsubsection{Hypothetical Timestamps}\label{subsubsec:Hypothetical Timestamps}
-We then generate a hypothetical timestamp for each author--recipient-set pair by saying, ``If $i$ were the author of document $d$ and its recipients were $\boldsymbol{u}_{id}$, when would it be sent?" Similar to Section \ref{subsubsec:Hypothetical Recipients}, we define the interaction-pattern-specific rate as below.
+\iffalse
+\subsubsection{Hypothetical Timestamps}
+We then generate a hypothetical timestamp for each author-recipient pair by saying, ``If $i$ were the author of document $d$ and its recipients were $\boldsymbol{u}_{id}$, when would it be sent?" Similar to Section \ref{subsubsec:Hypothetical Recipients}, we define the interaction-pattern-specific rate as below.
 
 For each author $i =1,\ldots,A$:
 \begin{align*}
 \xi_{idc}& = \boldsymbol{\eta}_c^\top\mbox{GeomMean}(\{ \boldsymbol{y}_{idjc}\}_{j:u_{idj}= 1}),
 \end{align*}
 where $\boldsymbol{\eta}_c$ is the interaction-pattern-specific coefficients with the prior $\boldsymbol{\eta}_c \sim N(\boldsymbol{\mu}_\eta,\Sigma_\eta)$, and $\boldsymbol{y}_{idjc}$ is the interaction patterns' time-related covariates, which can be any feature that could affect timestamps of the document. We take the geometric mean of the predictors over the chosen recipients in order to obtain a single vector of the averaged predictors. 
+\fi
+\subsubsection{Hypothetical Timestamps}\label{subsubsec:Hypothetical Timestamps}
+We then generate a hypothetical timestamp for each author by saying, ``If $i$ were the author of document $d$, when would it be sent?" Similar to Section \ref{subsubsec:Hypothetical Recipients}, we define the interaction-pattern-specific rate as below.
+
+For each author $i =1,\ldots,A$:
+\begin{align*}
+	\xi_{idc}& = \boldsymbol{\eta}_c^\top \boldsymbol{y}_{idc},
+\end{align*}
+where $\boldsymbol{\eta}_c$ is the interaction-pattern-specific coefficients with the prior $\boldsymbol{\eta}_c \sim N(\boldsymbol{\mu}_\eta,\Sigma_\eta)$, and $\boldsymbol{y}_{idc}$ is the interaction patterns' time-related covariates, which can be any feature that could affect timestamps of the document. For example, $\boldsymbol{y}_{idc}$ can include sender-specific intercepts, day of the week (weekdays/weekends) or time of the day (AM/PM) when the previous document was sent.
 
 We then calculate the expected value of timestamp as
 \begin{align*}\mu_{id} &= \sum_{c=1}^C \pi_{dc} g^{-1}(\xi_{idc}),
@@ -174,7 +184,7 @@ In modeling the timestamps, we do not assume specific distribution; instead, we 
 E(\tau_{id}) &= \mu_{id},\\
 V(\tau_{id}) &= V(\mu_{id}),
 \end{align*}
-where $\tau_{id}$ is assumed to be generated from a particular distribution in the exponential family with positive support (\textit{i.e.} $\tau_{id} \in (0, \infty)$) with the mean $\mu_{id}$. Possible choice of distributions include Exponential, Weibull, Gamma, and lognormal\footnote{For lognormal, take the log-transformation and apply $\mu = E(\log(\tau_{id})) = \mu_{id}$ and $ \sigma_\tau^2=V(\log(\tau_{id})) = V(\mu_{id})$ using identity link function $g = I$. Then, infer the variance parameter $\sigma_\tau^2$ using $\sigma_\tau^2 \sim \mbox{Inverse-Gamma}(a_\tau, b_\tau)$.} distributions, which are commonly used in time-to-event modeling.
+where $\tau_{id}$ is assumed to be generated from a particular distribution in the exponential family with positive support (\textit{i.e.} $\tau_{id} \in (0, \infty)$) with the mean $\mu_{id}$. Possible choice of distributions include Exponential, Weibull, Gamma, and lognormal\footnote{For lognormal, take the log-transformation and apply $\mu = E(\log(\tau_{id})) = \mu_{id}$ and $ \sigma_\tau^2=V(\log(\tau_{id})) = V(\mu_{id})$ using identity link function $g = I$.} distributions, which are commonly used in time-to-event modeling. Based on the choice of distribution, we may infer the variance parameter $\sigma_\tau^2$ with common priors such as $\sigma_\tau^2 \sim \mbox{Inverse-Gamma}(a_\tau, b_\tau)$ or $\sigma_\tau^2 \sim \mbox{half-Cauchy}(\gamma_\tau)$.
 
 \subsubsection{Actual Data}\label{subsubsec:Actual Data}
 Finally, we choose the document's actual author, recipients, and timestamp by selecting the author--recipient-set pair with the earliest timestamp:
@@ -195,7 +205,7 @@ Our inference goal is to draw samples from the joint posterior distribution
   &p(\boldsymbol{z},\boldsymbol{l},\boldsymbol{b}, \boldsymbol{\eta}, \delta,\boldsymbol{u}|\boldsymbol{w}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}, \alpha, \beta, \boldsymbol{m}, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta)\\
    &\propto p(\boldsymbol{z},\boldsymbol{w},\boldsymbol{l},\boldsymbol{b}, \boldsymbol{\eta}, \delta,\boldsymbol{u}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}| \alpha, \beta, \boldsymbol{m}, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta)\\
   & \propto p(\boldsymbol{z}|\alpha, \boldsymbol{m})p(\boldsymbol{w}|\boldsymbol{z}, \beta)p(\boldsymbol{l})p(\boldsymbol{b}|\boldsymbol{\mu}_b, \Sigma_b)p( \boldsymbol{\eta}|\boldsymbol{\mu}_\eta \Sigma_\eta)\\
-  & \quad\quad\times p(\delta| {\mu}_\delta,\sigma^2_\delta)p(\boldsymbol{u}|\boldsymbol{z},\boldsymbol{l}, \boldsymbol{b}, \delta)p(\boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}|\boldsymbol{u},\boldsymbol{z},\boldsymbol{l}, \boldsymbol{\eta}),
+  & \quad\quad\times p(\delta| {\mu}_\delta,\sigma^2_\delta)p(\boldsymbol{u}|\boldsymbol{z},\boldsymbol{l}, \boldsymbol{b}, \delta)p(\boldsymbol{a}, \boldsymbol{t}|\boldsymbol{z},\boldsymbol{l}, \boldsymbol{\eta})p(\boldsymbol{r}|\boldsymbol{a},\boldsymbol{u}),
   \end{aligned}
   \label{eqn:jointposterior}
   \end{equation*}
@@ -350,57 +360,57 @@ This work was supported in part by the University of Massachusetts Amherst Cente
   	 \begin{equation*} 
   	 \footnotesize
   	 \begin{aligned}
-  	& P(\boldsymbol{u}_{id}| \delta, \boldsymbol{\lambda}_{id} ) \\&= \frac{\exp\Big\{ \mbox{log}\Big(\text{I}(\lVert \boldsymbol{u}_{id} \rVert_1 > 0)\Big) + \sum_{j \neq i} \Big(\delta+\mbox{log}(\lambda_{idj})\Big)u_{idj} \Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})}.
+  	& P(\boldsymbol{u}_{id}| \delta, \boldsymbol{\lambda}_{id} ) \\&= \frac{\exp\Big\{ \mbox{log}\Big(\text{I}(\lVert \boldsymbol{u}_{id} \rVert_1 > 0)\Big) + \sum_{j \neq i} (\delta+\lambda_{idj})u_{idj} \Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})}.
   	 \end{aligned}
   	 \end{equation*}
   	 
   	 To use this distribution efficiently, we derive a closed-form expression for $Z(\delta,\boldsymbol{\lambda}_{id})$ that does not require brute-force summation over the support of $\boldsymbol{u}_{id}$ (\textit{i.e.} $\forall \boldsymbol{u}_{id} \in [0,1]^A$). We recognize that if $\boldsymbol{u}_{id}$ were drawn via independent Bernoulli distributions in which $P({u}_{idj}=1|\delta, \boldsymbol{\lambda}_{id})$ was given by logit$(\delta+\log(\lambda_{idj}))$, then \begin{equation*}
-  	 P(\boldsymbol{u}_{id}|\delta, \boldsymbol{\lambda}_{id}) \propto \exp\Big\{\sum_{j \neq i } \Big(\delta+\log(\lambda_{idj})\Big)u_{idj}\Big\}.  	 
+  	 P(\boldsymbol{u}_{id}|\delta, \boldsymbol{\lambda}_{id}) \propto \exp\Big\{\sum_{j \neq i } (\delta+\lambda_{idj})u_{idj}\Big\}.  	 
   	 \end{equation*}
   	 This is straightforward to verify by looking at 
   	 \begin{equation*}
   	   	 \footnotesize
   	 \begin{aligned}
   &P(u_{idj}=1|\boldsymbol{u}_{id[-j]}, \delta, \boldsymbol{\lambda}_{id})
-  	 =\frac{ \exp{\Big(\delta+\log(\lambda_{idj})\Big)}}{\exp{\Big(\delta+\log(\lambda_{idj})\Big)} + 1}.\end{aligned}\end{equation*}
+  	 =\frac{ \exp{(\delta+\lambda_{idj})}}{\exp{(\delta+\lambda_{idj})} + 1}.\end{aligned}\end{equation*}
   	 We denote the logistic-Bernoulli normalizing constant as $Z^{l}(\delta,\boldsymbol{\lambda}_{id})$, which is defined as 
   	 \begin{equation*}
   	   	 \footnotesize
-  	 Z^{l}(\delta,\boldsymbol{\lambda}_{id})=\sum_{\boldsymbol{u}_{id} \in [0,1]^{A}} \exp\Big\{\sum_{j\neq i} \Big(\delta+\log(\lambda_{idj})\Big)u_{idj}\Big\}.
+  	 Z^{l}(\delta,\boldsymbol{\lambda}_{id})=\sum_{\boldsymbol{u}_{id} \in [0,1]^{A}} \exp\Big\{\sum_{j\neq i} (\delta+\lambda_{idj})u_{idj}\Big\}.
   	 \end{equation*}
   	 
   	 Now, since 
   	 \begin{equation*}
   	   	 \footnotesize
   	 \begin{aligned}
-  	 &\exp\Big\{ \mbox{log}\Big(\text{I}(\lVert \boldsymbol{u}_{id} \rVert_1 > 0)\Big) + \sum_{j \neq i} \Big(\delta+\mbox{log}(\lambda_{idj})\Big)u_{idj} \Big\}\\&= \exp\Big\{  \sum_{j \neq i} \Big(\delta+\mbox{log}(\lambda_{idj})\Big)u_{idj} \Big\},
+  	 &\exp\Big\{ \mbox{log}\Big(\text{I}(\lVert \boldsymbol{u}_{id} \rVert_1 > 0)\Big) + \sum_{j \neq i} (\delta+\lambda_{idj})u_{idj} \Big\}\\&= \exp\Big\{  \sum_{j \neq i} (\delta+\lambda_{idj})u_{idj} \Big\},
 \end{aligned}
  	 \end{equation*}
  	  except when $\lVert \boldsymbol{u}_{id} \rVert_1=0$, we note that 
   	 \begin{equation*}
   	   	 \footnotesize
   	 \begin{aligned}
-  	 Z(\delta,\boldsymbol{\lambda}_{id})& = Z^{l}(\delta,\boldsymbol{\lambda}_{id}) -  \exp\Big\{ \sum\limits_{\forall u_{idj}=0}\Big(\delta+\log(\lambda_{idj})\Big)u_{idj} \Big\}
-  	 \\& = Z^{l}(\delta,\mbox{log}(\lambda_{i}^{(d)})) -  1.
+  	 Z(\delta,\boldsymbol{\lambda}_{id})& = Z^{l}(\delta,\boldsymbol{\lambda}_{id}) -\exp\Big\{ \sum\limits_{\forall u_{idj}=0}(\delta+\lambda_{idj})u_{idj} \Big\}
+  	 \\& = Z^{l}(\delta,\lambda_{i}^{(d)}) -  1.
   	 \end{aligned}
   	 \end{equation*}
   	 We can therefore derive a closed form expression for $Z(\delta,\boldsymbol{\lambda}_{id})$ via a closed form expression for $Z^{l}(\delta,\boldsymbol{\lambda}_{id})$. This can be done by looking at the probability of the zero vector under the logistic-Bernoulli model:
   	 \begin{equation*}
   	 \footnotesize
   	 \begin{aligned}
-  	 &\frac{\exp\Big\{ \sum\limits_{\forall u_{idj}=0}\Big(\delta+\log(\lambda_{idj})\Big)u_{idj} \Big\}}{Z^{l}(\delta,\boldsymbol{\lambda}_{id})}\\&= \prod_{j \neq i}   \Big(1-\frac{ \exp{\Big(\delta+\log(\lambda_{idj})\Big)}}{\exp{\Big(\delta+\log(\lambda_{idj})\Big)} + 1}\Big).
+  	 &\frac{\exp\Big\{ \sum\limits_{\forall u_{idj}=0}(\delta+\lambda_{idj})u_{idj} \Big\}}{Z^{l}(\delta,\boldsymbol{\lambda}_{id})}\\&= \prod_{j \neq i}   \Big(1-\frac{ \exp{(\delta+\lambda_{idj})}}{\exp{(\delta+\lambda_{idj})} + 1}\Big).
   	  \end{aligned}  
   	  \end{equation*}
   	  Then, we have 
   	    	 \begin{equation*}
   	    	   	 \footnotesize
   	    	 \begin{aligned}
-  	& Z^{l}(\delta,\boldsymbol{\lambda}_{id}) &= \frac{1}{\prod\limits_{j \neq i}   \frac{ \exp\{-(\delta+\mbox{log}(\lambda_{idj}))\}}{\exp\{-(\delta+\mbox{log}(\lambda_{idj}))\} + 1}}.
+  	& Z^{l}(\delta,\boldsymbol{\lambda}_{id}) &= \frac{1}{\prod\limits_{j \neq i}   \frac{ \exp\{-(\delta+\lambda_{idj})\}}{\exp\{-(\delta+\lambda_{idj})\} + 1}}.
   	 \end{aligned}  
   	 \end{equation*}
   	 The closed form expression for the normalizing constant under the non-empty Gibbs measure is  \begin{equation*}
   	   	 \footnotesize
-  	 \begin{aligned}Z(\delta,\boldsymbol{\lambda}_{id}) = \prod_{j \neq i } \Big(\mbox{exp}\{\delta+\mbox{log}(\lambda_{idj})\} + 1\Big)-1.
+  	 \begin{aligned}Z(\delta,\boldsymbol{\lambda}_{id}) = \prod_{j \neq i } \Big(\mbox{exp}\{\delta+\lambda_{idj}\} + 1\Big)-1.
   	 \end{aligned}  
   	 \end{equation*}
   	
@@ -456,15 +466,15 @@ This work was supported in part by the University of Massachusetts Amherst Cente
   	  \begin{equation*}
   	    	 \footnotesize
   	  \begin{aligned}
-  	  &p(u_{idj}=1| \boldsymbol{u}_{id\backslash j}, \boldsymbol{z},\boldsymbol{l},\boldsymbol{b}, \delta)\\& \propto \frac{\mbox{exp}\Big\{\log(1) +\sum\limits_{j \neq i } \Big(\delta+\mbox{log}(\lambda_{idj})\Big){u}_{id[j=1]}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})}  
-  	  \\& \propto \mbox{exp}\Big\{\delta+\mbox{log}(\lambda_{idj})\Big\},
+  	  &p(u_{idj}=1| \boldsymbol{u}_{id\backslash j}, \boldsymbol{z},\boldsymbol{l},\boldsymbol{b}, \delta)\\& \propto \frac{\mbox{exp}\Big\{\log(1) +\sum\limits_{j \neq i } (\delta+\lambda_{idj}){u}_{id[j=1]}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})}  
+  	  \\& \propto \mbox{exp}\{\delta+\lambda_{idj}\},
   	  \end{aligned}\label{eqn:uidj1}
   	  \end{equation*}
   	  where ${u}_{id[j=1]}$ meaning that the $j^{th}$ element of $\boldsymbol{u}_{id}$ is fixed as 1 (thus making $\mbox{log}\big(\text{I}(\lVert\boldsymbol{u}_{id}\rVert_1 > 0 )\big) = 0$). On the other hand, 
   	  \begin{equation*}
   	    	 \footnotesize
   	  \begin{aligned}
-  	  &p(u_{idj}=0| \boldsymbol{u}_{id\backslash j}, \boldsymbol{z},\boldsymbol{l},\boldsymbol{b}, \delta)\\& \propto \frac{ \mbox{exp}\Big\{\mbox{log}\big(\text{I}(\lVert\boldsymbol{u}_{id}\rVert_1 > 0 )\big) +\sum\limits_{j \neq i } \Big(\delta+\mbox{log}(\lambda_{idj})\Big){u}_{id[j=0]}\Big\} }{Z(\delta,\boldsymbol{\lambda}_{id})}
+  	  &p(u_{idj}=0| \boldsymbol{u}_{id\backslash j}, \boldsymbol{z},\boldsymbol{l},\boldsymbol{b}, \delta)\\& \propto \frac{ \mbox{exp}\Big\{\mbox{log}\big(\text{I}(\lVert\boldsymbol{u}_{id}\rVert_1 > 0 )\big) +\sum\limits_{j \neq i } (\delta+\lambda_{idj}){u}_{id[j=0]}\Big\} }{Z(\delta,\boldsymbol{\lambda}_{id})}
   	  \\& \propto \mbox{exp}\Big\{\mbox{log}\big(\text{I}(\lVert\boldsymbol{u}_{id}\rVert_1 > 0 )\big) \Big\},
   	  \end{aligned}\label{eqn:uidj0}
   	  \end{equation*}  
@@ -516,7 +526,7 @@ Next, we resample the topic assignments, one words in a document at a time. Sinc
   	   &p(z_{dn}=k | \boldsymbol{z}_{\backslash dn}, \boldsymbol{l}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}, \boldsymbol{w}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}, \alpha, \beta, \boldsymbol{m})\\&\propto
   	   p(z_{dn}=k| \boldsymbol{z}_{\backslash dn}, \alpha, \boldsymbol{m}) p(w_{dn}| z_{dn}=k,\boldsymbol{w}_{\backslash dn}, \boldsymbol{z}_{\backslash dn},\beta) \\&\quad\times\prod_{i=1}^A  p(\boldsymbol{u}_{id}|\boldsymbol{z}_d, \boldsymbol{l}, \boldsymbol{b}, \delta)p({a}_d, \boldsymbol{r}_d, {t}_d|\boldsymbol{u}_d,\boldsymbol{z}_d, \boldsymbol{l}, \boldsymbol{\eta} )\\&\propto
   	   ({N_{dk, \backslash dn}+\alpha m_k})\times 	  \frac{N_{w_{dn}k, \backslash dn}+\frac{\beta}{V}}{N_{k, \backslash dn}+\beta}
-  	   \\&  \times\prod_{i=1}^A \frac{\exp\Big\{\mbox{log}\Big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\Big) + \sum\limits_{j \neq i} \Big(\delta+\mbox{log}(\lambda_{idj})\Big)u_{idj}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})}
+  	   \\&  \times\prod_{i=1}^A \frac{\exp\Big\{\mbox{log}\Big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\Big) + \sum\limits_{j \neq i} (\delta+\lambda_{idj})u_{idj}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})}
   	   \\& \times\varphi_{\tau}\big(\tau_{a_d d}; \mu_{a_d d}, V(\mu_{a_d d})\big)\times  \prod_{i\neq a_d}\Big(1-\Phi_{\tau} \big(\tau_{a_d d}; \mu_{i d}, V(\mu_{i d})\big) \Big),
   	   \end{aligned}
   	   \end{equation*}
@@ -537,7 +547,7 @@ Next, we resample the topic assignments, one words in a document at a time. Sinc
   	        \begin{aligned} & 
   	        p(l_k=c|\boldsymbol{l}_{\backslash k}, \boldsymbol{z}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t})\\
   	        &  \propto\prod_{d=1}^D
-  	     \prod_{i=1}^A \frac{\exp\Big\{\mbox{log}\Big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\Big) + \sum\limits_{j \neq i} \Big(\delta+\mbox{log}(\lambda_{idj})\Big)u_{idj}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})}
+  	     \prod_{i=1}^A \frac{\exp\Big\{\mbox{log}\Big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\Big) + \sum\limits_{j \neq i} (\delta+\lambda_{idj})u_{idj}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})}
   	        \\& \quad\quad\times\prod_{d=1}^D\Big(\varphi_{\tau}\big(\tau_{a_d d}; \mu_{a_d d}, V(\mu_{a_d d})\big) \\&\quad\quad\quad\quad\quad\times \prod_{i\neq a_d}\Big(1-\Phi_{\tau} \big(\tau_{a_d d}; \mu_{i d}, V(\mu_{i d})\big) \Big)\Big),
   	        \end{aligned}
   	        \end{equation*}

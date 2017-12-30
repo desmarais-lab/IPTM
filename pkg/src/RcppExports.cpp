@@ -490,22 +490,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// Edgepartsum2
-double Edgepartsum2(List X, NumericMatrix p_d, NumericMatrix B, List u, double delta, IntegerVector uniquehist);
-RcppExport SEXP _IPTM_Edgepartsum2(SEXP XSEXP, SEXP p_dSEXP, SEXP BSEXP, SEXP uSEXP, SEXP deltaSEXP, SEXP uniquehistSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type p_d(p_dSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type B(BSEXP);
-    Rcpp::traits::input_parameter< List >::type u(uSEXP);
-    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type uniquehist(uniquehistSEXP);
-    rcpp_result_gen = Rcpp::wrap(Edgepartsum2(X, p_d, B, u, delta, uniquehist));
-    return rcpp_result_gen;
-END_RCPP
-}
 // Timepart
 double Timepart(arma::vec mu, double sigma_tau, double a_d, double t_d);
 RcppExport SEXP _IPTM_Timepart(SEXP muSEXP, SEXP sigma_tauSEXP, SEXP a_dSEXP, SEXP t_dSEXP) {
@@ -517,6 +501,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type a_d(a_dSEXP);
     Rcpp::traits::input_parameter< double >::type t_d(t_dSEXP);
     rcpp_result_gen = Rcpp::wrap(Timepart(mu, sigma_tau, a_d, t_d));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Timepartindiv
+NumericVector Timepartindiv(arma::vec mu, double sigma_tau, double t_d);
+RcppExport SEXP _IPTM_Timepartindiv(SEXP muSEXP, SEXP sigma_tauSEXP, SEXP t_dSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma_tau(sigma_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type t_d(t_dSEXP);
+    rcpp_result_gen = Rcpp::wrap(Timepartindiv(mu, sigma_tau, t_d));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -575,8 +572,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_expconst", (DL_FUNC) &_IPTM_expconst, 1},
     {"_IPTM_Edgepart", (DL_FUNC) &_IPTM_Edgepart, 3},
     {"_IPTM_Edgepartsum", (DL_FUNC) &_IPTM_Edgepartsum, 5},
-    {"_IPTM_Edgepartsum2", (DL_FUNC) &_IPTM_Edgepartsum2, 6},
     {"_IPTM_Timepart", (DL_FUNC) &_IPTM_Timepart, 4},
+    {"_IPTM_Timepartindiv", (DL_FUNC) &_IPTM_Timepartindiv, 3},
     {"_IPTM_Timepartsum", (DL_FUNC) &_IPTM_Timepartsum, 5},
     {NULL, NULL, 0}
 };

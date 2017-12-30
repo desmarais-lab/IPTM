@@ -7,7 +7,7 @@ attach(Enron)
 
 nIP = 3
 K = 100
-for (i in 1:5){
+for (i in 5:1){
     set.seed(i)
     Enrontest = IPTM.inference(edge = Enron$edge, node = Enron$node, textlist = Enron$text, vocab= Enron$vocab,
                nIP = nIP, K = K, sigma.Q = c(0.0001, 0.0001, 5, 0.1), alpha = 2, mvec = rep(1/K, K), beta = 2,
