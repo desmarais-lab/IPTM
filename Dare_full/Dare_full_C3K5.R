@@ -9,7 +9,7 @@ Dare$edge = lapply(Dare$edge, function(x){x[1:3]})
 
 nIP = 3
 K = 5
-for (i in 3:5){
+for (i in 5:5){
     set.seed(i)
     Daretest = IPTM.inference(edge = Dare$edge, node = Dare$node, textlist = Dare$text, vocab= Dare$vocab, nIP = nIP, K = K,
     sigma.Q = c(0.0001, 0.0001, 5, 0.1), alpha = 2, mvec = rep(1/K, K), beta = 2, prior.b = list(rep(0, 24), 10*diag(24)),
