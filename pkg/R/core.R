@@ -910,10 +910,10 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
       }
   }
   X = list()
-  senderpredict = matrix(NA, nrow = nrow(missing), ncol = Outer)
-  receiverpredict = lapply(1:nrow(missing), function(d) {c()})
-  timepredict = matrix(NA, nrow = nrow(missing), ncol = Outer)
-  xi = xi_all(timemat, eta.old[,node], eta.old[,-node], edge.trim)
+  senderpredict = matrix(NA, nrow = sum(missing[,1]), ncol = Outer)
+  receiverpredict = lapply(1:sum(missing[,3]), function(d) {c()})
+  timepredict = matrix(NA, nrow = sum(missing[,3]), ncol = Outer)
+  xi = xi_all(timemat, matrix(eta.old[,node], nrow = nIP), matrix(eta.old[,-node], nrow = nIP), edge.trim)
   mu = mu_mat(p.d, xi, edge.trim)
   #start outer iteration
   for (o in 1:Outer) {
@@ -932,55 +932,44 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
     iter2 = 1
     iter3 = 1
     for (d in edge.trim) {
-        if (missing[d,1] == 1) {
-            probi = Timepartindiv(mu[d,], sigma_tau, timeinc[d])
-            senders[d] = multinom_vec(1, expconst(probi))
-            senderpredict[iter1, o] = senders[d]
-            iter1 = iter1+1
-        }
-        if (missing[d,2] == 1) {
-            edge[[d]][[2]] = which(u[[d]][senders[d], ] > 0)
-            receiverpredict[[iter2]] = rbind(receiverpredict[[iter2]], u[[d]][senders[d], ])
-            iter2 = iter2+1
-         }
-        if (missing[d,3] == 1) {
-            timeinc[d] = rlnorm(1, mu[d, senders[d]], sigma_tau)
-            timepredict[iter3, o] = timeinc[d]
-            iter3 = iter3+1
-        }
+      if (missing[d,3] == 1) {
+        timeinc[d] = rlnorm(1, mu[d, senders[d]], sigma_tau)
+        timepredict[iter3, o] = timeinc[d]
+        iter3 = iter3+1
+      }
+      if (missing[d,1] == 1) {
+        probi = Timepartindiv(mu[d,], sigma_tau, timeinc[d])
+        senders[d] = multinom_vec(1, expconst(probi))
+        senderpredict[iter1, o] = senders[d]
+        iter1 = iter1+1
+      }
     }
     timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
     timestamps[-1] = timestamps[1]+cumsum(timeinc[-1])*timeunit
-
-    if (sum(timestat) > 0) {
-        Sys.setenv(TZ = tz)
-        time_ymd = as.POSIXct(timestamps, tz = getOption("tz"), origin = "1970-01-01")
-        if (timestat[1] > 0) {
-            days = vapply(time_ymd, function(d) {wday(d)}, c(1))
-            days[days==1] = 8
-            timemat[,1] = as.numeric(cut(days, c(1,6,8), c("weekdays","weekends")))-1
-            it = 1
-        }
-        if (timestat[2] > 0) {
-            hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
-            timemat[,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
-        }     
-    }
-    
-    xi = xi_all(timemat, eta.old[,node], eta.old[,-node], edge.trim)
-    mu = mu_mat(p.d, xi, edge.trim)
-    
-    #start inference
     for (d in edge.trim) {
-        history.t = History(edge, p.d, node, timestamps[d-1]+exp(-745), timeunit)
-        X[[d]] = Netstats_cpp(history.t, node, netstat)
-        if (timestamps[d]+384*timeunit > timestamps[max.edge]) {
+      history.t = History(edge, p.d, node, timestamps[d-1]+exp(-745), timeunit)
+      X[[d]] = Netstats_cpp(history.t, node, netstat)
+      if (timestamps[d]+384*timeunit > timestamps[max.edge]) {
             hist.d[d] = max.edge
         } else {
             hist.d[d] = which_num(timestamps[d]+384*timeunit, timestamps)-1
         }
     }
-    
+    for (d in edge.trim) {
+      if (missing[d,2] == 1) {
+        vu = MultiplyXB(X[[d]], b.old)
+        lambda = lambda_cpp(p.d[d,], vu)
+        i = senders[d]
+          for (j in sample(node[-i], A-1)) {
+            probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
+            u[[d]][i, j] = multinom_vec(1, expconst(probij))-1
+          }
+        edge[[d]][[2]] = which(u[[d]][i,] == 1)
+        receiverpredict[[iter2]] = rbind(receiverpredict[[iter2]], u[[d]][i, ])
+        iter2 = iter2+1
+      }
+    }  
+    #start inference
     # Data augmentation
     for (d in edge.trim) {
         vu = MultiplyXB(X[[d]], b.old)
@@ -1076,11 +1065,11 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
       
   # adaptive M-H   
     if (o > 1) {
-    		accept.rates[1] = accept.rates[1]/Inner[1]
-    		accept.rates[2] = accept.rates[2]/Inner[2]
+    	accept.rates[1] = accept.rates[1]/Inner[1]
+    	accept.rates[2] = accept.rates[2]/Inner[2]
         accept.rates[3] = accept.rates[3]/Inner[3]
         accept.rates[4] = accept.rates[1]
-    		sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
+    	sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
     }
     accept.rates = rep(0, 4)
     
@@ -1119,7 +1108,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
           for (IP in 1:nIP) {
 			  eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
 		  }
-      xi = xi_all(timemat, eta.new[,node], eta.new[,-node], edge.trim)
+	  xi = xi_all(timemat, matrix(eta.old[,node], nrow = nIP), matrix(eta.old[,-node], nrow = nIP), edge.trim)
       mu = mu_mat(p.d, xi, edge.trim)
       Timepartsum = Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
       prior.new2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
@@ -1137,7 +1126,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
         }
       }
     }
-	  xi = xi_all(timemat, eta.old[,node], eta.old[,-node], edge.trim)
+	xi = xi_all(timemat, matrix(eta.old[,node], nrow = nIP), matrix(eta.old[,-node], nrow = nIP), edge.trim)
     mu = mu_mat(p.d, xi, edge.trim)
     Timepartsum = Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
 

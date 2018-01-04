@@ -3,7 +3,7 @@ library(FastGP)
 library(MCMCpack)
 library(LaplacesDemon)
 set.seed(561122)
-nDocs = 20
+nDocs = 5
 node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
 
@@ -14,13 +14,13 @@ alpha = 2
 mvec = rep(1/4, 4)
 beta = 2
 netstat = c("dyadic")
-timestat = c("timeofday", "dayofweek")
-
+#timestat = c("timeofday", "dayofweek")
+timestat = c()
 L = 3
 P = 6
 prior.b = list(rep(0, P), 0.5* diag(P))
 prior.delta = c(-2, 0.1)
-prior.eta = list(rep(4, length(node) + 2), 0.5*diag(length(node) +2))
+prior.eta = list(rep(4, length(node) + length(timestat)), 0.5*diag(length(node) +length(timestat)))
 prior.tau = 5
 sigma.Q = c(0.04, 0.2, 0.05, 5)
 
