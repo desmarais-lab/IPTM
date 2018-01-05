@@ -1079,7 +1079,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
     b.new = matrix(NA, nIP, P)
     for (inner in 1:Inner[1]) {
       for (IP in 1:nIP) {
-			  b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
+		b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
 	  }
       delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
       prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+

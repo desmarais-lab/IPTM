@@ -21,6 +21,9 @@ for (i in 1:5){
   initial$sigma_tau = Enrontest$sigma_tau[length(Enrontest$sigma_tau)]
   initial$b = t(vapply(1:nIP, function(IP) {Enrontest$b[[IP]][,ncol(Enrontest$b[[IP]])]}, rep(0, nrow(Enrontest$b[[1]]))))
   initial$eta = t(vapply(1:nIP, function(IP) {Enrontest$eta[[IP]][,ncol(Enrontest$eta[[IP]])]}, rep(0, nrow(Enrontest$eta[[1]]))))
+  initial$proposal.var1 = diag(nrow(Enrontest$b[[1]]))
+  initial$proposal.var2 = diag(nrow(Enrontest$eta[[1]]))
+  initial$sigma.Q = Enrontest$sigma.Q
   initial$l = Enrontest$l
   initial$z = Enrontest$z
   initial$u = Enrontest$u

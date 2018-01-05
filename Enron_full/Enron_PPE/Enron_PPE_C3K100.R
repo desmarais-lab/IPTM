@@ -23,6 +23,9 @@ for (i in 1:5){
   initial$eta = t(vapply(1:nIP, function(IP) {Enrontest$eta[[IP]][,ncol(Enrontest$eta[[IP]])]}, rep(0, nrow(Enrontest$eta[[1]]))))
   initial$l = Enrontest$l
   initial$z = Enrontest$z
+  initial$proposal.var1 = diag(nrow(Enrontest$b[[1]]))
+  initial$proposal.var2 = diag(nrow(Enrontest$eta[[1]]))
+  initial$sigma.Q = Enrontest$sigma.Q
   initial$u = Enrontest$u
   EnronPPE[[i]] = IPTM.inference.PPE(missing, edge = Enron$edge, node = Enron$node, textlist = Enron$text, vocab= Enron$vocab, nIP = nIP, K = K,
   sigma.Q = c(0.0001, 0.001, 5, 0.1), alpha = 2, mvec = rep(1/K, K), beta = 2, prior.b = list(rep(0, 24), 10*diag(24)),
