@@ -1568,11 +1568,11 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
     prior.old3 = dhalfcauchy(sigma_tau, prior.tau, TRUE)
     post.old3 = Timepartsum
     for (inner in 1:Inner[3]) {
-      sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
+      sigma_tau.new = rtruncnorm(1, 0, 10, sigma_tau, sqrt(sigma.Q[3]))
       prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau, TRUE)
       post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc, edge.trim)
-      loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
-                     log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
+      loglike.diff = log(dtruncnorm(sigma_tau, 0, 10, sigma_tau.new, sqrt(sigma.Q[3])))-
+                     log(dtruncnorm(sigma_tau.new, 0, 10, sigma_tau, sqrt(sigma.Q[3])))+
                      prior.new3+post.new3-prior.old3-post.old3
       if (log(runif(1, 0, 1)) < loglike.diff) {
         sigma_tau = sigma_tau.new

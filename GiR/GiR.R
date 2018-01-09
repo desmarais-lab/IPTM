@@ -2,8 +2,8 @@ library(IPTM)
 library(FastGP)
 library(MCMCpack)
 library(LaplacesDemon)
-set.seed(561122)
-nDocs = 5
+set.seed(56112)
+nDocs = 20
 node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
 
@@ -14,15 +14,14 @@ alpha = 2
 mvec = rep(1/4, 4)
 beta = 2
 netstat = c("dyadic")
-#timestat = c("timeofday", "dayofweek")
-timestat = c()
+timestat = c("timeofday", "dayofweek")
 L = 3
 P = 6
 prior.b = list(rep(0, P), 0.5* diag(P))
 prior.delta = c(-2, 0.1)
-prior.eta = list(rep(4, length(node) + length(timestat)), 0.5*diag(length(node) +length(timestat)))
+prior.eta = list(rep(2, length(node) + length(timestat)), 0.5*diag(length(node) +length(timestat)))
 prior.tau = 5
-sigma.Q = c(0.04, 0.2, 0.05, 5)
+sigma.Q = c(0.04, 0.15, 0.05, 5)
 
 b = matrix(c(prior.b[[1]],prior.b[[1]]), nrow = nIP, byrow = TRUE)
 eta =  matrix(c(prior.eta[[1]],prior.eta[[1]]), nrow = nIP, byrow = TRUE)
@@ -46,7 +45,7 @@ Outer = 3
 Inner = c(3300,5500,1100)
 burn = c(300,500, 100)
 thin = c(3, 5, 2)
-Schein <- Schein(1000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+Schein <- Schein(10000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)
