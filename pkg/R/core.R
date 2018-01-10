@@ -1660,7 +1660,7 @@ GenerateDocs = function(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
       if (timestat[2] > 0) {
         hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
         timemat[1:base.length,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
-      }     
+      }
     }
   }
   history.t = lapply(1:nIP, function(IP) {
@@ -1713,7 +1713,7 @@ GenerateDocs = function(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
     edge[[base.length+d]] = list(author = i.d, recipients = j.d, timestamp = t.d)
     if (t.d <= exp(38.7) & sum(timestat) > 0) {
         Sys.setenv(TZ = tz)
-    	it = 0
+     	it = 0
       time_ymd = as.POSIXct(edge[[base.length+d]][[3]], tz = getOption("tz"), origin = "1970-01-01")
       if (timestat[1] > 0) {
       	it = it + 1
@@ -1726,7 +1726,7 @@ GenerateDocs = function(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
         hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
         timemat[base.length+d,it] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
       }
-    } 		
+    }
   }
   if (base == TRUE & t.d > 384*timeunit) {
     cutoff = which_num(384*timeunit, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1)))-1
@@ -1924,7 +1924,7 @@ GiR_stats = function(GiR_sample, V, timeunit = 3600) {
   n.d = length(text[[1]])
   
   GiR_stats[1:P] = colMeans(GiR_sample$b)
-  GiR_stats[(P+1):(P+Q)] = colMeans(GiR_sample$eta) 
+  GiR_stats[(P+1):(P+Q)] = colMeans(GiR_sample$eta)
   GiR_stats[P+Q+1] = GiR_sample$delta
   GiR_stats[P+Q+2] = GiR_sample$sigma_tau
   GiR_stats[P+Q+3] = mean(vapply(1:D, function(d) {length(edge[[d]][[2]])}, c(1)))
@@ -2151,7 +2151,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
   
   #Forward sampling
   Forward_stats = matrix(NA, nrow = Nsamp, ncol = P+Q+5+nIP+K+V)
-  colnames(Forward_stats) = c(paste0("b_",1:P), paste0("eta_",1:Q), "delta", "sigma_tau", 
+  colnames(Forward_stats) = c(paste0("b_",1:P), paste0("eta_",1:Q), "delta", "sigma_tau",
                             "Mean_recipients", "Mean_timediff", "Mean_TopicIP", paste0("Tokens_in_IP_", 1:nIP), 
                             paste0("Tokens_in_Topic", 1:K), paste0("Tokens_in_Word",1:V))
   #Backward sampling
@@ -2172,7 +2172,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
   	initial = list(alpha = alpha, mvec = mvec, delta = delta, sigma_tau = sigma_tau, b = b, eta = eta, l = l, 
                    z = Forward_sample$z, proposal.var1 = diag(P), proposal.var2 = diag(Q), sigma.Q = sigma.Q, 
                    u = Forward_sample$u)
-    Inference_samp = IPTM.inference.GiR(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q, 
+    Inference_samp = IPTM.inference.GiR(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q,
                      alpha, mvec, beta, prior.b, prior.delta,prior.eta, prior.tau, Outer, Inner, burn, thin, 
                      netstat, timestat, optimize = FALSE, initial = initial)
     b = tvapply(1:nIP, function(IP) {Inference_samp$b[[IP]][,ncol(Inference_samp$b[[IP]])]}, rep(0, P))
@@ -2184,7 +2184,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta,
     for (d in 1:length(z)) {
       names(z[[d]]) = Forward_sample$text[[d]]
     }
-    Backward_sample = GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma_tau, 
+    Backward_sample = GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta, sigma_tau,
                       l, support, netstat, timestat, base.edge = base.edge, base.text = base.text, 
                       topic_token_assignments = z, backward = TRUE, base = FALSE)
     Backward_stats[i, ] = GiR_stats(Backward_sample, V)

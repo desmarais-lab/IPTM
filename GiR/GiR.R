@@ -2,8 +2,8 @@ library(IPTM)
 library(FastGP)
 library(MCMCpack)
 library(LaplacesDemon)
-set.seed(56112)
-nDocs = 20
+set.seed(526113325)
+nDocs = 5
 node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
 
@@ -19,14 +19,14 @@ L = 3
 P = 6
 prior.b = list(rep(0, P), 0.5* diag(P))
 prior.delta = c(-2, 0.1)
-prior.eta = list(rep(2, length(node) + length(timestat)), 0.5*diag(length(node) +length(timestat)))
+prior.eta = list(rep(1, length(node) + length(timestat)), 0.5*diag(length(node) +length(timestat)))
 prior.tau = 5
-sigma.Q = c(0.04, 0.15, 0.05, 5)
+sigma.Q = c(0.15, 0.05, 0.05, 5)
 
 b = matrix(c(prior.b[[1]],prior.b[[1]]), nrow = nIP, byrow = TRUE)
 eta =  matrix(c(prior.eta[[1]],prior.eta[[1]]), nrow = nIP, byrow = TRUE)
 delta = prior.delta[1]
-sigma_tau = rhalfcauchy(1, prior.tau)
+sigma_tau = prior.tau
 
 l = sample(1:nIP, K, replace = TRUE)
 support = gibbs.measure.support(length(node)-1)
@@ -42,10 +42,10 @@ Inner = c(1,1,1)
 burn = c(0,0,0)
 thin = c(1,1,1)
 Outer = 3
-Inner = c(3300,5500,1100)
-burn = c(300,500, 100)
-thin = c(3, 5, 2)
-Schein <- Schein(10000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+Inner = c(5500,5500,1100)
+burn = c(500,500, 100)
+thin = c(5, 5, 2)
+Schein <- Schein(500, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)

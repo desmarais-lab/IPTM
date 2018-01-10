@@ -1,6 +1,6 @@
 library(lda)
 library(SpeedReader)
-setwd("~/Desktop/IPTM/Dare_full")
+setwd("~/Desktop/IPTM/experiment/Dare_full")
 load('Darenew.RData')
 attach(Dare)
 Dare$node = 1:nrow(Dare$node)
@@ -88,7 +88,7 @@ for (nIP in 1:3) {
 }
 
 
-#Dare_topic = Dare_topic / 5
+Dare_topic = Dare_topic / 5
 
 for (i in 1:length(Daretest$z)) {
     Daretest$z[[i]] = rep(1, length(Daretest$z[[i]]))
@@ -106,15 +106,22 @@ K = 1
 Dare_topic[,1] = mean(sapply(1:K, function(k) {
     topic_coherence(top.words[,k], topic.word,Dare$vocab)
 }))
+library(ggplot2)
+library(gridExtra)
+
+
+Dare_topic_new = data.frame(Coherence = c(t(Dare_topic)), nIP = as.factor(c(sapply(1:3, function(x) rep(x, 7)))), K =as.factor(rep(c(1,5, 10, 20, 30, 40, 50), 3)))
+ggplot(Dare_topic_new, aes(K, Coherence, col = nIP))+geom_line(aes(group=nIP)) + geom_point(size = 1)+
+ggtitle("Dare")
 
 ###################
-setwd("~/Desktop/IPTM/Enron_full")
+setwd("~/Desktop/IPTM/experiment/Enron_full")
 load('Enron.RData')
 Enron_topic = matrix(0, 3, 7)
 colnames(Enron_topic) = as.numeric(c("1", "5", "10", "25", "50", "75", "100"))
 
-for (i in c(1, 2,3,4, 5)) {
-for (nIP in 1:3) {
+for (i in 1:5) {
+for (nIP in 1:2) {
 	iter = 1
 	for (K in c(5, 10, 25, 50, 75, 100)){
 		filename = paste0("Enron_full_",nIP,"_",K,"_ver",i,".RData")
@@ -135,7 +142,7 @@ for (nIP in 1:3) {
 	}
 }
 }
-#Enron_topic = Enron_topic / 5
+Enron_topic = Enron_topic / 5
 
 for (i in 1:length(Enrontest$z)) {
    Enrontest$z[[i]] = rep(1, length(Enrontest$z[[i]]))
@@ -156,13 +163,9 @@ Enron_topic[,1] = mean(sapply(1:K, function(k) {
 
 ################
 
-par(mfrow = c(1,2))
-plot(colnames(Dare_topic), Dare_topic[1,], type = 'b', pch = 19, col = 'blue', xlab = "Number of Topics", lty = 2, ylab = "Topic Coherence", ylim = c(min(Dare_topic), max(Dare_topic)), main = "Dare")
-lines(colnames(Dare_topic), Dare_topic[2,], lty = 3, pch = 19, type = 'b', col = "green")
-lines(colnames(Dare_topic), Dare_topic[3,], lty = 4, pch = 19, type = 'b',col = "purple")
-legend(30, -403, pch = 19, legend = c("IPTM with C = 3","IPTM with C = 2","LDA"), col = c("purple","green","blue"))
 
-plot(colnames(Enron_topic), Enron_topic[1,], type = 'b', pch = 19, col = 'blue', xlab = "Number of Topics", lty = 2, ylab = "Topic Coherence", ylim = c(min(Enron_topic), max(Enron_topic)), main = "Enron")
-lines(colnames(Enron_topic), Enron_topic[2,], lty = 3, pch = 19, type = 'b', col = "green")
-lines(colnames(Enron_topic), Enron_topic[3,], lty = 4, pch = 19, type = 'b',col = "purple")
-legend(47, -550, pch = 19, legend = c("IPTM with C = 3","IPTM with C = 2","LDA"), col = c("purple","green","blue"))
+
+Enron_topic_new = data.frame(Coherence = c(t(Enron_topic)), nIP = as.factor(c(sapply(1:3, function(x) rep(x, 7)))), K =as.factor(rep(c(1,5, 10, 20, 30, 40, 50), 3)))
+ggplot(Enron_topic_new, aes(K, Coherence, col = nIP))+geom_line(aes(group=nIP)) + geom_point(size = 1)+
+ggtitle("Enron")
+
