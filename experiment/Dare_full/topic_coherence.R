@@ -165,7 +165,7 @@ Enron_topic[,1] = mean(sapply(1:K, function(k) {
 
 
 
-Enron_topic_new = data.frame(Coherence = c(t(Enron_topic)), nIP = as.factor(c(sapply(1:3, function(x) rep(x, 7)))), K =as.factor(rep(c(1,5, 10, 20, 30, 40, 50), 3)))
+Enron_topic_new = data.frame(Coherence = c(t(Enron_topic)), nIP = as.factor(c(sapply(1:3, function(x) rep(x, 7)))), K =as.factor(rep(c(1,5, 10, 25, 50, 75, 100), 3)))
 ggplot(Enron_topic_new, aes(K, Coherence, col = nIP))+geom_line(aes(group=nIP)) + geom_point(size = 1)+
 ggtitle("Enron")
 

@@ -1,4 +1,4 @@
-\begin{thebibliography}{32}
+\begin{thebibliography}{36}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -24,7 +24,6 @@ Blei, David~M., Ng, Andrew~Y., and Jordan, Michael~I.
 \newblock Latent dirichlet allocation.
 \newblock \emph{J. Mach. Learn. Res.}, 3:\penalty0 993--1022, March 2003.
 \newblock ISSN 1532-4435.
-\newblock URL \url{http://dl.acm.org/citation.cfm?id=944919.944937}.
 
 \bibitem[Bratton \& Rouse(2011)Bratton and Rouse]{bratton2011networks}
 Bratton, Kathleen~A and Rouse, Stella~M.
@@ -33,6 +32,13 @@ Bratton, Kathleen~A and Rouse, Stella~M.
 \newblock \emph{Legislative Studies Quarterly}, 36\penalty0 (3):\penalty0
   423--460, 2011.
 
+\bibitem[Burgess et~al.(2004)Burgess, Jackson, and Edwards]{burgess2004email}
+Burgess, Anthony, Jackson, Thomas, and Edwards, Janet.
+\newblock Email overload: Tolerance levels of employees within the workplace.
+\newblock In \emph{Innovations Through Information Technology: 2004 Information
+  Resources Management Association International Conference, New Orleans,
+  Louisiana, USA, May 23-26, 2004}, volume~1, pp.\  205. IGI Global, 2004.
+
 \bibitem[Butts(2008)]{Butts2008}
 Butts, Carter~T.
 \newblock A relational event framework for social action.
@@ -40,7 +46,6 @@ Butts, Carter~T.
   2008.
 \newblock ISSN 1467-9531.
 \newblock \doi{10.1111/j.1467-9531.2008.00203.x}.
-\newblock URL \url{http://dx.doi.org/10.1111/j.1467-9531.2008.00203.x}.
 
 \bibitem[Camber~Warren(2010)]{camber2010geometry}
 Camber~Warren, T.
@@ -112,6 +117,12 @@ Hunter, David~R, Handcock, Mark~S, Butts, Carter~T, Goodreau, Steven~M, and
 \newblock \emph{Journal of statistical software}, 24\penalty0 (3):\penalty0
   nihpa54860, 2008.
 
+\bibitem[Kanungo \& Jain(2008)Kanungo and Jain]{kanungo2008modeling}
+Kanungo, Shivraj and Jain, Vikas.
+\newblock Modeling email use: a case of email system transition.
+\newblock \emph{System Dynamics Review}, 24\penalty0 (3):\penalty0 299--319,
+  2008.
+
 \bibitem[Kinne(2016)]{kinne2016agreeing}
 Kinne, Brandon~J.
 \newblock Agreeing to arm: Bilateral weapons agreements and the global arms
@@ -130,8 +141,6 @@ Krafft, Peter, Moore, Juston, Desmarais, Bruce, and Wallach, Hanna~M.
 \newblock In Pereira, F., Burges, C.J.C., Bottou, L., and Weinberger, K.Q.
   (eds.), \emph{Advances in Neural Information Processing Systems 25}, pp.\
   2807--2815. Curran Associates, Inc., 2012.
-\newblock URL
-  \url{http://papers.nips.cc/paper/4659-topic-partitioned-multinetwork-embeddings.pdf}.
 
 \bibitem[Kronegger et~al.(2011)Kronegger, Mali, Ferligoj, and
   Doreian]{kronegger2011collaboration}
@@ -196,7 +205,11 @@ Perry, Patrick~O. and Wolfe, Patrick~J.
   Methodology)}, 75\penalty0 (5):\penalty0 821--849, 2013.
 \newblock ISSN 1467-9868.
 \newblock \doi{10.1111/rssb.12013}.
-\newblock URL \url{http://dx.doi.org/10.1111/rssb.12013}.
+
+\bibitem[Pew(2016)]{pew2016}
+Pew, Research~Center.
+\newblock Social media fact sheet.
+\newblock \emph{Accessed on 03/07/17}, 2016.
 
 \bibitem[Robins et~al.(2007)Robins, Pattison, Kalish, and
   Lusher]{robins2007introduction}
@@ -211,6 +224,12 @@ Rubin, Donald~B et~al.
   applied statistician.
 \newblock \emph{The Annals of Statistics}, 12\penalty0 (4):\penalty0
   1151--1172, 1984.
+
+\bibitem[Sz{\'o}stek(2011)]{szostek2011dealing}
+Sz{\'o}stek, Agnieszka~Matysiak.
+\newblock ?dealing with my emails?: Latent user needs in email management.
+\newblock \emph{Computers in Human Behavior}, 27\penalty0 (2):\penalty0
+  723--729, 2011.
 
 \bibitem[Tanner \& Wong(1987)Tanner and Wong]{tanner1987calculation}
 Tanner, Martin~A and Wong, Wing~Hung.
