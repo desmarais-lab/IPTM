@@ -106,13 +106,6 @@ K = 1
 Dare_topic[,1] = mean(sapply(1:K, function(k) {
     topic_coherence(top.words[,k], topic.word,Dare$vocab)
 }))
-library(ggplot2)
-library(gridExtra)
-
-
-Dare_topic_new = data.frame(Coherence = c(t(Dare_topic)), nIP = as.factor(c(sapply(1:3, function(x) rep(x, 7)))), K =as.factor(rep(c(1,5, 10, 20, 30, 40, 50), 3)))
-ggplot(Dare_topic_new, aes(K, Coherence, col = nIP))+geom_line(aes(group=nIP)) + geom_point(size = 1)+
-ggtitle("Dare")
 
 ###################
 setwd("~/Desktop/IPTM/experiment/Enron_full")
@@ -121,7 +114,7 @@ Enron_topic = matrix(0, 3, 7)
 colnames(Enron_topic) = as.numeric(c("1", "5", "10", "25", "50", "75", "100"))
 
 for (i in 1:5) {
-for (nIP in 1:2) {
+for (nIP in 1:3) {
 	iter = 1
 	for (K in c(5, 10, 25, 50, 75, 100)){
 		filename = paste0("Enron_full_",nIP,"_",K,"_ver",i,".RData")
@@ -161,11 +154,21 @@ Enron_topic[,1] = mean(sapply(1:K, function(k) {
     topic_coherence(top.words[,k], topic.word,Enron$vocab)
 }))
 
+topic = list(Dare = Dare_topic, Enron = Enron_topic)
+save(topic, file = "topic.RData")
 ################
 
 
+library(ggplot2)
+library(gridExtra)
 
-Enron_topic_new = data.frame(Coherence = c(t(Enron_topic)), nIP = as.factor(c(sapply(1:3, function(x) rep(x, 7)))), K =as.factor(rep(c(1,5, 10, 25, 50, 75, 100), 3)))
-ggplot(Enron_topic_new, aes(K, Coherence, col = nIP))+geom_line(aes(group=nIP)) + geom_point(size = 1)+
-ggtitle("Enron")
+p = list()
+Dare_topic_new = data.frame(Coherence = c(t(Dare_topic)), C = as.factor(c(sapply(1:3, function(x) rep(x, 7)))), K =as.factor(rep(c(1,5, 10, 20, 30, 40, 50), 3)))
+p[[1]] = ggplot(Dare_topic_new, aes(K, Coherence, col = C))+geom_line(aes(group=C)) + geom_point(size = 1)+
+ggtitle("Dare")+theme_minimal()
 
+Enron_topic_new = data.frame(Coherence = c(t(Enron_topic)), C = as.factor(c(sapply(1:3, function(x) rep(x, 7)))), K =as.factor(rep(c(1,5, 10, 25, 50, 75, 100), 3)))
+p[[2]] = ggplot(Enron_topic_new, aes(K, Coherence, col = C))+geom_line(aes(group=C)) + geom_point(size = 1)+
+ggtitle("Enron")+theme_minimal()
+
+marrangeGrob(p[1:2], nrow = 1, ncol = 2, top = NULL)
