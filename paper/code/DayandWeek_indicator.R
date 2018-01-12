@@ -27,6 +27,7 @@ normpred <- simulate(norm, type = "response", se =T)
 par(mfrow = c(2,2))
 plot(norm) 
 
+
 #using indicators
 Daresurv$W = as.numeric(Daresurv$W %in% c("Sat", "Sun"))
 Daresurv$D = as.numeric(Daresurv$D %in% c("12-18", "18-24"))

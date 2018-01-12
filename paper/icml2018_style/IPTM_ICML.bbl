@@ -1,4 +1,4 @@
-\begin{thebibliography}{36}
+\begin{thebibliography}{38}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -224,6 +224,18 @@ Rubin, Donald~B et~al.
   applied statistician.
 \newblock \emph{The Annals of Statistics}, 12\penalty0 (4):\penalty0
   1151--1172, 1984.
+
+\bibitem[Snijders(1996)]{snijders1996stochastic}
+Snijders, Tom~AB.
+\newblock Stochastic actor-oriented models for network change.
+\newblock \emph{Journal of mathematical sociology}, 21\penalty0 (1-2):\penalty0
+  149--172, 1996.
+
+\bibitem[Snijders(2017)]{snijders2017stochastic}
+Snijders, Tom~AB.
+\newblock Stochastic actor-oriented models for network dynamics.
+\newblock \emph{Annual Review of Statistics and Its Application}, \penalty0
+  (0), 2017.
 
 \bibitem[Sz{\'o}stek(2011)]{szostek2011dealing}
 Sz{\'o}stek, Agnieszka~Matysiak.
