@@ -158,17 +158,19 @@ topic = list(Dare = Dare_topic, Enron = Enron_topic)
 save(topic, file = "topic.RData")
 ################
 
-
+Dare_topic = topic$Dare
+Enron_topic = topic$Enron
 library(ggplot2)
 library(gridExtra)
 
 p = list()
 Dare_topic_new = data.frame(Coherence = c(t(Dare_topic)), C = as.factor(c(sapply(1:3, function(x) rep(x, 7)))), K =as.factor(rep(c(1,5, 10, 20, 30, 40, 50), 3)))
 p[[1]] = ggplot(Dare_topic_new, aes(K, Coherence, col = C))+geom_line(aes(group=C)) + geom_point(size = 1)+
-ggtitle("Dare")+theme_minimal()
+ggtitle("Dare")+    theme(plot.title = element_text(size = 15))
 
 Enron_topic_new = data.frame(Coherence = c(t(Enron_topic)), C = as.factor(c(sapply(1:3, function(x) rep(x, 7)))), K =as.factor(rep(c(1,5, 10, 25, 50, 75, 100), 3)))
 p[[2]] = ggplot(Enron_topic_new, aes(K, Coherence, col = C))+geom_line(aes(group=C)) + geom_point(size = 1)+
-ggtitle("Enron")+theme_minimal()
+ggtitle("Enron") + 
+    theme(plot.title = element_text(size = 15))
 
 marrangeGrob(p[1:2], nrow = 1, ncol = 2, top = NULL)

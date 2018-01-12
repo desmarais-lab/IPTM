@@ -915,6 +915,11 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
   timepredict = matrix(NA, nrow = sum(missing[,3]), ncol = Outer)
   xi = xi_all(timemat, matrix(eta.old[,node], nrow = nIP), matrix(eta.old[,-node], nrow = nIP), edge.trim)
   mu = mu_mat(p.d, xi, edge.trim)
+  sendermissing = which(missing[,1]==1)
+  receivermissing = which(missing[,2]==1)
+  timemissing = which(missing[,3]==1)
+  int_sendertime = intersect(sendermissing, timemissing)
+
   #start outer iteration
   for (o in 1:Outer) {
     print(o)
@@ -928,46 +933,38 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
     }
     
     #imputation
-    iter1 = 1
-    iter2 = 1
-    iter3 = 1
-    for (d in edge.trim) {
-      if (missing[d,3] == 1) {
+    for (d in int_sendertime) {
+        timesamp = vapply(node, function(i) {rlnorm(1, mu[d, i], sigma_tau)})
+        timeinc[d] = min(timesamp)
+        senders[d] = which(timesamp == timeinc[d])
+        senderpredict[which(sendermissing==d), o] = senders[d]
+        timepredict[which(timemissing==d), o] = timeinc[d]
+    }
+    for (d in timemissing[!timemissing %in% int_sendertime]) {
         timeinc[d] = rlnorm(1, mu[d, senders[d]], sigma_tau)
-        timepredict[iter3, o] = timeinc[d]
-        iter3 = iter3+1
-      }
-      if (missing[d,1] == 1) {
+        timepredict[which(timemissing==d), o] = timeinc[d]
+    }
+    for (d in sendermissing[!sendermissing %in% int_sendertime]) {
         probi = Timepartindiv(mu[d,], sigma_tau, timeinc[d])
         senders[d] = multinom_vec(1, expconst(probi))
-        senderpredict[iter1, o] = senders[d]
-        iter1 = iter1+1
-      }
+        senderpredict[which(sendermissing==d), o] = senders[d]
     }
     timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
     timestamps[-1] = timestamps[1]+cumsum(timeinc[-1])*timeunit
     for (d in edge.trim) {
-      history.t = History(edge, p.d, node, timestamps[d-1]+exp(-745), timeunit)
-      X[[d]] = Netstats_cpp(history.t, node, netstat)
-      if (timestamps[d]+384*timeunit > timestamps[max.edge]) {
-            hist.d[d] = max.edge
-        } else {
-            hist.d[d] = which_num(timestamps[d]+384*timeunit, timestamps)-1
-        }
+        history.t = History(edge, p.d, node, timestamps[d-1]+exp(-745), timeunit)
+        X[[d]] = Netstats_cpp(history.t, node, netstat)
     }
-    for (d in edge.trim) {
-      if (missing[d,2] == 1) {
+    for (d in receivermissing) {
+        iter = which(receivermissing ==d)
         vu = MultiplyXB(X[[d]], b.old)
         lambda = lambda_cpp(p.d[d,], vu)
         i = senders[d]
-          for (j in sample(node[-i], A-1)) {
+        for (j in sample(node[-i], A-1)) {
             probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
             u[[d]][i, j] = multinom_vec(1, expconst(probij))-1
-          }
-        edge[[d]][[2]] = which(u[[d]][i,] == 1)
-        receiverpredict[[iter2]] = rbind(receiverpredict[[iter2]], u[[d]][i, ])
-        iter2 = iter2+1
-      }
+        }
+        receiverpredict[[iter]] = rbind(receiverpredict[[iter]], u[[d]][i, ])
     }  
     #start inference
     # Data augmentation
@@ -1238,35 +1235,38 @@ IPTM.PPE = function(missing, edge, node, textlist, vocab, nIP, K,
   senderpredict = matrix(NA, nrow = nrow(missing), ncol = Outer)
   receiverpredict = lapply(1:nrow(missing), function(d) {c()})
   timepredict = matrix(NA, nrow = nrow(missing), ncol = Outer)
-
+  sendermissing = which(missing[,1]==1)
+  receivermissing = which(missing[,2]==1)
+  timemissing = which(missing[,3]==1)
+  int_sendertime = intersect(sendermissing, timemissing)
   #start outer iteration
   for (o in 1:Outer) {
     print(o)
     #imputation
-    iter1 = 1
-    iter2 = 1
-    iter3 = 1
-    for (d in edge.trim) {
-      if (missing[d,3] == 1) {
-        timeinc[d] = rlnorm(1, mu[d, senders[d]], sigma_tau)
-        timepredict[iter3, o] = timeinc[d]
-        iter3 = iter3+1
+      for (d in int_sendertime) {
+        timesamp = vapply(node, function(i) {rlnorm(1, mu[d, i], sigma_tau)})
+        timeinc[d] = min(timesamp)
+        senders[d] = which(timesamp == timeinc[d])
+        senderpredict[which(sendermissing==d), o] = senders[d]
+        timepredict[which(timemissing==d), o] = timeinc[d]
       }
-      if (missing[d,1] == 1) {
+      for (d in timemissing[!timemissing %in% int_sendertime]) {
+        timeinc[d] = rlnorm(1, mu[d, senders[d]], sigma_tau)
+        timepredict[which(timemissing==d), o] = timeinc[d]
+      }
+      for (d in sendermissing[!sendermissing %in% int_sendertime]) {
         probi = Timepartindiv(mu[d,], sigma_tau, timeinc[d])
         senders[d] = multinom_vec(1, expconst(probi))
-        senderpredict[iter1, o] = senders[d]
-        iter1 = iter1+1
+        senderpredict[which(sendermissing==d), o] = senders[d]
       }
-    }
     timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
     timestamps[-1] = timestamps[1]+cumsum(timeinc[-1])*timeunit
     for (d in edge.trim) {
       history.t = History(edge, p.d, node, timestamps[d-1]+exp(-745), timeunit)
       X[[d]] = Netstats_cpp(history.t, node, netstat)
     }
-    for (d in edge.trim) {
-      if (missing[d,2] == 1) {
+    for (d in receivermissing) {
+        iter = which(receivermissing ==d)
         vu = MultiplyXB(X[[d]], b.old)
         lambda = lambda_cpp(p.d[d,], vu)
         i = senders[d]
@@ -1274,9 +1274,7 @@ IPTM.PPE = function(missing, edge, node, textlist, vocab, nIP, K,
             probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
             u[[d]][i, j] = multinom_vec(1, expconst(probij))-1
           }
-        receiverpredict[[iter2]] = rbind(receiverpredict[[iter2]], u[[d]][i, ])
-        iter2 = iter2+1
-      }
+        receiverpredict[[iter]] = rbind(receiverpredict[[iter]], u[[d]][i, ])
     }
   }
   chain.final = list(senderpredict = senderpredict, receiverpredict = receiverpredict, 

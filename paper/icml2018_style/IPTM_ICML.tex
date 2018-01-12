@@ -110,14 +110,14 @@ In defining and testing the IPTM we embed core conceptual property---interaction
 	\caption{Sending behavior of two most active nodes in Dare County email data between 09/01/2012 and 11/30/2012. \textit{Top}: the number of emails per day sent by County manager (blue bar) and the number of recipients per day (red line). \textit{Bottom}: the number of emails per day sent by emergency department official (green bar) and the number of recipients per day (red line).}
 \label{fig:EDAplot}
 \end{figure}
-\section{Interaction-partitioned Topic Model}\label{model definition}
+\section{Interaction-partitioned Topic Model}\label{sec:model definition}
 
 Data generated under the IPTM consists of $D$ unique documents. A single document, indexed by $d \in [D]$, is represented by the four components: the author $a_d \in [A]$, an indicator vector of recipients $\boldsymbol{r}_d = \{u_{dj} \}_{j=1}^{A}$, the timestamp $t_d \in (0, \infty)$, and a set of tokens $\boldsymbol{w}_d= \{w_{dn} \}_{n=1}^{N_d}$ that comprise the text of the document, where $N_d$ denotes the total number of tokens in a document. For simplicity, we assume that documents are ordered by time such that $t_d < t_{d+1}$.
 
 
 \subsection{Content Generating Process}\label{subsec:Content generating process}
 
-The words $\boldsymbol{w}_d$ are generated according to latent Dirichlet allocation (LDA) \cite{Blei2003}, where we generate the corpus-wide global variables that describe the content via topics. LDA models each topic $k\in [K]$ as a discrete distribution over $V$ unique word types 
+The words $\boldsymbol{w}_d$ are generated according to latent Dirichlet allocation (LDA) \cite{Blei2003}, where we generate the corpus-wide global variables that describe the content via topics. As in LDA, we model each topic $k\in [K]$ as a discrete distribution over $V$ unique word types 
 \begin{equation}
 \boldsymbol{\phi}_k \sim \mbox{Dirichlet}\Big(\beta, (\frac{1}{V},\ldots,\frac{1}{V})\Big),
 \end{equation}
@@ -268,70 +268,74 @@ The IPTM is intended for any network with timestamped, text-valued ties, however
 and explaining continuous-time textual communications.
 
 \subsection{Data}\label{subsec:Data}
-Our data come from the North Carolina county government email dataset collected by \cite{ben2017transparency} that includes internal email corpora covering the inboxes and outboxes of managerial-level employees of North Carolina county governments. Out of over twenty counties, we chose Dare County, (1) in order to see whether and how communication networks surrounding a notable national emergency---Hurricane Sandy---differed from those surrounding other governmental functions, and (2) to limit the scope of this initial application. The Dare County email network contains 2,247 emails, sent and received by 27 department managers over a period of 3 months (September--November) in 2012. 
+Our data come from the North Carolina county government email dataset collected by \cite{ben2017transparency} that includes internal email corpora covering the inboxes and outboxes of managerial-level employees of North Carolina county governments. Out of over twenty counties, we chose Dare County to 1) see whether and how communication networks surrounding a notable national emergency---Hurricane Sandy---differed from those surrounding other governmental functions, and 2) limit the scope of this initial application. The Dare County email network contains 2,247 emails, sent and received by 27 department managers over a period of 3 months (September--November) in 2012. 
 
-To verify that our model is applicable beyond the Dare County email network, we also performed two validation experiments using the Enron email data set \cite{klimt2004introducing}. We took a subset of the original data such that we only include emails between actors who sent over 300 emails, and actors who received over 300 emails from the chosen senders. Emails that were not sent to at least one other active actor were discarded, which resulted in a total of 6,613 emails involving 30 actors. 
+To verify that our model is applicable beyond the Dare County email network, we also performed two validation experiments using the Enron data set \cite{klimt2004introducing}. We took a subset of the original data such that we only include emails between actors who sent over 300 emails, and actors who received over 300 emails from the chosen senders. Emails that were not sent to at least one other active actor were discarded, which resulted in a total of 6,613 emails involving 30 actors. 
 \subsection{Dynamic Network Features}\label{subsec:Dynamic Network Features}
-A set of network features $\boldsymbol{x}$ in recipient generating process can be flexibly tailored for various dataset (Section \ref{subsubsec:Hypothetical Recipients}). For Dare County and Enron email network, we employed a suite of eight different effects \cite{PerryWolfe2012}---outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling---to capture common network properties such as popularity, centrality, reciprocity, and transitivity. \ref{fig:dynamic network statistics} illustrates the definition of each dynamic network statistic.
+A set of network features $\boldsymbol{x}$ in recipient generating process can be flexibly tailored for various dataset (Section \ref{subsubsec:Hypothetical Recipients}). For Dare County email network and the Enron data set, we employed a suite of eight different effects \cite{PerryWolfe2012}---outdegree, indegree, send, receive, 2-send, 2-receive, sibling, and cosibling---to capture common network properties such as popularity, centrality, reciprocity, and transitivity. \ref{fig:dynamic network statistics} illustrates the definition of each dynamic network statistic.
 \begin{figure}[b]
 	\vskip -0.1in
 	\centering
 	\includegraphics[height= 1.5cm, trim= 0cm 0cm 37cm 0cm, clip=true]{plots/netstats-1.png} \vspace{-.1cm}
 	\includegraphics[height=1.5cm,, trim= 30cm 0cm 0cm 0cm, clip=true]{plots/netstats-1.png}
-	\caption{Eight dynamic network statistics used for the Dare County email network and Enron dataset.}
+	\caption{Eight dynamic network statistics used for the Dare County email network and the Enron dataset.}
 	\label{fig:dynamic network statistics}	
 \end{figure}
 
-We assumed that each network feature has potentially different effects within a number of time intervals (i.e., recency effect), and partitioned the interval $[-\infty, t_d)$ into 4 sub-intervals with equal length in the log-scale. Because the Dare County email network only spans 12 weeks in length, we disregarded the time interval before 16 days and focused on three time intervals prior to $t_d$: 96--384 hours, 24--96 hours, and 0--24 hours. For Enron email network, we simply changed the time unit from hour to day. We then computed each of the network feature within each time interval such that each $\boldsymbol{x}_{idjc}$ consists of 24 different network statistics. We provide detailed formulations and interpretations of the network statistics in the supplementary material.
+We assumed that each network feature has potentially different effects within a number of time intervals (i.e., recency effect), and partitioned the interval $[-\infty, t_d)$ into 4 sub-intervals with equal length in the log-scale. Because the Dare County email network only spans 12 weeks in length, we disregarded the time interval before 16 days and focused on three time intervals prior to $t_d$: 96--384 hours, 24--96 hours, and 0--24 hours. For the Enron data set, we simply changed the time unit from hour to day. We then computed each of the network feature within each time interval such that each $\boldsymbol{x}_{idjc}$ consists of 24 different network statistics. We provide detailed formulations and interpretations of the network statistics in the supplementary material.
 
 \subsection{Timestamp Specifications}\label{subsec:Timestamp Specifications}
-We used another set of covariates $\boldsymbol{y}_{idc}$ when modeling the timestamps. We first included author-specific intercepts to account for individual differences in document-sending behavior. Because both of our data sets consist of organizational emails, we added two temporal features which possibly affect ``when to send": an indicator of weekends/weekdays and an indicator of AM/PM when the document $d-1$ was sent. 
+To effectively model the timestamp of documents, we used another set of covariates $\boldsymbol{y}_{idc}$. We first included author-specific intercepts to account for individual differences in document-sending behavior. Because both of our data sets consist of organizational emails, we added two temporal features which possibly affect ``when to send": an indicator of weekends/weekdays and an indicator of AM/PM when the document $d-1$ was sent. 
 
-Our preliminary analysis revealed that the Dare County and Enron email networks showed the best fitting when we assume lognormal distribution on the observed time-increments---i.e., $\log(\tau_{a_dd}) \sim N(\mu_{a_d d}, \sigma^2_\tau)$---compared to Gamma or Weibull distributions. We also observed significant lack-of-fit for single parameter distribution (e.g., Exponential distribution) since it failed to capture the variance in time-increments. Therefore, we chose lognormal distribution. 
+Our preliminary analysis revealed that the Dare County email networks and the Enron data set showed the best fitting when we assume lognormal distribution on the observed time-increments---i.e., $\log(\tau_{a_dd}) \sim N(\mu_{a_d d}, \sigma^2_\tau)$---compared to Gamma or Weibull distributions. We also observed significant lack-of-fit for single parameter distribution (e.g., Exponential distribution) since it failed to capture the variance in time-increments. Therefore, we chose lognormal distribution. 
 
 \section{Predictive Analysis}\label{sec:Experiments}
-We conducted a set of posterior predictive experiments using the Dare County and Enron email networks, to showcase the IPTM's predictive performance as compared to alternative modeling approaches.
+We conducted a set of posterior predictive experiments---1) out-of-sample tie predictions, 2) topic coherence, and 3) posterior predictive checks---to gauge the IPTM's predictive performance as compared to alternative modeling approaches.
 
-\subsection{Tie Prediction}\label{subsec:Tie Prediction}
-For a randomly chosen document $d^* \in \{M, M+1,\ldots, D\}$, we fit the IPTM to the corpus consisting of the first $d = \{1,\hdots,d^*-1\}$ documents, then use the inferred posterior distributions to generate a distribution of predicted tie data ($a_{d^*}, \boldsymbol{r}_{d^*}, t_{d^*}$) conditional on the content in the document $\boldsymbol{w}_{d^*}$, and compare the simulated ones to the observed data. We also compare the IPTM to the alternative model. Several models exist that could be used to model any of these three data types individually, but, to our knowledge, the literature does not offer any models that can be used to jointly generate all three types of tie data integrated into the IPTM. Thus, the alternative model is built upon two separate regression models for the recipients and timestamps, and test if the IPTM has any benefit over other existing models by jointly inferring the parameters that govern the generation of tie data---authors, recipients, and timestamps. 
+\subsection{Out-of-Sample Tie Predictions}\label{subsec:Tie Prediction}
+We evaluated the IPTM's ability to predict ties in textual communications from either the Dare County email network or the Enron data set, conditioned on the text of those emails and ``training" part of the data. We separately formed a test split of each three components---author, recipients, and timestamps---by randomly selecting emails with probability 0.2 such that an email may observe all, some, or none of tie information. Any missing variables were imputed by drawing samples from their joint posterior distribution using an appropriately-modified version of the Metropolis-within-Gibbs algorithm in Section \ref{sec:Inference}, and we ran inference to update the latent variables  given the imputed data. We iterated imputation and inference multiple times to obtain enough samples of predicted values, and this procedure is provided in Algorithm \ref{alg:PPE}.
+
 \begin{algorithm}[ht]
-	\caption{Bubble Sort}
-	\label{alg:example}
+	\caption{Out-of-Sample Tie Predictions}
+	\label{alg:PPE}
 	\begin{algorithmic}
-		\STATE {\bfseries Input:} data $x_i$, size $m$
-		\REPEAT
-		\STATE Initialize $noChange = true$.
-		\FOR{$i=1$ {\bfseries to} $m-1$}
-		\IF{$x_i > x_{i+1}$}
-		\STATE Swap $x_i$ and $x_{i+1}$
-		\STATE $noChange = false$
-		\ENDIF
+		\STATE {\bfseries Input:} data $ \{ (a_d, \boldsymbol{r}_d, t_d,  \boldsymbol{w}_d)\}_{d=1}^D$, sample size $N$\\
+		Separate test splits for $(a_d, \boldsymbol{r}_d, t_d)$ and hide the ``test"
+		\STATE Initialize the parameters $(\boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta, \boldsymbol{u})$.
+		\FOR{$n=1$ {\bfseries to} $N$}
+		\STATE Impute ``test" authors, recipients, and timestamps conditioned on the parameter values\\
+		\textcolor{red}{Note (to be deleted):\\
+			 $a_d\sim$ Multinom($p_1,\ldots,p_A$) where $p_i$ is Eq. 18 for $a_d=i$ without product over $d$, \\
+			 $\boldsymbol{r}_d$ from Eq. 14, conditioned on $a_d$, \\
+			 $t_d$ from Eq. 12---i.e., $\log(\tau_d) \sim N(\mu_{a_dd}, \sigma_{\tau}^2)$}
+		\STATE Update the parameters given the imputed data
 		\ENDFOR
-		\UNTIL{$noChange$ is $true$}
-	\end{algorithmic}
+		\STATE Summarize the predicted values after burn-in
+		\end{algorithmic}
 \end{algorithm}
 
-For both data sets, the Dare County email network and Enron dataset, we randomly selected 200 documents from the later half of the corpus (i.e., $M = \frac{D}{2}$) and generated 100 samples of predicted tie data for every document $d^*$. We ran the same predictive experiments with 21 unique combinations of the number of interaction patterns ($C = 1, 2, 3$) and the number of topics ($K = 2, 5, 10, 25, 50, 75, 100$) as a grid-search based hyperparameter selection process. We compare the predictions in terms of classification accuracy in predicting the authors and recipients, as well as prediction error in the timestamps. Figure \ref{fig:PPE} presents the $F_1$ scores on author predictions, multiclass version of the area under the ROC curve (AUC) measure \cite{hand2001simple} on reciptient predictions, and median absolute error (MAE) on timestamp predictions for each document we predicted, all averaged over the entire samples. The outcomes demonstrate the ability IPTM in predicting the author, recipient, and timetsamps of email. \textbf{Further comments after we conduct experiment again.}
-\begin{figure}[h]
+We compared the IPTM's performance with that of baseline---the IPTM with $C=1$---which unlinks the text and networks. \textcolor{red}{Add ``Why there is no comparable baseline outside this model?"} We also varied the number of interaction patterns $C$ from 1 to 3 and the number of topics $K$ from 1 to 50 (Dare) or 100 (Enron) as a grid-search based hyperparameter selection process. For each combinations of $C$ and $K$, predicted values of tie data were then compared to the true values to yield: $F_1$ scores for author predictions, multiclass version of the area under the ROC curve (AUC) measure \cite{hand2001simple} for reciptient predictions, and median absolute error (MAE) on timestamp predictions. We show the tie prediction results, averaged over test documents of each component, in Figure \ref{fig:PPE} \textcolor{red}{(Plots to be updated)}. Although our model is intended for exploratory analysis, it achieves better link prediction performance than the baseline, validating our assumption that the IPTM acheives better predictive performance when topic-based contents are accounted to infer the parameters that govern the generation of tie data---authors, recipients, and timestamps.
+\begin{figure}[tb]
 	\centering
-	\includegraphics[width = 0.49\textwidth, trim= 0.7cm 0cm 0cm 0cm, clip=true]{plots/Dare_PPE.pdf}  
-	\caption{Average AUC, F1 score, MAE: (\textit{top}) Dare County email network. (\textit{bottom}) Enron dataset.}
+	\includegraphics[width = 0.49\textwidth, trim= 0.7cm 0cm 0cm 0cm, clip=true]{plots/Dare_PPE.pdf} 
+		\includegraphics[width = 0.49\textwidth, trim= 0.7cm 0cm 0cm 0cm, clip=true]{plots/Dare_PPE.pdf}   
+	\caption{Average F1 score,  AUC, MAE of out-of-sample tie predictions. \textit{Top}: Dare County email network. \textit{Bottom}: the Enron dataset.}
 	\label{fig:PPE}	
 \end{figure}
 \subsection{Topic Coherence}\label{subsec:Topic Coherence}
-Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to test whether the IPTM's incorporation of network features improves the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using the latent dirichlet allocation (LDA). Instead of re-fitting the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which reduces the IPTM to LDA in terms of topic assignments by unlinking the text and networks. For each model, we varied the number of topics from 1 to 50 for Dare County data and from 1 to 100 for Enron data, and drew five samples from the joint posterior distribution over the latent variables. We evaluated the topics resulting from each sample and averaged over the five samples, where the results are shown in Figure \ref{fig:topic}. Combined with the findings in Section \ref{subsec:Tie Prediction}, this result demonstrates that the IPTM can achieve good predictive performance while producing coherent topics. 
+Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to demonstrate that the IPTM's incorporation of network features improves the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using LDA. Instead of re-fitting the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which reduces the IPTM to LDA in terms of topic assignments. We varied the number of interaction patterns and the number of topics as in Section \ref{subsec:Tie Prediction}, and drew five samples from the joint posterior distribution over the latent variables. We evaluated the topics resulting from each sample and averaged over the five samples, where the results are shown in Figure \ref{fig:topic}. Combined with the findings in Section \ref{subsec:Tie Prediction}, this result demonstrates that the IPTM can achieve good predictive performance while producing coherent topics. 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width = 0.49\textwidth]{plots/topicplot.pdf}
-	\caption{Average topic coherence scores: (\textit{left}) Dare County email network. (\textit{right}) Enron email network.}
+	\caption{Average topic coherence scores: (\textit{left}) Dare County email network. (\textit{right}) the Enron data set.}
 	\label{fig:topic}
 \end{figure}
 \subsection{Posterior Predictive Checks}\label{subsec:PPC}
-We finally perform posterior predictive checks \cite{rubin1984bayesianly} in order to evaluate the appropriateness of the model specification for the Dare County email network. Formally, we generated entirely new data, by simulating $\{(a_{d}, \boldsymbol{r}_{d}, t_{d}, \boldsymbol{w}_{d})\}_{d=1}^D$ from the genenerative process in Section \ref{subsec:Content generating process} and \ref{subsec:Tie generating process}, conditional upon a set of inferred parameter values from the inference in Section \ref{sec:Inference} (see Appendix D for pseudocode). For the test of goodness-of-fit in terms of network dynamics, we defined multiple network statistics that summarize meaningful aspects of the Dare County email networks: indegree distribution for author activities, outdegree distribution for recipient activities, recipient size distribution, document time-increment distributions, the edgewise shared partner distribution, and the geodesic distance distribution. For content-wise goodness-of-fit, we employed mutual information (MI) in \cite{mimno2011bayesian}, which is often used to evaluate ``bag of words" model assumptions. We then generated 1,000 synthetic networks and texts from the posterior predictive distribution implied by the IPTM and Dare County email network.
-We applied each discrepancy function to each synthetic network to yield the distributions over the values of the six network statistics and MI. If the model is appropriate, the observed data should not be an outlier with respect to distributions of new data drawn from the posterior predictive distribution. 
+Finally, we performed posterior predictive checks \cite{rubin1984bayesianly} to evaluate the appropriateness of the model specification for the Dare County email network. We formally generated entirely new data, by simulating ties and contents $\{(a_{d}, \boldsymbol{r}_{d}, t_{d}, \boldsymbol{w}_{d})\}_{d=1}^D$ from the genenerative process in Section \ref{sec:model definition}, conditional upon a set of inferred parameter values from the inference in Section \ref{sec:Inference}. We specified the number of interaction patterns as $C=?$ and the number of topics as $K = ?$, which yielded the best performance in Section \ref{subsec:Tie Prediction}. For the test of goodness-of-fit in terms of network dynamics, we defined multiple network statistics that summarize meaningful aspects of the Dare County email network: indegree distribution for author activities, outdegree distribution for recipient activities, recipient size distribution, document time-increments distribution, the edgewise shared partner distribution, and the geodesic distance distribution. We then generated 100 synthetic networks and texts from the posterior predictive distribution implied by the IPTM and Dare County email network.
+We applied each discrepancy function to each synthetic network to yield the distributions over the values of the six network statistics
 
-Figure \ref{fig:PPC} illustrates the result of posterior predictive checks, showing IPTM's goodness of fit for Dare County data. The results reveal that IPTM captures some important work features of the data, including spreadness and transitivity. \textbf{Further comments after we conduct PPC again.}
-\begin{figure}[h]
+As shown in Figure \ref{fig:PPC} \textcolor{red}{(Plots to be updated)}, the IPTM shows ``good fit" for the Dare County email network in that the observed data is not an outlier with respect to the distributions of new data drawn from the posterior predictive distribution. The IPTM generated synthetic networks with indegree distribution, outdegree distribution, recipient size, document time-increments, and edgewise shared partners that are very similar to those of the Dare County email network, showing that the model captures some important work features of the data including spreadness and transitivity. 
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width = 0.47\textwidth]{plots/PPC_plot-1.png}
 	\caption{Posterior predictive checks for the Dare County email network: (a) outdegree, (b) indegree, (c) recipient size, (d) QQplot of time-increments, (e) geodesic distance, and (f) edgewise shared partners.}
@@ -341,19 +345,7 @@ Figure \ref{fig:PPC} illustrates the result of posterior predictive checks, show
 Our model is primarily intended as an exploratory analysis tool for time-stamped textual communication. Our main goal in this exploratory analysis was to test three hypotheses: 1) personal or social topics (if any) would exhibit strong reciprocity and transitivity in tie formation, 2) topics about dissemination of information would be characterized by a lack of reciprocity, and 3) topics about Hurricane Sandy would exhibit a very different
 interaction pattern from the normal day-to-day conversations.
 \subsection{Topic Assignments}\label{subsec:Topic Assignments}
-Table \ref{table:IP1} and \ref{table:IP2} show top ten words for the five topics that were most strongly
-associated with interaction pattern 1 and 2, respecitvely. It is pretty clear from the highlighted words that many of the topics in the interaction pattern 1 are about the hurricane. On the contrary, the topics most strongly associated with the interaction pattern 2 are about standard government
-activities. Very few of their top words are about the hurricane. Together, the assignment of hurricane-related topics to interaction pattern 1 and government-related topics to interaction pattern 2
-provide support for our hypothesis that topics about Hurricane Sandy
-exhibit very a different interaction pattern to other topics.
 \subsection{Interaction Pattern Coefficients}\label{subsec:Interaction Pattern Coefficients}
-In theory, we should be able to use the inferred coefficients to
-understand each interaction pattern's characteristics.
-\begin{figure}[h]
-	\centering
-	\caption{95\% credible intervals of the posterior estimates of $\{\boldsymbol{b}_c\}_{c=1}^C$ using Dare County data: (\textit{left}) Recieve. (\textit{right}) 2-Recieve. }
-	\label{fig:b}
-\end{figure}
 \section{Summary}\label{sec:Conclusions}
 The IPTM is, to our knowledge, the first model to be capable of jointly modeling the author, recipients, timestamps and contents in time stamped text-valued networks. The IPTM incorporates innovative components, including the modeling of multicast tie formation and the conditioning of ERGM style network generative features on topic-based content. The application to North Carolina county government email data demonstrates, among other capabilities, the effectiveness at the IPTM in separating out both the content and relational structure underlying the normal day-to-day function of an organization and the management of a highly time-sensitive event---Hurricane Sandy. Finally, although we presented the IPTM in the context of email networks, the IPTM is applicable to a variety of networks in which ties are attributed with textual documents. These include, for example, economic sanctions sent between countries and legislation attributed with sponsors and co-sponsors. 
 
