@@ -1,4 +1,5 @@
 library(IPTM)
+setwd("/Users/bomin8319/Desktop/IPTM/experiment/Dare_full/")
 load('Darenew.RData')
 attach(Dare)
 Dare$node = 1:nrow(Dare$node)

@@ -934,7 +934,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
     
     #imputation
     for (d in int_sendertime) {
-        timesamp = vapply(node, function(i) {rlnorm(1, mu[d, i], sigma_tau)})
+        timesamp = vapply(node, function(i) {rlnorm(1, mu[d, i], sigma_tau)}, c(1))
         timeinc[d] = min(timesamp)
         senders[d] = which(timesamp == timeinc[d])
         senderpredict[which(sendermissing==d), o] = senders[d]

@@ -180,7 +180,7 @@ where $\delta$ is a real number controlling the average number of recipients and
 \end{aligned}
 \label{eqn:Gibbs}
 \end{equation}
-where $Z(\delta,\boldsymbol{\lambda}_{id})$ is the normalizing constant and $\lVert \cdot \rVert_1$ is the $l_1$--norm. We provide the derivation of the normalizing constant as a tractable form in the supplementary material. 
+where $Z(\delta,\boldsymbol{\lambda}_{id})= \prod_{j \neq i } (\mbox{exp}\{\delta+\lambda_{idj}\} + 1)-1$ is the normalizing constant and $\lVert \cdot \rVert_1$ is the $l_1$--norm. We provide the derivation of the normalizing constant as a tractable form in the supplementary material. 
 
 \subsubsection{Latent Timestamps}\label{subsubsec:Hypothetical Timestamps}
 Similarly, we hypothesize ``If $i$ were the author of document $d$, when would it be sent?" and define the ``interaction-pattern-specific timing rate"
@@ -307,7 +307,8 @@ We evaluated the IPTM's ability to predict ties in textual communications from e
 		\textcolor{red}{Note (to be deleted):\\
 			 $a_d\sim$ Multinom($p_1,\ldots,p_A$) where $p_i$ is Eq. 18 for $a_d=i$ without product over $d$, \\
 			 $\boldsymbol{r}_d$ from Eq. 14, conditioned on $a_d$, \\
-			 $t_d$ from Eq. 12---i.e., $\log(\tau_d) \sim N(\mu_{a_dd}, \sigma_{\tau}^2)$}
+			 $t_d$ from Eq. 12---i.e., $\log(\tau_d) \sim N(\mu_{a_dd}, \sigma_{\tau}^2)$\\
+			 When both $a_d$ and $t_d$ missing, we follow generative process and jointly determine ($a_d, t_d$) by generating $A$ number of time-increments and choose the minimum}
 		\STATE Update the parameters given the imputed data
 		\ENDFOR
 		\STATE Summarize the predicted values after burn-in
@@ -323,7 +324,7 @@ We compared the IPTM's performance with that of baseline---the IPTM with $C=1$--
 	\label{fig:PPE}	
 \end{figure}
 \subsection{Topic Coherence}\label{subsec:Topic Coherence}
-Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models. In order to demonstrate that the IPTM's incorporation of network features improves the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using LDA. Instead of re-fitting the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which reduces the IPTM to LDA in terms of topic assignments. We varied the number of interaction patterns and the number of topics as in Section \ref{subsec:Tie Prediction}, and drew five samples from the joint posterior distribution over the latent variables. We evaluated the topics resulting from each sample and averaged over the five samples, where the results are shown in Figure \ref{fig:topic}. Combined with the findings in Section \ref{subsec:Tie Prediction}, this result demonstrates that the IPTM can achieve good predictive performance while producing coherent topics. 
+Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate the semantic coherence in topic models.To demonstrate that the IPTM's incorporation of network features improves the ability of modeling text, we compared the coherence of topics inferred using our model with the coherence of topics inferred using LDA. Instead of re-fitting the data using standard LDA algorithms, we used the topic assignments from the IPTM with $C=1$, which reduces the IPTM to LDA in terms of topic assignments. We varied the number of interaction patterns and the number of topics as in Section \ref{subsec:Tie Prediction}, and drew five samples from the joint posterior distribution over the latent variables. We evaluated the topics resulting from each sample and averaged over the five samples, where the results are shown in Figure \ref{fig:topic}. Combined with the findings in Section \ref{subsec:Tie Prediction}, this result demonstrates that the IPTM can achieve good predictive performance while producing coherent topics. 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width = 0.49\textwidth]{plots/topicplot.pdf}

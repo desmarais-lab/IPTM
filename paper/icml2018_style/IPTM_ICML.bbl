@@ -1,4 +1,4 @@
-\begin{thebibliography}{38}
+\begin{thebibliography}{37}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -174,13 +174,6 @@ McCallum, Andrew, Corrada-Emmanuel, Andr{\'e}s, and Wang, Xuerui.
   social networks, with application to enron and academic email.
 \newblock In \emph{Workshop on Link Analysis, Counterterrorism and Security},
   pp.\ ~33, 2005.
-
-\bibitem[Mimno \& Blei(2011)Mimno and Blei]{mimno2011bayesian}
-Mimno, David and Blei, David.
-\newblock Bayesian checking for topic models.
-\newblock In \emph{Proceedings of the Conference on Empirical Methods in
-  Natural Language Processing}, pp.\  227--237. Association for Computational
-  Linguistics, 2011.
 
 \bibitem[Mimno et~al.(2011)Mimno, Wallach, Talley, Leenders, and
   McCallum]{mimno2011optimizing}
