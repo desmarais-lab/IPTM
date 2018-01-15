@@ -341,7 +341,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       for (IP in 1:nIP) {
         l[k] = IP
         p.dnew = pdmat(z, l, nIP) 
-        	history.t = History(edge, p.dnew, node, timestamps[max.edge-1]+exp(-745), timeunit)
+        history.t = History(edge, p.dnew, node, timestamps[max.edge-1]+exp(-745), timeunit)
        	Xnew = Netstats_cpp(history.t, node, netstat)
         Edgepartsum = Edgepartsum(Xnew, p.dnew[max.edge, ], b.old, u[[max.edge]], delta)
         mu = mu_mat(p.dnew, xi, edge.trim)
@@ -911,7 +911,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
   }
   X = list()
   senderpredict = matrix(NA, nrow = sum(missing[,1]), ncol = Outer)
-  receiverpredict = lapply(1:sum(missing[,3]), function(d) {c()})
+  receiverpredict = lapply(1:sum(missing[,2]), function(d) {c()})
   timepredict = matrix(NA, nrow = sum(missing[,3]), ncol = Outer)
   xi = xi_all(timemat, matrix(eta.old[,node], nrow = nIP), matrix(eta.old[,-node], nrow = nIP), edge.trim)
   mu = mu_mat(p.d, xi, edge.trim)
@@ -1820,7 +1820,7 @@ GenerateDocs.PPC = function(nDocs, node, vocab, nIP, K, alpha, mvec, beta, b, et
           u[[base.length+d]][i, j] = multinom_vec(1, expconst(probij))-1
         }
     	}
-    xi = ximat(timemat[base.length+d-1,], eta[,node], eta[,-node])
+    xi = ximat(timemat[base.length+d-1,], matrix(eta[,node], nrow = nIP), matrix(eta[,-node], nrow = nIP))
     mu = mu_vec(p.d[base.length+d,], xi)
     timestamps = rlnorm(1, mu, sigma_tau)*timeunit
     i.d = which(timestamps == min(timestamps))
@@ -1882,7 +1882,7 @@ IPTM.PPC = function(Out, edge, node, textlist, vocab, nIP, K, netstat, timestat,
     delta = inference$delta[length(inference$delta)]
     sigma_tau = inference$sigma_tau[length(inference$sigma_tau)]
     l = inference$l
- 	  u = inference$u
+ 	u = inference$u
     for (k in 1:K) {
       word_type_topic_counts[,k] = tabulate(textlist.raw[which(unlist(z[-emptytext])==k)], length(vocab))
     }
