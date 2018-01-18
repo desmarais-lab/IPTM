@@ -82,58 +82,59 @@
 \printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \section{Normalizing constant of Gibbs measure}\label{sec: non-empty Gibbs measure}
- 	 The non-empty Gibbs measure defines the probability of author $i$ selecting the binary recipient vector $\boldsymbol{u}_{id}$ as
+ 	 The non-empty Gibbs measure defines the probability of author $a$ selecting the binary recipient vector $\boldsymbol{u}_{ad}$ as
  	 \begin{equation*} 
  	 	\begin{aligned}
- 	 		& P(\boldsymbol{u}_{id}| \delta, \boldsymbol{\lambda}_{id} ) \\&= \frac{\exp\Big\{ \mbox{log}\big(\text{I}(\lVert \boldsymbol{u}_{id} \rVert_1 > 0)\big) + \sum_{j \neq i} (\delta+\lambda_{idj})u_{idj} \Big\}}{Z(\delta,\boldsymbol{\lambda}_{id})}.
+ 	 		& P(\boldsymbol{u}_{ad}| \delta, \boldsymbol{\lambda}_{ad} ) \\&= \frac{\exp\Big\{ \mbox{log}\big(\text{I}(\lVert \boldsymbol{u}_{ad} \rVert_1 > 0)\big) + \sum_{r \neq a} (\delta+\lambda_{adr})u_{adr} \Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}.
  	 	\end{aligned}
  	 \end{equation*}
  	 
- 	 To use this distribution efficiently, we derive a closed-form expression for $Z(\delta,\boldsymbol{\lambda}_{id})$ that does not require brute-force summation over the support of $\boldsymbol{u}_{id}$ (\textit{i.e.} $\forall \boldsymbol{u}_{id} \in [0,1]^A$). We recognize that if $\boldsymbol{u}_{id}$ were drawn via independent Bernoulli distributions in which $P({u}_{idj}=1|\delta, \boldsymbol{\lambda}_{id})$ was given by logit$(\delta+\lambda_{idj})$, then 
+ 	 To use this distribution efficiently, we derive a closed-form expression for $Z(\delta,\boldsymbol{\lambda}_{id})$ that does not require brute-force summation over the support of $\boldsymbol{u}_{ad}$ (\textit{i.e.} $\forall \boldsymbol{u}_{ad} \in [0,1]^A$). We recognize that if $\boldsymbol{u}_{ad}$ were drawn via independent Bernoulli distributions in which $P({u}_{adr}=1|\delta, \boldsymbol{\lambda}_{ad})$ was given by logit$(\delta+\lambda_{adr})$, then 
  	 \begin{equation*}
- 	 	P(\boldsymbol{u}_{id}|\delta, \boldsymbol{\lambda}_{id}) \propto \exp\Big\{\sum_{j \neq i } (\delta+\lambda_{idj})u_{idj}\Big\}.  	 
+ 	 	P(\boldsymbol{u}_{ad}|\delta, \boldsymbol{\lambda}_{ad}) \propto \exp\Big\{\sum_{r \neq a } (\delta+\lambda_{adr})u_{adr}\Big\}.  	 
  	 \end{equation*}
  	 This is straightforward to verify by looking at 
  	 \begin{equation*}
  	 	\begin{aligned}
- 	 		&P(u_{idj}=1|\boldsymbol{u}_{id[-j]}, \delta, \boldsymbol{\lambda}_{id})
- 	 		=\frac{ \exp{(\delta+\lambda_{idj})}}{\exp{(\delta+\lambda_{idj})} + 1}.\end{aligned}\end{equation*}
- 	 We denote the logistic-Bernoulli normalizing constant as $Z^{l}(\delta,\boldsymbol{\lambda}_{id})$, which is defined as 
+ 	 		&P(u_{adr}=1|\boldsymbol{u}_{ad[-r]}, \delta, \boldsymbol{\lambda}_{ad})
+ 	 		=\frac{ \exp{(\delta+\lambda_{adr})}}{\exp{(\delta+\lambda_{adr})} + 1}.\end{aligned}\end{equation*}
+ 	 We denote the logistic-Bernoulli normalizing constant as $Z^{l}(\delta,\boldsymbol{\lambda}_{ad})$, which is defined as 
  	 \begin{equation*}
- 	 	Z^{l}(\delta,\boldsymbol{\lambda}_{id})=\sum_{\boldsymbol{u}_{id} \in [0,1]^{A}} \exp\Big\{\sum_{j\neq i} (\delta+\lambda_{idj})u_{idj}\Big\}.
+ 	 	Z^{l}(\delta,\boldsymbol{\lambda}_{ad})=\sum_{\boldsymbol{u}_{ad} \in [0,1]^{A}} \exp\Big\{\sum_{r\neq a} (\delta+\lambda_{adr})u_{adr}\Big\}.
  	 \end{equation*}
  	 Now, since 
  	 \begin{equation*}
  	 	\begin{aligned}
- 	 		&\exp\Big\{ \mbox{log}\Big(\text{I}(\lVert \boldsymbol{u}_{id} \rVert_1 > 0)\Big) + \sum_{j \neq i} (\delta+\lambda_{idj})u_{idj} \Big\}\\&= \exp\Big\{  \sum_{j \neq i} (\delta+\lambda_{idj})u_{idj} \Big\},
+ 	 		&\exp\Big\{ \mbox{log}\Big(\text{I}(\lVert \boldsymbol{u}_{ad} \rVert_1 > 0)\Big) + \sum_{r \neq a} (\delta+\lambda_{adr})u_{adr} \Big\}\\&= \exp\Big\{  \sum_{r \neq a} (\delta+\lambda_{adr})u_{adr} \Big\},
  	 	\end{aligned}
  	 \end{equation*}
- 	 except when $\lVert \boldsymbol{u}_{id} \rVert_1=0$, we note that 
+ 	 except when $\lVert \boldsymbol{u}_{ad} \rVert_1=0$, we note that 
  	 \begin{equation*}
  	 	\begin{aligned}
- 	 		Z(\delta,\boldsymbol{\lambda}_{id})& = Z^{l}(\delta,\boldsymbol{\lambda}_{id}) -\exp\Big\{ \sum\limits_{\forall u_{idj}=0}(\delta+\lambda_{idj})u_{idj} \Big\}
- 	 		\\& = Z^{l}(\delta,\lambda_{i}^{(d)}) -  1.
+ 	 		Z(\delta,\boldsymbol{\lambda}_{ad})& = Z^{l}(\delta,\boldsymbol{\lambda}_{ad}) -\exp\Big\{ \sum\limits_{\forall u_{adr}=0}(\delta+\lambda_{adr})u_{adr} \Big\}
+ 	 		\\& = Z^{l}(\delta,\lambda_{a}^{(d)}) -  1.
  	 	\end{aligned}
  	 \end{equation*}
- 	 We can therefore derive a closed form expression for $Z(\delta,\boldsymbol{\lambda}_{id})$ via a closed form expression for $Z^{l}(\delta,\boldsymbol{\lambda}_{id})$. This can be done by looking at the probability of the zero vector under the logistic-Bernoulli model:
+ 	 We can therefore derive a closed form expression for $Z(\delta,\boldsymbol{\lambda}_{ad})$ via a closed form expression for $Z^{l}(\delta,\boldsymbol{\lambda}_{ad})$. This can be done by looking at the probability of the zero vector under the logistic-Bernoulli model:
  	 \begin{equation*}
  	 	\begin{aligned}
- 	 		&\frac{\exp\Big\{ \sum\limits_{\forall u_{idj}=0}(\delta+\lambda_{idj})u_{idj} \Big\}}{Z^{l}(\delta,\boldsymbol{\lambda}_{id})}= \prod_{j \neq i}   \Big(1-\frac{ \exp{(\delta+\lambda_{idj})}}{\exp{(\delta+\lambda_{idj})} + 1}\Big).
+ 	 		&\frac{\exp\Big\{ \sum\limits_{\forall u_{adr}=0}(\delta+\lambda_{adr})u_{adr} \Big\}}{Z^{l}(\delta,\boldsymbol{\lambda}_{ad})}= \prod_{r \neq a}   \Big(1-\frac{ \exp{(\delta+\lambda_{adr})}}{\exp{(\delta+\lambda_{adr})} + 1}\Big).
  	 	\end{aligned}  
  	 \end{equation*}
  	 Then, we have 
  	 \begin{equation*}
  	 	\begin{aligned}
- 	 		& \frac{1}{Z^{l}(\delta,\boldsymbol{\lambda}_{id})} &= \prod\limits_{j \neq i}\frac{1}{ \exp(\delta+\lambda_{idj})+ 1}.
+ 	 		& \frac{1}{Z^{l}(\delta,\boldsymbol{\lambda}_{ad})} &= \prod\limits_{r \neq a}\frac{1}{ \exp(\delta+\lambda_{adr})+ 1}.
  	 	\end{aligned}  
  	 \end{equation*}
  	 Finally, the closed form expression for the normalizing constant under the non-empty Gibbs measure is  \begin{equation*}
- 	 	\begin{aligned}Z(\delta,\boldsymbol{\lambda}_{id}) = \prod_{j \neq i } \big(\mbox{exp}\{\delta+\lambda_{idj}\} + 1\big)-1.
+ 	 	\begin{aligned}Z(\delta,\boldsymbol{\lambda}_{ad}) = \prod_{r \neq a } \big(\mbox{exp}\{\delta+\lambda_{adr}\} + 1\big)-1.
  	 	\end{aligned}  
  	 \end{equation*}
-
+ 	 
+\iffalse
  \section{Specification of Network Features}\label{sec:Specification of Network Features}
-We provide the details on the specification of $\boldsymbol{x}_{idjc} = ({x}^1_{idjc}, {x}^2_{idjc}, {x}^3_{idjc})$ in Section 4.2. We first partitioned the interval $[t_d-16d, t_d)$ into $L=3$ sub-intervals with equal length in the log-scale, by setting the difference $\Delta_l$ = (6 hours) $\times  4^l$ for $l=1,2,3$. In other words, we define the intervals $I_d^l$ by 
+We provide the details on the specification of $\boldsymbol{x}_{adrc} = ({x}^1_{adrc}, {x}^2_{adrc}, {x}^3_{adrc})$ in Section 4.2. We first partitioned the interval $[t_d-16d, t_d)$ into $L=3$ sub-intervals with equal length in the log-scale, by setting the difference $\Delta_l$ = (6 hours) $\times  4^l$ for $l=1,2,3$. In other words, we define the intervals $I_d^l$ by 
  \begin{equation*}
  \footnotesize
  \begin{aligned}
@@ -167,7 +168,7 @@ We provide the details on the specification of $\boldsymbol{x}_{idjc} = ({x}^1_{
  	\label{fig:triadtable}
  	\caption{2-send defined for each interval $l=1,2,3$. Cells with same shades sum up to one statistic.}
  \end{figure}
- 
+ \fi
 
 
 
