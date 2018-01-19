@@ -330,9 +330,7 @@ We evaluated the IPTM's ability to predict ties in textual communications from e
 				\textcolor{red}{Given the observed author, what is the associatied time-increment?}
 			\ENDIF
  	\IF{$d \in \{\mbox{(test2)}\}$}
- 	\STATE Draw $\boldsymbol{r}_d \sim \mbox{Gibbs}( \delta, \boldsymbol{\lambda}_{a_dd})$\\
- 	\textcolor{red}{can't directly sample from Gibbs if $A$ large. Alternatively,}
- 	\STATE Set $\boldsymbol{r}_d = \boldsymbol{u}_{a_dd}$
+ 	\STATE Set $\boldsymbol{r}_d = \boldsymbol{u}_{a_dd}$ (cannot directly use Equation (7))
  	\ENDIF
 			
 	\vskip 0.1in		
