@@ -82,7 +82,7 @@
 \printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \section{Normalizing constant of Gibbs measure}\label{sec: non-empty Gibbs measure}
- 	 The non-empty Gibbs measure defines the probability of author $a$ selecting the binary recipient vector $\boldsymbol{u}_{ad}$ as
+ 	 The non-empty Gibbs measure \cite{fellows2017removing} defines the probability of author $a$ selecting the binary recipient vector $\boldsymbol{u}_{ad}$ as
  	 \begin{equation*} 
  	 	\begin{aligned}
  	 		& P(\boldsymbol{u}_{ad}| \delta, \boldsymbol{\lambda}_{ad} ) \\&= \frac{\exp\Big\{ \mbox{log}\big(\text{I}(\lVert \boldsymbol{u}_{ad} \rVert_1 > 0)\big) + \sum_{r \neq a} (\delta+\lambda_{adr})u_{adr} \Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}.
@@ -131,47 +131,85 @@
  	 	\begin{aligned}Z(\delta,\boldsymbol{\lambda}_{ad}) = \prod_{r \neq a } \big(\mbox{exp}\{\delta+\lambda_{adr}\} + 1\big)-1.
  	 	\end{aligned}  
  	 \end{equation*}
- 	 
-\iffalse
- \section{Specification of Network Features}\label{sec:Specification of Network Features}
-We provide the details on the specification of $\boldsymbol{x}_{adrc} = ({x}^1_{adrc}, {x}^2_{adrc}, {x}^3_{adrc})$ in Section 4.2. We first partitioned the interval $[t_d-16d, t_d)$ into $L=3$ sub-intervals with equal length in the log-scale, by setting the difference $\Delta_l$ = (6 hours) $\times  4^l$ for $l=1,2,3$. In other words, we define the intervals $I_d^l$ by 
- \begin{equation*}
- \footnotesize
- \begin{aligned}
- &[t_d-384h,t_d) \\&=[t_d-384h, t_d-96h) \cup [t_d-96h, t_d-24h)\cup [t_d-24h, t_d)
- \\&=I_d^{3}\cup  I_d^{2}\cup I_d^{1},
- \end{aligned}
- \end{equation*}
- where $I_{d}^{l} $ is the half-open interval $[t_d-\Delta_l, t_d-\Delta_{l-1})$. 
- 
- Then, for each time interval $l=1,2,3$, the degree and dyadic statistics are defined as:
- \begin{itemize}
- 	 	\footnotesize
- 	\item [1.]  $\mbox{\textbf{outdegree}}^l_{id\cdot c}=\sum\limits_{d \in I_{d}^{l}}\pi_{dc}I\{i\rightarrow \forall j\}$
- 	\item [2.] $\mbox{\textbf{indegree}}^l_{\cdot dj c}=\sum\limits_{d \in I_{d}^{l}}\pi_{dc}I\{\forall i \rightarrow j\}$	 	 	
- 	\item [3.]  $\mbox{\textbf{send}}^l_{idjc}=\sum\limits_{d \in I_{d}^{l}}\pi_{dc} I\{i\rightarrow j\}$
- 	\item [4.] $\mbox{\textbf{receive}}^l_{idjc}=\sum\limits_{d\in I_{d}^{l}}\pi_{dc} I\{j\rightarrow i\}$
- \end{itemize}
- \normalsize
- Next, we define four triadic statistics involving pairs of messages, which are analogous to 2-path statistics commonly used in the network science literature. While earlier works (Perry \& Wolfe, 2013) adapted full sets of triadic statistics for each combination of time intervals (e.g. $3 \times 3=9$), we maintain 3 intervals per each statistic, by defining $3 \times 3$ time windows and sum the combination-specific statistics based on the interval where the triads are closed (Refer to Figure 1). As a result, our interval-adjusted definitions of triadic effects become
- \begin{itemize}
- 	\footnotesize
- 	\item [5.] $\mbox{\textbf{2-send}}^l_{idjc}=\vspace{3mm}\\\sum\limits_{\substack{\max(l_1,l_2)= l} }\sum\limits_{\substack{h \neq i\\h \neq  j} }(\sum\limits_{d\in I_{d}^{l_1}}\pi_{dc} I\{i\rightarrow h\})(\sum\limits_{d\in I_{d}^{l_2}}\pi_{dc}I\{h\rightarrow j\})$\\
- 	\item [6.] $\mbox{\textbf{2-receive}}^l_{idjc}=\vspace{3mm}\\\sum\limits_{\substack{\max(l_1,l_2)= l} }\sum\limits_{\substack{h \neq i\\h \neq  j} }(\sum\limits_{d \in I_{d}^{l_1}}\pi_{dc} I\{h\rightarrow i\})(\sum\limits_{d\in I_{d}^{l_2}}\pi_{dc} I\{j\rightarrow h\})$
- 	\item [7.] $\mbox{\textbf{sibling}}^l_{idjc}=\vspace{3mm}\\\sum\limits_{\substack{\max(l_1,l_2)= l} }\sum\limits_{\substack{h \neq i\\h \neq  j} }(\sum\limits_{d\in I_{d}^{l_1}}\pi_{dc} I\{h\rightarrow i\}) (\sum\limits_{d\in I_{d}^{l_2}}\pi_{dc}I\{h\rightarrow j\})$
- 	\item [8.] $\mbox{\textbf{cosibling}}^l_{idjc}=\vspace{3mm}\\\sum\limits_{\substack{\max(l_1,l_2)= l}}\sum\limits_{\substack{h \neq i\\h \neq  j} }(\sum\limits_{d \in I_{d}^{l_1}}\pi_{dc} I\{i\rightarrow h\})(\sum\limits_{d\in I_{d}^{l_2}}\pi_{dc}I\{j\rightarrow h\})$
- \end{itemize}
- where $l_1=1,2,3$ and $l_2=1,2,3$. 
- \begin{figure}[ht]
- 	\centering
- 	\includegraphics[width=0.49\textwidth]{plots/triadtable.jpg} 
- 	\label{fig:triadtable}
- 	\caption{2-send defined for each interval $l=1,2,3$. Cells with same shades sum up to one statistic.}
- \end{figure}
- \fi
 
 
+\section{Psuedocode for inference} \label{sec: Pseudocode1}
+In Section 2, we outlined a Metropolis-within-Gibbs sampling algorithm and each latent variable’s conditional posterior. Algorithm \ref{alg:MCMC} provides the pseudocod for the IPTM's inference. For every outer iteration $o$, we sequentailly resampling the value of each parameter from its conditional posterior given the observed data, hyperparamters, and the current values of the other parameters. For hyperparameter optimization, we fix $n_1=5$. Note that we specify a larger number of inner iterations for ($n_2$, $n_3$,
+and $n_4$) such as 5, because those variables require Metropolis-Hastings update which mixes slower than Gibbs update.
+\begin{algorithm}[H]
+	\caption{Markov Chain Monte Carlo (MCMC)}
+		\label{alg:MCMC}
+		\begin{algorithmic}
+		\STATE \textbf{Input}: data $ \{ (a_d, \boldsymbol{r}_d, t_d,  \boldsymbol{w}_d)\}_{d=1}^D$, \\
+		number of interaction patterns and topics $(C, K)$,\\
+		hyperparameters $(\alpha, \beta, \boldsymbol{m}, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta)$,\\
+		number of iterations $(O, n_1, n_2, n_3, n_4)$
+		\vskip 0.1in
+		\STATE Set initial values
+		\FOR{$o=1$  {\bfseries to}  $O$}
+		\FOR{$n=1$ {\bfseries to} $n_1$}
+			\STATE Optimize $\alpha$ and $\boldsymbol{m}$ using \cite{wallach2008structured}
+				\ENDFOR
+		\FOR{$d=1$  {\bfseries to}  $D$}
+			\FOR{$a \in [A]_{\backslash a_d}$}
+				\FOR{$r \in [A]_{\backslash a}$ }
+				\STATE	Draw $\boldsymbol{u}_{adr}$ from Equation (13)
+					\ENDFOR
+						\ENDFOR
+		\ENDFOR
+			\FOR{$k=1$ {\bfseries to} $K$}
+			\STATE Draw $l_k$ from Equation (14)
+			\ENDFOR
+			
+				\FOR{$d=1$  {\bfseries to}  $D$}
+			\FOR{$n=1${\bfseries to} $N_d$}
+				\STATE Draw $z_{dn}$ from Equation (15)
+					\ENDFOR
+						\ENDFOR
+				\FOR{$n=1$ {\bfseries to} $n_2$}
+			\STATE	Draw $\boldsymbol{b}$ and $\delta$ from Equation (16)
+				\ENDFOR
+			\FOR{$n=1${\bfseries to} $n_3$}
+		\STATE	Draw $\boldsymbol{\eta}$ from Equation (17)
+			\ENDFOR
+		\FOR{$n=1$ {\bfseries to} $n_4$}
+		\STATE	Draw $\sigma_\tau^2$ from Equation (17)
+			\ENDFOR
+ \ENDFOR
+	\end{algorithmic}
+\end{algorithm}
 
+\section{Psuedocode for posterior predictive checks} \label{sec: Pseudocode2}
+      \begin{algorithm}[H]
+      	\caption{Generate new data for PPC}
+      \begin{algorithmic}
+      	\STATE \textbf{Input}: number of new data to generate $R$,\\
+      	observed text data $ \{\boldsymbol{w}_d\}_{d=1}^D$,\\
+      	estimated latent variables $(\boldsymbol{u},  \boldsymbol{l},\boldsymbol{z}, \boldsymbol{b}, \delta, \boldsymbol{\eta},  \sigma_\tau^2),$\\
+      	hyperparameters $(\alpha, \beta, \boldsymbol{m})$,\\
+      	number of vocabularies $V$\\
+            			\vskip 0.1in
+ 			
+            		\FOR{$r=1$ {\bfseries to}  $R$}
+            		       \STATE Initialize $N_{vk}$ and $N_k$ from $\boldsymbol{z}$ and  $\boldsymbol{w}$  
+            			\FOR{$d = 1$ {\bfseries to}  $D$} 
+      	\IF{$N_{d} > 0$}
+      	  		\FOR {$n = 1$  {\bfseries to}  $N_{d}$}
+      	  		\STATE Draw	$w_{dn}$ from $P(w_{dn} = v)= \frac{N_{vz_{dn}} +\frac{\beta}{V}}{N_{z_{dn}} + \beta}$\\  			
+      	  		\STATE Increment $N_{w_{dn}z_{dn}}$ and $N_{z_{dn}}$ 		
+      	  				\ENDFOR
+      	  			\ENDIF
+			\STATE  Compute $\boldsymbol{x}_{d}$ given $\{(a_{d}, \boldsymbol{r}_{d}, t_{d})\}_{[1:(d-1)]}$
+      		\STATE	Draw ($a_{d}$, $\boldsymbol{r}_{d}$, $t_{d}$) following Section 2.3\\
+\ENDFOR
+\STATE Store every $r^{th}$ new data $\{(a_{d}, \boldsymbol{r}_{d}, t_{d}, \boldsymbol{w}_{d})\}_{d=1}^D$ 
+      				\ENDFOR
+      		\end{algorithmic}
+      \end{algorithm}        
+      	 
+
+\bibliography{IPTM}
+\bibliographystyle{icml2018}
 % In the unusual situation where you want a paper to appear in the
 % references without citing it in the main text, use \nocite
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

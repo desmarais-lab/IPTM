@@ -677,14 +677,49 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 //        Topic and Word contribution in update of Z         //
 // **********************************************************//
 // [[Rcpp::export]]
+NumericVector TopicWord2(int K, IntegerVector z_d, IntegerVector textlistd, List tableW,
+                        double alpha, NumericVector mvec, double beta, int V, int w){
+    IntegerVector table_topics = tabulateC(z_d, K);
+    NumericVector alphamvec(K);
+    NumericVector consts(K);
+    for (int k = 0; k < K; k++){
+        alphamvec[k] = alpha*mvec[k];
+        NumericVector tablek = tableW[k];
+        double num = log(tablek[textlistd[w-1]-1]+beta/V);
+        double denom = log(sum(tablek)+beta);
+        consts = num-denom +log(table_topics[k]+alphamvec[k]);
+    }
+    return consts;
+}
+
+// **********************************************************//
+//        Topic and Word contribution in update of Z         //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericVector TopicWord0(int K, List tableW,
+                         double alpha, NumericVector mvec, double beta, int V){
+    NumericVector alphamvec(K);
+    NumericVector consts(K);
+    for (int k = 0; k < K; k++){
+        alphamvec[k] = alpha*mvec[k];
+        NumericVector tablek = tableW[k];
+        double num = log(beta/V);
+        double denom = log(sum(tablek)+beta);
+        consts = num-denom+log(alphamvec[k]);
+    }
+    return consts;
+}
+
+// **********************************************************//
+//        Topic and Word contribution in update of Z         //
+// **********************************************************//
+// [[Rcpp::export]]
 NumericMatrix TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List tableW,
                         double alpha, NumericVector mvec, double beta, int V){
     IntegerVector table_topics = tabulateC(z_d, K);
-    NumericVector table_topic_adj(K);
     NumericVector alphamvec(K);
     NumericMatrix consts(textlistd.size(), K);
     for (int k = 0; k < K; k++){
-        table_topic_adj[k] = table_topics[k];
         alphamvec[k] = alpha*mvec[k];
         NumericVector tablek = tableW[k];
         NumericVector num(textlistd.size());
@@ -693,7 +728,7 @@ NumericMatrix TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List 
             num[w] = log(tablek[textlistd[w]-1]+beta/V);
             denom[w] = log(sum(tablek)+beta);
         }
-        consts(_,k) = num-denom +log(table_topic_adj[k]+alphamvec[k]);
+        consts(_,k) = num-denom +log(table_topics[k]+alphamvec[k]);
     }
     return consts;
 }

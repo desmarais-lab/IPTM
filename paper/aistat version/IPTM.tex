@@ -421,28 +421,28 @@ This work was supported in part by the University of Massachusetts Amherst Cente
   	  	\SetAlgoLined
   	  	\caption{Markov Chain Monte Carlo updates}
   	  	set initial values\\
-  	  	\For{o=1 to O}{
-  	  		\For{n=1 to $n_1$}{
+  	  	\FOR{o=1 to O}{
+  	  		\FOR{n=1 to $n_1$}{
   	  			optimize $\alpha$ and $\boldsymbol{m}$ using \cite{wallach2008structured}
   	  		}
-  	  		\For{d=1 to D}{
-  	  			\For{i $\in (1:A)_{\backslash a_d}$}{
-  	  				\For{j $\neq$ i }{
-  	  					draw $\boldsymbol{u}_{idj}$ (Section \ref{subsubsec: Resampling Hypothetical Recipients})
+  	  		\FOR{d=1 to D}{
+  	  			\FOR{i $\in (1:A)_{\backslash a_d}$}{
+  	  				\FOR{j $\neq$ i }{
+  	  					draw $\boldsymbol{u}_{idj}$ (Section )
   	  				}
   	  			}
-  	  			\For{n=1 to $N_d$}{
-  	  				draw $z_{dn}$ (Section \ref{subsubsec: Resampling Z})}}
-  	  		\For{k=1 to K}{
-  	  			draw $l_k$ (Section \ref{subsubsec: Resampling C})
+  	  			\FOR{n=1 to $N_d$}{
+  	  				draw $z_{dn}$ (Section )}}
+  	  		\FOR{k=1 to K}{
+  	  			draw $l_k$ (Section )
   	  		}
-  	  		\For{n=1 to $n_2$}{
-  	  			sample $\boldsymbol{b}$ and $\delta$ (Section \ref{subsubsec: Resampling Coefficients})} 
-  	  		\For{n=1 to $n_3$}{
-  	  			sample $\boldsymbol{\eta}$ (Section \ref{subsubsec: Resampling Coefficients})
+  	  		\FOR{n=1 to $n_2$}{
+  	  			sample $\boldsymbol{b}$ and $\delta$ (Section )} 
+  	  		\FOR{n=1 to $n_3$}{
+  	  			sample $\boldsymbol{\eta}$ (Section )
   	  		}
-  	  		\For{n=1 to $n_4$}{
-  	  			sample $\sigma_\tau^2$ (Section \ref{subsubsec: Resampling Coefficients})
+  	  		\FOR{n=1 to $n_4$}{
+  	  			sample $\sigma_\tau^2$ (Section)
   	  		}
   	  	}
   	  	\label{alg:Infernece}

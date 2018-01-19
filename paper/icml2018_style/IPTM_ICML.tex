@@ -152,7 +152,7 @@ For every possible author--recipient pair $(a,r)_{a \neq r}$, we define the ``in
 \end{equation}
 where $\boldsymbol{b}_c$ is $P$--dimensional vector of coefficients and $\boldsymbol{x}_{adrc}$ is a set of network features which vary depending on the hypotheses regarding canonical processes relevant to network theory such as popularity, reciprocity, and transitivity. We place a Normal prior $\boldsymbol{b}_c \sim N(\boldsymbol{\mu}_b, \Sigma_b)$.
 
-In the example of email networks, we form the covariate vector for recipients $\boldsymbol{x}_{adrc}$ using dynamic network statistics focused on three time intervals prior to $t^+_{d-1}$ (i.e., immediately after the previous document was sent). We compute eight network statistics within each time interval \cite{PerryWolfe2012}, where the three time intervals are $[t^+_{d-1}-384h, t^+_{d-1}-96h), [t^+_{d-1}-96h, t^+_{d-1}-24h)$ and $[t^+_{d-1}-24h, t^+_{d-1})$. We use $i=1$ to denote the earliest interval---i.e., $[t^+_{d-1}-384h, t^+_{d-1}-96h)$---and i = 3 to denote the latest. The network statistics (illustrated in Figure \ref{fig:dynamic network statistics}) are:
+In the example of email networks, we form the covariate vector for recipients $\boldsymbol{x}_{adrc}$ using dynamic network statistics focused on three time intervals prior to $t^+_{d-1}$ (i.e., immediately after the previous document was sent). We compute eight network statistics within each time interval \cite{PerryWolfe2012}, where the three time intervals are $[t^+_{d-1}-384h, t^+_{d-1}-96h), [t^+_{d-1}-96h, t^+_{d-1}-24h)$ and $[t^+_{d-1}-24h, t^+_{d-1})$. We define the intervals to have equal length in the log-scale, and use $i=1$ to denote the earliest interval---i.e., $[t^+_{d-1}-384h, t^+_{d-1}-96h)$---and i = 3 to denote the latest. The network statistics (illustrated in Figure \ref{fig:dynamic network statistics}) are:
 \begin{figure}[b]
 	\vskip -0.1in
 	\centering
@@ -233,7 +233,7 @@ t_d &=t_{d-1} + \tau_{a_d d}.
 Therefore, it is an author-driven process in that the author of a document determines its recipients and its timestamp, based on the author's urgency to send the document to chosen recipients. 
 
 \section{Posterior Inference}\label{sec:Inference}
-Given that we only observe the authors, recipients, timestamps, and tokens $ \{ (a_d, \boldsymbol{r}_d, t_d,  \boldsymbol{w}_d)\}_{d=1}^D$ in real-world, our inference goal is to invert the generative process to obtain the posterior distribution over the unknown parameters, conditioned on the observed data and hyperparamters $\alpha, \beta, \boldsymbol{m}, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta$. After integrating out $\Phi$ and $\Theta$ using Dirichlet-multinomial conjugacy \cite{griffiths2004finding}, we draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each parameter from its conditional posterior given the observed data, hyperparamters, and the current values of the other parameters. We express each parameter’s conditional posterior in a closed form using the data augmentation schemes in $\boldsymbol{u}$ \cite{tanner1987calculation}. In this section, we outline a Metropolis-within-Gibbs sampling algorithm and each latent variable's conditional posterior.
+Given that we only observe the authors, recipients, timestamps, and tokens $ \{ (a_d, \boldsymbol{r}_d, t_d,  \boldsymbol{w}_d)\}_{d=1}^D$ in real-world, our inference goal is to invert the generative process to obtain the posterior distribution over the unknown parameters, conditioned on the observed data and hyperparamters $\alpha, \beta, \boldsymbol{m}, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta$. After integrating out $\Phi$ and $\Theta$ using Dirichlet-multinomial conjugacy \cite{griffiths2004finding}, we draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each parameter from its conditional posterior given the observed data, hyperparamters, and the current values of the other parameters. We express each parameter’s conditional posterior in a closed form using the data augmentation schemes in $\boldsymbol{u}$ \cite{tanner1987calculation}. In this section, we outline a Metropolis-within-Gibbs sampling algorithm and each latent variable's conditional posterior. Pseudocode for MCMC algorithm is provided in the supplementary material.
 
 Since $u_{adr}$ is a binary random variable, new values may be sampled directly using
 \begin{equation}
@@ -289,29 +289,61 @@ To verify that our model is applicable beyond the Dare County email network, we 
 We conducted a set of posterior predictive experiments---1) out-of-sample tie predictions, 2) topic coherence, and 3) posterior predictive checks---to gauge the IPTM's predictive performance as compared to alternative modeling approaches.
 
 \subsection{Out-of-Sample Tie Predictions}\label{subsec:Tie Prediction}
-We evaluated the IPTM's ability to predict ties in textual communications from either the Dare County email network or the Enron data set, conditioned on the text of those emails and ``training" part of the data. We separately formed a test split of each three components---author, recipients, and timestamps---by randomly selecting emails with probability 0.2 such that an email may observe all, some, or none of tie information. Any missing variables were imputed by drawing samples from their joint posterior distribution using an appropriately-modified version of the Metropolis-within-Gibbs algorithm in Section \ref{sec:Inference}, and we ran inference to update the latent variables  given the imputed data. We iterated imputation and inference multiple times to obtain enough samples of predicted values, where we took samples after burn-in. Algorithm \ref{alg:PPE} outlines this procedure.
+We evaluated the IPTM's ability to predict ties in textual communications from either the Dare County email network or the Enron data set, conditioned on the text of those emails and ``training" part of the data. We separately formed a test split of each three components---author, recipients, and timestamps---by randomly selecting emails with probability 0.2 such that an email may observe all, some, or none of tie information. Any missing variables were imputed by drawing samples from their conditional posterior distribution using an appropriately-modified version of the Metropolis-within-Gibbs algorithm in Section \ref{sec:Inference}. We then ran inference to update the latent variables given the imputed data and iterated the two---imputation and inference---multiple times to obtain enough number of new data. Algorithm \ref{alg:PPE} outlines this procedure.
 
-\begin{algorithm}[ht]
+\begin{algorithm}[H]
 	\caption{Out-of-Sample Tie Predictions}
 	\label{alg:PPE}
 	\begin{algorithmic}
-		\STATE {\bfseries Input:} data $ \{ (a_d, \boldsymbol{r}_d, t_d,  \boldsymbol{w}_d)\}_{d=1}^D$, sample size $N$\\
-		Separate test splits for $(a_d, \boldsymbol{r}_d, t_d)$ and hide the ``test"
-		\STATE Initialize the parameters $(\boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta, \boldsymbol{u})$.
-		\FOR{$n=1$ {\bfseries to} $N$}
-		\STATE Impute ``test" authors, recipients, and timestamps conditioned on the parameter values\\
-		\textcolor{red}{Note (to be deleted):\\
-			 $a_d\sim$ Multinom($p_1,\ldots,p_A$) where $p_i$ is Eq. 18 for $a_d=i$ without product over $d$, \\
-			 $\boldsymbol{r}_d$ from Eq. 14, conditioned on $a_d$, \\
-			 $t_d$ from Eq. 12---i.e., $\log(\tau_d) \sim N(\mu_{a_dd}, \sigma_{\tau}^2)$\\
-			 When both $a_d$ and $t_d$ missing, we follow generative process and jointly determine ($a_d, t_d$) by generating $A$ number of time-increments and choose the minimum}
-		\STATE Update the parameters given the imputed data
+		\STATE {\bfseries Input:} data $ \{ (a_d, \boldsymbol{r}_d, t_d,  \boldsymbol{w}_d)\}_{d=1}^D$, \\
+		number of new data to generate $R$,\\
+			number of interaction patterns and topics $(C, K)$,\\
+			hyperparameters $(\alpha, \beta, \boldsymbol{m}, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta)$\\
+			\vskip 0.1in
+		\textbf{Test splits:}	
+		\STATE Draw ``test1" emails with $p=0.1$ and hide $a_{d:d \in {\mbox{test1}}}$
+		\STATE Draw ``test2" emails with $p=0.1$ and hide $\boldsymbol{r}_{d:d \in {\mbox{test2}}}$
+		\STATE Draw ``test3" emails with $p=0.1$ and hide $t_{d:d \in {\mbox{test3}}}$
+		\vskip 0.1in
+				\textbf{Imputation and inference:}	
+		\STATE Initialize the parameters $(\boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta, \boldsymbol{u})$
+	\FOR{$r=1$ {\bfseries to}  $R$}
+	\FOR{$d=1$ {\bfseries to}  $D$}
+	\IF{$d \in \{\mbox{(test1)} \cap\mbox{(test3)}\}$---\textcolor{red}{CASE 1}}
+	\FOR{$a=1$ {\bfseries to} $A$}
+	\STATE Draw $\log(\tau_{ad}) \sim N(\mu_{ad}, \sigma^2_\tau)$
+	\ENDFOR
+	\STATE Set author and timestamp following Section \ref{subsubsec:Actual Data} \\
+     $(a_d, t_d)$ = $(\mbox{argmin}_a(\tau_{ad}), t_{d-1}+\tau_{a_dd})$\\
+	\textcolor{red}{Directly from generative process}
+	\ENDIF
+		\IF{$d \in \{\mbox{(test1)} \cap\mbox{(test3)}^c\}$---\textcolor{red}{CASE 2}}
+		\FOR{$a=1$ {\bfseries to} $A$}
+		\STATE Using Equation (17), compute $P(a_d = a)=$ \\$ \varphi_{\tau}(\tau_{ad}; \mu_{ad}, \sigma_\tau^2) \prod
+	\limits_{a'\neq a}\big(1-\Phi_{\tau}(\tau_{a d}; \mu_{a' d}, \sigma_\tau^2) \big)$
 		\ENDFOR
-		\STATE Summarize the predicted values after burn-in
+		\STATE Draw $a_d$ from the probability $\{P(a_d = a)\}_{a=1}^A$
+			\textcolor{red}{Given the observed time, who is most likely to be the author?}
+		\ENDIF
+ 	\IF{$d \in \{\mbox{(test1)}^c \cap\mbox{(test3)}\}$---\textcolor{red}{CASE 3}}
+			\STATE Draw $\log(\tau_{a_dd}) \sim N(\mu_{a_dd}, \sigma^2_\tau)$\\
+				\textcolor{red}{Given the observed author, what is the associatied time-increment?}
+			\ENDIF
+ 	\IF{$d \in \{\mbox{(test2)}\}$}
+ 	\STATE Draw $\boldsymbol{r}_d \sim \mbox{Gibbs}( \delta, \boldsymbol{\lambda}_{a_dd})$\\
+ 	\textcolor{red}{can't directly sample from Gibbs if $A$ large. Alternatively,}
+ 	\STATE Set $\boldsymbol{r}_d = \boldsymbol{u}_{a_dd}$
+ 	\ENDIF
+			
+	\vskip 0.1in		
+	\STATE Run one outer iteration of inference algorithm following Section \ref{sec:Inference} and update the parameters $(\boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta, \boldsymbol{u})$ given the imputed data
+		\ENDFOR
+		\STATE Store every $r^{th}$ new data
+				\ENDFOR
 		\end{algorithmic}
 \end{algorithm}
 
-We compared the IPTM's performance with that of baseline---the IPTM with $C=1$. This amounts to an ablation study \citep{richardson2006beyond,bilgic2010active}, as a single interaction pattern breaks the link between text and network structure in the IPTM. The text and network structure are linked through the assignment of topics to different interaction patterns, and with one interaction pattern all topics are associated with the same network structure. We do not define any other baselines (i.e., other models from the machine learning literature) to which to compare the predictive performance of the IPTM. We omit comparison to baselines because we are unable to identify existing models that can predict the same form of social data that can be modeled by the IPTM---a form that includes one out of $n$ senders, one through $n-1$ recipients, and a continuous and positive time point. Consider the prediction of e-mail recipients. As far as we are aware, the Gibbs measure model we derive is unique among existing methods in its ability to predict a set of one through $n-1$ (out of $n-1$) recipients of an e-mail. This is just the recipient component of the model---we are also not able to identify any other method that permits the prediction of the sender, recipient multicast, and timing of ties. We could construct baseline models to compare in terms of predictive performance for each component of the social data (e.g., a regression model to predict e-mail timing, a multi-class classifier to predict sender). However, that would be an arbitrary exercise, as it is not clear why we would select any particular baseline out of the dozens of candidates for each component of the social data modeled in the IPTM. 
+We compared the IPTM's performance with that of baseline---the IPTM with $C=1$. This amounts to an ablation study \citep{richardson2006beyond,bilgic2010active}, as a single interaction pattern breaks the link between text and network structure in the IPTM. The text and network structure are linked through the assignment of topics to different interaction patterns, and with one interaction pattern all topics are associated with the same network structure. We do not define any other baselines (i.e., other models`test" a fr machine learning literature) to which to compare the predictive performance of the IPTM. We omit comparison to baselines because we are unable to identify existing models that can predict the same form of social data that can be modeled by the IPTM---a form that includes one out of $n$ senders, one through $n-1$ recipients, and a continuous and positive time point. Consider the prediction of e-mail recipients. As far as we are aware, the Gibbs measure model we derive is unique among existing methods in its ability to predict a set of one through $n-1$ (out of $n-1$) recipients of an e-mail. This is just the recipient component of the model---we are also not able to identify any other method that permits the prediction of the sender, recipient multicast, and timing of ties. We could construct baseline models to compare in terms of predictive performance for each component of the social data (e.g., a regression model to predict e-mail timing, a multi-class classifier to predict sender). However, that would be an arbitrary exercise, as it is not clear why we would select any particular baseline out of the dozens of candidates for each component of the social data modeled in the IPTM. 
 
 We varied the number of interaction patterns $C$ from 1 to 3 and the number of topics $K$ from 1 to 50 (Dare) or 100 (Enron) as a grid-search based hyperparameter selection process.  For each combinations of $C$ and $K$, predicted values of tie data were then compared to the true values to yield: $F_1$ scores for author predictions, multiclass version of the area under the ROC curve (AUC) measure \cite{hand2001simple} for reciptient predictions, and median absolute error (MAE) on timestamp predictions. We show the tie prediction results, averaged over five random test splits of each tie component, in Figure \ref{fig:PPE} \textcolor{red}{(Plots to be updated)}. Although our model is intended for exploratory analysis, it achieves better link prediction performance than the baseline, validating our assumption that the IPTM acheives better predictive performance when topic-based contents are accounted to infer the parameters that govern the generation of tie data---authors, recipients, and timestamps.
 \begin{figure}[tb]
@@ -330,7 +362,7 @@ Topic coherence metrics \cite{mimno2011optimizing} are often used to evaluate th
 	\label{fig:topic}
 \end{figure}
 \subsection{Posterior Predictive Checks}\label{subsec:PPC}
-Finally, we performed posterior predictive checks \cite{rubin1984bayesianly} to evaluate the appropriateness of the model specification for the Dare County email network. We formally generated entirely new data, by simulating ties and contents $\{(a_{d}, \boldsymbol{r}_{d}, t_{d}, \boldsymbol{w}_{d})\}_{d=1}^D$ from the genenerative process in Section \ref{sec:model definition}, conditional upon a set of inferred parameter values from the inference in Section \ref{sec:Inference}. We specified the number of interaction patterns as $C=?$ and the number of topics as $K = ?$, which yielded the best performance in Section \ref{subsec:Tie Prediction}. For the test of goodness-of-fit in terms of network dynamics, we defined multiple network statistics that summarize meaningful aspects of the Dare County email network: indegree distribution for author activities, outdegree distribution for recipient activities, recipient size distribution, document time-increments distribution, the edgewise shared partner distribution, and the geodesic distance distribution. We then generated 100 synthetic networks and texts from the posterior predictive distribution implied by the IPTM and Dare County email network.
+Finally, we performed posterior predictive checks \cite{rubin1984bayesianly} to evaluate the appropriateness of the model specification for the Dare County email network. We formally generated entirely new data, by simulating ties and contents $\{(a_{d}, \boldsymbol{r}_{d}, t_{d}, \boldsymbol{w}_{d})\}_{d=1}^D$ from the genenerative process in Section \ref{sec:model definition}, conditional upon a set of inferred parameter values from the inference in Section \ref{sec:Inference}. Pseudocode is provided in the supplementary material. We specified the number of interaction patterns as $C=?$ and the number of topics as $K = ?$, which yielded the best performance in Section \ref{subsec:Tie Prediction}. For the test of goodness-of-fit in terms of network dynamics, we defined multiple network statistics that summarize meaningful aspects of the Dare County email network: indegree distribution for author activities, outdegree distribution for recipient activities, recipient size distribution, document time-increments distribution, the edgewise shared partner distribution, and the geodesic distance distribution. We then generated 100 synthetic networks and texts from the posterior predictive distribution implied by the IPTM and Dare County email network.
 We applied each discrepancy function to each synthetic network to yield the distributions over the values of the six network statistics
 
 As shown in Figure \ref{fig:PPC} \textcolor{red}{(Plots to be updated)}, the IPTM shows ``good fit" for the Dare County email network in that the observed data is not an outlier with respect to the distributions of new data drawn from the posterior predictive distribution. The IPTM generated synthetic networks with indegree distribution, outdegree distribution, recipient size, document time-increments, and edgewise shared partners that are very similar to those of the Dare County email network, showing that the model captures some important work features of the data including spreadness and transitivity. 

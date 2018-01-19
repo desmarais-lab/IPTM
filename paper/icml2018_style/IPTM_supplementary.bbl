@@ -1,0 +1,19 @@
+\begin{thebibliography}{2}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Fellows \& Handcock(2017)Fellows and Handcock]{fellows2017removing}
+Fellows, Ian and Handcock, Mark.
+\newblock Removing phase transitions from gibbs measures.
+\newblock In \emph{Artificial Intelligence and Statistics}, pp.\  289--297,
+  2017.
+
+\bibitem[Wallach(2008)]{wallach2008structured}
+Wallach, Hanna~Megan.
+\newblock \emph{Structured topic models for language}.
+\newblock PhD thesis, University of Cambridge, 2008.
+
+\end{thebibliography}
