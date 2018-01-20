@@ -677,7 +677,7 @@ NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW,
 //        Topic and Word contribution in update of Z         //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericVector TopicWord2(int K, IntegerVector z_d, IntegerVector textlistd, List tableW,
+NumericVector TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List tableW,
                         double alpha, NumericVector mvec, double beta, int V, int w){
     IntegerVector table_topics = tabulateC(z_d, K);
     NumericVector alphamvec(K);
@@ -710,28 +710,6 @@ NumericVector TopicWord0(int K, List tableW,
     return consts;
 }
 
-// **********************************************************//
-//        Topic and Word contribution in update of Z         //
-// **********************************************************//
-// [[Rcpp::export]]
-NumericMatrix TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List tableW,
-                        double alpha, NumericVector mvec, double beta, int V){
-    IntegerVector table_topics = tabulateC(z_d, K);
-    NumericVector alphamvec(K);
-    NumericMatrix consts(textlistd.size(), K);
-    for (int k = 0; k < K; k++){
-        alphamvec[k] = alpha*mvec[k];
-        NumericVector tablek = tableW[k];
-        NumericVector num(textlistd.size());
-        NumericVector denom(textlistd.size());
-        for (unsigned int w = 0; w < textlistd.size(); w++){
-            num[w] = log(tablek[textlistd[w]-1]+beta/V);
-            denom[w] = log(sum(tablek)+beta);
-        }
-        consts(_,k) = num-denom +log(table_topics[k]+alphamvec[k]);
-    }
-    return consts;
-}
 
 // **********************************************************//
 //         Resampling the augmented data J_a (Sec 3.1)       //

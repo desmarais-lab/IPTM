@@ -286,7 +286,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             zw.old = z[[d]][w]
             if (length(textlist.d) > 0) {
                 table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]]-1
-                topicword.d = TopicWord2(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
+                topicword.d = TopicWord(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
                 zw.new = multinom_vec(1, expconst(topicword.d))
                 if (zw.new != zw.old) {
                     z[[d]][w] = zw.new
@@ -309,7 +309,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             zw.old = z[[d]][w]
             if (length(textlist.d) > 0) {
                 table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]]-1
-                topicword.d = TopicWord2(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
+                topicword.d = TopicWord(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
             } else {
                 topicword.d = TopicWord0(K, table.W, alpha, mvec, beta, V)
             }
@@ -617,7 +617,7 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
 	   		zw.old = z[[d]][w]
         if (length(textlist.d) > 0) {
           table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]]-1
-       	  topicword.d = TopicWord2(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
+       	  topicword.d = TopicWord(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
           zw.new = multinom_vec(1, expconst(topicword.d))
           if (zw.new != zw.old) {
               z[[d]][w] = zw.new
@@ -640,7 +640,7 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
        	zw.old = z[[d]][w]
        	if (length(textlist.d) > 0) {
        	  table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]]-1
-          topicword.d = TopicWord2(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
+          topicword.d = TopicWord(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
         } else {
           topicword.d = TopicWord0(K, table.W, alpha, mvec, beta, V)
         }
@@ -957,7 +957,7 @@ IPTM.inference.noIP = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
             zw.old = z[[d]][w]
             if (length(textlist.d) > 0) {
                 table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]]-1
-                topicword.d = TopicWord2(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
+                topicword.d = TopicWord(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
                 zw.new = multinom_vec(1, expconst(topicword.d))
                 if (zw.new != zw.old) {
                     z[[d]][w] = zw.new
@@ -980,7 +980,7 @@ IPTM.inference.noIP = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
             zw.old = z[[d]][w]
             if (length(textlist.d) > 0) {
                 table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]]-1
-                topicword.d = TopicWord2(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
+                topicword.d = TopicWord(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
             } else {
                 topicword.d = TopicWord0(K, table.W, alpha, mvec, beta, V)
             }
@@ -1247,7 +1247,6 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
   sendermissing = which(missing[,1]==1)
   receivermissing = which(missing[,2]==1)
   timemissing = which(missing[,3]==1)
-  int_sendertime = intersect(sendermissing, timemissing)
   table.W = lapply(1:K, function(k) tabulateC(textlist.raw[which(unlist(z[-emptytext]) == k)], V))
 
   #start outer iteration
@@ -1263,22 +1262,21 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
     }
     
     #imputation
-    for (d in int_sendertime) {
-        timesamp = vapply(node, function(i) {rlnorm(1, mu[d, i], sigma_tau)}, c(1))
-        timeinc[d] = min(timesamp)
-        senders[d] = which(timesamp == timeinc[d])
-        senderpredict[which(sendermissing==d), o] = senders[d]
-        timepredict[which(timemissing==d), o] = timeinc[d]
-    }
-    for (d in timemissing[!timemissing %in% int_sendertime]) {
-        timeinc[d] = rlnorm(1, mu[d, senders[d]], sigma_tau)
-        timepredict[which(timemissing==d), o] = timeinc[d]
-    }
-    for (d in sendermissing[!sendermissing %in% int_sendertime]) {
+    iter1 = 1
+    iter2 = 1
+    iter3 = 1
+    for (d in sendermissing) {
         probi = Timepartindiv(mu[d,], sigma_tau, timeinc[d])
         senders[d] = multinom_vec(1, expconst(probi))
-        senderpredict[which(sendermissing==d), o] = senders[d]
+        senderpredict[iter1, o] = senders[d]
+        iter1 = iter1+1
     }
+    for (d in timemissing) {
+        timeinc[d] = rlnorm(1, mu[d, senders[d]], sigma_tau)
+        timepredict[iter2, o] = timeinc[d]
+        iter2 = iter2+1
+    }
+    
     timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
     timestamps[-1] = timestamps[1]+cumsum(timeinc[-1])*timeunit
     for (d in edge.trim) {
@@ -1286,7 +1284,6 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
         X[[d]] = Netstats_cpp(history.t, node, netstat)
     }
     for (d in receivermissing) {
-        iter = which(receivermissing ==d)
         vu = MultiplyXB(X[[d]], b.old)
         lambda = lambda_cpp(p.d[d,], vu)
         i = senders[d]
@@ -1294,7 +1291,8 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
             probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
             u[[d]][i, j] = multinom_vec(1, expconst(probij))-1
         }
-        receiverpredict[[iter]] = rbind(receiverpredict[[iter]], u[[d]][i, ])
+        receiverpredict[[iter3]] = rbind(receiverpredict[[iter3]], u[[d]][i, ])
+        iter3 = iter3+1
     }  
     #start inference
     # Data augmentation
@@ -1316,7 +1314,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
             zw.old = z[[d]][w]
             if (length(textlist.d) > 0) {
                 table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]]-1
-                topicword.d = TopicWord2(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
+                topicword.d = TopicWord(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
                 zw.new = multinom_vec(1, expconst(topicword.d))
                 if (zw.new != zw.old) {
                     z[[d]][w] = zw.new
@@ -1339,7 +1337,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
             zw.old = z[[d]][w]
             if (length(textlist.d) > 0) {
                 table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]]-1
-                topicword.d = TopicWord2(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
+                topicword.d = TopicWord(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
             } else {
                 topicword.d = TopicWord0(K, table.W, alpha, mvec, beta, V)
             }
@@ -1487,130 +1485,6 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
                      timepredict = timepredict)
   return(chain.final)
 }	
-
-
-#' @title IPTM.PPE
-#' @description Iterate Markov Chain Monte Carlo (MCMC) algorithm for the interaction-partitioned topic model
-#'
-#' @param missing D x 3 binary matrix where 1 denotes missing
-#' @param edge list of tie data with 3 elements (1: author, 2: recipient, 3: timestamp in unix.time format)
-#' @param node vector of node id's (ID starting from 1)
-#' @param textlist list of text containing the words in each document
-#' @param vocab all vocabularies used over the corpus
-#' @param nIP total number of interaction patterns
-#' @param K total number of topics
-#' @param Outer size of outer iterations 
-#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
-#' @param timestat additional statistics to be used for timestamps other than netstat ("sender", "receiver","timeofday", "dayofweek")
-#' @param initial list of initial values user wants to assign including (alpha, mvec, delta, b, eta, l, z, u, sigma_tau, proposal.var1, proposal.var2)
-#' @param timeunit hour (= 3600) or day (= 3600*24) and so on
-#' @param tz timezone such as EST and PST
-#'
-#' @return MCMC output containing all parameter estimates
-#'
-#' @export
-
-IPTM.PPE = function(missing, edge, node, textlist, vocab, nIP, K, 
-                    Outer, netstat, timestat, initial = NULL, timeunit = 3600, tz = "America/New_York") {
-  
-  # trim the edge so that we only model edges after 384 hours
-  A = length(node)
-  D = length(edge)
-  timestamps = vapply(edge, function(d) { d[[3]] }, c(1))
-  senders = vapply(edge, function(d) { d[[1]] }, c(1))
-  edge.trim = which_num(384*timeunit, timestamps-timestamps[1]):D
-  max.edge = max(edge.trim)
-  timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])/timeunit
-  timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
-  emptytext = which(sapply(textlist, function(d){length(d)})==0)
-  
-  # initialization
-  netstat = as.numeric(c("degree", "dyadic", "triadic") %in% netstat)
-  timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
-  timemat = matrix(0, nrow = D, ncol = sum(timestat))
-  if (sum(timestat) > 0) {
-    Sys.setenv(TZ = tz)
-    time_ymd = as.POSIXct(timestamps, tz = getOption("tz"), origin = "1970-01-01")
-    if (timestat[1] > 0) {
-      days = vapply(time_ymd, function(d) {wday(d)}, c(1))
-      days[days==1] = 8
-      timemat[,1] = as.numeric(cut(days, c(1,6,8), c("weekdays","weekends")))-1
-      it = 1
-    }
-    if (timestat[2] > 0) {
-      hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
-      timemat[,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
-    }     
-  }
-  L = 3
-  P = L*(2*netstat[1]+2*netstat[2]+4*netstat[3])
-  Q = length(node)+sum(timestat)
-  V = length(vocab)
-    theta = rdirichlet_cpp(D, initial$alpha*initial$mvec)
-    delta = initial$delta
-    sigma_tau = initial$sigma_tau
-    b.old = initial$b
-    eta.old = initial$eta
-    l = initial$l
-    z = initial$z
-    p.d = pdmat(z, l, nIP) 
-    u = initial$u
-  X = list()
-  if (nIP == 1) {
-  	  xi = xi_all(timemat, matrix(eta.old[,node], nrow = 1), matrix(eta.old[,-node], nrow = 1), edge.trim)
-  } else {
-  	  xi = xi_all(timemat, eta.old[,node], eta.old[,-node], edge.trim)
-  }
-  mu = mu_mat(p.d, xi, edge.trim)
-  senderpredict = matrix(NA, nrow = nrow(missing), ncol = Outer)
-  receiverpredict = lapply(1:nrow(missing), function(d) {c()})
-  timepredict = matrix(NA, nrow = nrow(missing), ncol = Outer)
-  sendermissing = which(missing[,1]==1)
-  receivermissing = which(missing[,2]==1)
-  timemissing = which(missing[,3]==1)
-  int_sendertime = intersect(sendermissing, timemissing)
-  #start outer iteration
-  for (o in 1:Outer) {
-    print(o)
-    #imputation
-      for (d in int_sendertime) {
-        timesamp = vapply(node, function(i) {rlnorm(1, mu[d, i], sigma_tau)})
-        timeinc[d] = min(timesamp)
-        senders[d] = which(timesamp == timeinc[d])
-        senderpredict[which(sendermissing==d), o] = senders[d]
-        timepredict[which(timemissing==d), o] = timeinc[d]
-      }
-      for (d in timemissing[!timemissing %in% int_sendertime]) {
-        timeinc[d] = rlnorm(1, mu[d, senders[d]], sigma_tau)
-        timepredict[which(timemissing==d), o] = timeinc[d]
-      }
-      for (d in sendermissing[!sendermissing %in% int_sendertime]) {
-        probi = Timepartindiv(mu[d,], sigma_tau, timeinc[d])
-        senders[d] = multinom_vec(1, expconst(probi))
-        senderpredict[which(sendermissing==d), o] = senders[d]
-      }
-    timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
-    timestamps[-1] = timestamps[1]+cumsum(timeinc[-1])*timeunit
-    for (d in edge.trim) {
-      history.t = History(edge, p.d, node, timestamps[d-1]+exp(-745), timeunit)
-      X[[d]] = Netstats_cpp(history.t, node, netstat)
-    }
-    for (d in receivermissing) {
-        iter = which(receivermissing ==d)
-        vu = MultiplyXB(X[[d]], b.old)
-        lambda = lambda_cpp(p.d[d,], vu)
-        i = senders[d]
-          for (j in sample(node[-i], A-1)) {
-            probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
-            u[[d]][i, j] = multinom_vec(1, expconst(probij))-1
-          }
-        receiverpredict[[iter]] = rbind(receiverpredict[[iter]], u[[d]][i, ])
-    }
-  }
-  chain.final = list(senderpredict = senderpredict, receiverpredict = receiverpredict, 
-                     timepredict = timepredict)
-  return(chain.final)
-}
 
 #' @title IPTM.inference.GiR
 #' @description Iterate Markov Chain Monte Carlo (MCMC) algorithm for the interaction-partitioned topic model
@@ -1776,7 +1650,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
             zw.old = z[[d]][w]
             if (length(textlist.d) > 0) {
                 table.W[[zw.old]][textlist.d[w]] = table.W[[zw.old]][textlist.d[w]]-1
-                topicword.d = TopicWord2(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
+                topicword.d = TopicWord(K, z[[d]][-w], textlist.d, table.W, alpha, mvec, beta, V, w)
             } else {
                 topicword.d = TopicWord0(K, table.W, alpha, mvec, beta, V)
             }

@@ -133,16 +133,12 @@ WordInEqZ <- function(K, textlistd, tableW, beta, V) {
     .Call('_IPTM_WordInEqZ', PACKAGE = 'IPTM', K, textlistd, tableW, beta, V)
 }
 
-TopicWord2 <- function(K, z_d, textlistd, tableW, alpha, mvec, beta, V, w) {
-    .Call('_IPTM_TopicWord2', PACKAGE = 'IPTM', K, z_d, textlistd, tableW, alpha, mvec, beta, V, w)
+TopicWord <- function(K, z_d, textlistd, tableW, alpha, mvec, beta, V, w) {
+    .Call('_IPTM_TopicWord', PACKAGE = 'IPTM', K, z_d, textlistd, tableW, alpha, mvec, beta, V, w)
 }
 
 TopicWord0 <- function(K, tableW, alpha, mvec, beta, V) {
     .Call('_IPTM_TopicWord0', PACKAGE = 'IPTM', K, tableW, alpha, mvec, beta, V)
-}
-
-TopicWord <- function(K, z_d, textlistd, tableW, alpha, mvec, beta, V) {
-    .Call('_IPTM_TopicWord', PACKAGE = 'IPTM', K, z_d, textlistd, tableW, alpha, mvec, beta, V)
 }
 
 u_Gibbs <- function(u_di, lambda_di, delta, j) {

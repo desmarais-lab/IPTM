@@ -419,9 +419,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// TopicWord2
-NumericVector TopicWord2(int K, IntegerVector z_d, IntegerVector textlistd, List tableW, double alpha, NumericVector mvec, double beta, int V, int w);
-RcppExport SEXP _IPTM_TopicWord2(SEXP KSEXP, SEXP z_dSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP betaSEXP, SEXP VSEXP, SEXP wSEXP) {
+// TopicWord
+NumericVector TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List tableW, double alpha, NumericVector mvec, double beta, int V, int w);
+RcppExport SEXP _IPTM_TopicWord(SEXP KSEXP, SEXP z_dSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP betaSEXP, SEXP VSEXP, SEXP wSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -434,7 +434,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< int >::type V(VSEXP);
     Rcpp::traits::input_parameter< int >::type w(wSEXP);
-    rcpp_result_gen = Rcpp::wrap(TopicWord2(K, z_d, textlistd, tableW, alpha, mvec, beta, V, w));
+    rcpp_result_gen = Rcpp::wrap(TopicWord(K, z_d, textlistd, tableW, alpha, mvec, beta, V, w));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -451,24 +451,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< int >::type V(VSEXP);
     rcpp_result_gen = Rcpp::wrap(TopicWord0(K, tableW, alpha, mvec, beta, V));
-    return rcpp_result_gen;
-END_RCPP
-}
-// TopicWord
-NumericMatrix TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List tableW, double alpha, NumericVector mvec, double beta, int V);
-RcppExport SEXP _IPTM_TopicWord(SEXP KSEXP, SEXP z_dSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP betaSEXP, SEXP VSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type z_d(z_dSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type textlistd(textlistdSEXP);
-    Rcpp::traits::input_parameter< List >::type tableW(tableWSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mvec(mvecSEXP);
-    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< int >::type V(VSEXP);
-    rcpp_result_gen = Rcpp::wrap(TopicWord(K, z_d, textlistd, tableW, alpha, mvec, beta, V));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -602,9 +584,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_mu_mat", (DL_FUNC) &_IPTM_mu_mat, 3},
     {"_IPTM_TopicInEqZ", (DL_FUNC) &_IPTM_TopicInEqZ, 4},
     {"_IPTM_WordInEqZ", (DL_FUNC) &_IPTM_WordInEqZ, 5},
-    {"_IPTM_TopicWord2", (DL_FUNC) &_IPTM_TopicWord2, 9},
+    {"_IPTM_TopicWord", (DL_FUNC) &_IPTM_TopicWord, 9},
     {"_IPTM_TopicWord0", (DL_FUNC) &_IPTM_TopicWord0, 6},
-    {"_IPTM_TopicWord", (DL_FUNC) &_IPTM_TopicWord, 8},
     {"_IPTM_u_Gibbs", (DL_FUNC) &_IPTM_u_Gibbs, 4},
     {"_IPTM_expconst", (DL_FUNC) &_IPTM_expconst, 1},
     {"_IPTM_Edgepart", (DL_FUNC) &_IPTM_Edgepart, 3},
