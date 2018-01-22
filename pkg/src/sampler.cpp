@@ -657,9 +657,10 @@ NumericMatrix mu_mat(NumericMatrix p_d, List xi, IntegerVector edgetrim) {
 NumericVector TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, IntegerMatrix tableW,
                         NumericVector alphamvec, double beta, int V, int w){
     IntegerVector table_topics = tabulateC(z_d, K);
-    NumericVector num = log(tableW(_, textlistd[w-1]-1)+beta/V);
+    IntegerVector num = tableW(_, textlistd[w-1]-1);
+    NumericVector num2 = log(as<NumericVector>(num)+beta/V);
     NumericVector denom = log(rowSums(tableW)+beta);
-    NumericVector consts = num - denom + log(as<NumericVector>(table_topics) + alphamvec);
+    NumericVector consts = num2-denom+log(as<NumericVector>(table_topics) + alphamvec);
     return consts;
 }
 

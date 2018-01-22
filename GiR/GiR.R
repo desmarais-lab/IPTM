@@ -41,11 +41,11 @@ Outer = 1
 Inner = c(1,1,1)
 burn = c(0,0,0)
 thin = c(1,1,1)
-Outer = 3
-Inner = c(5500,5500,1100)
-burn = c(500,500, 100)
-thin = c(5, 5, 2)
-Schein <- Schein(500, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
+Outer = 100
+Inner = c(5,5,5)
+burn = c(0,0,0)
+thin = c(1, 1, 1)
+Schein <- Schein(1000, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, 
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
               netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.edge, base.text, generate_PP_plots = TRUE)
