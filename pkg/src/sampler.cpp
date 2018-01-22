@@ -80,11 +80,13 @@ arma::mat transpose (arma::mat x) {
 // **********************************************************//
 // [[Rcpp::export]]
 IntegerVector callRMultinom (NumericVector x) {
-	int n = x.size();
+    NumericVector x1 = x / sum(x);
+	int n = x1.size();
 	IntegerVector d(n);
-	R::rmultinom(1, x.begin(), n, d.begin());
+	R::rmultinom(1, x1.begin(), n, d.begin());
 	return d;
 }
+
 
 // **********************************************************//
 //                    Multinomial Sampler                    //
@@ -92,9 +94,8 @@ IntegerVector callRMultinom (NumericVector x) {
 // [[Rcpp::export]]
 IntegerVector multinom_vec (int nSample, NumericVector props) {
 	IntegerVector multinom_vec(nSample);
-	NumericVector props_adj = props/sum(props);
 	for (int i = 0; i < nSample; i++) {
-		IntegerVector multinom_i = callRMultinom(props_adj);
+		IntegerVector multinom_i = callRMultinom(props);
 		for (unsigned int j = 0; j < props.size(); j++) {
 			if (multinom_i[j] == 1) {
 				multinom_vec[i] = j+1;
@@ -188,57 +189,108 @@ NumericMatrix pdmat(List z, NumericVector l, int nIP) {
 //              Construct the history of interaction         //
 // **********************************************************//
 // [[Rcpp::export]]
-List History(List edge, NumericMatrix p_d, IntegerVector node, double when, double timeunit) {
+List History(List edge, NumericVector timestamps, NumericMatrix p_d, IntegerVector node, int d, double timeunit) {
   int nIP = p_d.ncol();
+  int A = node.size();
   List IPmat(nIP);
-  for (int IP = 1; IP < (nIP+1); IP++) {
+  for (int IP = 0; IP < nIP; IP++) {
   	List IPlist_IP(3);
   	for (unsigned int l = 0; l < 3; l++){
-  		NumericMatrix IP_l(node.size(), node.size());
+  		NumericMatrix IP_l(A, A);
   		IPlist_IP[l] = IP_l;
   	}
-  		IPmat[IP-1] = IPlist_IP;
+  		IPmat[IP] = IPlist_IP;
   }
-  NumericVector timestamps(edge.size());
-  for (unsigned int d = 0; d < edge.size(); d++) {
- 	  List document = edge[d];
- 	  timestamps[d] = Rcpp::as<double>(document[2]);
-  }
-  int iter = which_num(when, timestamps);
- 
-	if (iter > 0) {
-	  for (int i = 0; i < iter; i++) {
+    double time1 = timestamps[d-2]-384*timeunit;
+	double time2 = timestamps[d-2]-96*timeunit;
+    double time3 = timestamps[d-2]-24*timeunit;
+    
+	  for (int i = 0; i < (d-1); i++) {
 	    List document2 = edge[i];
 	    int sender = document2[0];
 	    IntegerVector receiver = document2[1];
-	    double time = Rcpp::as<double>(document2[2]);
-	    double time1 = when-384*timeunit;
-	  	double time2 = when-96*timeunit;
-		double time3 = when-24*timeunit;
+	    double time = timestamps[i];
 	    for (unsigned int r = 0; r < receiver.size(); r++){
 	       for (int IP = 0; IP < nIP; IP++) {
   			  List IPlist_IP = IPmat[IP];
-  			  if (time >= time3) {
-				    NumericMatrix IP_l = IPlist_IP[0];
-				    IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
-				    IPlist_IP[0] = IP_l;
-			    }
-  			  if (time >= time2 && time < time3) {
-  				  NumericMatrix IP_l = IPlist_IP[1];
-				    IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
-				    IPlist_IP[1] = IP_l;
-			    }  				
-			    if (time >= time1 && time < time2) {
-  			  	NumericMatrix IP_l = IPlist_IP[2];
-				    IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
-				    IPlist_IP[2] = IP_l;
-			    } 		
+               if (time >= time1 && time < time2) {
+                   NumericMatrix IP_l = IPlist_IP[2];
+                   IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
+                   IPlist_IP[2] = IP_l;
+               } else {
+                   if (time >= time2 && time < time3) {
+                       NumericMatrix IP_l = IPlist_IP[1];
+                       IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
+                       IPlist_IP[1] = IP_l;
+                   } else {
+                       if (time >= time3) {
+                       NumericMatrix IP_l = IPlist_IP[0];
+                       IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
+                       IPlist_IP[0] = IP_l;
+                       }
+                   }
+               }
 			    IPmat[IP] = IPlist_IP;
   			}
          }
 	  }
-  }
 	return IPmat;
+}
+
+
+// **********************************************************//
+//              Construct the history of interaction         //
+// **********************************************************//
+// [[Rcpp::export]]
+List History2(List edge, NumericMatrix p_d, IntegerVector node, double when, double timeunit) {
+    int nIP = p_d.ncol();
+    List IPmat(nIP);
+    for (int IP = 1; IP < (nIP+1); IP++) {
+        List IPlist_IP(3);
+        for (unsigned int l = 0; l < 3; l++){
+            NumericMatrix IP_l(node.size(), node.size());
+            IPlist_IP[l] = IP_l;
+        }
+        IPmat[IP-1] = IPlist_IP;
+    }
+    NumericVector timestamps(edge.size());
+    for (unsigned int d = 0; d < edge.size(); d++) {
+        List document = edge[d];
+        timestamps[d] = Rcpp::as<double>(document[2]);
+    }
+    int iter = which_num(when, timestamps);
+    
+        for (int i = 0; i < iter; i++) {
+            List document2 = edge[i];
+            int sender = document2[0];
+            IntegerVector receiver = document2[1];
+            double time = Rcpp::as<double>(document2[2]);
+            double time1 = when-384*timeunit;
+            double time2 = when-96*timeunit;
+            double time3 = when-24*timeunit;
+            for (unsigned int r = 0; r < receiver.size(); r++){
+                for (int IP = 0; IP < nIP; IP++) {
+                    List IPlist_IP = IPmat[IP];
+                    if (time >= time3) {
+                        NumericMatrix IP_l = IPlist_IP[0];
+                        IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
+                        IPlist_IP[0] = IP_l;
+                    }
+                    if (time >= time2 && time < time3) {
+                        NumericMatrix IP_l = IPlist_IP[1];
+                        IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
+                        IPlist_IP[1] = IP_l;
+                    }  				
+                    if (time >= time1 && time < time2) {
+                        NumericMatrix IP_l = IPlist_IP[2];
+                        IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
+                        IPlist_IP[2] = IP_l;
+                    } 		
+                    IPmat[IP] = IPlist_IP;
+                }
+            }
+    }
+    return IPmat;
 }
 
 // **********************************************************//
@@ -247,32 +299,31 @@ List History(List edge, NumericMatrix p_d, IntegerVector node, double when, doub
 // [[Rcpp::export]]
 List Degree(List history, IntegerVector node, int sender) {
   int nIP = history.size();
+  int A = node.size();
   List IPmat(nIP);
  
   for (int IP = 0; IP < nIP; IP++) {
-  	 NumericMatrix degreemat_IP(node.size(), 6);
+  	 NumericMatrix degreemat_IP(A, 6);
   	 List historyIP = history[IP];
      NumericVector degree(6); 
 	 
-   for (unsigned int b = 0; b < node.size(); b++) {
-    int receiver = node[b];
+   for (unsigned int receiver = 0; receiver < A; receiver++) {
     for (unsigned int l = 0; l < 3; l++) {
     	NumericMatrix historyIP_l = historyIP[l];
-    double send = historyIP_l(sender-1, receiver-1);
+    double send = historyIP_l(sender, receiver);
     	
-   	NumericVector indegree(node.size());
-    	for (unsigned int h = 0; h < node.size(); h++) {
-     	 int third = node[h];
-     	double htor = historyIP_l(third-1, receiver-1);
+   	NumericVector indegree(A);
+    	for (unsigned int h = 0; h < A; h++) {
+     	double htor = historyIP_l(h, receiver);
     	 indegree[h] = htor;
      	}
     	degree[l+3] = sum(indegree);
     	degree[l] = degree[l]+send;
       }
-    degreemat_IP(b,_) = degree;
+    degreemat_IP(receiver,_) = degree;
     }
    for (unsigned int l2 = 0; l2 < 3; l2++) {
-    degreemat_IP(_, l2) = rep(max(degreemat_IP(_,l2)), node.size());
+    degreemat_IP(_, l2) = rep(max(degreemat_IP(_,l2)), A);
    }
   IPmat[IP] = degreemat_IP;
   }
@@ -285,20 +336,20 @@ List Degree(List history, IntegerVector node, int sender) {
 // [[Rcpp::export]]
 List Dyadic(List history, IntegerVector node, int sender) {
   int nIP = history.size();
+  int A = node.size();
   List IPmat(nIP);  
   
   for (int IP = 0; IP < nIP; IP++) {
-  	 NumericMatrix dyadicmat_IP(node.size(), 6);
+  	 NumericMatrix dyadicmat_IP(A, 6);
   	 List historyIP = history[IP];
      NumericVector dyadic(6); 
-     for (unsigned int b = 0; b < node.size(); b++) {
-    	int receiver = node[b];
+     for (unsigned int receiver = 0; receiver < A; receiver++) {
         for (unsigned int l = 0; l < 3; l++) {
     		NumericMatrix historyIP_l = historyIP[l];
-    		dyadic[l] = historyIP_l(sender-1, receiver-1);
-    		dyadic[l+3] = historyIP_l(receiver-1, sender-1);
+    		dyadic[l] = historyIP_l(sender, receiver);
+    		dyadic[l+3] = historyIP_l(receiver, sender);
     	}
-      dyadicmat_IP(b, _) = dyadic;
+      dyadicmat_IP(receiver, _) = dyadic;
     }
     IPmat[IP] = dyadicmat_IP;
   } 
@@ -311,33 +362,32 @@ List Dyadic(List history, IntegerVector node, int sender) {
 // [[Rcpp::export]]
 List Triadic(List history, IntegerVector node, int sender) {
    int nIP = history.size();
+   int A = node.size();
    List IPmat(nIP);
    for (int IP = 0; IP < nIP; IP++) {
       NumericMatrix triadmat_IP(node.size(), 36);
   	  List historyIP = history[IP];
   	  NumericVector triadic(36); 
        
-        for (unsigned int b = 0; b < node.size(); b++) {
-        int receiver = node[b];
-        NumericVector twosend(node.size());
-        NumericVector tworeceive(node.size());
-        NumericVector sibling(node.size());
-        NumericVector cosibling(node.size()); 
+        for (unsigned int receiver = 0; receiver < A; receiver++) {
+        NumericVector twosend(A);
+        NumericVector tworeceive(A);
+        NumericVector sibling(A);
+        NumericVector cosibling(A); 
         int iter = 0;
         for (unsigned int l = 0; l < 3; l++) {
           for (unsigned int m = 0; m < 3; m++){
             NumericMatrix historyIP_l = historyIP[l];
             NumericMatrix historyIP_m = historyIP[m];
-       	    for (unsigned int h = 0; h < node.size(); h++) {
-     	        int third = node[h];	
-     	       double stoh = historyIP_l(sender-1, third-1);
-      	       double htos = historyIP_l(third-1, sender-1); 
-     	       double rtoh = historyIP_m(receiver-1, third-1);
-      	       double htor = historyIP_m(third-1, receiver-1); 
-      	        twosend[h] = stoh*htor;
-      	        tworeceive[h] = htos*rtoh;
-      	        sibling[h] = htos*htor;
-      	        cosibling[h] = stoh*rtoh;
+       	    for (unsigned int third = 0; third < A; third++) {
+     	       double stoh = historyIP_l(sender, third);
+      	       double htos = historyIP_l(third, sender); 
+     	       double rtoh = historyIP_m(receiver, third);
+      	       double htor = historyIP_m(third, receiver); 
+      	        twosend[third] = stoh*htor;
+      	        tworeceive[third] = htos*rtoh;
+      	        sibling[third] = htos*htor;
+      	        cosibling[third] = stoh*rtoh;
        	    }
        	    triadic[iter] = sum(twosend);
        	    triadic[iter+9] = sum(tworeceive);
@@ -346,43 +396,21 @@ List Triadic(List history, IntegerVector node, int sender) {
             iter = iter+1;
           }
         }
-        triadmat_IP(b,_) = triadic;
+        triadmat_IP(receiver,_) = triadic;
       }
-      IPmat[IP] = triadmat_IP;
-    }
-  return IPmat;
-}
-
-// **********************************************************//
-//        Calculate (reduced to 3) Triadic statistic         //
-// **********************************************************//
-// [[Rcpp::export]]
-List Triadic_reduced(List triadic) {
-   int nIP = triadic.size();
-   List IPmat(nIP);
-   for (int IP = 0; IP < nIP; IP++) {
-   	NumericMatrix historyIP = triadic[IP];
-   	NumericMatrix triadmat_IP(historyIP.nrow(), 12);
-   	for (int i = 0; i < historyIP.nrow(); i++) {
-   	  triadmat_IP(i, 0) = historyIP(i, 0);
-	    triadmat_IP(i, 1) = historyIP(i, 1)+historyIP(i, 3)+historyIP(i, 4);
-	    triadmat_IP(i, 2) = historyIP(i, 2)+historyIP(i, 5)+historyIP(i, 6)+
-	                        historyIP(i, 7)+historyIP(i, 8);
-   	  triadmat_IP(i, 3) = historyIP(i, 9);
-	    triadmat_IP(i, 4) = historyIP(i, 10)+historyIP(i, 12)+historyIP(i, 13);
-	    triadmat_IP(i, 5) = historyIP(i, 11)+historyIP(i, 14)+historyIP(i, 15)+
-	                        historyIP(i, 16)+historyIP(i, 17);
-   	  triadmat_IP(i, 6) = historyIP(i, 18);
-	    triadmat_IP(i, 7) = historyIP(i, 19)+historyIP(i, 21)+historyIP(i, 22);
-	    triadmat_IP(i, 8) = historyIP(i, 20)+historyIP(i, 23)+historyIP(i, 24)+
-	                        historyIP(i, 25)+historyIP(i, 26);
-   	  triadmat_IP(i, 9) = historyIP(i, 27);
-	    triadmat_IP(i, 10) = historyIP(i, 28)+historyIP(i, 30)+historyIP(i, 31);
-	    triadmat_IP(i, 11) = historyIP(i, 29)+historyIP(i, 32)+historyIP(i, 33)+
-	                         historyIP(i, 34)+historyIP(i, 35);
-   	}
-    IPmat[IP] = triadmat_IP/10;
-  }
+      
+      NumericMatrix triadmat_IP2(A, 12);
+   	  for (int t = 0; t < 4; t++) {
+		int add = 9*t;
+		for (int i = 0; i < A; i++) {
+   	  		triadmat_IP2(i, 3*t+0) = triadmat_IP(i, add+0);
+	    	triadmat_IP2(i, 3*t+1) = triadmat_IP(i, add+1)+triadmat_IP(i, add+3)+triadmat_IP(i, add+4);
+	    	triadmat_IP2(i, 3*t+2) = triadmat_IP(i, add+2)+triadmat_IP(i, add+5)+triadmat_IP(i, add+6)+
+	                        triadmat_IP(i, add+7)+triadmat_IP(i, add+8);
+	    }                    
+	}
+      IPmat[IP] = triadmat_IP2/10;
+ }
   return IPmat;
 }
 
@@ -404,44 +432,31 @@ List Netstats_cpp(List historyIP, IntegerVector node, IntegerVector netstat) {
 		}
 		int iter = 0;
 		if (netstat[0] == 1) {
-			List degree = Degree(historyIP, node, a+1);
+			List degree = Degree(historyIP, node, a);
 			for (int IP = 0; IP < nIP; IP++){
 				arma::mat aoutIP = aout[IP];
 				arma::mat degreeIP = degree[IP];
-				int k = 0;
-				for (int c = iter; c < iter+6; c++) {
-			    	aoutIP.col(c) = degreeIP.col(k);
-			    	k += 1;
-			    }
+				aoutIP.cols(iter, iter+5) = degreeIP;
 			    aout[IP] = aoutIP;
 			}
 			iter += 6;
 		}
 		if (netstat[1] == 1) {
-			List dyadic = Dyadic(historyIP, node, a+1);
+			List dyadic = Dyadic(historyIP, node, a);
 			for (int IP = 0; IP < nIP; IP++){
 				arma::mat aoutIP = aout[IP];
 				arma::mat dyadicIP = dyadic[IP];
-				int k = 0;
-				for (int c = iter; c < iter+6; c++) {
-			    	aoutIP.col(c) = dyadicIP.col(k);
-			    	k += 1;
-			    }
+				aoutIP.cols(iter, iter+5) = dyadicIP;
 			    aout[IP] = aoutIP;
 			}
 			iter += 6;			
 		}	
 		if (netstat[2] == 1) {
-			List triadic0 = Triadic(historyIP, node, a+1);
-			List triadic = Triadic_reduced(triadic0);
+			List triadic = Triadic(historyIP, node, a);
 			for (int IP = 0; IP < nIP; IP++){
 				arma::mat aoutIP = aout[IP];
 				arma::mat triadicIP = triadic[IP];
-				int k = 0;
-				for (int c = iter; c < iter+12; c++) {
-			    	aoutIP.col(c) = triadicIP.col(k);
-			    	k += 1;
-			    }
+				aoutIP.cols(iter, iter+11) = triadicIP;
 			    aout[IP] = aoutIP;
 			}		
 		}
@@ -636,59 +651,15 @@ NumericMatrix mu_mat(NumericMatrix p_d, List xi, IntegerVector edgetrim) {
 
 
 // **********************************************************//
-//              Topic contribution in update of Z            //
-// **********************************************************//
-// [[Rcpp::export]]
-NumericVector TopicInEqZ(int K, IntegerVector z_d,
-                       double alpha, NumericVector mvec) {
-	IntegerVector table_topics = tabulateC(z_d, K);
-	NumericVector table_topic_adj(K);
-	NumericVector alphamvec(K);
-	for (int i = 0; i < K; i++) {
-		table_topic_adj[i] = table_topics[i];
-		alphamvec[i] = alpha*mvec[i];
-	} 
-	return log(table_topic_adj+alphamvec);
-}
-
-
-// **********************************************************//
-//               Word contribution in update of Z            //
-// **********************************************************//
-// [[Rcpp::export]]
-NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW, 
-                       double beta, int V){
-  NumericMatrix consts(textlistd.size(), K);
-	for (int k = 0; k < K; k++){
-		NumericVector tablek = tableW[k];
-		NumericVector num(textlistd.size());
-		NumericVector denom(textlistd.size());
-		for (unsigned int w = 0; w < textlistd.size(); w++){
-			num[w] = log(tablek[textlistd[w]-1]+beta/V);
-	 		denom[w] = log(sum(tablek)+beta);
-		}
-		consts(_,k) = num-denom;
-	}
-	return consts;
-}
-
-
-// **********************************************************//
 //        Topic and Word contribution in update of Z         //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericVector TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List tableW,
-                        double alpha, NumericVector mvec, double beta, int V, int w){
+NumericVector TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, IntegerMatrix tableW,
+                        NumericVector alphamvec, double beta, int V, int w){
     IntegerVector table_topics = tabulateC(z_d, K);
-    NumericVector alphamvec(K);
-    NumericVector consts(K);
-    for (int k = 0; k < K; k++){
-        alphamvec[k] = alpha*mvec[k];
-        NumericVector tablek = tableW[k];
-        double num = log(tablek[textlistd[w-1]-1]+beta/V);
-        double denom = log(sum(tablek)+beta);
-        consts = num-denom +log(table_topics[k]+alphamvec[k]);
-    }
+    NumericVector num = log(tableW(_, textlistd[w-1]-1)+beta/V);
+    NumericVector denom = log(rowSums(tableW)+beta);
+    NumericVector consts = num - denom + log(as<NumericVector>(table_topics) + alphamvec);
     return consts;
 }
 
@@ -696,20 +667,12 @@ NumericVector TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List 
 //        Topic and Word contribution in update of Z         //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericVector TopicWord0(int K, List tableW,
-                         double alpha, NumericVector mvec, double beta, int V){
-    NumericVector alphamvec(K);
-    NumericVector consts(K);
-    for (int k = 0; k < K; k++){
-        alphamvec[k] = alpha*mvec[k];
-        NumericVector tablek = tableW[k];
-        double num = log(beta/V);
-        double denom = log(sum(tablek)+beta);
-        consts = num-denom+log(alphamvec[k]);
-    }
+NumericVector TopicWord0(int K, IntegerMatrix tableW, NumericVector alphamvec, double beta, int V){
+    double num = log(beta/V);
+    NumericVector denom = log(rowSums(tableW) + beta);
+    NumericVector consts = num - denom + log(alphamvec);
     return consts;
 }
-
 
 // **********************************************************//
 //         Resampling the augmented data J_a (Sec 3.1)       //
@@ -721,9 +684,7 @@ arma::vec u_Gibbs(arma::vec u_di, arma::vec lambda_di, double delta, int j) {
 	u_di0[j-1] = 0;
 	double sumu0 = sum(u_di0);
 	prob[1] = delta+lambda_di[j-1];
-	if (sumu0 > 0) {
-		prob[0] = 0;
-	} else {
+	if (sumu0 == 0) {
 		prob[0] = -arma::datum::inf;
 	}
 	return prob;
@@ -799,6 +760,7 @@ double Edgepartsum(List X, NumericVector p_d, NumericMatrix B, arma::mat u, doub
     return edgesum;
 }
 
+
 // **********************************************************//
 //              Likelihood evaluation of Timepart            //
 // **********************************************************//
@@ -843,5 +805,230 @@ double Timepartsum(NumericMatrix mumat, double sigma_tau, IntegerVector senders,
 		timesum += Timepart(mumat(it2,_), sigma_tau, a_d, timeinc[it2]);
 	}
     return timesum;
+}
+
+// **********************************************************//
+//                    Multinomial Sampler                    //
+// **********************************************************//
+// [[Rcpp::export]]
+int lmultinom (NumericVector lprops) {
+    NumericVector props = expconst(lprops);
+    IntegerVector samp = callRMultinom(props);
+    for (unsigned int j = 0; j < props.size(); j++) {
+        if (samp[j] == 1) {
+            return j+1;
+        }
+    }
+    return 1;
+}
+
+// **********************************************************//
+//                    Cache time intervals                   //
+// **********************************************************//
+// [[Rcpp::export]]
+List timefinder (NumericVector timestamps, IntegerVector edgetrim, double timeunit) {
+    int D = timestamps.size();
+    List out(D);
+    for (unsigned int d = min(edgetrim)-1; d < D; d++) {
+		double time0 = timestamps[d-1];
+		double time1 = time0-24*timeunit;
+		double time2 = time0-96*timeunit;
+		double time3 = time0-384*timeunit;
+		int id1 = which_num(time1, timestamps);
+		int id2 = which_num(time2, timestamps);
+		int id3 = which_num(time3, timestamps);
+		arma::mat intervals(3, 2);
+		intervals(0,0) = id1;
+		intervals(0,1) = d;
+		intervals(1,0) = id2;
+		intervals(1,1) = id1-1;
+		intervals(2,0) = id3;
+		intervals(2,1) = id2-1;
+		out[d] = intervals;		
+	}
+    return out;
+}
+
+// **********************************************************//
+//                 Use Array in Rcpp                         //
+// **********************************************************//
+// [[Rcpp::export]]
+arma::cube histcache (int A, arma::vec senders, List edge) {
+	int D = edge.size();
+	arma::cube Array = arma::zeros<arma::cube>(A, A, D);
+	for (unsigned int d = 0; d < D; d++) {
+		List edged = edge[d];
+	    int a = edged[0];
+	    IntegerVector receiver = edged[1];
+	   	for (unsigned int r = 0; r < receiver.size(); r++) {
+	   		Array(a-1, receiver[r]-1, d) = 1;
+	   	}	   					
+	}	
+	return Array;
+}
+
+// **********************************************************//
+//                  Calculate Dyadic statistics              //
+// **********************************************************//
+// [[Rcpp::export]]
+arma::cube dyadicstat (arma::cube cache, arma::mat intervals_d, int a, int A, arma::mat pd) {
+	int nIP = pd.n_cols;
+	arma::cube out = arma::zeros<arma::cube>(A, nIP, 6);
+	for (unsigned int i = 0; i < 3; i++) {
+		int mins = intervals_d(i, 0)-1;
+		int maxs = intervals_d(i, 1)-1;
+		arma::mat pdnew = pd.rows(mins, maxs);
+		for (unsigned int r = 0; r < A; r++) {
+			arma::colvec docsar = cache(arma::span(a), arma::span(r), arma::span(mins, maxs));
+			arma::colvec docsra = cache(arma::span(r), arma::span(a), arma::span(mins, maxs));
+			arma::rowvec sendr = docsar.t() * pdnew;
+			arma::rowvec receiver = docsra.t() * pdnew;
+			for (int IP = 0; IP < nIP; IP++) {
+				out(r, IP, i) = sendr[IP];
+				out(r, IP, i+3) = receiver[IP];
+			}
+		}		
+	}	
+	return out;
+}
+
+// **********************************************************//
+//                  Calculate Dyadic statistics              //
+// **********************************************************//
+// [[Rcpp::export]]
+arma::cube degreestat (arma::cube cache, arma::mat intervals_d, int a, int A, arma::mat pd) {
+	int nIP = pd.n_cols;
+	arma::cube out = arma::zeros<arma::cube>(A, nIP, 6);
+	for (unsigned int i = 0; i < 3; i++) {
+		int mins = intervals_d(i, 0)-1;
+		int maxs = intervals_d(i, 1)-1;
+		arma::rowvec sendr = arma::zeros<arma::rowvec>(nIP);
+		arma::mat receiver = arma::zeros<arma::mat>(A, nIP);
+		arma::mat pdnew = pd.rows(mins, maxs);
+		for (unsigned int r = 0; r < A; r++) {
+			arma::colvec docsar = cache(arma::span(a), arma::span(r), arma::span(mins, maxs));
+			sendr += docsar.t() * pdnew;
+			for (unsigned int h = 0; h < A; h++) {
+				arma::colvec docsra = cache(arma::span(h), arma::span(r), arma::span(mins, maxs));
+				receiver.row(r) += docsra.t() * pdnew;	
+				}	
+		}
+		for (int IP = 0; IP < nIP; IP++) {
+			for (unsigned int r = 0; r < A; r++) {
+				out(r, IP, i) = sendr[IP];
+				out(r, IP, i+3) = receiver(r,IP);
+			}
+		}		
+	}	
+	return out;
+}
+
+// **********************************************************//
+//                  Calculate Triadic statistics              //
+// **********************************************************//
+// [[Rcpp::export]]
+arma::cube triadicstat (arma::cube cache, arma::mat intervals_d, int a, int A, arma::mat pd) {
+	int nIP = pd.n_cols;
+	arma::cube out = arma::zeros<arma::cube>(A, nIP, 36);
+	int it = 0;
+	for (unsigned int i = 0; i < 3; i++) {
+		for (unsigned int j = 0; j < 3; j++) {
+		int mins1 = intervals_d(i, 0)-1;
+		int maxs1 = intervals_d(i, 1)-1;
+		int mins2 = intervals_d(j, 0)-1;
+		int maxs2 = intervals_d(j, 1)-1;
+		arma::mat tsend = arma::zeros<arma::mat>(A, nIP);
+		arma::mat treceive = arma::zeros<arma::mat>(A, nIP);
+		arma::mat sibling = arma::zeros<arma::mat>(A, nIP);
+		arma::mat cosibling = arma::zeros<arma::mat>(A, nIP);
+		arma::mat pdnew1 = pd.rows(mins1, maxs1);
+		arma::mat pdnew2 = pd.rows(mins2, maxs2);
+		for (unsigned int r = 0; r < A; r++) {
+			for (unsigned int h = 0; h < A; h++) {
+				arma::colvec docsah = cache(arma::span(a), arma::span(h), arma::span(mins1, maxs1));
+				arma::colvec docsrh = cache(arma::span(r), arma::span(h), arma::span(mins2, maxs2));
+				arma::colvec docsha = cache(arma::span(h), arma::span(a), arma::span(mins1, maxs1));
+				arma::colvec docshr = cache(arma::span(h), arma::span(r), arma::span(mins2, maxs2));
+				tsend.row(r) += (docsah.t() * pdnew1) % (docshr.t() * pdnew2);				
+				treceive.row(r) += (docsha.t() * pdnew1) % (docsrh.t() * pdnew2);	
+				sibling.row(r) += (docsha.t() * pdnew1) % (docshr.t() * pdnew2);				
+				cosibling.row(r) += (docsah.t() * pdnew1) % (docsrh.t() * pdnew2);	
+				}	
+		}
+		for (int IP = 0; IP < nIP; IP++) {
+			for (unsigned int r = 0; r < A; r++) {
+				out(r, IP, it) = tsend(r, IP);
+				out(r, IP, it+9) = treceive(r,IP);
+				out(r, IP, it+18) = sibling(r, IP);
+				out(r, IP, it+27) = cosibling(r,IP);
+			}
+		}
+		it +=1;		
+	}
+	}
+	arma::cube out2 = arma::zeros<arma::cube>(A, nIP, 12);
+	for (int t = 0; t < 4; t++) {
+		int add = 9*t;
+	for (int IP = 0; IP < nIP; IP++) {
+		for (unsigned int r = 0; r < A; r++) {
+			out2(r, IP, 3*t+0) = out(r, IP, add+0);
+			out2(r, IP, 3*t+1) = out(r, IP, add+1) + out(r, IP, add+3)+ out(r, IP, add+4);
+			out2(r, IP, 3*t+2) = out(r, IP, add+2) + out(r, IP, add+5)+ out(r, IP, add+6)+ out(r, IP, add+7)+ out(r, IP, add+8);
+			}
+		}
+	}		
+	return out2 / 10;
+}
+
+
+
+
+// **********************************************************//
+//                    Network statistics                     //
+// **********************************************************//
+// [[Rcpp::export]]
+List Netstats(arma::cube cache, arma::mat intervals_d, int A, IntegerVector netstat, arma::mat pd) {
+	List out(A);
+	int P = 3*(2*netstat[0]+2*netstat[1]+4*netstat[2]);
+	int nIP = pd.n_cols;
+	for (int a = 0; a < A; a++) {
+		List aout(nIP);
+		for (int IP = 0; IP < nIP; IP++) {
+		arma::mat netstatIP(A, P);
+		aout[IP] = netstatIP;
+		}
+	int iter = 0;	
+	if (netstat[0] == 1) {
+		arma::cube degree = degreestat(cache, intervals_d, a, A, pd);
+			for (int IP = 0; IP < nIP; IP++){
+				arma::mat aoutIP = aout[IP];
+				arma::vec deg = degree(arma::span::all, arma::span(IP), arma::span::all);
+				aoutIP.cols(iter, iter+5) = deg;
+			    aout[IP] = aoutIP;
+			}
+			iter += 6;
+	}	
+	if (netstat[1] == 1) {
+		arma::cube dyadic = dyadicstat(cache, intervals_d, a, A, pd);
+		for (int IP = 0; IP < nIP; IP++){
+				arma::mat aoutIP = aout[IP];
+				arma::vec dyad = dyadic(arma::span::all, arma::span(IP), arma::span::all);
+				aoutIP.cols(iter, iter+5) = dyad;
+			    aout[IP] = aoutIP;
+			}
+			iter += 6;		
+	}	
+	if (netstat[2] == 1) {
+		arma::cube triadic = triadicstat(cache, intervals_d, a, A, pd);
+		for (int IP = 0; IP < nIP; IP++){
+			arma::mat aoutIP = aout[IP];
+			arma::vec triad = triadic(arma::span::all, arma::span(IP), arma::span::all);
+			aoutIP.cols(iter, iter+11) = triad;
+			aout[IP] = aoutIP;
+		}
+	}
+	out[a] = aout;
+	}
+	return out;
 }
 

@@ -53,8 +53,12 @@ pdmat <- function(z, l, nIP) {
     .Call('_IPTM_pdmat', PACKAGE = 'IPTM', z, l, nIP)
 }
 
-History <- function(edge, p_d, node, when, timeunit) {
-    .Call('_IPTM_History', PACKAGE = 'IPTM', edge, p_d, node, when, timeunit)
+History <- function(edge, timestamps, p_d, node, d, timeunit) {
+    .Call('_IPTM_History', PACKAGE = 'IPTM', edge, timestamps, p_d, node, d, timeunit)
+}
+
+History2 <- function(edge, p_d, node, when, timeunit) {
+    .Call('_IPTM_History2', PACKAGE = 'IPTM', edge, p_d, node, when, timeunit)
 }
 
 Degree <- function(history, node, sender) {
@@ -67,10 +71,6 @@ Dyadic <- function(history, node, sender) {
 
 Triadic <- function(history, node, sender) {
     .Call('_IPTM_Triadic', PACKAGE = 'IPTM', history, node, sender)
-}
-
-Triadic_reduced <- function(triadic) {
-    .Call('_IPTM_Triadic_reduced', PACKAGE = 'IPTM', triadic)
 }
 
 Netstats_cpp <- function(historyIP, node, netstat) {
@@ -125,20 +125,12 @@ mu_mat <- function(p_d, xi, edgetrim) {
     .Call('_IPTM_mu_mat', PACKAGE = 'IPTM', p_d, xi, edgetrim)
 }
 
-TopicInEqZ <- function(K, z_d, alpha, mvec) {
-    .Call('_IPTM_TopicInEqZ', PACKAGE = 'IPTM', K, z_d, alpha, mvec)
+TopicWord <- function(K, z_d, textlistd, tableW, alphamvec, beta, V, w) {
+    .Call('_IPTM_TopicWord', PACKAGE = 'IPTM', K, z_d, textlistd, tableW, alphamvec, beta, V, w)
 }
 
-WordInEqZ <- function(K, textlistd, tableW, beta, V) {
-    .Call('_IPTM_WordInEqZ', PACKAGE = 'IPTM', K, textlistd, tableW, beta, V)
-}
-
-TopicWord <- function(K, z_d, textlistd, tableW, alpha, mvec, beta, V, w) {
-    .Call('_IPTM_TopicWord', PACKAGE = 'IPTM', K, z_d, textlistd, tableW, alpha, mvec, beta, V, w)
-}
-
-TopicWord0 <- function(K, tableW, alpha, mvec, beta, V) {
-    .Call('_IPTM_TopicWord0', PACKAGE = 'IPTM', K, tableW, alpha, mvec, beta, V)
+TopicWord0 <- function(K, tableW, alphamvec, beta, V) {
+    .Call('_IPTM_TopicWord0', PACKAGE = 'IPTM', K, tableW, alphamvec, beta, V)
 }
 
 u_Gibbs <- function(u_di, lambda_di, delta, j) {
@@ -167,5 +159,33 @@ Timepartindiv <- function(mu, sigma_tau, t_d) {
 
 Timepartsum <- function(mumat, sigma_tau, senders, timeinc, edgetrim) {
     .Call('_IPTM_Timepartsum', PACKAGE = 'IPTM', mumat, sigma_tau, senders, timeinc, edgetrim)
+}
+
+lmultinom <- function(lprops) {
+    .Call('_IPTM_lmultinom', PACKAGE = 'IPTM', lprops)
+}
+
+timefinder <- function(timestamps, edgetrim, timeunit) {
+    .Call('_IPTM_timefinder', PACKAGE = 'IPTM', timestamps, edgetrim, timeunit)
+}
+
+histcache <- function(A, senders, edge) {
+    .Call('_IPTM_histcache', PACKAGE = 'IPTM', A, senders, edge)
+}
+
+dyadicstat <- function(cache, intervals_d, a, A, pd) {
+    .Call('_IPTM_dyadicstat', PACKAGE = 'IPTM', cache, intervals_d, a, A, pd)
+}
+
+degreestat <- function(cache, intervals_d, a, A, pd) {
+    .Call('_IPTM_degreestat', PACKAGE = 'IPTM', cache, intervals_d, a, A, pd)
+}
+
+triadicstat <- function(cache, intervals_d, a, A, pd) {
+    .Call('_IPTM_triadicstat', PACKAGE = 'IPTM', cache, intervals_d, a, A, pd)
+}
+
+Netstats <- function(cache, intervals_d, A, netstat, pd) {
+    .Call('_IPTM_Netstats', PACKAGE = 'IPTM', cache, intervals_d, A, netstat, pd)
 }
 

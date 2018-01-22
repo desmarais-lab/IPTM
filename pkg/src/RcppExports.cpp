@@ -165,8 +165,24 @@ BEGIN_RCPP
 END_RCPP
 }
 // History
-List History(List edge, NumericMatrix p_d, IntegerVector node, double when, double timeunit);
-RcppExport SEXP _IPTM_History(SEXP edgeSEXP, SEXP p_dSEXP, SEXP nodeSEXP, SEXP whenSEXP, SEXP timeunitSEXP) {
+List History(List edge, NumericVector timestamps, NumericMatrix p_d, IntegerVector node, int d, double timeunit);
+RcppExport SEXP _IPTM_History(SEXP edgeSEXP, SEXP timestampsSEXP, SEXP p_dSEXP, SEXP nodeSEXP, SEXP dSEXP, SEXP timeunitSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type edge(edgeSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type timestamps(timestampsSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type p_d(p_dSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< double >::type timeunit(timeunitSEXP);
+    rcpp_result_gen = Rcpp::wrap(History(edge, timestamps, p_d, node, d, timeunit));
+    return rcpp_result_gen;
+END_RCPP
+}
+// History2
+List History2(List edge, NumericMatrix p_d, IntegerVector node, double when, double timeunit);
+RcppExport SEXP _IPTM_History2(SEXP edgeSEXP, SEXP p_dSEXP, SEXP nodeSEXP, SEXP whenSEXP, SEXP timeunitSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -175,7 +191,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
     Rcpp::traits::input_parameter< double >::type when(whenSEXP);
     Rcpp::traits::input_parameter< double >::type timeunit(timeunitSEXP);
-    rcpp_result_gen = Rcpp::wrap(History(edge, p_d, node, when, timeunit));
+    rcpp_result_gen = Rcpp::wrap(History2(edge, p_d, node, when, timeunit));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -215,17 +231,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
     Rcpp::traits::input_parameter< int >::type sender(senderSEXP);
     rcpp_result_gen = Rcpp::wrap(Triadic(history, node, sender));
-    return rcpp_result_gen;
-END_RCPP
-}
-// Triadic_reduced
-List Triadic_reduced(List triadic);
-RcppExport SEXP _IPTM_Triadic_reduced(SEXP triadicSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type triadic(triadicSEXP);
-    rcpp_result_gen = Rcpp::wrap(Triadic_reduced(triadic));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -390,67 +395,36 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// TopicInEqZ
-NumericVector TopicInEqZ(int K, IntegerVector z_d, double alpha, NumericVector mvec);
-RcppExport SEXP _IPTM_TopicInEqZ(SEXP KSEXP, SEXP z_dSEXP, SEXP alphaSEXP, SEXP mvecSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type z_d(z_dSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mvec(mvecSEXP);
-    rcpp_result_gen = Rcpp::wrap(TopicInEqZ(K, z_d, alpha, mvec));
-    return rcpp_result_gen;
-END_RCPP
-}
-// WordInEqZ
-NumericMatrix WordInEqZ(int K, IntegerVector textlistd, List tableW, double beta, int V);
-RcppExport SEXP _IPTM_WordInEqZ(SEXP KSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP betaSEXP, SEXP VSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type textlistd(textlistdSEXP);
-    Rcpp::traits::input_parameter< List >::type tableW(tableWSEXP);
-    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< int >::type V(VSEXP);
-    rcpp_result_gen = Rcpp::wrap(WordInEqZ(K, textlistd, tableW, beta, V));
-    return rcpp_result_gen;
-END_RCPP
-}
 // TopicWord
-NumericVector TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, List tableW, double alpha, NumericVector mvec, double beta, int V, int w);
-RcppExport SEXP _IPTM_TopicWord(SEXP KSEXP, SEXP z_dSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP betaSEXP, SEXP VSEXP, SEXP wSEXP) {
+NumericVector TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, IntegerMatrix tableW, NumericVector alphamvec, double beta, int V, int w);
+RcppExport SEXP _IPTM_TopicWord(SEXP KSEXP, SEXP z_dSEXP, SEXP textlistdSEXP, SEXP tableWSEXP, SEXP alphamvecSEXP, SEXP betaSEXP, SEXP VSEXP, SEXP wSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type K(KSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type z_d(z_dSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type textlistd(textlistdSEXP);
-    Rcpp::traits::input_parameter< List >::type tableW(tableWSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mvec(mvecSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type tableW(tableWSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type alphamvec(alphamvecSEXP);
     Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< int >::type V(VSEXP);
     Rcpp::traits::input_parameter< int >::type w(wSEXP);
-    rcpp_result_gen = Rcpp::wrap(TopicWord(K, z_d, textlistd, tableW, alpha, mvec, beta, V, w));
+    rcpp_result_gen = Rcpp::wrap(TopicWord(K, z_d, textlistd, tableW, alphamvec, beta, V, w));
     return rcpp_result_gen;
 END_RCPP
 }
 // TopicWord0
-NumericVector TopicWord0(int K, List tableW, double alpha, NumericVector mvec, double beta, int V);
-RcppExport SEXP _IPTM_TopicWord0(SEXP KSEXP, SEXP tableWSEXP, SEXP alphaSEXP, SEXP mvecSEXP, SEXP betaSEXP, SEXP VSEXP) {
+NumericVector TopicWord0(int K, IntegerMatrix tableW, NumericVector alphamvec, double beta, int V);
+RcppExport SEXP _IPTM_TopicWord0(SEXP KSEXP, SEXP tableWSEXP, SEXP alphamvecSEXP, SEXP betaSEXP, SEXP VSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< List >::type tableW(tableWSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mvec(mvecSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type tableW(tableWSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type alphamvec(alphamvecSEXP);
     Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< int >::type V(VSEXP);
-    rcpp_result_gen = Rcpp::wrap(TopicWord0(K, tableW, alpha, mvec, beta, V));
+    rcpp_result_gen = Rcpp::wrap(TopicWord0(K, tableW, alphamvec, beta, V));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -549,6 +523,103 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// lmultinom
+int lmultinom(NumericVector lprops);
+RcppExport SEXP _IPTM_lmultinom(SEXP lpropsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type lprops(lpropsSEXP);
+    rcpp_result_gen = Rcpp::wrap(lmultinom(lprops));
+    return rcpp_result_gen;
+END_RCPP
+}
+// timefinder
+List timefinder(NumericVector timestamps, IntegerVector edgetrim, double timeunit);
+RcppExport SEXP _IPTM_timefinder(SEXP timestampsSEXP, SEXP edgetrimSEXP, SEXP timeunitSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type timestamps(timestampsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type edgetrim(edgetrimSEXP);
+    Rcpp::traits::input_parameter< double >::type timeunit(timeunitSEXP);
+    rcpp_result_gen = Rcpp::wrap(timefinder(timestamps, edgetrim, timeunit));
+    return rcpp_result_gen;
+END_RCPP
+}
+// histcache
+arma::cube histcache(int A, arma::vec senders, List edge);
+RcppExport SEXP _IPTM_histcache(SEXP ASEXP, SEXP sendersSEXP, SEXP edgeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type senders(sendersSEXP);
+    Rcpp::traits::input_parameter< List >::type edge(edgeSEXP);
+    rcpp_result_gen = Rcpp::wrap(histcache(A, senders, edge));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dyadicstat
+arma::cube dyadicstat(arma::cube cache, arma::mat intervals_d, int a, int A, arma::mat pd);
+RcppExport SEXP _IPTM_dyadicstat(SEXP cacheSEXP, SEXP intervals_dSEXP, SEXP aSEXP, SEXP ASEXP, SEXP pdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube >::type cache(cacheSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type intervals_d(intervals_dSEXP);
+    Rcpp::traits::input_parameter< int >::type a(aSEXP);
+    Rcpp::traits::input_parameter< int >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type pd(pdSEXP);
+    rcpp_result_gen = Rcpp::wrap(dyadicstat(cache, intervals_d, a, A, pd));
+    return rcpp_result_gen;
+END_RCPP
+}
+// degreestat
+arma::cube degreestat(arma::cube cache, arma::mat intervals_d, int a, int A, arma::mat pd);
+RcppExport SEXP _IPTM_degreestat(SEXP cacheSEXP, SEXP intervals_dSEXP, SEXP aSEXP, SEXP ASEXP, SEXP pdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube >::type cache(cacheSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type intervals_d(intervals_dSEXP);
+    Rcpp::traits::input_parameter< int >::type a(aSEXP);
+    Rcpp::traits::input_parameter< int >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type pd(pdSEXP);
+    rcpp_result_gen = Rcpp::wrap(degreestat(cache, intervals_d, a, A, pd));
+    return rcpp_result_gen;
+END_RCPP
+}
+// triadicstat
+arma::cube triadicstat(arma::cube cache, arma::mat intervals_d, int a, int A, arma::mat pd);
+RcppExport SEXP _IPTM_triadicstat(SEXP cacheSEXP, SEXP intervals_dSEXP, SEXP aSEXP, SEXP ASEXP, SEXP pdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube >::type cache(cacheSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type intervals_d(intervals_dSEXP);
+    Rcpp::traits::input_parameter< int >::type a(aSEXP);
+    Rcpp::traits::input_parameter< int >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type pd(pdSEXP);
+    rcpp_result_gen = Rcpp::wrap(triadicstat(cache, intervals_d, a, A, pd));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Netstats
+List Netstats(arma::cube cache, arma::mat intervals_d, int A, IntegerVector netstat, arma::mat pd);
+RcppExport SEXP _IPTM_Netstats(SEXP cacheSEXP, SEXP intervals_dSEXP, SEXP ASEXP, SEXP netstatSEXP, SEXP pdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube >::type cache(cacheSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type intervals_d(intervals_dSEXP);
+    Rcpp::traits::input_parameter< int >::type A(ASEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type netstat(netstatSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type pd(pdSEXP);
+    rcpp_result_gen = Rcpp::wrap(Netstats(cache, intervals_d, A, netstat, pd));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_Mahalanobis", (DL_FUNC) &_IPTM_Mahalanobis, 3},
@@ -564,11 +635,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_rdirichlet_cpp", (DL_FUNC) &_IPTM_rdirichlet_cpp, 2},
     {"_IPTM_which_cpp", (DL_FUNC) &_IPTM_which_cpp, 2},
     {"_IPTM_pdmat", (DL_FUNC) &_IPTM_pdmat, 3},
-    {"_IPTM_History", (DL_FUNC) &_IPTM_History, 5},
+    {"_IPTM_History", (DL_FUNC) &_IPTM_History, 6},
+    {"_IPTM_History2", (DL_FUNC) &_IPTM_History2, 5},
     {"_IPTM_Degree", (DL_FUNC) &_IPTM_Degree, 3},
     {"_IPTM_Dyadic", (DL_FUNC) &_IPTM_Dyadic, 3},
     {"_IPTM_Triadic", (DL_FUNC) &_IPTM_Triadic, 3},
-    {"_IPTM_Triadic_reduced", (DL_FUNC) &_IPTM_Triadic_reduced, 1},
     {"_IPTM_Netstats_cpp", (DL_FUNC) &_IPTM_Netstats_cpp, 3},
     {"_IPTM_inner", (DL_FUNC) &_IPTM_inner, 2},
     {"_IPTM_ximat", (DL_FUNC) &_IPTM_ximat, 3},
@@ -582,10 +653,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_mu_cpp", (DL_FUNC) &_IPTM_mu_cpp, 2},
     {"_IPTM_mu_vec", (DL_FUNC) &_IPTM_mu_vec, 2},
     {"_IPTM_mu_mat", (DL_FUNC) &_IPTM_mu_mat, 3},
-    {"_IPTM_TopicInEqZ", (DL_FUNC) &_IPTM_TopicInEqZ, 4},
-    {"_IPTM_WordInEqZ", (DL_FUNC) &_IPTM_WordInEqZ, 5},
-    {"_IPTM_TopicWord", (DL_FUNC) &_IPTM_TopicWord, 9},
-    {"_IPTM_TopicWord0", (DL_FUNC) &_IPTM_TopicWord0, 6},
+    {"_IPTM_TopicWord", (DL_FUNC) &_IPTM_TopicWord, 8},
+    {"_IPTM_TopicWord0", (DL_FUNC) &_IPTM_TopicWord0, 5},
     {"_IPTM_u_Gibbs", (DL_FUNC) &_IPTM_u_Gibbs, 4},
     {"_IPTM_expconst", (DL_FUNC) &_IPTM_expconst, 1},
     {"_IPTM_Edgepart", (DL_FUNC) &_IPTM_Edgepart, 3},
@@ -593,6 +662,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_Timepart", (DL_FUNC) &_IPTM_Timepart, 4},
     {"_IPTM_Timepartindiv", (DL_FUNC) &_IPTM_Timepartindiv, 3},
     {"_IPTM_Timepartsum", (DL_FUNC) &_IPTM_Timepartsum, 5},
+    {"_IPTM_lmultinom", (DL_FUNC) &_IPTM_lmultinom, 1},
+    {"_IPTM_timefinder", (DL_FUNC) &_IPTM_timefinder, 3},
+    {"_IPTM_histcache", (DL_FUNC) &_IPTM_histcache, 3},
+    {"_IPTM_dyadicstat", (DL_FUNC) &_IPTM_dyadicstat, 5},
+    {"_IPTM_degreestat", (DL_FUNC) &_IPTM_degreestat, 5},
+    {"_IPTM_triadicstat", (DL_FUNC) &_IPTM_triadicstat, 5},
+    {"_IPTM_Netstats", (DL_FUNC) &_IPTM_Netstats, 5},
     {NULL, NULL, 0}
 };
 
