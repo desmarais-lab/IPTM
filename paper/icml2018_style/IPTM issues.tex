@@ -56,7 +56,7 @@ for (k in 1:K) \{\\
 		\}\\
 	\}\\
 \}\\ \newline
-However, if we drop $c$ in $x_{adrc}$, we do not need to re-calculate the network statistics---they are truely observed given the corpus---and then only $\lambda_{adr}$ and $\mu_{ad}$ vary by topic-token assignments and interaction-pattern assignments.\\\newline
+However, if we drop $c$ in $x_{adrc}$, we do not need to re-calculate the network statistics---they are truely observed given the corpus. Only $\lambda_{adr}$ and $\mu_{ad}$ will vary by topic-token assignments and interaction-pattern assignments, and these are not computationally heavy.
 Currently, one outer iteration (given 5 inner updates for M-H) takes around 400 secs in my machine, mostly due to the network statistics updates.
 
 \section{PPE--- from generative proces or full conditional distributions?}
