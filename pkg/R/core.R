@@ -248,16 +248,6 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
   #start outer iteration
   for (o in 1:Outer) {
     print(o)
-    if (o == Outer) {
-      Inner = Inner * 10
-      burn = burn * 10
-      for (IP in 1:nIP) {
-        bmat[[IP]] = matrix(b.old[IP,], nrow = P, ncol = (Inner[1]-burn[1])/thin[1])
-        etamat[[IP]] = matrix(eta.old[IP,], nrow = Q, ncol = (Inner[2]-burn[2])/thin[2])
-      }
-      deltamat = rep(delta, (Inner[1]-burn[1])/thin[1])
-      sigma_taumat = rep(sigma_tau, (Inner[3]-burn[3])/thin[3])						 
-    }
     if (optimize & o > 1) {
       #update the hyperparameter alpha and mvec
       vec = AlphamvecOpt(K, z, alpha, mvec, 5)
@@ -333,6 +323,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             } else {
                 z[[d]][w] = zw.old
             }
+            p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
             if (length(textlist.d) > 0) {
                 table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w],textlist.d[w]]+1
             }
@@ -501,8 +492,10 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
   timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])/timeunit
   timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
   emptytext = which(sapply(textlist, function(d){length(d)})==0)
-  # initialization
+  # initialization 
   convergence = c()
+  topicpart = c()
+  edgepart = c()
   netstat = as.numeric(c("degree", "dyadic", "triadic") %in% netstat)
   timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
   timemat = matrix(0, nrow = D, ncol = sum(timestat))
@@ -542,7 +535,7 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
     sigma.Q = sigma.Q
     u = list()
     for (d in edge.trim) {
-      u[[d]] = matrix(rbinom(A^2, 1, 1/A), nrow =A, ncol = A)
+      u[[d]] = matrix(rbinom(A^2, 1, 1/A), nrow = A, ncol = A)
       diag(u[[d]]) = 0
       u[[d]][senders[d],] = tabulateC(as.numeric(unlist(edge[[d]][2])), A)
     }
@@ -590,6 +583,7 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
   table.W = tvapply(1:K, function(k) {
       tabulateC(textlist.raw[which(unlist(z[-emptytext]) == k)], V)
         }, rep(0, V))
+        
   #start outer iteration
   for (o in 1:Outer) {
     print(o)
@@ -615,6 +609,7 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
         }
     }
     # Z update	
+    topicsum = 0
     for (d in 1:(edge.trim[1]-1)) {
 	   	textlist.d = textlist[[d]] 
 	   	for (w in 1:length(z[[d]])) {
@@ -634,6 +629,7 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
               z[[d]][w] = zw.new
           }
         }
+       topicsum = topicsum + topicword.d[z[[d]][w]] 
       }
       p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
     }
@@ -671,6 +667,8 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
         if (length(textlist.d) > 0) {
            	table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
         }
+        p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
+        topicsum = topicsum + topicword.d[z[[d]][w]]
       }
     }
 
@@ -778,13 +776,20 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
         sigma_taumat = c(sigma_taumat, sigma_tau)
     }
 
-    convergence[o] = Edgepartsum(X[[max.edge]], p.d[max.edge, ], b.old, u[[max.edge]], delta)+
+    edgepart[o] = Edgepartsum(X[[max.edge]], p.d[max.edge, ], b.old, u[[max.edge]], delta)+
                      Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
+    topicpart[o] = topicsum                 
+	convergence[o] = topicpart[o] + edgepart[o]
+	if (o %% 20 == 0) {
+		chain.final = list(l = l, z = z, b = bmat, eta = etamat, delta = deltamat, sigma_tau = sigma_taumat,
+                     u = u, sigma.Q =sigma.Q, alpha = alphavec, mvec = mvecmat, edge.trim = edge.trim, 
+                     edgepart = edgepart, topicpart = topicpart, convergence = convergence)
+     	save(chain.final, file = "test.RData")               
+    }                 
   }
- 
   chain.final = list(l = l, z = z, b = bmat, eta = etamat, delta = deltamat, sigma_tau = sigma_taumat,
                      u = u, sigma.Q =sigma.Q, alpha = alphavec, mvec = mvecmat, edge.trim = edge.trim,
-                     convergence = convergence)
+                     edgepart = edgepart, topicpart = topicpart, convergence = convergence)
   return(chain.final)
 }	
 
@@ -1013,6 +1018,7 @@ IPTM.inference.noIP = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
             if (length(textlist.d) > 0) {
                 table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
             }
+            p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
         }
     }
  	  mu = mu_mat(p.d, xi, edge.trim)
@@ -1375,6 +1381,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
             if (length(textlist.d) > 0) {
                 table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
             }
+            p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
         }
     }
 
@@ -1694,6 +1701,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
             if (length(textlist.d) > 0) {
                 table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
             }
+            p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
         }
     }
     # C update 

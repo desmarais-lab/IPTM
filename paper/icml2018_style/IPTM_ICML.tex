@@ -313,7 +313,8 @@ We then run inference to update the latent variables given the imputed and obser
 			\vskip 0.1in
 		\textbf{Test splits:}	
 		\STATE Draw test authors with $p=0.1$ (out of $D$ authors) 
-		\STATE Draw test recipients with $p=0.1$ (out of $D\times (A-1)$ receipient identifications)
+		\STATE Draw test elements of recipient vector 
+		with $p=0.1$ (out of $D\times (A-1)$ receipient indicators $\{\{\boldsymbol{r}_{dr}\}_{r\in [A]_{\backslash a_d}}\}_{d=1}^D$)
 		\STATE Draw test timestamps with $p=0.1$  (out of $D$ timestamps) 
 		\STATE Set the ``test" data as ``missing" (NA)
 		\vskip 0.1in
