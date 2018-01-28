@@ -303,10 +303,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             } else {
                 topicword.d = TopicWord0(K, table.W, alphamvec, beta, V)
             }
-            lK = which(l == l[zw.old])
-            edgetime.d[lK] = Edgepartsum(X[[hist.d[d]]], p.d[hist.d[d], ], b.old, u[[hist.d[d]]], delta)+
-                             Timepart(mu[d,], sigma_tau, senders[d], timeinc[d])
-            for (IP in sort(unique(l))[-l[zw.old]]) {
+            for (IP in unique(l)) {
                 lK = which(l == IP)
                 z[[d]][w] = min(lK)
                 p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
@@ -323,7 +320,6 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
             } else {
                 z[[d]][w] = zw.old
             }
-            p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
             if (length(textlist.d) > 0) {
                 table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w],textlist.d[w]]+1
             }
@@ -356,8 +352,8 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
     if (o > 1) {
     		accept.rates[1] = accept.rates[1]/Inner[1]
     		accept.rates[2] = accept.rates[2]/Inner[2]
-        accept.rates[3] = accept.rates[3]/Inner[3]
-        accept.rates[4] = accept.rates[1]
+            accept.rates[3] = accept.rates[3]/Inner[3]
+            accept.rates[4] = accept.rates[1]
     		sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
     }
     accept.rates = rep(0, 4)
@@ -644,10 +640,7 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
         } else {
           topicword.d = TopicWord0(K, table.W, alphamvec, beta, V)
         }
-        lK = which(l == l[zw.old])
-        edgetime.d[lK] = Edgepartsum(X[[hist.d[d]]], p.d[hist.d[d], ], b.old, u[[hist.d[d]]], delta)+
-                         Timepart(mu[d,], sigma_tau, senders[d], timeinc[d])
-	      for (IP in sort(unique(l))[-l[zw.old]]) {
+	      for (IP in unique(l)) {
 	  	    lK = which(l == IP)
        	    z[[d]][w] = min(lK)
        	    p.d[d, ] = pdmat(list(z[[d]]), l, nIP)           
@@ -667,7 +660,6 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
         if (length(textlist.d) > 0) {
            	table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
         }
-        p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
         topicsum = topicsum + topicword.d[z[[d]][w]]
       }
     }
@@ -780,12 +772,6 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
                      Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
     topicpart[o] = topicsum                 
 	convergence[o] = topicpart[o] + edgepart[o]
-	if (o %% 20 == 0) {
-		chain.final = list(l = l, z = z, b = bmat, eta = etamat, delta = deltamat, sigma_tau = sigma_taumat,
-                     u = u, sigma.Q =sigma.Q, alpha = alphavec, mvec = mvecmat, edge.trim = edge.trim, 
-                     edgepart = edgepart, topicpart = topicpart, convergence = convergence)
-     	save(chain.final, file = "test.RData")               
-    }                 
   }
   chain.final = list(l = l, z = z, b = bmat, eta = etamat, delta = deltamat, sigma_tau = sigma_taumat,
                      u = u, sigma.Q =sigma.Q, alpha = alphavec, mvec = mvecmat, edge.trim = edge.trim,
@@ -998,7 +984,7 @@ IPTM.inference.noIP = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
             } else {
                 topicword.d = TopicWord0(K, table.W, alphamvec, beta, V)
             }
-            for (IP in sort(unique(l))[-l[zw.old]]) {
+            for (IP in unique(l)) {
                 lK = which(l == IP)
                 z[[d]][w] = min(lK)
                 p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
@@ -1018,7 +1004,6 @@ IPTM.inference.noIP = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
             if (length(textlist.d) > 0) {
                 table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
             }
-            p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
         }
     }
  	  mu = mu_mat(p.d, xi, edge.trim)
@@ -1030,11 +1015,11 @@ IPTM.inference.noIP = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
       
   # adaptive M-H   
     if (o > 1) {
-    		accept.rates[1] = accept.rates[1]/Inner[1]
-    		accept.rates[2] = accept.rates[2]/Inner[2]
+    	accept.rates[1] = accept.rates[1]/Inner[1]
+    	accept.rates[2] = accept.rates[2]/Inner[2]
         accept.rates[3] = accept.rates[3]/Inner[3]
         accept.rates[4] = accept.rates[1]
-    		sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
+    	sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
     }
     accept.rates = rep(0, 4)
     
@@ -1358,10 +1343,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
             } else {
                 topicword.d = TopicWord0(K, table.W, alphamvec, beta, V)
             }
-            lK = which(l == l[zw.old])
-            edgetime.d[lK] = Edgepartsum(X[[hist.d[d]]], p.d[hist.d[d], ], b.old, u[[hist.d[d]]], delta)+
-            Timepart(mu[d,], sigma_tau, senders[d], timeinc[d])
-            for (IP in sort(unique(l))[-l[zw.old]]) {
+           for (IP in unique(l)) {
                 lK = which(l == IP)
                 z[[d]][w] = min(lK)
                 p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
@@ -1381,7 +1363,6 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
             if (length(textlist.d) > 0) {
                 table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
             }
-            p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
         }
     }
 
@@ -1678,10 +1659,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
             } else {
                 topicword.d = TopicWord0(K, table.W, alphamvec, beta, V)
             }
-            lK = which(l == l[zw.old])
-            edgetime.d[lK] = Edgepartsum(X[[hist.d[d]]], p.d[hist.d[d], ], b.old, u[[hist.d[d]]], delta)+
-            Timepart(mu[d,], sigma_tau, senders[d], timeinc[d])
-            for (IP in sort(unique(l))[-l[zw.old]]) {
+            for (IP in unique(l)) {
                 lK = which(l == IP)
                 z[[d]][w] = min(lK)
                 p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
@@ -1701,7 +1679,6 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
             if (length(textlist.d) > 0) {
                 table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
             }
-            p.d[d, ] = pdmat(list(z[[d]]), l, nIP)
         }
     }
     # C update 

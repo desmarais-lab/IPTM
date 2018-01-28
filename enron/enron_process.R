@@ -1,4 +1,4 @@
-raw= read.csv("/Users/bomin8319/Desktop/IPTM/enron/enron.csv", header = FALSE )
+raw= read.csv("enron.csv", header = FALSE )
 enron = raw[,c(2,3,1,4)]
 
 library(stringr)
@@ -42,7 +42,7 @@ for (d in 1:dim(enron)[1]) {
 }  
 sender = lapply(edge, function(i){i[[1]]})
 
-#top_ten_writers
+#writers_sent_over_300
 newsender = which(tabulate(unlist(sender)) > 300)
 enron = enron[enron[,1] %in% newsender,]
 edge = list()
@@ -61,7 +61,7 @@ for (d in 1:dim(enron)[1]) {
   text[[d]] = which(vocab %in% text[[d]])
 } 
 
-#only include receivers > 100 received emails
+#only_include_receivers_over_300_received_emails
 receiver = lapply(edge, function(i){i[[2]]})
 
 newreceiver = which(tabulate(unlist(receiver)) > 300)
@@ -83,24 +83,19 @@ for (d in 1:dim(enron)[1]) {
   }
 }
 vocab = unique(unlist(text))
-#delete = which(sapply(text, function(x){length(x)}) ==0 |sapply(text, function(x){length(x)}) ==6519 )
-#edge2 = edge[-delete]
-#text2 = text[-delete]
-#edge = edge2
-#text = text2
+
+#finalize the dataset
 sender = lapply(edge, function(i){i[[1]]})
 receiver = lapply(edge, function(i){i[[2]]})
-node = union(unique(unlist(sender)), unique(unlist(receiver)))
+node = union(unique(unlist(sender)), unique(unlist(receiver)))   
 vocab = unique(unlist(text))
 text2 = list()
 for (d in 1:length(edge)) {
-  edge[[d]]$sender = which(node == edge[[d]]$sender)
-  edge[[d]]$receiver = which(node %in% edge[[d]]$receiver)
-  if (d > 1 && edge[[d]]$timestamp == edge[[d-1]]$timestamp) {
-  edge[[d]]$timestamp = edge[[d]]$timestamp + exp(-20)
-  }
-   text2[[d]] = which(vocab %in% text[[d]])
-  }
+  edge[[d]]$sender = which(node == edge[[d]]$sender)           #make node id's starting from 1 to A (e.g. new node 1 = original node 138)
+  edge[[d]]$receiver = which(node %in% edge[[d]]$receiver)     #make node id's starting from 1 to A
+  edge[[d]]$timestamp = edge[[d]]$timestamp
+  text2[[d]] = which(vocab %in% text[[d]])
+}
   
 Enron = list(edge = edge, node = 1:length(node), text = text2, vocab = vocab)
-save(Enron, file = "/Users/bomin8319/Desktop/IPTM/enron/Enron.RData")
+save(Enron, file = "Enron.RData")
