@@ -307,13 +307,13 @@ List Degree(List history, IntegerVector node, int sender) {
   	 List historyIP = history[IP];
      NumericVector degree(6); 
 	 
-   for (unsigned int receiver = 0; receiver < A; receiver++) {
+   for (int receiver = 0; receiver < A; receiver++) {
     for (unsigned int l = 0; l < 3; l++) {
     	NumericMatrix historyIP_l = historyIP[l];
     double send = historyIP_l(sender, receiver);
     	
    	NumericVector indegree(A);
-    	for (unsigned int h = 0; h < A; h++) {
+    	for (int h = 0; h < A; h++) {
      	double htor = historyIP_l(h, receiver);
     	 indegree[h] = htor;
      	}
@@ -343,7 +343,7 @@ List Dyadic(List history, IntegerVector node, int sender) {
   	 NumericMatrix dyadicmat_IP(A, 6);
   	 List historyIP = history[IP];
      NumericVector dyadic(6); 
-     for (unsigned int receiver = 0; receiver < A; receiver++) {
+     for (int receiver = 0; receiver < A; receiver++) {
         for (unsigned int l = 0; l < 3; l++) {
     		NumericMatrix historyIP_l = historyIP[l];
     		dyadic[l] = historyIP_l(sender, receiver);
@@ -369,7 +369,7 @@ List Triadic(List history, IntegerVector node, int sender) {
   	  List historyIP = history[IP];
   	  NumericVector triadic(36); 
        
-        for (unsigned int receiver = 0; receiver < A; receiver++) {
+        for (int receiver = 0; receiver < A; receiver++) {
         NumericVector twosend(A);
         NumericVector tworeceive(A);
         NumericVector sibling(A);
@@ -379,7 +379,7 @@ List Triadic(List history, IntegerVector node, int sender) {
           for (unsigned int m = 0; m < 3; m++){
             NumericMatrix historyIP_l = historyIP[l];
             NumericMatrix historyIP_m = historyIP[m];
-       	    for (unsigned int third = 0; third < A; third++) {
+       	    for (int third = 0; third < A; third++) {
      	       double stoh = historyIP_l(sender, third);
       	       double htos = historyIP_l(third, sender); 
      	       double rtoh = historyIP_m(receiver, third);
@@ -830,7 +830,7 @@ int lmultinom (NumericVector lprops) {
 List timefinder (NumericVector timestamps, IntegerVector edgetrim, double timeunit) {
     int D = timestamps.size();
     List out(D);
-    for (unsigned int d = min(edgetrim)-1; d < D; d++) {
+    for (int d = min(edgetrim)-1; d < D; d++) {
 		double time0 = timestamps[d-1];
 		double time1 = time0-24*timeunit;
 		double time2 = time0-96*timeunit;
@@ -857,7 +857,7 @@ List timefinder (NumericVector timestamps, IntegerVector edgetrim, double timeun
 arma::cube histcache (int A, arma::vec senders, List edge) {
 	int D = edge.size();
 	arma::cube Array = arma::zeros<arma::cube>(A, A, D);
-	for (unsigned int d = 0; d < D; d++) {
+	for (int d = 0; d < D; d++) {
 		List edged = edge[d];
 	    int a = edged[0];
 	    IntegerVector receiver = edged[1];
@@ -879,7 +879,7 @@ arma::cube dyadicstat (arma::cube cache, arma::mat intervals_d, int a, int A, ar
 		int mins = intervals_d(i, 0)-1;
 		int maxs = intervals_d(i, 1)-1;
 		arma::mat pdnew = pd.rows(mins, maxs);
-		for (unsigned int r = 0; r < A; r++) {
+		for (int r = 0; r < A; r++) {
 			arma::colvec docsar = cache(arma::span(a), arma::span(r), arma::span(mins, maxs));
 			arma::colvec docsra = cache(arma::span(r), arma::span(a), arma::span(mins, maxs));
 			arma::rowvec sendr = docsar.t() * pdnew;
@@ -906,16 +906,16 @@ arma::cube degreestat (arma::cube cache, arma::mat intervals_d, int a, int A, ar
 		arma::rowvec sendr = arma::zeros<arma::rowvec>(nIP);
 		arma::mat receiver = arma::zeros<arma::mat>(A, nIP);
 		arma::mat pdnew = pd.rows(mins, maxs);
-		for (unsigned int r = 0; r < A; r++) {
+		for (int r = 0; r < A; r++) {
 			arma::colvec docsar = cache(arma::span(a), arma::span(r), arma::span(mins, maxs));
 			sendr += docsar.t() * pdnew;
-			for (unsigned int h = 0; h < A; h++) {
+			for (int h = 0; h < A; h++) {
 				arma::colvec docsra = cache(arma::span(h), arma::span(r), arma::span(mins, maxs));
 				receiver.row(r) += docsra.t() * pdnew;	
 				}	
 		}
 		for (int IP = 0; IP < nIP; IP++) {
-			for (unsigned int r = 0; r < A; r++) {
+			for (int r = 0; r < A; r++) {
 				out(r, IP, i) = sendr[IP];
 				out(r, IP, i+3) = receiver(r,IP);
 			}
@@ -944,8 +944,8 @@ arma::cube triadicstat (arma::cube cache, arma::mat intervals_d, int a, int A, a
 		arma::mat cosibling = arma::zeros<arma::mat>(A, nIP);
 		arma::mat pdnew1 = pd.rows(mins1, maxs1);
 		arma::mat pdnew2 = pd.rows(mins2, maxs2);
-		for (unsigned int r = 0; r < A; r++) {
-			for (unsigned int h = 0; h < A; h++) {
+		for (int r = 0; r < A; r++) {
+			for (int h = 0; h < A; h++) {
 				arma::colvec docsah = cache(arma::span(a), arma::span(h), arma::span(mins1, maxs1));
 				arma::colvec docsrh = cache(arma::span(r), arma::span(h), arma::span(mins2, maxs2));
 				arma::colvec docsha = cache(arma::span(h), arma::span(a), arma::span(mins1, maxs1));
@@ -957,7 +957,7 @@ arma::cube triadicstat (arma::cube cache, arma::mat intervals_d, int a, int A, a
 				}	
 		}
 		for (int IP = 0; IP < nIP; IP++) {
-			for (unsigned int r = 0; r < A; r++) {
+			for (int r = 0; r < A; r++) {
 				out(r, IP, it) = tsend(r, IP);
 				out(r, IP, it+9) = treceive(r,IP);
 				out(r, IP, it+18) = sibling(r, IP);
@@ -971,7 +971,7 @@ arma::cube triadicstat (arma::cube cache, arma::mat intervals_d, int a, int A, a
 	for (int t = 0; t < 4; t++) {
 		int add = 9*t;
 	for (int IP = 0; IP < nIP; IP++) {
-		for (unsigned int r = 0; r < A; r++) {
+		for (int r = 0; r < A; r++) {
 			out2(r, IP, 3*t+0) = out(r, IP, add+0);
 			out2(r, IP, 3*t+1) = out(r, IP, add+1) + out(r, IP, add+3)+ out(r, IP, add+4);
 			out2(r, IP, 3*t+2) = out(r, IP, add+2) + out(r, IP, add+5)+ out(r, IP, add+6)+ out(r, IP, add+7)+ out(r, IP, add+8);
