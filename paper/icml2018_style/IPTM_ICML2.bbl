@@ -1,0 +1,46 @@
+\begin{thebibliography}{6}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Blei et~al.(2003)Blei, Ng, and Jordan]{Blei2003}
+Blei, David~M., Ng, Andrew~Y., and Jordan, Michael~I.
+\newblock Latent dirichlet allocation.
+\newblock \emph{J. Mach. Learn. Res.}, 3:\penalty0 993--1022, March 2003.
+\newblock ISSN 1532-4435.
+
+\bibitem[Fellows \& Handcock(2017)Fellows and Handcock]{fellows2017removing}
+Fellows, Ian and Handcock, Mark.
+\newblock Removing phase transitions from gibbs measures.
+\newblock In \emph{Artificial Intelligence and Statistics}, pp.\  289--297,
+  2017.
+
+\bibitem[Perry \& Wolfe(2013)Perry and Wolfe]{PerryWolfe2012}
+Perry, Patrick~O. and Wolfe, Patrick~J.
+\newblock Point process modelling for directed interaction networks.
+\newblock \emph{Journal of the Royal Statistical Society: Series B (Statistical
+  Methodology)}, 75\penalty0 (5):\penalty0 821--849, 2013.
+\newblock ISSN 1467-9868.
+\newblock \doi{10.1111/rssb.12013}.
+
+\bibitem[Snijders(1996)]{snijders1996stochastic}
+Snijders, Tom~AB.
+\newblock Stochastic actor-oriented models for network change.
+\newblock \emph{Journal of mathematical sociology}, 21\penalty0 (1-2):\penalty0
+  149--172, 1996.
+
+\bibitem[Snijders(2017)]{snijders2017stochastic}
+Snijders, Tom~AB.
+\newblock Stochastic actor-oriented models for network dynamics.
+\newblock \emph{Annual Review of Statistics and Its Application}, \penalty0
+  (0), 2017.
+
+\bibitem[Snijders et~al.(2010)Snijders, Van~de Bunt, and
+  Steglich]{snijders2010introduction}
+Snijders, Tom~AB, Van~de Bunt, Gerhard~G, and Steglich, Christian~EG.
+\newblock Introduction to stochastic actor-based models for network dynamics.
+\newblock \emph{Social networks}, 32\penalty0 (1):\penalty0 44--60, 2010.
+
+\end{thebibliography}

@@ -120,50 +120,35 @@ They key idea that combines the IPTM component modeling ``what" with
 the component modeling ``who," ``whom," and ``when" is that different
 topics are associated with different interaction patterns.  Each interaction pattern $c \in [C]$ is characterized by a set of dynamic network features---such as the number of messages sent from $a$ to $r$ in some time interval---and corresponding coefficients. We associate each topic with the interaction pattern that best describes how people interact when talking about that topic. 
 \textcolor{red}{
-We first model each topic $k \in [K]$ as a dicrete distribution over $C$ unique interaction patterns,
+We first model each interaction-pattern $c \in [C]$ as a dicrete distribution over $C$ unique interaction patterns,
 \begin{equation}
-	\boldsymbol{\psi}_k\sim \mbox{Dirichlet}\Big(\gamma, (\frac{1}{C},\ldots,\frac{1}{C})\Big),
+	\boldsymbol{\psi}\sim \mbox{Dirichlet}\Big(\zeta, (\frac{1}{C},\ldots,\frac{1}{C})\Big),
 \end{equation}
-where $\gamma$ is the concentration parameter. Then, each topic-interaction pattern assignment $l_k$ is drawn from the 
+where $\zeta$ is the concentration parameter. Then, each topic-interaction pattern assignment $c_d$ is then drawn from the 
 \begin{equation}
-l_k\sim \mbox{Multinomial}(\boldsymbol{\psi}_k),
+c_d\sim \mbox{Multinomial}(\boldsymbol{\psi}),
 \end{equation}
-}
+for $d \in [D]$.}
 \subsection{Content Generating Process}\label{subsec:Content generating process}
 
 The words $\boldsymbol{w}_d$ are generated according to latent Dirichlet allocation (LDA) \cite{Blei2003}, where we generate the corpus-wide global variables that describe the content via topics. As in LDA, we model each topic $k\in [K]$ as a discrete distribution over $V$ unique word types 
 \begin{equation}
 \boldsymbol{\phi}_k \sim \mbox{Dirichlet}\Big(\beta, (\frac{1}{V},\ldots,\frac{1}{V})\Big),
 \end{equation}
-where $\beta$ is the concentration parameter. Next, we assume a document- topic distribution over $K$ topics\\
+where $\beta$ is the concentration parameter. \textcolor{red}{Next, we assume a interaction-pattern-topic distribution over $K$ topics and the corresponding document-topic distribution\\
 \begin{equation}
-\boldsymbol{\theta}_d \sim \mbox{Dirichlet}(\alpha, \boldsymbol{m}),
-\end{equation}
-where $\alpha$ is the concentration parameter and $\boldsymbol{m}=(m_1,\ldots,m_K)$ is the probability vector. Given that $\bar N_d = \max(1, N_d)$ where $N_d$ is known, a topic $z_{dn}$ is drawn from the document-topic distribution and then a word $w_{dn}$ is drawn from the chosen topic for each $n \in [\bar N_d]$---i.e.,
+\begin{aligned}
+&\boldsymbol{m}_c\sim \mbox{Dirichlet}\Big(\gamma, (\frac{1}{K},\ldots,\frac{1}{K})\Big),\\
+&\boldsymbol{\theta}_d \sim \mbox{Dirichlet}(\alpha, \boldsymbol{m}_{c_d}),
+\end{aligned}
+\end{equation}}
+where $\gamma$ and $\alpha$ are the concentration parameter and $\boldsymbol{m}=(m_1,\ldots,m_K)$ is the probability vector. Given that $\bar N_d = \max(1, N_d)$ where $N_d$ is known, a topic $z_{dn}$ is drawn from the document-topic distribution and then a word $w_{dn}$ is drawn from the chosen topic for each $n \in [\bar N_d]$---i.e.,
 \begin{equation}
 \begin{aligned}
 &z_{dn} \sim \mbox{Multinomial}(\boldsymbol{\theta}_d),\\
 &w_{dn} \sim\mbox{Multinomial} (\phi_{z_{dn}}).
 \end{aligned}
 \end{equation}
-
-\textcolor{red}{\subsection{Additiaonl Derivation}}\label{subsec: Multinomial}
-Then, the probability that a token is assigned to a topic corresponding to interaction pattern $c$ is
-\begin{equation}
-P(z_{dn}=k \cap l_k = c) = \sum_{k:l_k=c}{\theta}_{dk}\psi_{kc},
-\end{equation}
-and thus we can derive 
-\begin{equation}
-\begin{aligned}
-&\bar N_{dc} \sim \mbox{Multinomial}(\bar N_{d} , \sum_{k:l_k=c}{\theta}_{dk}\psi_{kc}),\\
-\end{aligned}
-\end{equation}
-where $\bar N_{dc}$ is the number of words in document $d$ that are assigned to topics corresponding to interaction pattern $c$. Using this property, we can define the expecation of proportions $E(\frac{\bar N_{dc} }{\bar N_{d}})=\frac{1}{\bar N_{d}}E(\bar N_{dc} )=\sum_{k:l_k=c}{\theta}_{dk}\psi_{kc}$ used for network statistics as $\pi_{dc}$ given the current value of $\theta$ and $\psi$
-\begin{equation}
-\pi_{dc}= \sum_{k:l_k=c}{\theta}_{dk}\psi_{kc},
-\end{equation}
-where we should infer $\theta$ and $\psi$ instead of integrating them out.
-For network statistics, we replace $\frac{\bar N_{dc} }{\bar N_{dc}}$ by current estimate of $\pi_{dc}$.
 
 \subsection{Tie Generating Process}\label{subsec:Tie generating process}
 We generate ties---author $a_d$, recipients $\boldsymbol{r}_d$, and timestamp $t_d$---using a continuous-time process
@@ -186,9 +171,9 @@ In the example of email networks, we form the covariate vector for recipients $\
 	\label{fig:dynamic network statistics}	
 \end{figure}
 \begin{itemize}
-	\item[1.] outdegree$(a,c,i)=\sum\limits_{d^\prime:t_{d^\prime \in i}} \textcolor{red}{\pi_{dc}}\delta(a_{d^\prime} = a)$.
-	\item[2.] indegree$(r,c,i)=\sum\limits_{d^\prime:t_{d^\prime \in i}} \textcolor{red}{\pi_{dc}}\delta(u_{d^\prime r} = 1)$.
-	\item[3.] send$(a,r,c,i)=\sum\limits_{d^\prime:t_{d^\prime \in i}} \textcolor{red}{\pi_{dc}}\delta(a_{d^\prime} = a)\delta(u_{d^\prime r} = 1)$.
+	\item[1.] outdegree$(a,c,i)=\sum\limits_{d^\prime:t_{d^\prime \in i}} \textcolor{red}{\delta(c_{d^\prime} = c)}\delta(a_{d^\prime} = a)$.
+	\item[2.] indegree$(r,c,i)=\sum\limits_{d^\prime:t_{d^\prime \in i}} \textcolor{red}{\delta(c_{d^\prime} = c)}\delta(u_{d^\prime r} = 1)$.
+	\item[3.] send$(a,r,c,i)=\sum\limits_{d^\prime:t_{d^\prime \in i}} \textcolor{red}{\delta(c_{d^\prime} = c)}\delta(a_{d^\prime} = a)\delta(u_{d^\prime r} = 1)$.
 	\item[4.] receive$(a,r,c,i)=\mbox{send}(r,a,c,i)$.
 	\item[5.] 2-send$(a,r,c,i) $\\= $\sum\limits_{\substack{i^\prime, i^{\prime\prime}\geq i:\\i^\prime = i \mbox{ \small or }i^{\prime\prime}=i}}\sum\limits_{h \neq a, r} \mbox{send}(a,h,c,i^\prime)\mbox{send}(h,r,c,i^{\prime\prime})$.
 	\item[6.] 2-receive$(a,r,c,i) $\\= $\sum\limits_{\substack{i^\prime, i^{\prime\prime}\geq i:\\i^\prime = i \mbox{ \small or }i^{\prime\prime}=i}}\sum\limits_{h \neq a, r} \mbox{send}(h,a,c,i^\prime)\mbox{send}(r,h,c,i^{\prime\prime})$.
@@ -199,9 +184,8 @@ Note that in order to obtain two-path statistics (i.e., 2-send, 2-receive, sibli
 
 We then compute the weighted average of $\{\nu_{adrc}\}_{c=1}^C$ and obtain the ``recipient intensity"---the likelihood of document $d$ being sent from $a$ to $r$--- using the the document's distribution over interaction patterns as mixture weights:
 \begin{equation}
-\lambda_{adr} =\sum_{c=1}^{C} \textcolor{red}{\pi_{dc}}\nu_{adrc},
+\textcolor{red}{\lambda_{adr} =\nu_{adrc_d}.}
 \end{equation}
-where $N_{dc}$ is the number of tokens assigned to topic $\{k:l_k=c\}$ in document $d$. 
 
 Next, we hypothesize ``If $a$ were the
 author of document $d$, who would be the recipent/recipients?" To do this, we draw each author's set of recipients from a non-empty Gibbs measure \cite{fellows2017removing}---a probability measure we defined in order to 1) allow multiple recipients or ``multicast", 2) prevent from obtaining zero recipient, and 3) ensure tractable normalizing constant. 
@@ -231,7 +215,7 @@ For example, the covariate vector for timestamps $\boldsymbol{y}_{adc}$ can incl
 
 Next, the ``timing rate" for author $i$ is then computed from the weighted average of $\{\xi_{adc}\}_{c=1}^C$ 
 \begin{equation}
-\mu_{ad} = \sum_{c=1}^C \textcolor{red}{\pi_{dc}}g^{-1}(\xi_{adc}),
+\textcolor{red}{\mu_{ad} = g^{-1}(\xi_{adc_d}),}
 \end{equation}
 where $g(\cdot)$ is the appropriate link function such as identity, log, or inverse. 
 
@@ -257,59 +241,44 @@ t_d &=t_{d-1} + \tau_{a_d d}.
 Therefore, it is an author-driven process in that the author of a document determines its recipients and its timestamp, based on the author's urgency to send the document to chosen recipients. 
 
 \textcolor{red}{\section{Posterior Inference}}\label{sec:Inference}
-Now, the big joint distribution becomes
+Now, we can marginalize out $\theta$ and $\psi$ and then the big joint distribution becomes
 \begin{equation}
 	\begin{aligned}
-		&P(\boldsymbol{z},\boldsymbol{l},\boldsymbol{\theta}, \boldsymbol{\psi}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}, \boldsymbol{w}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}| \gamma, \alpha, \beta, \boldsymbol{m},\boldsymbol{\mu}_b, \Sigma_b,\mu_\delta,\sigma^2_\delta)
-		\\&\propto P(\boldsymbol{\theta}|\alpha, \boldsymbol{m})P(\boldsymbol{z}|\boldsymbol{\theta})P(\boldsymbol{w}|\boldsymbol{z})
-		 P(\boldsymbol{\psi}|\gamma) P(\boldsymbol{l}|\boldsymbol{\psi})\\&\times P(\boldsymbol{b}|\boldsymbol{\mu}_b, \Sigma_b ) P(\boldsymbol{\eta}|\boldsymbol{\mu}_\eta, \Sigma_\eta )
-		 P(\delta|\mu_\delta,\sigma^2_\delta) P(\boldsymbol{u}|\boldsymbol{\theta},\boldsymbol{\psi}, \boldsymbol{l},\boldsymbol{b}, \delta)\\&\times P(\boldsymbol{a}, \boldsymbol{t}|\boldsymbol{\theta},\boldsymbol{\psi},\boldsymbol{l}, \boldsymbol{\eta})P(\boldsymbol{r}|\boldsymbol{a},\boldsymbol{u}),
+		&P(\boldsymbol{z},\boldsymbol{c}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}, \boldsymbol{w}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}|\zeta, \gamma, \alpha, \beta, \boldsymbol{\mu}_b, \Sigma_b,\mu_\delta,\sigma^2_\delta)
+		\\&\propto P(\boldsymbol{z}|\gamma, \alpha, \boldsymbol{c})P(\boldsymbol{w}|\boldsymbol{z}, \beta) P(\boldsymbol{c}|\zeta) P(\boldsymbol{b}|\boldsymbol{\mu}_b, \Sigma_b ) P(\boldsymbol{\eta}|\boldsymbol{\mu}_\eta, \Sigma_\eta )
+		 \\&\times P(\delta|\mu_\delta,\sigma^2_\delta) P(\boldsymbol{u}| \boldsymbol{c},\boldsymbol{b}, \delta) P(\boldsymbol{a}, \boldsymbol{t}|\boldsymbol{c}, \boldsymbol{\eta})P(\boldsymbol{r}|\boldsymbol{a},\boldsymbol{u}),
 	\end{aligned}
 \end{equation}
-and here we will sequentially update $\boldsymbol{z},\boldsymbol{l},\boldsymbol{\theta}, \boldsymbol{\psi}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}$.
+where
+and here we will sequentially update $\boldsymbol{z},\boldsymbol{c}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}$.
 
-Since we only integrate out $\boldsymbol{\phi}$ but let $\boldsymbol{\theta}$ not integrated, the conditional posterior for topic assignment $z_{dn}$ is then simple LDA with current estimate of $\boldsymbol{\theta}$:
+First, the conditional posterior for topic assignment $z_{dn}$ is:
 \begin{equation}
 \begin{aligned}
-&p(z_{dn}=k| \boldsymbol{z}_{\backslash dn}, \boldsymbol{\theta}, \boldsymbol{\psi}, \boldsymbol{l}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}, \boldsymbol{w}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}, \alpha, \beta, \boldsymbol{m})\\&\propto P(z_{dn}=k|\boldsymbol{\theta}_d)\times P(w_{dn}=w|z_{dn}=k, \boldsymbol{z}_{\backslash dn}, \boldsymbol{w}, \beta)
+&p(z_{dn}=k| \boldsymbol{z}_{\backslash dn}, \boldsymbol{c}, \boldsymbol{w}, \gamma, \alpha, \beta)\\&\propto P(z_{dn}=k| \boldsymbol{z}_{\backslash dn}, c_d, \gamma, \alpha)\times P(w_{dn}=w|z_{dn}=k, \boldsymbol{z}_{\backslash dn}, \boldsymbol{w}, \beta)
 \\&\propto 
-\theta_{dk} \times 	  \frac{N_{w_{dn}k, \backslash dn}+\frac{\beta}{V}}{N_{k, \backslash dn}+\beta},
+(N_{dk, \backslash dn}+\alpha \frac{N_{kc_d,\backslash dn}+\frac{\gamma}{K}}{N_{c_d, \backslash dn}+\gamma})\times 	  \frac{N_{w_{dn}k, \backslash dn}+\frac{\beta}{V}}{N_{k, \backslash dn}+\beta},
 \end{aligned}
 \end{equation}
-where the subscript $\backslash dn$ denote the exclusion of document $d$ and $n^{th}$ element in document $d$, and $N_{w_{dn}k, \backslash dn}$ is the number of tokens assigned to topic $k$ whose type is the same as that of $w_{dn}$, excluding $w_{dn}$ itself. 
+where the subscript $\backslash dn$ denote the exclusion of document $d$ and $n^{th}$ element in document $d$, $N_{kc_d, \backslash dn}$ is the number of tokens assigned to topic $k$ across the documents whose interaction-pattern is the same as that of $c_{d}$ (excluding $w_{dn}$ itself), and $N_{w_{dn}k, \backslash dn}$ is the number of tokens assigned to topic $k$ whose type is the same as that of $w_{dn}$ (excluding $w_{dn}$ itself). 
 
-We now add two steps for each outer iterations--- updates on $\boldsymbol{\theta}$ and $\boldsymbol{\psi}$. For $d \in [D]$, we update the document-topic distribution as below:
+Although everything else stays the same (i.e., sampling equations for $\boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}$), we have quite complicated sampling equation for $\boldsymbol{c}$ now. For each document $d \in [D]$, we sample interaction-pattern assignment as below:
 \begin{equation}
 \begin{aligned}
-&P(\boldsymbol{\theta}_{d}|z_d, \alpha, \boldsymbol{m},  \boldsymbol{u},  \boldsymbol{a},  \boldsymbol{t}) \\&\propto P(\boldsymbol{z}|\boldsymbol{\theta}_d)P(\boldsymbol{\theta}_d|\alpha, \boldsymbol{m})P(\boldsymbol{u}|\boldsymbol{\theta},\boldsymbol{\psi},\boldsymbol{l}, \boldsymbol{b}, \delta)P(\boldsymbol{a}, \boldsymbol{t}|\boldsymbol{\theta},\boldsymbol{\psi}, \boldsymbol{l},\boldsymbol{\eta})
-\\&\propto \Big(\prod_{n=1}^{\bar N_d} P(z_{dn}|\boldsymbol{\theta}_{d}) P(\boldsymbol{\theta}_{d}|\alpha, \boldsymbol{m})\Big)\\&\times \Big(\prod_{d=d+1}^{d^*}P(\boldsymbol{u}_d|\boldsymbol{\theta},\boldsymbol{\psi}, \boldsymbol{b}, \delta)\Big)\times \Big(P(\boldsymbol{a}_d, \boldsymbol{t}_d|\boldsymbol{\theta},\boldsymbol{\psi}, \boldsymbol{\eta})\Big)\\
-&\propto\Big(\prod_{n=1}^{\bar N_d} \theta_{dz_{dn}}\times \prod_{k=1}^{K} \theta_{dk}^{\alpha m_k - 1}\Big)\\&\times\Big(\prod_{d=d+1}^{d^*}\Big(
-\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}\Big)\Big)
-\\&\times\Big(\varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2)\times \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\Big)\\
-&\propto\Big(\prod_{k=1}^{K} \theta_{dk}^{\bar N_{dk}+\alpha m_k - 1}\Big)\\&\times\Big(\prod_{d=d+1}^{d^*}\Big(
-\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}\Big)\Big)
-\\&\times\Big(\varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2)\times \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\Big)\\
-& \nsim \mbox{Dirichlet}(\bar N_{d1} + \alpha m_1,\ldots, \bar N_{dK} + \alpha m_K),
+&P(c_d = c|\boldsymbol{z}, \zeta, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{t})\\
+&\propto P(c_d=c|\boldsymbol{c}_{\backslash d}, \zeta) P(\boldsymbol{z}_d|\gamma, \alpha, c_d=c, \boldsymbol{c}_{\backslash d}, \boldsymbol{z}_{\backslash d})\\&\times P(a_d, t_d|c_d = c, \boldsymbol{\eta}, \sigma_\tau^2) P(\boldsymbol{u}|c_d=c, \boldsymbol{c}_{\backslash d}, \boldsymbol{b}, \delta) 
+\\&\propto (N_{c, \backslash d}+\frac{\zeta}{C}) \times\prod_{n=1}^N (N_{dz_{dn}, \backslash dn}+\alpha \frac{N_{z_{dn}c,\backslash dn}+\frac{\gamma}{K}}{N_{c, \backslash dn}+\gamma})\\&\times
+\varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2)\times \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\\& 
+\times \prod_{d=d}^{d^*}\Big(
+\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}\Big),
 \end{aligned}
 \end{equation}
-and for $k \in [K]$, we update the topic-interaction pattern distribution using 
-\begin{equation}
-\begin{aligned}
-&P(\boldsymbol{\psi}_{k}|\boldsymbol{l},  \gamma,\boldsymbol{u},  \boldsymbol{a},  \boldsymbol{t})
-\\&\propto P(\boldsymbol{\psi}|\gamma)P(\boldsymbol{l}|\boldsymbol{\psi})P(\boldsymbol{u}|\boldsymbol{\theta},\boldsymbol{\psi},\boldsymbol{l}, \boldsymbol{b}, \delta)P(\boldsymbol{a}, \boldsymbol{t}|\boldsymbol{\theta},\boldsymbol{\psi}, \boldsymbol{l},\boldsymbol{\eta})
-\\&\propto\Big(\prod_{c=1}^{C} \psi_{kc}^{N_{kc}+\gamma/C - 1}\Big)\\&\times\Big(\prod_{d=d+1}^{d^*}\Big(
-\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}\Big)\Big)
-\\&\times\Big(\varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2)\times \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\Big)\\
-& \nsim  \mbox{Dirichlet}(N_{k1}+ \gamma/C,\ldots, N_{kC} + \gamma/C),
-\end{aligned}
-\end{equation}
-where $N_{kc}$ is the number of topics assigned to interaction pattern $c$.
+where $d^*$ is the last document that is affected by current document $d$ (i.e., $t_d + 384 \approx t_{d^*}$). 
 
-\textcolor{red}{After these two parameters $\boldsymbol{\theta}$ and $\boldsymbol{\psi}$ are updated (i.e. $\pi_{dc}$), we recalculate the network statistics $x_{adrc}$, $\lambda_{adr}$ and $\xi_{adc}$ once and use it for the rest of updates. However, they both require Metropolis-Hastings (or something else similar). Is it worth trying? I don't think so...}
+\textcolor{red}{So, all the computational burden (previously on $z_{dn}$) moved to $c_d$. For every $c_d$ update, we need to re-calculate the history statistics given $c_d = c$, to evaluate the last line of Equation (16). If we use small $C$, I can imagine that this should be faster than the curent version. However, if we want to extend this to allow unknown number of latent cluster (such as cluster LDA), this may be worse.}
+
 
 % Acknowledgements should only appear in the accepted version.
-
-\iffalse
 
 % In the unusual situation where you want a paper to appear in the
 % references without citing it in the main text, use \nocite
@@ -317,7 +286,6 @@ where $N_{kc}$ is the number of topics assigned to interaction pattern $c$.
 
 \bibliography{IPTM}
 \bibliographystyle{icml2018}
-		\fi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DELETE THIS PART. DO NOT PLACE CONTENT AFTER THE REFERENCES!
