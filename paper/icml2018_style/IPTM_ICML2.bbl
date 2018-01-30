@@ -1,9 +1,29 @@
-\begin{thebibliography}{6}
+\begin{thebibliography}{39}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Alem{\'a}n \& Calvo(2013)Alem{\'a}n and Calvo]{aleman2013explaining}
+Alem{\'a}n, Eduardo and Calvo, Ernesto.
+\newblock Explaining policy ties in presidential congresses: A network analysis
+  of bill initiation data.
+\newblock \emph{Political Studies}, 61\penalty0 (2):\penalty0 356--377, 2013.
+
+\bibitem[ben Aaron et~al.(2017)ben Aaron, Denny, Desmarais, and
+  Wallach]{ben2017transparency}
+ben Aaron, James, Denny, Matthew, Desmarais, Bruce, and Wallach, Hanna.
+\newblock Transparency by conformity: A field experiment evaluating openness in
+  local governments.
+\newblock \emph{Public Administration Review}, 77\penalty0 (1):\penalty0
+  68--77, 2017.
+
+\bibitem[Bilgic et~al.(2010)Bilgic, Mihalkova, and Getoor]{bilgic2010active}
+Bilgic, Mustafa, Mihalkova, Lilyana, and Getoor, Lise.
+\newblock Active learning for networked data.
+\newblock In \emph{Proceedings of the 27th international conference on machine
+  learning (ICML-10)}, pp.\  79--86, 2010.
 
 \bibitem[Blei et~al.(2003)Blei, Ng, and Jordan]{Blei2003}
 Blei, David~M., Ng, Andrew~Y., and Jordan, Michael~I.
@@ -11,11 +31,171 @@ Blei, David~M., Ng, Andrew~Y., and Jordan, Michael~I.
 \newblock \emph{J. Mach. Learn. Res.}, 3:\penalty0 993--1022, March 2003.
 \newblock ISSN 1532-4435.
 
+\bibitem[Bratton \& Rouse(2011)Bratton and Rouse]{bratton2011networks}
+Bratton, Kathleen~A and Rouse, Stella~M.
+\newblock Networks in the legislative arena: How group dynamics affect
+  cosponsorship.
+\newblock \emph{Legislative Studies Quarterly}, 36\penalty0 (3):\penalty0
+  423--460, 2011.
+
+\bibitem[Burgess et~al.(2004)Burgess, Jackson, and Edwards]{burgess2004email}
+Burgess, Anthony, Jackson, Thomas, and Edwards, Janet.
+\newblock Email overload: Tolerance levels of employees within the workplace.
+\newblock In \emph{Innovations Through Information Technology: 2004 Information
+  Resources Management Association International Conference, New Orleans,
+  Louisiana, USA, May 23-26, 2004}, volume~1, pp.\  205. IGI Global, 2004.
+
+\bibitem[Butts(2008)]{Butts2008}
+Butts, Carter~T.
+\newblock A relational event framework for social action.
+\newblock \emph{Sociological Methodology}, 38\penalty0 (1):\penalty0 155--200,
+  2008.
+\newblock ISSN 1467-9531.
+\newblock \doi{10.1111/j.1467-9531.2008.00203.x}.
+
+\bibitem[Camber~Warren(2010)]{camber2010geometry}
+Camber~Warren, T.
+\newblock The geometry of security: Modeling interstate alliances as evolving
+  networks.
+\newblock \emph{Journal of Peace Research}, 47\penalty0 (6):\penalty0 697--709,
+  2010.
+
+\bibitem[Chatterjee et~al.(2013)Chatterjee, Diaconis,
+  et~al.]{chatterjee2013estimating}
+Chatterjee, Sourav, Diaconis, Persi, et~al.
+\newblock Estimating and understanding exponential random graph models.
+\newblock \emph{The Annals of Statistics}, 41\penalty0 (5):\penalty0
+  2428--2461, 2013.
+
+\bibitem[Cranmer et~al.(2012{\natexlab{a}})Cranmer, Desmarais, and
+  Kirkland]{cranmer2012toward}
+Cranmer, Skyler~J, Desmarais, Bruce~A, and Kirkland, Justin~H.
+\newblock Toward a network theory of alliance formation.
+\newblock \emph{International Interactions}, 38\penalty0 (3):\penalty0
+  295--324, 2012{\natexlab{a}}.
+
+\bibitem[Cranmer et~al.(2012{\natexlab{b}})Cranmer, Desmarais, and
+  Menninga]{cranmer2012complex}
+Cranmer, Skyler~J, Desmarais, Bruce~A, and Menninga, Elizabeth~J.
+\newblock Complex dependencies in the alliance network.
+\newblock \emph{Conflict Management and Peace Science}, 29\penalty0
+  (3):\penalty0 279--313, 2012{\natexlab{b}}.
+
+\bibitem[Desmarais \& Cranmer(2017)Desmarais and
+  Cranmer]{desmarais2017statistical}
+Desmarais, Bruce~A. and Cranmer, Skyler~J.
+\newblock Statistical inference in political networks research.
+\newblock In Victor, Jennifer~Nicoll, Montgomery, Alexander~H., and Lubell,
+  Mark (eds.), \emph{The Oxford Handbook of Political Networks}. Oxford
+  University Press, 2017.
+
+\bibitem[Fahmy \& Young(2016)Fahmy and Young]{fahmy2016gender}
+Fahmy, Chantal and Young, Jacob~TN.
+\newblock Gender inequality and knowledge production in criminology and
+  criminal justice.
+\newblock \emph{Journal of Criminal Justice Education}, pp.\  1--21, 2016.
+
 \bibitem[Fellows \& Handcock(2017)Fellows and Handcock]{fellows2017removing}
 Fellows, Ian and Handcock, Mark.
 \newblock Removing phase transitions from gibbs measures.
 \newblock In \emph{Artificial Intelligence and Statistics}, pp.\  289--297,
   2017.
+
+\bibitem[Griffiths \& Steyvers(2004)Griffiths and
+  Steyvers]{griffiths2004finding}
+Griffiths, Thomas~L and Steyvers, Mark.
+\newblock Finding scientific topics.
+\newblock \emph{Proceedings of the National academy of Sciences}, 101\penalty0
+  (suppl 1):\penalty0 5228--5235, 2004.
+
+\bibitem[Hand \& Till(2001)Hand and Till]{hand2001simple}
+Hand, David~J and Till, Robert~J.
+\newblock A simple generalisation of the area under the roc curve for multiple
+  class classification problems.
+\newblock \emph{Machine learning}, 45\penalty0 (2):\penalty0 171--186, 2001.
+
+\bibitem[Hunter et~al.(2008)Hunter, Handcock, Butts, Goodreau, and
+  Morris]{hunter2008ergm}
+Hunter, David~R, Handcock, Mark~S, Butts, Carter~T, Goodreau, Steven~M, and
+  Morris, Martina.
+\newblock ergm: A package to fit, simulate and diagnose exponential-family
+  models for networks.
+\newblock \emph{Journal of statistical software}, 24\penalty0 (3):\penalty0
+  nihpa54860, 2008.
+
+\bibitem[Kanungo \& Jain(2008)Kanungo and Jain]{kanungo2008modeling}
+Kanungo, Shivraj and Jain, Vikas.
+\newblock Modeling email use: a case of email system transition.
+\newblock \emph{System Dynamics Review}, 24\penalty0 (3):\penalty0 299--319,
+  2008.
+
+\bibitem[Kinne(2016)]{kinne2016agreeing}
+Kinne, Brandon~J.
+\newblock Agreeing to arm: Bilateral weapons agreements and the global arms
+  trade.
+\newblock \emph{Journal of Peace Research}, 53\penalty0 (3):\penalty0 359--377,
+  2016.
+
+\bibitem[Klimt \& Yang(2004)Klimt and Yang]{klimt2004introducing}
+Klimt, Bryan and Yang, Yiming.
+\newblock Introducing the enron corpus.
+\newblock In \emph{CEAS}, 2004.
+
+\bibitem[Krafft et~al.(2012)Krafft, Moore, Desmarais, and Wallach]{Krafft2012}
+Krafft, Peter, Moore, Juston, Desmarais, Bruce, and Wallach, Hanna~M.
+\newblock Topic-partitioned multinetwork embeddings.
+\newblock In Pereira, F., Burges, C.J.C., Bottou, L., and Weinberger, K.Q.
+  (eds.), \emph{Advances in Neural Information Processing Systems 25}, pp.\
+  2807--2815. Curran Associates, Inc., 2012.
+
+\bibitem[Kronegger et~al.(2011)Kronegger, Mali, Ferligoj, and
+  Doreian]{kronegger2011collaboration}
+Kronegger, Luka, Mali, Franc, Ferligoj, Anu{\v{s}}ka, and Doreian, Patrick.
+\newblock Collaboration structures in slovenian scientific communities.
+\newblock \emph{Scientometrics}, 90\penalty0 (2):\penalty0 631--647, 2011.
+
+\bibitem[Lai et~al.(2017)Lai, She, and Tao]{lai2017connecting}
+Lai, Chih-Hui, She, Bing, and Tao, Chen-Chao.
+\newblock Connecting the dots: A longitudinal observation of relief
+  organizations' representational networks on social media.
+\newblock \emph{Computers in Human Behavior}, 74:\penalty0 224--234, 2017.
+
+\bibitem[Liang(2015)]{liang2015changing}
+Liang, Xiao.
+\newblock The changing impact of geographic distance: A preliminary analysis on
+  the co-author networks in scientometrics (1983-2013).
+\newblock In \emph{System Sciences (HICSS), 2015 48th Hawaii International
+  Conference on}, pp.\  722--731. IEEE, 2015.
+
+\bibitem[Lim et~al.(2013)Lim, Chen, and Buntine]{lim2013twitter}
+Lim, Kar~Wai, Chen, Changyou, and Buntine, Wray.
+\newblock Twitter-network topic model: A full bayesian treatment for social
+  network and text modeling.
+\newblock In \emph{NIPS2013 Topic Model workshop}, pp.\  1--5, 2013.
+
+\bibitem[McCallum et~al.(2005)McCallum, Corrada-Emmanuel, and
+  Wang]{mccallum2005author}
+McCallum, Andrew, Corrada-Emmanuel, Andr{\'e}s, and Wang, Xuerui.
+\newblock The author-recipient-topic model for topic and role discovery in
+  social networks, with application to enron and academic email.
+\newblock In \emph{Workshop on Link Analysis, Counterterrorism and Security},
+  pp.\ ~33, 2005.
+
+\bibitem[Mimno et~al.(2011)Mimno, Wallach, Talley, Leenders, and
+  McCallum]{mimno2011optimizing}
+Mimno, David, Wallach, Hanna~M, Talley, Edmund, Leenders, Miriam, and McCallum,
+  Andrew.
+\newblock Optimizing semantic coherence in topic models.
+\newblock In \emph{Proceedings of the conference on empirical methods in
+  natural language processing}, pp.\  262--272. Association for Computational
+  Linguistics, 2011.
+
+\bibitem[Peng et~al.(2016)Peng, Liu, Wu, and Liu]{peng2016follower}
+Peng, Tai-Quan, Liu, Mengchen, Wu, Yingcai, and Liu, Shixia.
+\newblock Follower-followee network, communication networks, and vote agreement
+  of the us members of congress.
+\newblock \emph{Communication Research}, 43\penalty0 (7):\penalty0 996--1024,
+  2016.
 
 \bibitem[Perry \& Wolfe(2013)Perry and Wolfe]{PerryWolfe2012}
 Perry, Patrick~O. and Wolfe, Patrick~J.
@@ -25,22 +205,65 @@ Perry, Patrick~O. and Wolfe, Patrick~J.
 \newblock ISSN 1467-9868.
 \newblock \doi{10.1111/rssb.12013}.
 
+\bibitem[Pew(2016)]{pew2016}
+Pew, Research~Center.
+\newblock Social media fact sheet.
+\newblock \emph{Accessed on 03/07/17}, 2016.
+
+\bibitem[Richardson et~al.(2006)Richardson, Prakash, and
+  Brill]{richardson2006beyond}
+Richardson, Matthew, Prakash, Amit, and Brill, Eric.
+\newblock Beyond pagerank: machine learning for static ranking.
+\newblock In \emph{Proceedings of the 15th international conference on World
+  Wide Web}, pp.\  707--715. ACM, 2006.
+
+\bibitem[Robins et~al.(2007)Robins, Pattison, Kalish, and
+  Lusher]{robins2007introduction}
+Robins, Garry, Pattison, Pip, Kalish, Yuval, and Lusher, Dean.
+\newblock An introduction to exponential random graph (p*) models for social
+  networks.
+\newblock \emph{Social networks}, 29\penalty0 (2):\penalty0 173--191, 2007.
+
+\bibitem[Rubin et~al.(1984)]{rubin1984bayesianly}
+Rubin, Donald~B et~al.
+\newblock Bayesianly justifiable and relevant frequency calculations for the
+  applied statistician.
+\newblock \emph{The Annals of Statistics}, 12\penalty0 (4):\penalty0
+  1151--1172, 1984.
+
 \bibitem[Snijders(1996)]{snijders1996stochastic}
 Snijders, Tom~AB.
 \newblock Stochastic actor-oriented models for network change.
 \newblock \emph{Journal of mathematical sociology}, 21\penalty0 (1-2):\penalty0
   149--172, 1996.
 
-\bibitem[Snijders(2017)]{snijders2017stochastic}
-Snijders, Tom~AB.
-\newblock Stochastic actor-oriented models for network dynamics.
-\newblock \emph{Annual Review of Statistics and Its Application}, \penalty0
-  (0), 2017.
-
 \bibitem[Snijders et~al.(2010)Snijders, Van~de Bunt, and
   Steglich]{snijders2010introduction}
 Snijders, Tom~AB, Van~de Bunt, Gerhard~G, and Steglich, Christian~EG.
 \newblock Introduction to stochastic actor-based models for network dynamics.
 \newblock \emph{Social networks}, 32\penalty0 (1):\penalty0 44--60, 2010.
+
+\bibitem[Sz{\'o}stek(2011)]{szostek2011dealing}
+Sz{\'o}stek, Agnieszka~Matysiak.
+\newblock ?dealing with my emails?: Latent user needs in email management.
+\newblock \emph{Computers in Human Behavior}, 27\penalty0 (2):\penalty0
+  723--729, 2011.
+
+\bibitem[Tanner \& Wong(1987)Tanner and Wong]{tanner1987calculation}
+Tanner, Martin~A and Wong, Wing~Hung.
+\newblock The calculation of posterior distributions by data augmentation.
+\newblock \emph{Journal of the American statistical Association}, 82\penalty0
+  (398):\penalty0 528--540, 1987.
+
+\bibitem[Wallach(2008)]{wallach2008structured}
+Wallach, Hanna~Megan.
+\newblock \emph{Structured topic models for language}.
+\newblock PhD thesis, University of Cambridge, 2008.
+
+\bibitem[Yoon \& Park(2014)Yoon and Park]{yoon2014strategies}
+Yoon, Ho~Young and Park, Han~Woo.
+\newblock Strategies affecting twitter-based networking pattern of south korean
+  politicians: social network analysis and exponential random graph model.
+\newblock \emph{Quality \& Quantity}, pp.\  1--15, 2014.
 
 \end{thebibliography}
