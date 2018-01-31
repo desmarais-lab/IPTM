@@ -204,8 +204,9 @@ List History(List edge, NumericVector timestamps, NumericMatrix p_d, IntegerVect
     double time1 = timestamps[d-2]-384*timeunit;
 	double time2 = timestamps[d-2]-96*timeunit;
     double time3 = timestamps[d-2]-24*timeunit;
-    
-	  for (int i = 0; i < (d-1); i++) {
+    int iter = which_num(time1, timestamps);
+
+	  for (int i = iter-1; i < (d-1); i++) {
 	    List document2 = edge[i];
 	    int sender = document2[0];
 	    IntegerVector receiver = document2[1];
@@ -213,7 +214,7 @@ List History(List edge, NumericVector timestamps, NumericMatrix p_d, IntegerVect
 	    for (unsigned int r = 0; r < receiver.size(); r++){
 	       for (int IP = 0; IP < nIP; IP++) {
   			  List IPlist_IP = IPmat[IP];
-               if (time >= time1 && time < time2) {
+               if (time < time2) {
                    NumericMatrix IP_l = IPlist_IP[2];
                    IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
                    IPlist_IP[2] = IP_l;
@@ -237,98 +238,30 @@ List History(List edge, NumericVector timestamps, NumericMatrix p_d, IntegerVect
 	return IPmat;
 }
 
-
-// **********************************************************//
-//              Construct the history of interaction         //
-// **********************************************************//
-// [[Rcpp::export]]
-List History2(List edge, NumericMatrix p_d, IntegerVector node, double when, double timeunit) {
-    int nIP = p_d.ncol();
-    List IPmat(nIP);
-    for (int IP = 1; IP < (nIP+1); IP++) {
-        List IPlist_IP(3);
-        for (unsigned int l = 0; l < 3; l++){
-            NumericMatrix IP_l(node.size(), node.size());
-            IPlist_IP[l] = IP_l;
-        }
-        IPmat[IP-1] = IPlist_IP;
-    }
-    NumericVector timestamps(edge.size());
-    for (unsigned int d = 0; d < edge.size(); d++) {
-        List document = edge[d];
-        timestamps[d] = Rcpp::as<double>(document[2]);
-    }
-    int iter = which_num(when, timestamps);
-    
-        for (int i = 0; i < iter; i++) {
-            List document2 = edge[i];
-            int sender = document2[0];
-            IntegerVector receiver = document2[1];
-            double time = Rcpp::as<double>(document2[2]);
-            double time1 = when-384*timeunit;
-            double time2 = when-96*timeunit;
-            double time3 = when-24*timeunit;
-            for (unsigned int r = 0; r < receiver.size(); r++){
-                for (int IP = 0; IP < nIP; IP++) {
-                    List IPlist_IP = IPmat[IP];
-                    if (time >= time3) {
-                        NumericMatrix IP_l = IPlist_IP[0];
-                        IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
-                        IPlist_IP[0] = IP_l;
-                    }
-                    if (time >= time2 && time < time3) {
-                        NumericMatrix IP_l = IPlist_IP[1];
-                        IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
-                        IPlist_IP[1] = IP_l;
-                    }  				
-                    if (time >= time1 && time < time2) {
-                        NumericMatrix IP_l = IPlist_IP[2];
-                        IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
-                        IPlist_IP[2] = IP_l;
-                    } 		
-                    IPmat[IP] = IPlist_IP;
-                }
-            }
-    }
-    return IPmat;
-}
-
 // **********************************************************//
 //                  Calculate Degree statistics              //
 // **********************************************************//
 // [[Rcpp::export]]
 List Degree(List history, IntegerVector node, int sender) {
-  int nIP = history.size();
-  int A = node.size();
-  List IPmat(nIP);
- 
-  for (int IP = 0; IP < nIP; IP++) {
-  	 NumericMatrix degreemat_IP(A, 6);
-  	 List historyIP = history[IP];
-     NumericVector degree(6); 
-	 
-   for (int receiver = 0; receiver < A; receiver++) {
-    for (unsigned int l = 0; l < 3; l++) {
-    	NumericMatrix historyIP_l = historyIP[l];
-    double send = historyIP_l(sender, receiver);
-    	
-   	NumericVector indegree(A);
-    	for (int h = 0; h < A; h++) {
-     	double htor = historyIP_l(h, receiver);
-    	 indegree[h] = htor;
-     	}
-    	degree[l+3] = sum(indegree);
-    	degree[l] = degree[l]+send;
-      }
-    degreemat_IP(receiver,_) = degree;
+    int nIP = history.size();
+    int A = node.size();
+    List IPmat(nIP);
+    
+    for (int IP = 0; IP < nIP; IP++) {
+        NumericMatrix degreemat_IP(A, 6);
+        List historyIP = history[IP];
+        NumericVector degree(6);
+        for (unsigned int l = 0; l < 3; l++) {
+            NumericMatrix historyIP_l = historyIP[l];
+            double outdegree = sum(historyIP_l(sender, _));
+            degreemat_IP(_,l+3) = colSums(historyIP_l);
+            degreemat_IP(_,l) = rep(outdegree, A);
+            }
+        IPmat[IP] = degreemat_IP;
     }
-   for (unsigned int l2 = 0; l2 < 3; l2++) {
-    degreemat_IP(_, l2) = rep(max(degreemat_IP(_,l2)), A);
-   }
-  IPmat[IP] = degreemat_IP;
-  }
-  return IPmat;
+    return IPmat;
 }
+
 
 // **********************************************************//
 //                  Calculate Dyadic statistics              //
@@ -344,6 +277,7 @@ List Dyadic(List history, IntegerVector node, int sender) {
   	 List historyIP = history[IP];
      NumericVector dyadic(6); 
      for (int receiver = 0; receiver < A; receiver++) {
+          if (receiver != sender) {
         for (unsigned int l = 0; l < 3; l++) {
     		NumericMatrix historyIP_l = historyIP[l];
     		dyadic[l] = historyIP_l(sender, receiver);
@@ -351,6 +285,7 @@ List Dyadic(List history, IntegerVector node, int sender) {
     	}
       dyadicmat_IP(receiver, _) = dyadic;
     }
+     }
     IPmat[IP] = dyadicmat_IP;
   } 
   return IPmat;
@@ -380,15 +315,17 @@ List Triadic(List history, IntegerVector node, int sender) {
             NumericMatrix historyIP_l = historyIP[l];
             NumericMatrix historyIP_m = historyIP[m];
        	    for (int third = 0; third < A; third++) {
-     	       double stoh = historyIP_l(sender, third);
-      	       double htos = historyIP_l(third, sender); 
-     	       double rtoh = historyIP_m(receiver, third);
-      	       double htor = historyIP_m(third, receiver); 
+     	       if (third != sender && third != receiver) {
+                 double stoh = historyIP_l(sender, third);
+      	         double htos = historyIP_l(third, sender);
+     	         double rtoh = historyIP_m(receiver, third);
+      	         double htor = historyIP_m(third, receiver);
       	        twosend[third] = stoh*htor;
       	        tworeceive[third] = htos*rtoh;
       	        sibling[third] = htos*htor;
       	        cosibling[third] = stoh*rtoh;
        	    }
+            }
        	    triadic[iter] = sum(twosend);
        	    triadic[iter+9] = sum(tworeceive);
        	    triadic[iter+18] = sum(sibling);

@@ -592,7 +592,6 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
       mvecmat = rbind(mvecmat, mvec)
     }
     alphamvec = alpha * mvec
-  
     # Data augmentation
     for (d in edge.trim) {
         vu = MultiplyXB(X[[d]], b.old)
