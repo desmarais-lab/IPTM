@@ -21,6 +21,10 @@ priorsum <- function(var, mu, x) {
     .Call('_IPTMnew_priorsum', PACKAGE = 'IPTMnew', var, mu, x)
 }
 
+tabulateC <- function(x, max) {
+    .Call('_IPTMnew_tabulateC', PACKAGE = 'IPTMnew', x, max)
+}
+
 transpose <- function(x) {
     .Call('_IPTMnew_transpose', PACKAGE = 'IPTMnew', x)
 }
@@ -53,24 +57,36 @@ expconst <- function(consts) {
     .Call('_IPTMnew_expconst', PACKAGE = 'IPTMnew', consts)
 }
 
-History <- function(edge, timestamps, cd, node, d, timeunit) {
-    .Call('_IPTMnew_History', PACKAGE = 'IPTMnew', edge, timestamps, cd, node, d, timeunit)
+History <- function(edge, timestamps, cd, A, d, timeunit) {
+    .Call('_IPTMnew_History', PACKAGE = 'IPTMnew', edge, timestamps, cd, A, d, timeunit)
 }
 
-Degree <- function(history, node, sender) {
-    .Call('_IPTMnew_Degree', PACKAGE = 'IPTMnew', history, node, sender)
+History2 <- function(edge, timestamps, cd, A, timeintd, timeunit) {
+    .Call('_IPTMnew_History2', PACKAGE = 'IPTMnew', edge, timestamps, cd, A, timeintd, timeunit)
 }
 
-Dyadic <- function(history, node, sender) {
-    .Call('_IPTMnew_Dyadic', PACKAGE = 'IPTMnew', history, node, sender)
+Degree <- function(history, A, sender) {
+    .Call('_IPTMnew_Degree', PACKAGE = 'IPTMnew', history, A, sender)
 }
 
-Triadic <- function(history, node, sender) {
-    .Call('_IPTMnew_Triadic', PACKAGE = 'IPTMnew', history, node, sender)
+Outdegree <- function(timeintd, cd, senders, A) {
+    .Call('_IPTMnew_Outdegree', PACKAGE = 'IPTMnew', timeintd, cd, senders, A)
 }
 
-Netstats_cpp <- function(history, node, netstat) {
-    .Call('_IPTMnew_Netstats_cpp', PACKAGE = 'IPTMnew', history, node, netstat)
+Indegree <- function(history, A, sender) {
+    .Call('_IPTMnew_Indegree', PACKAGE = 'IPTMnew', history, A, sender)
+}
+
+Dyadic <- function(history, A, sender) {
+    .Call('_IPTMnew_Dyadic', PACKAGE = 'IPTMnew', history, A, sender)
+}
+
+Triadic <- function(history, A, sender) {
+    .Call('_IPTMnew_Triadic', PACKAGE = 'IPTMnew', history, A, sender)
+}
+
+Netstats_cpp <- function(edge, timestamps, timeintd, senders, cd, A, d, timeunit, netstat) {
+    .Call('_IPTMnew_Netstats_cpp', PACKAGE = 'IPTMnew', edge, timestamps, timeintd, senders, cd, A, d, timeunit, netstat)
 }
 
 inner <- function(x, y) {
@@ -81,20 +97,16 @@ MultiplyXB <- function(X, B) {
     .Call('_IPTMnew_MultiplyXB', PACKAGE = 'IPTMnew', X, B)
 }
 
-tabulateC <- function(x, max) {
-    .Call('_IPTMnew_tabulateC', PACKAGE = 'IPTMnew', x, max)
+TopicWord <- function(K, tabledk, tableWd, tableCd, tablek, N, alphas, beta, V) {
+    .Call('_IPTMnew_TopicWord', PACKAGE = 'IPTMnew', K, tabledk, tableWd, tableCd, tablek, N, alphas, beta, V)
 }
 
-TopicWord <- function(K, z_d, textlistd, tableW, tableCd, alpha, alpha0, beta, V, w) {
-    .Call('_IPTMnew_TopicWord', PACKAGE = 'IPTMnew', K, z_d, textlistd, tableW, tableCd, alpha, alpha0, beta, V, w)
+TopicWord0 <- function(K, tableCd, tablek, N, alphas, beta, V) {
+    .Call('_IPTMnew_TopicWord0', PACKAGE = 'IPTMnew', K, tableCd, tablek, N, alphas, beta, V)
 }
 
-TopicWord0 <- function(K, tableW, tableCd, alpha, alpha0, beta, V) {
-    .Call('_IPTMnew_TopicWord0', PACKAGE = 'IPTMnew', K, tableW, tableCd, alpha, alpha0, beta, V)
-}
-
-Topicpart <- function(K, z_d, tableCd, alpha, alpha0) {
-    .Call('_IPTMnew_Topicpart', PACKAGE = 'IPTMnew', K, z_d, tableCd, alpha, alpha0)
+Topicpart <- function(K, z_d, tableCd, tablek, alphas) {
+    .Call('_IPTMnew_Topicpart', PACKAGE = 'IPTMnew', K, z_d, tableCd, tablek, alphas)
 }
 
 lmultinom <- function(lprops) {
@@ -113,12 +125,12 @@ Edgepartsum <- function(X, B, u, delta) {
     .Call('_IPTMnew_Edgepartsum', PACKAGE = 'IPTMnew', X, B, u, delta)
 }
 
-mu_vec <- function(timemat, node, eta) {
-    .Call('_IPTMnew_mu_vec', PACKAGE = 'IPTMnew', timemat, node, eta)
+mu_vec <- function(timemat, A, eta) {
+    .Call('_IPTMnew_mu_vec', PACKAGE = 'IPTMnew', timemat, A, eta)
 }
 
-mu_mat <- function(timemat, node, eta, cd) {
-    .Call('_IPTMnew_mu_mat', PACKAGE = 'IPTMnew', timemat, node, eta, cd)
+mu_mat <- function(timemat, A, eta, cd) {
+    .Call('_IPTMnew_mu_mat', PACKAGE = 'IPTMnew', timemat, A, eta, cd)
 }
 
 Timepart <- function(mu, sigma_tau, a_d, t_d) {
@@ -127,5 +139,9 @@ Timepart <- function(mu, sigma_tau, a_d, t_d) {
 
 Timepartsum <- function(mumat, sigma_tau, senders, timestamps) {
     .Call('_IPTMnew_Timepartsum', PACKAGE = 'IPTMnew', mumat, sigma_tau, senders, timestamps)
+}
+
+timefinder <- function(timestamps, edgetrim, timeunit) {
+    .Call('_IPTMnew_timefinder', PACKAGE = 'IPTMnew', timestamps, edgetrim, timeunit)
 }
 

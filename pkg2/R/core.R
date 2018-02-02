@@ -14,7 +14,6 @@
 
 tvapply = function(...) transpose(vapply(...))
 
-
 #' @title gibbs.measure.support
 #' @description List out the support of Gibbs measure
 #'
@@ -87,8 +86,7 @@ adaptive.MH = function(sigma.Q, accept.rates, target = 0.25, update.size, tol = 
 #' @param nIP total number of interaction patterns
 #' @param K total number of topics
 #' @param sigma.Q proposal distribution variance parameter
-#' @param alpha0 Dirichlet concentration prior for document-topic distribution
-#' @param alpha Dirichlet concentration prior for document-topic distribution
+#' @param alphas Dirichlet concentration prior for document-topic distribution (alpha0, alpha1, alpha)
 #' @param beta Dirichlet concentration prior for topic-word distribution
 #' @param zeta Dirichlet concentration prior for document-interaction-pattern distribution
 #' @param prior.b prior mean and covariance of b in multivariate Normal distribution
@@ -96,6 +94,7 @@ adaptive.MH = function(sigma.Q, accept.rates, target = 0.25, update.size, tol = 
 #' @param prior.eta prior mean and covariance of eta in multivariate Normal distribution
 #' @param prior.tau prior shape and scale parameter of sigma_tau in inverse-Gamma distribution
 #' @param Outer size of outer iterations 
+#' @param Inner size of inner iteration for Metropolis-Hastings updates
 #' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
 #' @param timestat additional statistics to be used for timestamps other than netstat ("sender", "receiver","timeofday", "dayofweek")
 #' @param initial list of initial values user wants to assign including (delta, b, eta, cd, z, u, sigma_tau, proposal.var1, proposal.var2)
@@ -106,8 +105,8 @@ adaptive.MH = function(sigma.Q, accept.rates, target = 0.25, update.size, tol = 
 #'
 #' @export
 
-IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, alpha, beta, zeta,
-                          prior.b, prior.delta, prior.eta, prior.tau, Outer,
+IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, beta, zeta,
+                          prior.b, prior.delta, prior.eta, prior.tau, Outer, Inner,
                           netstat, timestat, initial = NULL, timeunit = 3600, tz = "America/New_York") {
   
   # trim the edge so that we only model edges after 384 hours
@@ -151,9 +150,13 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, 
   for (k in 1:K) {
     phi[k,] = rdirichlet_cpp(1, rep(beta/V, V))
   }
+  alpha0 = alphas[1]
+  alpha1 = alphas[2]
+  alpha = alphas[3]
+  m = rdirichlet_cpp(1, rep(alpha0/K, K))
   mc = matrix(NA, nIP, K)
   for (IP in 1:nIP) {
-    mc[IP,] = rdirichlet_cpp(1, rep(alpha0/K, K))
+    mc[IP,] = rdirichlet_cpp(1, alpha1*m)
   }
   psi = rdirichlet_cpp(1, rep(zeta/nIP, nIP))
   if (length(initial) == 0) {
@@ -200,17 +203,22 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, 
         hist.d[d] = which_num(timestamps[d]+384*timeunit, timestamps)
       }
   }
+  timeinterval = timefinder(timestamps, edge.trim, timeunit)
   X = list()
   for (d in edge.trim) {
-        history.t = History(edge, timestamps, cd, node, d, timeunit)
-        X[[d]] = Netstats_cpp(history.t, node, netstat)
+    X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, d, timeunit, netstat)
   }
   table.W = tvapply(1:K, function(k) {
       tabulateC(textlist.raw[which(unlist(z[-emptytext]) == k)], V)
         }, rep(0, V))
-  table.Cd = vapply(1:nIP, function(IP) {
+  table.cd = vapply(1:nIP, function(IP) {
       tabulateC(unlist(z[which(cd == IP)]), K)
         }, rep(0, K))
+  table.dk = vapply(1:D, function(d) {
+      tabulateC(unlist(z[[d]]), K)
+        }, rep(0, K))
+  table.k = rowSums(table.dk)  
+  totalN = sum(table.k)-1    
   #start outer iteration
   for (o in 1:Outer) {
     print(o)
@@ -228,26 +236,31 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, 
     # Z update	
     topicsum = 0
     for (d in 1:D) {
-	   	textlist.d = textlist[[d]] 
+	   	textlist.d = textlist[[d]]
 	   	for (w in 1:length(z[[d]])) {
 	   		zw.old = z[[d]][w]
-	   		table.Cd[zw.old, cd[d]] = table.Cd[zw.old, cd[d]]-1
+	   		table.cd[zw.old, cd[d]] = table.cd[zw.old, cd[d]]-1
+	   		table.dk[zw.old, d] = table.dk[zw.old, d]-1
+	   		table.k[zw.old] = table.k[zw.old]-1
         if (length(textlist.d) > 0) {
           table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
-       	  topicword.d = TopicWord(K, z[[d]][-w], textlist.d, table.W, table.Cd[,cd[d]], alpha, alpha0, beta, V, w)
+       	  topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN, 
+       	  						 alphas, beta, V)
           zw.new = lmultinom(topicword.d)
           if (zw.new != zw.old) {
               z[[d]][w] = zw.new
           }
           table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
         } else {
-          topicword.d = TopicWord0(K, table.W, table.Cd[,cd[d]], alpha, alpha0, beta, V)
+          topicword.d = TopicWord0(K, table.cd[,cd[d]], table.k, totalN, alphas, beta, V)
           zw.new = lmultinom(topicword.d)
           if (zw.new != zw.old) {
               z[[d]][w] = zw.new
           }
         }
-       table.Cd[z[[d]][w], cd[d]] = table.Cd[z[[d]][w], cd[d]]+1 
+       table.cd[z[[d]][w], cd[d]] = table.cd[z[[d]][w], cd[d]]+1 
+       table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
+	   table.k[z[[d]][w]] = table.k[z[[d]][w]]+1
        topicsum = topicsum + topicword.d[z[[d]][w]] 
       }
     }
@@ -258,19 +271,17 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, 
     	IPpart = log(tabulateC(cd[-d], nIP) + zeta/nIP)
       for (IP in 1:nIP) {
         cd[d] = IP
-        history.t = History(edge, timestamps, cd, node, hist.d[d], timeunit)
-       	Xnew = Netstats_cpp(history.t, node, netstat)
+       	Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[hist.d[d]]], senders, cd, A, hist.d[d], timeunit, netstat)
         Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[hist.d[d]]], delta)
-        munew = mu_vec(timemat[d,], node, eta.old[IP,])
+        munew = mu_vec(timemat[d,], A, eta.old[IP,])
         Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
-        Topicpart = Topicpart(K, z[[d]], table.Cd[,IP], alpha, alpha0) 	  	
+        Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k, alphas) 	  	
         const.C[IP] = Edgepart+Timepart+Topicpart+ IPpart[IP]
       }
       cd[d] = lmultinom(const.C)
 	}
 	  for (d in edge.trim) {
-        history.t = History(edge, timestamps, cd, node, d, timeunit)
-        X[[d]] = Netstats_cpp(history.t, node, netstat)
+        X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, d, timeunit, netstat)
  	  }
       
   # adaptive M-H   
@@ -287,7 +298,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, 
     			 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
     post.old1 = Edgepartsum(X[[max.edge]], b.old[cd[d],], u[[max.edge]], delta)
     b.new = matrix(NA, nIP, P)
-    for (inner in 1:5) {
+    for (inner in 1:Inner[1]) {
       for (IP in 1:nIP) {
 			  b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
 	  }
@@ -309,15 +320,15 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, 
         deltamat = c(deltamat, delta)
     }
      
-      mu = mu_mat(timemat, node, eta.old, cd)
+      mu = mu_mat(timemat, A, eta.old, cd)
 	  prior.old2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
 	  post.old2 = Timepartsum(mu, sigma_tau, senders, timeinc)
       eta.new = matrix(NA, nIP, Q)
-      for (inner in 1:5) {
+      for (inner in 1:Inner[2]) {
           for (IP in 1:nIP) {
 			  eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
 		  }
-      mu = mu_mat(timemat, node, eta.new, cd)
+      mu = mu_mat(timemat, A, eta.new, cd)
       prior.new2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
       post.new2 = Timepartsum(mu, sigma_tau, senders, timeinc)
       loglike.diff = prior.new2+post.new2-prior.old2-post.old2
@@ -334,7 +345,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, 
       
     prior.old3 = dhalfcauchy(sigma_tau, prior.tau, TRUE)
     post.old3 = post.old2
-    for (inner in 1:5) {
+    for (inner in 1:Inner[3]) {
       sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
       prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau, TRUE)
       post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc)

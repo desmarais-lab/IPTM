@@ -4,9 +4,9 @@
 \alias{IPTM.inference}
 \title{IPTM.inference}
 \usage{
-IPTM.inference(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, alpha,
-  beta, zeta, prior.b, prior.delta, prior.eta, prior.tau, Outer, netstat,
-  timestat, initial = NULL, timeunit = 3600, tz = "America/New_York")
+IPTM.inference(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, beta, zeta,
+  prior.b, prior.delta, prior.eta, prior.tau, Outer, Inner, netstat, timestat,
+  initial = NULL, timeunit = 3600, tz = "America/New_York")
 }
 \arguments{
 \item{edge}{list of tie data with 3 elements (1: author, 2: recipient, 3: timestamp in unix.time format)}
@@ -23,9 +23,7 @@ IPTM.inference(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, alpha,
 
 \item{sigma.Q}{proposal distribution variance parameter}
 
-\item{alpha0}{Dirichlet concentration prior for document-topic distribution}
-
-\item{alpha}{Dirichlet concentration prior for document-topic distribution}
+\item{alphas}{Dirichlet concentration prior for document-topic distribution (alpha0, alpha1, alpha)}
 
 \item{beta}{Dirichlet concentration prior for topic-word distribution}
 
@@ -40,6 +38,8 @@ IPTM.inference(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha0, alpha,
 \item{prior.tau}{prior shape and scale parameter of sigma_tau in inverse-Gamma distribution}
 
 \item{Outer}{size of outer iterations}
+
+\item{Inner}{size of inner iteration for Metropolis-Hastings updates}
 
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 

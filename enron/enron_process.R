@@ -1,6 +1,5 @@
 raw= read.csv("enron.csv", header = FALSE )
 enron = raw[,c(2,3,1,4)]
-
 library(stringr)
 
 Clean_String <- function(string){

@@ -435,8 +435,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, m
       }
     }
 
-    convergence[o] = Edgepartsum(X[[max.edge]], p.d[max.edge, ], b.old, u[[max.edge]], delta)+
-                     Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
+    convergence[o] = post.old1+post.old3
   }
  
   chain.final = list(l = l, z = z, b = bmat, eta = etamat, delta = deltamat, sigma_tau = sigma_taumat,
@@ -767,8 +766,7 @@ IPTM.inference2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alpha, 
         sigma_taumat = c(sigma_taumat, sigma_tau)
     }
 
-    edgepart[o] = Edgepartsum(X[[max.edge]], p.d[max.edge, ], b.old, u[[max.edge]], delta)+
-                     Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
+    edgepart[o] = post.old1+post.old3
     topicpart[o] = topicsum                 
 	convergence[o] = topicpart[o] + edgepart[o]
   }
@@ -1099,8 +1097,7 @@ IPTM.inference.noIP = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
       }
     }
 
-    convergence[o] = Edgepartsum(X[[max.edge]], p.d[max.edge, ], b.old, u[[max.edge]], delta)+
-                     Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
+    convergence[o] = post.old1+post.old3
   }
  
   chain.final = list(l = l, z = z, b = bmat, eta = etamat, delta = deltamat, sigma_tau = sigma_taumat,
@@ -1432,8 +1429,7 @@ netstat, timestat, optimize = FALSE, initial = NULL, timeunit = 3600, tz = "Amer
             sigma_taumat = c(sigma_taumat, sigma_tau)
         }
         
-        edgepart[o] = Edgepartsum(X[[max.edge]], p.d[max.edge, ], b.old, u[[max.edge]], delta)+
-        Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
+        edgepart[o] = post.old1+post.old3
         topicpart[o] = topicsum                 
         convergence[o] = topicpart[o] + edgepart[o]
     }
@@ -1808,8 +1804,7 @@ IPTM.inference.PPE = function(missing, edge, node, textlist, vocab, nIP, K, sigm
       }
     }
 
-    convergence[o] = Edgepartsum(X[[max.edge]], p.d[max.edge, ], b.old, u[[max.edge]], delta)+
-                     Timepartsum(mu, sigma_tau, senders, timeinc, edge.trim)
+    convergence[o] = post.old1+post.old3
   }
  
   chain.final = list(l = l, z = z, b = bmat, eta = etamat, delta = deltamat, sigma_tau = sigma_taumat,

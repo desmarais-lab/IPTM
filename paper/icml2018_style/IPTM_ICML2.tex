@@ -87,8 +87,7 @@ We introduce the interaction-partitioned topic model
 dynamics that they reflect and their content. To define the IPTM, we
 integrate a dynamic version of the exponential random graph model---a generative model for ties that tend toward structural features such as triangles---and latent Dirichlet allocation---a generative model for topic-based content.
 The IPTM assigns each document to an ``interaction
-pattern"---a generative process for contents and ties that is governed by a topic distribution and a set of dynamic network features. \textcolor{red}{Each communication is then modeled as a
-mixture of topics and their corresponding interaction patterns.} We use
+pattern"---a generative process for contents and ties that is governed by a topic distribution and a set of dynamic network features. We use
 the IPTM to analyze emails sent between department managers in Dare
 county government in North Carolina, and demonstrate that the model is effective
 at predicting and explaining continuous-time textual communications.
@@ -131,15 +130,20 @@ The words $\boldsymbol{w}_d$ are generated according to the cluster-based topic 
 \begin{equation}
 \boldsymbol{\phi}_k \sim \mbox{Dirichlet}\Big(\beta, (\frac{1}{V},\ldots,\frac{1}{V})\Big),
 \end{equation}
-where $\beta$ is the concentration parameter. Next, following the cluster-based topic model, we assume that each interaction-pattern $c \in [C]$ has unique topic distribution over $K$ topics 
-	\begin{equation}
-\boldsymbol{m}_c\sim \mbox{Dirichlet}\Big(\alpha_0, (\frac{1}{K},\ldots,\frac{1}{K})\Big),
-	\end{equation}
-	where $\alpha_0$ is the concentration parameter. Then, given the interaction-pattern assignment $c_d$, document $d$ has the corresponding document-topic distribution
-		\begin{equation}
+where $\beta$ is the concentration parameter. Next, following the cluster-based topic model, document $d$ has the document-topic distribution
+\begin{equation}
 	\boldsymbol{\theta}_d \sim \mbox{Dirichlet}(\alpha, \boldsymbol{m}_{c_d}),
+\end{equation}
+where $\alpha$ are the concentration parameter and $\boldsymbol{m}=(m_1,\ldots,m_K)$ is the base measure.
+In order to capture the overall prevalence of each topic in the corpus, we assume that each $\boldsymbol{m}_{c}$ is given Dirichlet priors with a single corpus-level base measure $\boldsymbol{m}$
+	\begin{equation}
+\boldsymbol{m}_c\sim \mbox{Dirichlet}\Big(\alpha_1, \boldsymbol{m}\Big),
 	\end{equation}
-where $\alpha$ are the concentration parameter and $\boldsymbol{m}=(m_1,\ldots,m_K)$ is the probability vector. Given that $\bar N_d = \max(1, N_d)$ where $N_d$ is known, a topic $z_{dn}$ is drawn from the document-topic distribution and then a word $w_{dn}$ is drawn from the chosen topic for each $n \in [\bar N_d]$---i.e.,
+	where $\alpha_1$ is the concentration parameter determining the extent to which the group-specific base measures are affected by the corpus-level base measure. Finally, the corpus-level base measure is assumed to have Dirichlet prior with uniform base measure
+		\begin{equation}
+			\boldsymbol{m}\sim \mbox{Dirichlet}\Big(\alpha_0, (\frac{1}{K},\ldots,\frac{1}{K})\Big).
+		\end{equation}
+	Given that $\bar N_d = \max(1, N_d)$ where $N_d$ is known, a topic $z_{dn}$ is drawn from the document-topic distribution and then a word $w_{dn}$ is drawn from the chosen topic for each $n \in [\bar N_d]$---i.e.,
 \begin{equation}
 \begin{aligned}
 &z_{dn} \sim \mbox{Multinomial}(\boldsymbol{\theta}_d),\\
@@ -229,7 +233,7 @@ t_d &=t_{d-1} + \tau_{a_d d}.
 Therefore, it is an author-driven process in that the author of a document determines its recipients and its timestamp, based on the author's urgency to send the document to chosen recipients. 
 
 \section{Posterior Inference}\label{sec:Inference}
-Given that we only observe the authors, recipients, timestamps, and tokens $ \{ (a_d, \boldsymbol{r}_d, t_d,  \boldsymbol{w}_d)\}_{d=1}^D$ in real-world, our inference goal is to invert the generative process to obtain the posterior distribution over the unknown parameters, conditioned on the observed data and hyperparamters $\alpha_0, \alpha, \beta, \zeta, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta$. After integrating out $\Phi$, $\Psi$, and $\Theta$ using Dirichlet-multinomial conjugacy \cite{griffiths2004finding}, we draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each parameter from its conditional posterior given the observed data, hyperparamters, and the current values of the other parameters. We express each parameter’s conditional posterior in a closed form using the data augmentation schemes in $\boldsymbol{u}$ \cite{tanner1987calculation}. In this section, we outline a Metropolis-within-Gibbs sampling algorithm and each latent variable's conditional posterior. Pseudocode is provided in the supplementary material.
+Given that we only observe the authors, recipients, timestamps, and tokens $ \{ (a_d, \boldsymbol{r}_d, t_d,  \boldsymbol{w}_d)\}_{d=1}^D$ in real-world, our inference goal is to invert the generative process to obtain the posterior distribution over the unknown parameters, conditioned on the observed data and hyperparamters $\alpha_0, \alpha_1, \alpha, \beta, \zeta, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta$. After integrating out $\Phi$, $\Psi$, and $\Theta$ using Dirichlet-multinomial conjugacy \cite{griffiths2004finding}, we draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each parameter from its conditional posterior given the observed data, hyperparamters, and the current values of the other parameters. We express each parameter’s conditional posterior in a closed form using the data augmentation schemes in $\boldsymbol{u}$ \cite{tanner1987calculation}. In this section, we outline a Metropolis-within-Gibbs sampling algorithm and each latent variable's conditional posterior. Pseudocode is provided in the supplementary material.
 
 First, since $u_{adr}$ is a binary random variable, new values may be sampled directly using
 \begin{equation}
@@ -242,29 +246,31 @@ First, since $u_{adr}$ is a binary random variable, new values may be sampled di
 \end{equation}
 where $I(\cdot)$ is the indicator function that is used to prevent from the instances where the author has no recipients to send the document.
 
+Next, the conditional posterior for topic assignment $z_{dn}$ is derived by multiplying the two sampling equations of the cluster-based topic model:
+\begin{equation}
+	\begin{aligned}
+		&p(z_{dn}=k| \boldsymbol{z}_{\backslash dn}, \boldsymbol{c}, \boldsymbol{w}, \alpha_0, \alpha, \beta)\\
+		%&\propto P(z_{dn}=k| \boldsymbol{z}_{\backslash dn}, c_d, \alpha_0, \alpha)\times P(w_{dn}|z_{dn}=k, \boldsymbol{z}_{\backslash dn}, \boldsymbol{w}, \beta)\\
+		&\propto 
+		\Big(\hat N_{dk, \backslash dn}+\alpha \frac{\hat N_{kc_d,\backslash dn}+\alpha_1\frac{\hat N_{k, \backslash dn}+\frac{\alpha_0}{K}}{\hat N_{\backslash dn}+\alpha_0}}{\hat N_{c_d, \backslash dn}+\alpha_1}	\Big)\\&\quad\quad\times \Big(\frac{\hat N_{w_{dn}k, \backslash dn}+\frac{\beta}{V}}{\hat N_{k, \backslash dn}+\beta}	\Big),
+	\end{aligned}
+\end{equation}
+where $\hat N$ are defined according to the minimal path assumption \cite{wallach2008structured}.
+Specifically, $\hat N_{dk, \backslash dn}$ is the number of times topic $k$ has been used in document $d$, $\hat N_{kc_d, \backslash dn}$ is the number of different documents belonging to $c_d$ that use topic $k$, $\hat N_{k, \backslash dn}$ is the number of different interaction patterns in which $k$ has been used, $\hat N_{w_{dn}k, \backslash dn}$ is the number of tokens assigned to topic $k$ whose type is the same as that of $w_{dn}$, and the subscript $\backslash dn$ denotes the exclusion of $n^{th}$ element in document $d$. 
+
 For each document $d \in [D]$, we sample interaction-pattern assignment from the discrete distribution over $C$ interaction patterns using 
 \begin{equation}
 \begin{aligned}
 &P(c_d = c|\boldsymbol{z}, \zeta, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{t})
 \\&\propto P(c_d=c|\boldsymbol{c}_{\backslash d}, \zeta) P(\boldsymbol{z}_d|\gamma, \alpha, c_d=c, \boldsymbol{c}_{\backslash d}, \boldsymbol{z}_{\backslash d})\\&\times P(a_d, t_d|c_d = c, \boldsymbol{\eta}, \sigma_\tau^2) P(\boldsymbol{u}|c_d=c, \boldsymbol{c}_{\backslash d}, \boldsymbol{b}, \delta) 
-\\&\propto (N_{c, \backslash d}+\frac{\zeta}{C}) \times\prod_{n=1}^N (N_{dz_{dn}, \backslash dn}+\alpha \frac{N_{z_{dn}c,\backslash dn}+\frac{\gamma}{K}}{N_{c, \backslash dn}+\gamma})\\&\times
+\\&\propto (\hat N_{c, \backslash d}+\frac{\zeta}{C}) \\&
+\times\prod_{n=1}^{\bar N_d} (\hat N_{dz_{dn}, \backslash dn}+\alpha \frac{\hat N_{z_{dn}c,\backslash dn}+\alpha_1\frac{\hat N_{z_{dn}, \backslash dn}+\frac{\alpha_0}{K}}{\hat N_{\backslash dn}+\alpha_0}}{\hat N_{c, \backslash dn}+\alpha_1})\\&\times
 \varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2)\times \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\\& 
-\times \Big(
-\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad^*}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{ad^*r})u_{ad^*r}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad^*})}\Big),
+\times
+\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad^*}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{ad^*r})u_{ad^*r}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad^*})},
 \end{aligned}
 \end{equation}
 where $d^*$ is the last document that is affected by current document $d$ (i.e., $t_d + 384 \approx t_{d^*}$). 
-
-Next, the conditional posterior for topic assignment $z_{dn}$ is derived by multiplying the two sampling equations of the cluster-based topic model:
-\begin{equation}
-\begin{aligned}
-&p(z_{dn}=k| \boldsymbol{z}_{\backslash dn}, \boldsymbol{c}, \boldsymbol{w}, \alpha_0, \alpha, \beta)\\
-%&\propto P(z_{dn}=k| \boldsymbol{z}_{\backslash dn}, c_d, \alpha_0, \alpha)\times P(w_{dn}|z_{dn}=k, \boldsymbol{z}_{\backslash dn}, \boldsymbol{w}, \beta)\\
-&\propto 
-(N_{dk, \backslash dn}+\alpha \frac{N_{kc_d,\backslash dn}+\frac{\alpha_0}{K}}{N_{c_d, \backslash dn}+\alpha_0})\times 	  \frac{N_{w_{dn}k, \backslash dn}+\frac{\beta}{V}}{N_{k, \backslash dn}+\beta},
-\end{aligned}
-\end{equation}
-where the subscript $\backslash dn$ denote the exclusion of document $d$ and $n^{th}$ element in document $d$, $N_{kc_d, \backslash dn}$ is the number of tokens assigned to topic $k$ across the documents whose interaction-pattern is the same as that of $c_{d}$ (excluding $w_{dn}$ itself), and $N_{w_{dn}k, \backslash dn}$ is the number of tokens assigned to topic $k$ whose type is the same as that of $w_{dn}$ (excluding $w_{dn}$ itself). 
 
 New values for continuous variables $\delta, \boldsymbol{b},$ and $\boldsymbol{\eta}$ and $\sigma^2_\tau$ (if applicable) cannot be sampled directly from their conditional posteriors, but may instead be obtained using the Metropolis--Hastings algorithm. With uninformative priors (i.e., $N({0},\infty)$), the conditional posterior over $\delta$ and $\boldsymbol{b}$ is
 \begin{equation}
@@ -287,27 +293,18 @@ New values for continuous variables $\delta, \boldsymbol{b},$ and $\boldsymbol{\
  	   We conducted a set of posterior predictive experiments---1) out-of-sample tie predictions, 2) topic coherence, and 3) posterior predictive checks---to gauge the IPTM's predictive performance as compared to alternative modeling approaches.
  	   
  	   \subsection{Out-of-Sample Tie Predictions}\label{subsec:Tie Prediction}
- 	   We evaluated the IPTM's ability to predict ties in textual communications from either the Dare County email network or the Enron data set, conditioned on the text of those emails and ``training" part of the data. We separately formed a test split of each three components---author, recipients, and timestamps---by randomly selecting ``test" data with probability $p=0.1$. Any missing variables were imputed by drawing samples from their conditional posterior distributions, given the observed data, estimates of latent variables, and current estimates of test data. 
- 	   
- 	   For author predictions, we compute the probability $\pi_a = P(a_d=a|\boldsymbol{r}_d, t_d, \boldsymbol{w}_d, \boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta)$ for each $a \in [A]$ from the conditional posterior distribution
- 	   \begin{equation}
- 	   \begin{aligned}
- 	   &P(a_d = a|\boldsymbol{r}_d, t_d, \boldsymbol{w}_d, \boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta) \\&\propto \frac{\exp\Big\{\sum\limits_{r \neq a} (\delta+\lambda_{adr})r_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}\\&\times\varphi_{\tau}(\tau_{d}; \mu_{ad}, \sigma_\tau^2) \prod
- 	   \limits_{a'\neq a}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a' d}, \sigma_\tau^2) \big),
- 	   \end{aligned}
- 	   \end{equation}
- 	   and sample the author from the discrete distribution with probability vector $\pi$. For recipient predictions, we also use the conditional posterior distribution in Equation (13) and sample whether the missing recipient indicator is 1 or 0. Finally, when the timestamps are missing given the observed author and recipients, we sample from lognormal distribution with mean $\mu_{a_dd}$ and variance $\sigma^2_\tau$, following the generative process in Section \ref{subsubsec:Hypothetical Timestamps}. 
+ 	   We evaluated the IPTM's ability to predict ties in textual communications from either the Dare County email network or the Enron data set, conditioned on the text of those emails and ``training" part of the data. We separately formed a test split of each three components---author, recipients, and timestamps---by randomly selecting ``test" data with probability $p=0.1$. Any missing variables were imputed by drawing samples from their conditional posterior distributions, given the observed data, estimates of latent variables, and current estimates of test data. The full conditional posterior distributions for ``test" author, recipients, and timestamps are provided in the supplementary material.
  	   
  	   We then run inference to update the latent variables given the imputed and observed data. We iterate the two steps---imputation and inference---multiple times to obtain enough number of estimates for ``test" data. Algorithm \ref{alg:PPE} outlines this procedure.
  	   
- 	   \begin{algorithm}[H]
+ 	   \begin{algorithm}[ht]
  	   	\caption{Out-of-Sample Tie Predictions}
  	   	\label{alg:PPE}
  	   	\begin{algorithmic}
  	   		\STATE {\bfseries Input:} data $ \{ (a_d, \boldsymbol{r}_d, t_d,  \boldsymbol{w}_d)\}_{d=1}^D$, \\
  	   		number of new data to generate $R$,\\
  	   		number of interaction patterns and topics $(C, K)$,\\
- 	   		hyperparameters $(\alpha, \beta, \boldsymbol{m}, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta)$\\
+ 	   		hyperparameters $(\alpha_0, \alpha_1, \alpha, \beta, \zeta, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta)$\\
  	   		\vskip 0.1in
  	   		\textbf{Test splits:}	
  	   		\STATE Draw test authors with $p=0.1$ (out of $D$ authors) 

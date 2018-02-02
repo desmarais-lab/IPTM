@@ -616,16 +616,16 @@ NumericVector TopicWord0(int K, IntegerMatrix tableW, NumericVector alphamvec, d
 //         Resampling the augmented data J_a (Sec 3.1)       //
 // **********************************************************//
 // [[Rcpp::export]]
-arma::vec u_Gibbs(arma::vec u_di, arma::vec lambda_di, double delta, int j) {
-	arma::vec prob = arma::zeros(2);
-	arma::vec u_di0 = u_di;
-	u_di0[j-1] = 0;
-	double sumu0 = sum(u_di0);
-	prob[1] = delta+lambda_di[j-1];
-	if (sumu0 == 0) {
-		prob[0] = -arma::datum::inf;
-	}
-	return prob;
+NumericVector u_Gibbs(NumericVector u_di, NumericVector lambda_di, double delta, int j) {
+    NumericVector prob(2);
+    NumericVector u_di0 = u_di;
+    u_di0[j-1] = 0;
+    double sumu0 = sum(u_di0);
+    prob[1] = delta+lambda_di[j-1];
+    if (sumu0 == 0) {
+        prob[0] = -1.0/0.0;
+    }
+    return prob;
 }
 
 // **********************************************************//

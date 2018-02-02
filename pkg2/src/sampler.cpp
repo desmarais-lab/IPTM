@@ -68,6 +68,20 @@ double priorsum (arma::mat var, arma::rowvec mu, arma::mat x) {
 }
 
 // **********************************************************//
+//                 C++ version of tabulate() in R            //
+// **********************************************************//
+// [[Rcpp::export]]
+IntegerVector tabulateC(const IntegerVector& x, const signed max) {
+    IntegerVector counts(max);
+    std::size_t n = x.size();
+    for (std::size_t i=0; i < n; i++) {
+        if (x[i] > 0 && x[i] <= max)
+            counts[x[i]-1]++;
+    }
+    return counts;
+}
+
+// **********************************************************//
 //                  Transpose                                //
 // **********************************************************//
 // [[Rcpp::export]]
@@ -137,9 +151,9 @@ int which_num(double value, NumericVector x) {
 //        Multiple Draws from a Dirichlet Distribution       //
 // **********************************************************//
 // [[Rcpp::export]]
-arma::mat rdirichlet_cpp(int num_samples, arma::vec alpha_m) {
-	int dist_size = alpha_m.n_elem;
-	arma::mat distribution = arma::zeros(num_samples, dist_size);
+NumericMatrix rdirichlet_cpp(int num_samples, NumericVector alpha_m) {
+	int dist_size = alpha_m.size();
+	NumericMatrix distribution(num_samples, dist_size);
 	
 	for (int i = 0; i < num_samples; ++i) {
 		double sum_term = 0;
@@ -185,36 +199,74 @@ NumericVector expconst(NumericVector consts) {
 //              Construct the history of interaction         //
 // **********************************************************//
 // [[Rcpp::export]]
-List History(List edge, NumericVector timestamps, IntegerVector cd, IntegerVector node, int d, double timeunit) {
-    int A = node.size();
-    double time1 = timestamps[d-2]-384*timeunit;
-    double time2 = timestamps[d-2]-96*timeunit;
-    double time3 = timestamps[d-2]-24*timeunit;
-    int iter = which_num(time1, timestamps);
+List History(List edge, NumericVector timestamps, IntegerVector cd, int A, int d, double timeunit) {
     List histlist(3);
     for (unsigned int l = 0; l < 3; l++){
         IntegerMatrix histmat(A, A);
         histlist[l] = histmat;
     }
+    double time1 = timestamps[d-2]-384*timeunit;
+    double time2 = timestamps[d-2]-96*timeunit;
+    double time3 = timestamps[d-2]-24*timeunit;
+    int iter = which_num(time1, timestamps);
+    
     int cdnow = cd[d-1];
-    for (int i = iter-1; i < (d-1); i++) {
+    for (int i = iter-1; i < d-1; i++) {
+        if (cd[i] == cdnow) {
+            List document2 = edge[i];
+            int sender = document2[0];
+            IntegerVector receiver = document2[1];
+            double time = timestamps[i];
+            for (unsigned int r = 0; r < receiver.size(); r++){
+                if (time < time2) {
+                    IntegerMatrix hist_l = histlist[2];
+                    hist_l(sender-1, receiver[r]-1) += 1;
+                    histlist[2] = hist_l;
+                } else {
+                    if (time < time3) {
+                        IntegerMatrix hist_l = histlist[1];
+                        hist_l(sender-1, receiver[r]-1) += 1;
+                        histlist[1] = hist_l;
+                    } else {
+                            IntegerMatrix hist_l = histlist[0];
+                            hist_l(sender-1, receiver[r]-1) += 1;
+                            histlist[0] = hist_l;
+                    }
+                }
+            }
+        }
+    }
+    return histlist;
+}
+
+// **********************************************************//
+//              Construct the history of interaction         //
+// **********************************************************//
+// [[Rcpp::export]]
+List History2(List edge, NumericVector timestamps, IntegerVector cd, int A, IntegerMatrix timeintd, double timeunit) {
+    List histlist(3);
+    for (unsigned int l = 0; l < 3; l++){
+        IntegerMatrix histmat(A, A);
+        histlist[l] = histmat;
+    }
+    int cdnow = cd[timeintd(0,1)];
+    for (int i = timeintd(2,0)-1; i < timeintd(0,1); i++) {
         if (cd[i] == cdnow) {
         List document2 = edge[i];
         int sender = document2[0];
         IntegerVector receiver = document2[1];
-        double time = timestamps[i];
         for (unsigned int r = 0; r < receiver.size(); r++){
-            if (time < time2) {
+            if (i < timeintd(2,1)) {
                 IntegerMatrix hist_l = histlist[2];
                 hist_l(sender-1, receiver[r]-1) += 1;
                 histlist[2] = hist_l;
             } else {
-                if (time >= time2 && time < time3) {
+                if (i < timeintd(1,1)) {
                     IntegerMatrix hist_l = histlist[1];
                     hist_l(sender-1, receiver[r]-1) += 1;
                     histlist[1] = hist_l;
                 } else {
-                    if (time >= time3) {
+                    if (i >= timeintd(0,0)-1) {
                         IntegerMatrix hist_l = histlist[0];
                         hist_l(sender-1, receiver[r]-1) += 1;
                         histlist[0] = hist_l;
@@ -231,8 +283,7 @@ List History(List edge, NumericVector timestamps, IntegerVector cd, IntegerVecto
 //                  Calculate Degree statistics              //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericMatrix Degree(List history, IntegerVector node, int sender) {
-  int A = node.size();
+NumericMatrix Degree(List history, int A, int sender) {
     NumericMatrix degreemat(A, 6);
     IntegerVector outdegree(A);
   for (unsigned int l = 0; l < 3; l++) {
@@ -244,13 +295,40 @@ NumericMatrix Degree(List history, IntegerVector node, int sender) {
   return degreemat / 10;
 }
 
+// **********************************************************//
+//                  Calculate Outdegree statistics           //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericMatrix Outdegree(IntegerMatrix timeintd, IntegerVector cd,
+                        IntegerVector senders, int A) {
+    NumericMatrix degreemat(A, 3);
+    int cdnow = cd[timeintd(0,1)];
+    for (unsigned int l = 0; l < 3; l++) {
+        IntegerVector senders_l = senders[Range(timeintd(l,0)-1, timeintd(l,1)-1)];
+        IntegerVector cd_l = cd[Range(timeintd(l,0)-1, timeintd(l,1)-1)];
+        degreemat(_,l) = tabulateC(senders_l[cd_l==cdnow], A);
+    }
+    return degreemat / 10;
+}
+
+// **********************************************************//
+//                  Calculate Indegree statistics              //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericMatrix Indegree(List history, int A, int sender) {
+    NumericMatrix degreemat(A, 3);
+    for (unsigned int l = 0; l < 3; l++) {
+        IntegerMatrix history_l = history[l];
+        degreemat(_,l) = colSums(history_l);
+    }
+    return degreemat / 10;
+}
 
 // **********************************************************//
 //                  Calculate Dyadic statistics              //
 // **********************************************************//
 // [[Rcpp::export]]
-IntegerMatrix Dyadic(List history, IntegerVector node, int sender) {
-    int A = node.size();
+IntegerMatrix Dyadic(List history, int A, int sender) {
     IntegerMatrix dyadicmat(A, 6);
     IntegerVector dyadic(6);
         for (int receiver = 0; receiver < A; receiver++) {
@@ -270,8 +348,7 @@ IntegerMatrix Dyadic(List history, IntegerVector node, int sender) {
 //          Calculate (full 3 x 3) Triadic statistic         //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericMatrix Triadic(List history, IntegerVector node, int sender) {
-    int A = node.size();
+NumericMatrix Triadic(List history, int A, int sender) {
     IntegerMatrix triadmat(A, 36);
     IntegerVector triadic(36);
         
@@ -325,29 +402,32 @@ NumericMatrix Triadic(List history, IntegerVector node, int sender) {
 //                    Network statistics                     //
 // **********************************************************//
 // [[Rcpp::export]]
-List Netstats_cpp(List history, IntegerVector node, IntegerVector netstat) {
-    int A = node.size();
+List Netstats_cpp(List edge, NumericVector timestamps, IntegerMatrix timeintd, IntegerVector senders, IntegerVector cd, int A, int d, double timeunit, IntegerVector netstat) {
     int P = 3*(2*netstat[0]+2*netstat[1]+4*netstat[2]);
     List out(A);
+    List history = History(edge, timestamps, cd, A, d, timeunit);
+    NumericMatrix outdegree = Outdegree(timeintd, cd, senders, A);
     for (unsigned int a = 0; a < A; a++) {
         NumericMatrix netstatmat(A, P);
         int iter = 0;
         if (netstat[0] == 1) {
-            NumericMatrix degree = Degree(history, node, a);
-            for (int it = 0; it < 6; it++) {
-                netstatmat(_, iter) = degree(_,it);
+            NumericMatrix indegree = Indegree(history, A, a);
+            for (int it = 0; it < 3; it++) {
+                netstatmat(_, iter) = rep(outdegree(a,it), A);
+                netstatmat(_, iter+3) = indegree(_,it);
                 iter += 1;
             }
+            iter = 6;
         }
         if (netstat[1] == 1) {
-            IntegerMatrix dyadic = Dyadic(history, node, a);
+            IntegerMatrix dyadic = Dyadic(history, A, a);
             for (int it = 0; it < 6; it++) {
                 netstatmat(_, iter) = dyadic(_,it);
                 iter += 1;
             }
         }
         if (netstat[2] == 1) {
-            NumericMatrix triadic = Triadic(history, node, a);
+            NumericMatrix triadic = Triadic(history, A, a);
             for (int it = 0; it < 12; it++) {
                 netstatmat(_, iter) = triadic(_,it);
                 iter += 1;
@@ -382,33 +462,22 @@ arma::mat MultiplyXB(List X, arma::vec B){
     return XB;
 }
 
-// **********************************************************//
-//                 C++ version of tabulate() in R            //
-// **********************************************************//
-// [[Rcpp::export]]
-IntegerVector tabulateC(const IntegerVector& x, const signed max) {
-    IntegerVector counts(max);
-    std::size_t n = x.size();
-    for (std::size_t i=0; i < n; i++) {
-        if (x[i] > 0 && x[i] <= max)
-            counts[x[i]-1]++;
-    }
-    return counts;
-}
+
 
 // **********************************************************//
 //        Topic and Word contribution in update of Z         //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericVector TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, IntegerMatrix tableW,
-                        NumericVector tableCd, double alpha, double alpha0, double beta, int V, int w){
-    IntegerVector table_topics = tabulateC(z_d, K);
-    IntegerVector num = tableW(_, textlistd[w-1]-1);
-    NumericVector num2 = log(as<NumericVector>(num)+beta/V);
-    NumericVector denom = log(rowSums(tableW)+beta);
-    NumericVector num3 = tableCd + alpha0/K;
-    double denom3 = sum(tableCd) + alpha0;
-    NumericVector consts = num2-denom+log(as<NumericVector>(table_topics) + alpha * num3/denom3);
+NumericVector TopicWord(int K, NumericVector tabledk, NumericVector tableWd, 
+                        NumericVector tableCd, NumericVector tablek, int N,
+                        NumericVector alphas, double beta, int V){
+    NumericVector num1 = tablek + alphas[0]/K;
+    double denom1 = N + alphas[0];
+    NumericVector num2 = log(tableWd+beta/V);
+    NumericVector denom2 = log(tablek+beta);
+    NumericVector num3 = tableCd + alphas[1] * num1/denom1;
+    double denom3 = sum(tableCd) + alphas[1];
+    NumericVector consts = num2-denom2+log(tabledk + alphas[2] * num3/denom3);
     return consts;
 }
 
@@ -416,13 +485,13 @@ NumericVector TopicWord(int K, IntegerVector z_d, IntegerVector textlistd, Integ
 //        Topic and Word contribution in update of Z         //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericVector TopicWord0(int K, IntegerMatrix tableW,  NumericVector tableCd,
-                        double alpha, double alpha0, double beta, int V){
-    double num = log(beta/V);
-    NumericVector denom = log(rowSums(tableW) + beta);
-    NumericVector num3 = tableCd + alpha0/K;
-    double denom3 = sum(tableCd) + alpha0;
-    NumericVector consts = num - denom + log(alpha * num3/denom3);
+NumericVector TopicWord0(int K, NumericVector tableCd, NumericVector tablek, int N,
+                        NumericVector alphas, double beta, int V){
+    NumericVector num1 = tablek + alphas[0]/K;
+    double denom1 = N + alphas[0];
+    NumericVector num3 = tableCd + alphas[1] * num1/denom1;
+    double denom3 = sum(tableCd) + alphas[1];
+    NumericVector consts = log(alphas[2] * num3/denom3);
     return consts;
 }
 
@@ -431,13 +500,17 @@ NumericVector TopicWord0(int K, IntegerMatrix tableW,  NumericVector tableCd,
 // **********************************************************//
 // [[Rcpp::export]]
 double Topicpart(int K, IntegerVector z_d, NumericVector tableCd,
-                        double alpha, double alpha0){
+                  NumericVector tablek, NumericVector alphas){
     IntegerVector table_topics = tabulateC(z_d, K);
-    double denom3 = sum(tableCd) + alpha0 -1;
+    double denom3 = sum(tableCd) + alphas[1] -1;
+    double denom1 = sum(tablek) -1;
     double consts = 0;
     for (unsigned int k = 0; k < z_d.size(); k++) {
-        double dz = table_topics[z_d[k]-1]-1;
-        double ratio = alpha * (tableCd[z_d[k]-1]-1+alpha0/K)/ denom3;
+    	int zdn = z_d[k]-1;
+        double dz = table_topics[zdn]-1;
+        double num1 = tablek[zdn] - 1 + alphas[0]/K;
+        double num3 = tableCd[zdn]-1+alphas[1]*num1/denom1;
+        double ratio = alphas[2] * num3/ denom3;
         consts += log(dz+ratio);
     }
     return consts;
@@ -462,14 +535,14 @@ int lmultinom (NumericVector lprops) {
 //         Resampling the augmented data J_a (Sec 3.1)       //
 // **********************************************************//
 // [[Rcpp::export]]
-arma::vec u_Gibbs(arma::vec u_di, arma::vec lambda_di, double delta, int j) {
-    arma::vec prob = arma::zeros(2);
-    arma::vec u_di0 = u_di;
+NumericVector u_Gibbs(NumericVector u_di, NumericVector lambda_di, double delta, int j) {
+    NumericVector prob(2);
+    NumericVector u_di0 = u_di;
     u_di0[j-1] = 0;
     double sumu0 = sum(u_di0);
     prob[1] = delta+lambda_di[j-1];
     if (sumu0 == 0) {
-        prob[0] = -arma::datum::inf;
+        prob[0] = -1.0/0.0;
     }
     return prob;
 }
@@ -532,8 +605,7 @@ double Edgepartsum(List X, arma::vec B, arma::mat u, double delta){
 //                Multiply matrix X and vector B             //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericVector mu_vec(NumericVector timemat, IntegerVector node, NumericVector eta) {
-    int A = node.size();
+NumericVector mu_vec(NumericVector timemat, int A, NumericVector eta) {
     NumericVector mu(A);
     double etatime = timemat[0] * eta[A] + timemat[1] * eta[A+1];
     for (unsigned int a = 0; a < A; a++) {
@@ -546,12 +618,11 @@ NumericVector mu_vec(NumericVector timemat, IntegerVector node, NumericVector et
 //                Multiply matrix X and vector B             //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericMatrix mu_mat(NumericMatrix timemat, IntegerVector node, NumericMatrix eta, IntegerVector cd) {
+NumericMatrix mu_mat(NumericMatrix timemat, int A, NumericMatrix eta, IntegerVector cd) {
     int D = cd.size();
-    int A = node.size();
     NumericMatrix mu(D, A);
     for (unsigned int d = 0; d < D; d++) {
-        mu(d,_) = mu_vec(timemat(d,_), node, eta(cd[d]-1,_));
+        mu(d,_) = mu_vec(timemat(d,_), A, eta(cd[d]-1,_));
     }
     return mu;
 }
@@ -585,5 +656,32 @@ double Timepartsum(NumericMatrix mumat, double sigma_tau,
         timesum += Timepart(mumat(d,_), sigma_tau, a_d, timestamps[d]);
     }
     return timesum;
+}
+
+// **********************************************************//
+//                    Cache time intervals                   //
+// **********************************************************//
+// [[Rcpp::export]]
+List timefinder (NumericVector timestamps, IntegerVector edgetrim, double timeunit) {
+    int D = timestamps.size();
+    List out(D);
+    for (int d = min(edgetrim)-1; d < D; d++) {
+        double time0 = timestamps[d-1];
+        double time1 = time0-24*timeunit;
+        double time2 = time0-96*timeunit;
+        double time3 = time0-384*timeunit;
+        int id1 = which_num(time1, timestamps);
+        int id2 = which_num(time2, timestamps);
+        int id3 = which_num(time3, timestamps);
+        arma::mat intervals(3, 2);
+        intervals(0,0) = id1;
+        intervals(0,1) = d;
+        intervals(1,0) = id2;
+        intervals(1,1) = id1-1;
+        intervals(2,0) = id3;
+        intervals(2,1) = id2-1;
+        out[d] = intervals;		
+    }
+    return out;
 }
 
