@@ -4,7 +4,7 @@
 \alias{adaptive.MH}
 \title{adaptive.MH}
 \usage{
-adaptive.MH(sigma.Q, accept.rates, target = 0.25, update.size, tol = 0.15)
+adaptive.MH(sigma.Q, accept.rates, target = 0.1, update.size, tol = 0.8)
 }
 \arguments{
 \item{sigma.Q}{proposal distribution variance parameter}

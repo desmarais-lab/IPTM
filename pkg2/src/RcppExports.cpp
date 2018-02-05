@@ -6,6 +6,17 @@
 
 using namespace Rcpp;
 
+// sortuniq
+NumericVector sortuniq(NumericVector x);
+RcppExport SEXP _IPTMnew_sortuniq(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(sortuniq(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Mahalanobis
 arma::vec Mahalanobis(arma::mat x, arma::rowvec center, arma::mat cov);
 RcppExport SEXP _IPTMnew_Mahalanobis(SEXP xSEXP, SEXP centerSEXP, SEXP covSEXP) {
@@ -488,6 +499,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_IPTMnew_sortuniq", (DL_FUNC) &_IPTMnew_sortuniq, 1},
     {"_IPTMnew_Mahalanobis", (DL_FUNC) &_IPTMnew_Mahalanobis, 3},
     {"_IPTMnew_ei", (DL_FUNC) &_IPTMnew_ei, 1},
     {"_IPTMnew_dmvnorm_arma", (DL_FUNC) &_IPTMnew_dmvnorm_arma, 3},

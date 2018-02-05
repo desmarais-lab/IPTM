@@ -24,6 +24,11 @@ extern void dsyev_( char *jobz, char *uplo, int *n, double *a, int *lda,
 const double log2pi = std::log(2.0 * M_PI);
 
 // [[Rcpp::export]]
+NumericVector sortuniq (NumericVector x){
+    return sort_unique(x);
+}
+
+// [[Rcpp::export]]
 arma::vec Mahalanobis(arma::mat x, arma::rowvec center, arma::mat cov){
     int n = x.n_rows;
     arma::mat x_cen;

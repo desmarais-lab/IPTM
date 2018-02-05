@@ -64,7 +64,7 @@ r.gibbs.measure <- function(nsamp, lambda.i, delta, support) {
 #' @return nsamp number of samples with each row denoting binary vector
 #'
 #' @export
-adaptive.MH = function(sigma.Q, accept.rates, target = 0.25, update.size, tol = 0.15) {
+adaptive.MH = function(sigma.Q, accept.rates, target = 0.1, update.size, tol = 0.8) {
 	for (i in 1:length(sigma.Q)) {
 	  if (accept.rates[i] < target) {
 			sigma.Q[i] = sigma.Q[i]-update.size[i]
@@ -212,17 +212,20 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, 
       tabulateC(textlist.raw[which(unlist(z[-emptytext]) == k)], V)
         }, rep(0, V))
   table.cd = vapply(1:nIP, function(IP) {
+    if (sum(cd==IP)>0) {
       tabulateC(unlist(z[which(cd == IP)]), K)
-        }, rep(0, K))
+    } else {
+      rep(0, K)
+    }  
+  }, rep(0, K))
   table.dk = vapply(1:D, function(d) {
       tabulateC(unlist(z[[d]]), K)
         }, rep(0, K))
-  table.k = rowSums(table.dk)  
+  table.k = rowSums(table.cd)  
   totalN = sum(table.k)-1    
   #start outer iteration
   for (o in 1:Outer) {
     print(o)
-  
     # Data augmentation
     for (d in edge.trim) {
         lambda = MultiplyXB(X[[d]], b.old[cd[d],])
@@ -260,7 +263,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, 
         }
        table.cd[z[[d]][w], cd[d]] = table.cd[z[[d]][w], cd[d]]+1 
        table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
-	   table.k[z[[d]][w]] = table.k[z[[d]][w]]+1
+	     table.k[z[[d]][w]] = table.k[z[[d]][w]]+1
        topicsum = topicsum + topicword.d[z[[d]][w]] 
       }
     }
@@ -282,17 +285,24 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, 
 	}
 	  for (d in edge.trim) {
         X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, d, timeunit, netstat)
- 	  }
+	  }
+    table.cd = vapply(1:nIP, function(IP) {
+      if (sum(cd==IP)>0) {
+        tabulateC(unlist(z[which(cd == IP)]), K)
+        } else {
+          rep(0, K)
+        }  
+    }, rep(0, K))
       
   # adaptive M-H   
-    if (o > 1) {
-    	accept.rates[1] = accept.rates[1]/5
-    	accept.rates[2] = accept.rates[2]/5
-        accept.rates[3] = accept.rates[3]/5
-        accept.rates[4] = accept.rates[1]
-    	sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
-    }
-    accept.rates = rep(0, 4)
+    #if (o > 1) {
+    #	accept.rates[1] = accept.rates[1]/Inner[1]
+    #	accept.rates[2] = accept.rates[2]/Inner[2]
+    #  accept.rates[3] = accept.rates[3]/Inner[1]
+    #  accept.rates[4] = accept.rates[1]/Inner[3]
+    #	sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
+    #}
+    #accept.rates = rep(0, 4)
     
     prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
     			 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
@@ -305,7 +315,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, 
       delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
       prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
     				 dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), TRUE)
-      post.new1 = Edgepartsum(X[[max.edge]], b.new[cd[d],], u[[max.edge]], delta)
+      post.new1 = Edgepartsum(X[[max.edge]], b.new[cd[d],], u[[max.edge]], delta.new)
       loglike.diff = prior.new1+post.new1-prior.old1-post.old1
       if (log(runif(1, 0, 1)) < loglike.diff) {
         b.old = b.new
@@ -320,7 +330,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, 
         deltamat = c(deltamat, delta)
     }
      
-      mu = mu_mat(timemat, A, eta.old, cd)
+    mu = mu_mat(timemat, A, eta.old, cd)
 	  prior.old2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
 	  post.old2 = Timepartsum(mu, sigma_tau, senders, timeinc)
       eta.new = matrix(NA, nIP, Q)
@@ -360,7 +370,469 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, 
       }
         sigma_taumat = c(sigma_taumat, sigma_tau)
     }
+	
+	#very long inner iterations at the end
+    if (o == Outer) {
+    	Inner = Inner * 1000
+    	bmat = list()
+ 	   etamat = list()
+         for (IP in 1:nIP) {
+         bmat[[IP]] = matrix(NA, nrow = P, ncol = Inner[1])
+         etamat[[IP]] = matrix(NA, nrow = Q, ncol = Inner[2])
+         }
+  	   deltamat = rep(NA, Inner[1])
+ 	   sigma_taumat = rep(NA, Inner[3])		
+    
+    	b.new = matrix(NA, nIP, P)
+    	for (inner in 1:Inner[1]) {
+      		for (IP in 1:nIP) {
+			  b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
+	  		}
+     		delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
+      		prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
+    				 dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), TRUE)
+      		post.new1 = Edgepartsum(X[[max.edge]], b.new[cd[d],], u[[max.edge]], delta)
+      		loglike.diff = prior.new1+post.new1-prior.old1-post.old1
+      		if (log(runif(1, 0, 1)) < loglike.diff) {
+        		b.old = b.new
+        		delta = delta.new
+        		prior.old1 = prior.new1
+        		post.old1 = post.new1
+        	}
+        	for (IP in 1:nIP) {
+          		bmat[[IP]][,inner] = b.old[IP, ] 
+        	}
+        	deltamat[inner] = delta
+    	}
+     
+      	eta.new = matrix(NA, nIP, Q)
+      	for (inner in 1:Inner[2]) {
+          	for (IP in 1:nIP) {
+			  eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
+		  	}
+      	mu = mu_mat(timemat, A, eta.new, cd)
+      	prior.new2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
+      	post.new2 = Timepartsum(mu, sigma_tau, senders, timeinc)
+      	loglike.diff = prior.new2+post.new2-prior.old2-post.old2
+      	if (log(runif(1, 0, 1)) < loglike.diff) {
+        	eta.old = eta.new
+        	prior.old2 = prior.new2
+        	post.old2 = post.new2
+        }
+      	for (IP in 1:nIP) {
+           etamat[[IP]][,inner] = eta.old[IP, ]
+        	}
+    	}
+      
+    	for (inner in 1:Inner[3]) {
+      		sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
+      		prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau, TRUE)
+      		post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc)
+      		loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
+                   log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
+                   prior.new3+post.new3-prior.old3-post.old3
+      		if (log(runif(1, 0, 1)) < loglike.diff) {
+        		sigma_tau = sigma_tau.new
+        		prior.old3 = prior.new3
+        		post.old3 = post.new3
+      		}
+       		sigma_taumat[inner] = sigma_tau
+    	}
+    }
+    edgepart[o] = post.old1 + post.old3
+    topicpart[o] = topicsum                 
+	convergence[o] = topicpart[o] + edgepart[o]
+  }
+  chain.final = list(cd = cd, z = z, b = bmat, eta = etamat, delta = deltamat, sigma_tau = sigma_taumat,
+                     u = u, sigma.Q =sigma.Q, edge.trim = edge.trim,
+                     edgepart = edgepart, topicpart = topicpart, convergence = convergence)
+  return(chain.final)
+}	
 
+
+#' @title IPTM.inference.min
+#' @description Iterate Markov Chain Monte Carlo (MCMC) algorithm for the interaction-partitioned topic model
+#'
+#' @param edge list of tie data with 3 elements (1: author, 2: recipient, 3: timestamp in unix.time format)
+#' @param node vector of node id's (ID starting from 1)
+#' @param textlist list of text containing the words in each document
+#' @param vocab all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns
+#' @param K total number of topics
+#' @param sigma.Q proposal distribution variance parameter
+#' @param alphas Dirichlet concentration prior for document-topic distribution (alpha0, alpha1, alpha)
+#' @param beta Dirichlet concentration prior for topic-word distribution
+#' @param zeta Dirichlet concentration prior for document-interaction-pattern distribution
+#' @param prior.b prior mean and covariance of b in multivariate Normal distribution
+#' @param prior.delta prior mean and variance of delta in Normal distribution
+#' @param prior.eta prior mean and covariance of eta in multivariate Normal distribution
+#' @param prior.tau prior shape and scale parameter of sigma_tau in inverse-Gamma distribution
+#' @param Outer size of outer iterations 
+#' @param Inner size of inner iteration for Metropolis-Hastings updates
+#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
+#' @param timestat additional statistics to be used for timestamps other than netstat ("sender", "receiver","timeofday", "dayofweek")
+#' @param initial list of initial values user wants to assign including (delta, b, eta, cd, z, u, sigma_tau, proposal.var1, proposal.var2)
+#' @param timeunit hour (= 3600) or day (=3600*24) and so on
+#' @param tz timezone such as EST and PST
+#'
+#' @return MCMC output containing all parameter estimates
+#'
+#' @export
+
+IPTM.inference.min = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, beta, zeta,
+                          prior.b, prior.delta, prior.eta, prior.tau, Outer, Inner,
+                          netstat, timestat, initial = NULL, timeunit = 3600, tz = "America/New_York") {
+  
+  # trim the edge so that we only model edges after 384 hours
+  A = length(node)
+  D = length(edge)
+  timestamps = vapply(edge, function(d) { d[[3]] }, c(1))
+  senders = vapply(edge, function(d) { d[[1]] }, c(1))
+  edge.trim = which_num(384*timeunit, timestamps-timestamps[1]):D
+  max.edge = max(edge.trim)
+  timeinc = c(timestamps[1], timestamps[-1]-timestamps[-length(timestamps)])/timeunit
+  timeinc[timeinc==0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
+  emptytext = which(sapply(textlist, function(d){length(d)})==0)
+  # initialization 
+  convergence = c()
+  topicpart = c()
+  edgepart = c()
+  netstat = as.numeric(c("degree", "dyadic", "triadic") %in% netstat)
+  timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
+  timemat = matrix(0, nrow = D, ncol = sum(timestat))
+  if (sum(timestat) > 0) {
+    Sys.setenv(TZ = tz)
+    time_ymd = as.POSIXct(timestamps, tz = getOption("tz"), origin = "1970-01-01")
+    if (timestat[1] > 0) {
+      days = vapply(time_ymd, function(d) {wday(d)}, c(1))
+      days[days==1] = 8
+      timemat[,1] = as.numeric(cut(days, c(1,6,8), c("weekdays","weekends")))-1
+      it = 1
+    }
+    if (timestat[2] > 0) {
+      hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
+      timemat[,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
+    }     
+  }
+  L = 3
+  P = L*(2*netstat[1]+2*netstat[2]+4*netstat[3])
+  Q = length(prior.eta[[1]])
+  proposal.var1 = diag(P)
+  proposal.var2 = diag(Q)
+  V = length(vocab)
+  phi = matrix(NA, K, V)
+  for (k in 1:K) {
+    phi[k,] = rdirichlet_cpp(1, rep(beta/V, V))
+  }
+  alpha0 = alphas[1]
+  alpha1 = alphas[2]
+  alpha = alphas[3]
+  m = rdirichlet_cpp(1, rep(alpha0/K, K))
+  mc = matrix(NA, nIP, K)
+  for (IP in 1:nIP) {
+    mc[IP,] = rdirichlet_cpp(1, alpha1*m)
+  }
+  psi = rdirichlet_cpp(1, rep(zeta/nIP, nIP))
+  if (length(initial) == 0) {
+    cd = multinom_vec(D, psi) 
+    theta = tvapply(seq(along = edge), function(d) {rdirichlet_cpp(1, alpha*mc[cd[d],]) }, rep(0, K))
+    delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
+    sigma_tau = rhalfcauchy(1, prior.tau)
+    b.old = rmvnorm_arma(nIP, prior.b[[1]], prior.b[[2]])
+    eta.old = rmvnorm_arma(nIP, prior.eta[[1]], prior.eta[[2]])
+    z = lapply(seq(along = edge), function(d) multinom_vec(max(1, length(textlist[[d]])), theta[d, ]))
+    sigma.Q = sigma.Q
+    u = list()
+    for (d in edge.trim) {
+      u[[d]] = matrix(rbinom(A^2, 1, 1/A), nrow = A, ncol = A)
+      diag(u[[d]]) = 0
+      u[[d]][senders[d],] = tabulateC(as.numeric(unlist(edge[[d]][2])), A)
+    }
+  } else {
+    delta = initial$delta
+    sigma_tau = initial$sigma_tau
+    b.old = initial$b
+    eta.old = initial$eta
+    cd = initial$cd
+    z = initial$z
+    sigma.Q = initial$sigma.Q
+    u = initial$u
+  }						 
+  bmat = list()
+  etamat = list()
+  for (IP in 1:nIP) {
+    bmat[[IP]] = matrix(b.old[IP,], nrow = P, ncol = 1)
+    etamat[[IP]] = matrix(eta.old[IP,], nrow = Q, ncol = 1)
+  }
+  deltamat = rep(delta, 1)
+  sigma_taumat = rep(sigma_tau, 1)		
+  mu = matrix(0, nrow = D, ncol = A)
+  textlist.raw = unlist(textlist)
+  accept.rates = rep(0, 4)
+  hist.d = c()
+  for (d in 1:D) {
+  if (timestamps[d]+384*timeunit > timestamps[max.edge]) {
+        hist.d[d] = max.edge
+      } else {
+        hist.d[d] = which_num(timestamps[d]+384*timeunit, timestamps)
+      }
+  }
+  timeinterval = timefinder(timestamps, edge.trim, timeunit)
+  X = list()
+  for (d in edge.trim) {
+    X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, d, timeunit, netstat)
+  }
+  table.W = tvapply(1:K, function(k) {
+      tabulateC(textlist.raw[which(unlist(z[-emptytext]) == k)], V)
+        }, rep(0, V))
+  zuniq = lapply(z, function(x) {sortuniq(x)})            
+  table.cd = vapply(1:nIP, function(IP) {
+    if (sum(cd==IP) > 0) {
+      tabulateC(unlist(zuniq[which(cd == IP)]), K)
+    } else {
+      rep(0, K)
+    }  
+  }, rep(0, K))
+  table.dk = vapply(1:D, function(d) {
+      tabulateC(unlist(z[[d]]), K)
+        }, rep(0, K))
+  table.k = rowSums(table.cd > 0) 
+  totalN = nIP    
+  #start outer iteration
+  for (o in 1:Outer) {
+    print(o)
+    # Data augmentation
+    for (d in edge.trim) {
+        lambda = MultiplyXB(X[[d]], b.old[cd[d],])
+        for (i in node[-senders[d]]) {
+            for (j in sample(node[-i], A-1)) {
+                probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
+                u[[d]][i, j] = lmultinom(probij)-1
+            }
+        }
+    }
+    # Z update	
+    topicsum = 0
+    for (d in 1:D) {
+	   	textlist.d = textlist[[d]]
+	   	for (w in 1:length(z[[d]])) {
+	   		zw.old = z[[d]][w]
+	   		table.dk[zw.old, d] = table.dk[zw.old, d]-1
+	   		if (!identical(zuniq[[d]], sortuniq(z[[d]][-w]))) {
+	   			zuniq[[d]] = sortuniq(z[[d]][-w])
+	   			table.cd = vapply(1:nIP, function(IP) {
+	   			  if (sum(cd == IP) > 0) {
+	   			    tabulateC(unlist(zuniq[which(cd == IP)]), K)
+	   			  } else {
+	   			    rep(0, K)
+	   			  }  
+	   			}, rep(0, K))      
+	   			table.k = rowSums(table.cd > 0) 
+	   		}
+	   	 if (length(textlist.d) > 0) {
+          table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
+       	  topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN, 
+       	  						 alphas, beta, V)
+          zw.new = lmultinom(topicword.d)
+          if (zw.new != zw.old) {
+              z[[d]][w] = zw.new
+          }
+          table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
+        } else {
+          topicword.d = TopicWord0(K, table.cd[,cd[d]], table.k, totalN, alphas, beta, V)
+          zw.new = lmultinom(topicword.d)
+          if (zw.new != zw.old) {
+              z[[d]][w] = zw.new
+          }
+        }
+		if (!identical(zuniq[[d]], sortuniq(z[[d]]))) {
+	   			zuniq[[d]] = sortuniq(z[[d]])
+	   			table.cd = vapply(1:nIP, function(IP) {
+	   			  if (sum(cd == IP) > 0) {
+	   			    tabulateC(unlist(zuniq[which(cd == IP)]), K)
+	   			  } else {
+	   			    rep(0, K)
+	   			  }  
+	   			}, rep(0, K))   
+	   			table.k = rowSums(table.cd > 0) 
+	   		}
+       table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
+       topicsum = topicsum + topicword.d[z[[d]][w]] 
+      }
+    }
+
+    # C update
+    const.C = rep(NA, nIP)
+    for (d in 1:D) {
+    	IPpart = log(tabulateC(cd[-d], nIP) + zeta/nIP)
+      for (IP in 1:nIP) {
+        cd[d] = IP
+       	Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[hist.d[d]]], senders, cd, A, hist.d[d], timeunit, netstat)
+        Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[hist.d[d]]], delta)
+        munew = mu_vec(timemat[d,], A, eta.old[IP,])
+        Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
+        Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k, alphas) 	  	
+        const.C[IP] = Edgepart+Timepart+Topicpart+ IPpart[IP]
+      }
+      cd[d] = lmultinom(const.C)
+	}
+	  for (d in edge.trim) {
+        X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, d, timeunit, netstat)
+ 	  }
+    table.cd = vapply(1:nIP, function(IP) {
+      if (sum(cd == IP) > 0) {
+        tabulateC(unlist(zuniq[which(cd == IP)]), K)
+      } else {
+        rep(0, K)
+      }  
+    }, rep(0, K)) 
+    table.k = rowSums(table.cd > 0) 
+    
+  # adaptive M-H   
+    if (o > 1) {
+    	accept.rates[1] = accept.rates[1]/5
+    	accept.rates[2] = accept.rates[2]/5
+      accept.rates[3] = accept.rates[3]/5
+      accept.rates[4] = accept.rates[1]
+    	sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
+    }
+    accept.rates = rep(0, 4)
+    
+    prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
+    			 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
+    post.old1 = Edgepartsum(X[[max.edge]], b.old[cd[d],], u[[max.edge]], delta)
+    b.new = matrix(NA, nIP, P)
+    for (inner in 1:Inner[1]) {
+      for (IP in 1:nIP) {
+			  b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
+	  }
+      delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
+      prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
+    				 dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), TRUE)
+      post.new1 = Edgepartsum(X[[max.edge]], b.new[cd[d],], u[[max.edge]], delta)
+      loglike.diff = prior.new1+post.new1-prior.old1-post.old1
+      if (log(runif(1, 0, 1)) < loglike.diff) {
+        b.old = b.new
+        delta = delta.new
+        prior.old1 = prior.new1
+        post.old1 = post.new1
+        accept.rates[1] = accept.rates[1]+1
+      }
+        for (IP in 1:nIP) {
+          bmat[[IP]] = cbind(bmat[[IP]], b.old[IP,])
+        }
+        deltamat = c(deltamat, delta)
+    }
+     
+      mu = mu_mat(timemat, A, eta.old, cd)
+	    prior.old2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
+	    post.old2 = Timepartsum(mu, sigma_tau, senders, timeinc)
+      eta.new = matrix(NA, nIP, Q)
+      for (inner in 1:Inner[2]) {
+          for (IP in 1:nIP) {
+			  eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
+		  }
+      mu = mu_mat(timemat, A, eta.new, cd)
+      prior.new2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
+      post.new2 = Timepartsum(mu, sigma_tau, senders, timeinc)
+      loglike.diff = prior.new2+post.new2-prior.old2-post.old2
+      if (log(runif(1, 0, 1)) < loglike.diff) {
+        eta.old = eta.new
+        prior.old2 = prior.new2
+        post.old2 = post.new2
+        accept.rates[2] = accept.rates[2]+1
+      }
+      for (IP in 1:nIP) {
+          etamat[[IP]] = cbind(etamat[[IP]], eta.old[IP,])
+        }
+    }
+      
+    prior.old3 = dhalfcauchy(sigma_tau, prior.tau, TRUE)
+    post.old3 = post.old2
+    for (inner in 1:Inner[3]) {
+      sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
+      prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau, TRUE)
+      post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc)
+      loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
+                   log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
+                   prior.new3+post.new3-prior.old3-post.old3
+      if (log(runif(1, 0, 1)) < loglike.diff) {
+        sigma_tau = sigma_tau.new
+        prior.old3 = prior.new3
+        post.old3 = post.new3
+        accept.rates[3] = accept.rates[3]+1
+      }
+        sigma_taumat = c(sigma_taumat, sigma_tau)
+    }
+	
+	#very long inner iterations at the end
+    if (o == Outer) {
+    	Inner = Inner * 1000
+    	bmat = list()
+ 	    etamat = list()
+         for (IP in 1:nIP) {
+         bmat[[IP]] = matrix(NA, nrow = P, ncol = Inner[1])
+         etamat[[IP]] = matrix(NA, nrow = Q, ncol = Inner[2])
+         }
+  	   deltamat = rep(NA, Inner[1])
+ 	   sigma_taumat = rep(NA, Inner[3])		
+    
+    	b.new = matrix(NA, nIP, P)
+    	for (inner in 1:Inner[1]) {
+      		for (IP in 1:nIP) {
+			  b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
+	  		}
+     		delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
+      		prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
+    				 dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), TRUE)
+      		post.new1 = Edgepartsum(X[[max.edge]], b.new[cd[d],], u[[max.edge]], delta.new)
+      		loglike.diff = prior.new1+post.new1-prior.old1-post.old1
+      		if (log(runif(1, 0, 1)) < loglike.diff) {
+        		b.old = b.new
+        		delta = delta.new
+        		prior.old1 = prior.new1
+        		post.old1 = post.new1
+        	}
+        	for (IP in 1:nIP) {
+          		bmat[[IP]][,inner] = b.old[IP, ] 
+        	}
+        	deltamat[inner] = delta
+    	}
+     
+      	eta.new = matrix(NA, nIP, Q)
+      	for (inner in 1:Inner[2]) {
+          	for (IP in 1:nIP) {
+			  eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
+		  	}
+      	mu = mu_mat(timemat, A, eta.new, cd)
+      	prior.new2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
+      	post.new2 = Timepartsum(mu, sigma_tau, senders, timeinc)
+      	loglike.diff = prior.new2+post.new2-prior.old2-post.old2
+      	if (log(runif(1, 0, 1)) < loglike.diff) {
+        	eta.old = eta.new
+        	prior.old2 = prior.new2
+        	post.old2 = post.new2
+        }
+      	for (IP in 1:nIP) {
+           etamat[[IP]][,inner] = eta.old[IP, ]
+        	}
+    	}
+      
+    	for (inner in 1:Inner[3]) {
+      		sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
+      		prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau, TRUE)
+      		post.new3 = Timepartsum(mu, sigma_tau.new, senders, timeinc)
+      		loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
+                   log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
+                   prior.new3+post.new3-prior.old3-post.old3
+      		if (log(runif(1, 0, 1)) < loglike.diff) {
+        		sigma_tau = sigma_tau.new
+        		prior.old3 = prior.new3
+        		post.old3 = post.new3
+      		}
+       		sigma_taumat[inner] = sigma_tau
+    	}
+    }
     edgepart[o] = post.old1 + post.old3
     topicpart[o] = topicsum                 
 	convergence[o] = topicpart[o] + edgepart[o]
