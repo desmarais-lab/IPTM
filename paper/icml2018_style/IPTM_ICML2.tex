@@ -319,21 +319,25 @@ New values for continuous variables $\delta, \boldsymbol{b},$ and $\boldsymbol{\
  	   		\FOR{$d=1$ {\bfseries to}  $D$}
  	   		\IF{$a_d=$  NA}
  	   		\FOR{$a=1$ {\bfseries to} $A$}
- 	   		\STATE Compute $\pi_{a} $ using Equation (18)
+ 	   		\STATE Compute $\pi_{a} $ using $P(a_d= a | \cdot)$
  	   		\ENDFOR
  	   		\STATE Draw $a_d \sim \mbox{Multinomial}(\pi)$
  	   		\ENDIF
  	   		\FOR{$r\in [A]_{\backslash a_d}$}
  	   		\IF{$r_{dr}=$ NA}
- 	   		\STATE Draw $r_{dr}$ from Equation (13)
+ 	   		\STATE Draw $r_{dr}$ using $P(r_{dr}= 1 | \cdot)$ and $P(r_{dr}= 0| \cdot)$ 
  	   		\ENDIF
  	   		\ENDFOR
  	   		\IF{$t_d=$ NA}
- 	   		\STATE Draw $\boldsymbol{\tau}_d \sim \mbox{lognormal}(\mu_{a_dd}, \sigma^2_\tau)$
+ 	   		\STATE Draw proposal $\boldsymbol{\tau}^{new}_d \sim \mbox{lognormal}(\mu_{a_dd}, \sigma^2_\tau)$
+ 	   		\STATE Use Metropolis-Hastings to decide accept or reject using the probability
+ 	   		    \begin{equation*}
+ 	   		    \footnotesize
+\frac{P(\boldsymbol{\tau}^{new}_d|\mu_{a_dd}, \sigma^2_\tau) P(\boldsymbol{\tau}^{new}_d| \cdot)}{P(\boldsymbol{\tau}^{old}_d|\mu_{a_dd}, \sigma^2_\tau) P(\boldsymbol{\tau}^{old}_d| \cdot)},
+ 	   		    \end{equation*}
+ 	   		    where $\boldsymbol{\tau}^{old}_d$ is from earlier iteration.
  	   		\ENDIF
- 	   		
- 	   		\vskip 0.1in		
- 	   		\STATE Run inference algorithm following Section \ref{sec:Inference} and update the parameters $(\boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta, \boldsymbol{u})$ given the imputed and observed data
+ 	   		\STATE Run inference and update $(\boldsymbol{c}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta, \boldsymbol{u})$ given the imputed and observed data
  	   		\ENDFOR
  	   		\STATE Store the estimates for ``test" data
  	   		\ENDFOR
