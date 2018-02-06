@@ -4,9 +4,9 @@
 \alias{GenerateDocs}
 \title{GenerateDocs}
 \usage{
-GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
-  sigma_tau, l, support, netstat, timestat, base.edge = NULL,
-  base.text = NULL, topic_token_assignments = NULL, backward = FALSE,
+GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta, b, eta, delta,
+  sigma_tau, cd_assignments = NULL, support, netstat, timestat,
+  base.data = NULL, topic_token_assignments = NULL, backward = FALSE,
   base = FALSE, timeunit = 3600, tz = "America/New_York")
 }
 \arguments{
@@ -22,11 +22,11 @@ GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
 
 \item{n.d}{number of words in a document (fixed constant for now)}
 
-\item{alpha}{Dirichlet concentration prior for document-topic distribution}
-
-\item{mvec}{Dirichlet base prior for document-topic distribution}
+\item{alphas}{Dirichlet concentration prior for document-topic distribution}
 
 \item{beta}{Dirichlet concentration prior for topic-word distribution}
+
+\item{zeta}{Dirichlet concentration prior for document-interaction pattern distribution}
 
 \item{b}{coefficients for recipients}
 
@@ -36,7 +36,7 @@ GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
 
 \item{sigma_tau}{variance parameter for the timestamps}
 
-\item{l}{topic-interaction pattern assignment}
+\item{cd_assignments}{document-interaction pattern assignments}
 
 \item{support}{support of latent recipients}
 
@@ -44,9 +44,7 @@ GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, b, eta, delta,
 
 \item{timestat}{additional statistics to be used for timestamps other than netstat ("sender", "receiver", "timeofday", "dayofweek")}
 
-\item{base.edge}{edges before 384 hours that is used to calculate initial history of interactions}
-
-\item{base.text}{texts corresponding to base.edge}
+\item{base.data}{edges before 384 hours that is used to calculate initial history of interactions}
 
 \item{topic_token_assignments}{matrix of topic-token assignments}
 

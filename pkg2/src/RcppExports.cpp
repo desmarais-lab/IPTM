@@ -284,8 +284,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // Netstats_cpp
-List Netstats_cpp(List edge, NumericVector timestamps, IntegerMatrix timeintd, IntegerVector senders, IntegerVector cd, int A, int d, double timeunit, IntegerVector netstat);
-RcppExport SEXP _IPTMnew_Netstats_cpp(SEXP edgeSEXP, SEXP timestampsSEXP, SEXP timeintdSEXP, SEXP sendersSEXP, SEXP cdSEXP, SEXP ASEXP, SEXP dSEXP, SEXP timeunitSEXP, SEXP netstatSEXP) {
+List Netstats_cpp(List edge, NumericVector timestamps, IntegerMatrix timeintd, IntegerVector senders, IntegerVector cd, int A, double timeunit, IntegerVector netstat);
+RcppExport SEXP _IPTMnew_Netstats_cpp(SEXP edgeSEXP, SEXP timestampsSEXP, SEXP timeintdSEXP, SEXP sendersSEXP, SEXP cdSEXP, SEXP ASEXP, SEXP timeunitSEXP, SEXP netstatSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -295,10 +295,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type senders(sendersSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type cd(cdSEXP);
     Rcpp::traits::input_parameter< int >::type A(ASEXP);
-    Rcpp::traits::input_parameter< int >::type d(dSEXP);
     Rcpp::traits::input_parameter< double >::type timeunit(timeunitSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type netstat(netstatSEXP);
-    rcpp_result_gen = Rcpp::wrap(Netstats_cpp(edge, timestamps, timeintd, senders, cd, A, d, timeunit, netstat));
+    rcpp_result_gen = Rcpp::wrap(Netstats_cpp(edge, timestamps, timeintd, senders, cd, A, timeunit, netstat));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -497,6 +496,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// timefinder_vec
+arma::mat timefinder_vec(NumericVector timestamps, int d, double timeunit);
+RcppExport SEXP _IPTMnew_timefinder_vec(SEXP timestampsSEXP, SEXP dSEXP, SEXP timeunitSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type timestamps(timestampsSEXP);
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< double >::type timeunit(timeunitSEXP);
+    rcpp_result_gen = Rcpp::wrap(timefinder_vec(timestamps, d, timeunit));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_IPTMnew_sortuniq", (DL_FUNC) &_IPTMnew_sortuniq, 1},
@@ -521,7 +533,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTMnew_Indegree", (DL_FUNC) &_IPTMnew_Indegree, 3},
     {"_IPTMnew_Dyadic", (DL_FUNC) &_IPTMnew_Dyadic, 3},
     {"_IPTMnew_Triadic", (DL_FUNC) &_IPTMnew_Triadic, 3},
-    {"_IPTMnew_Netstats_cpp", (DL_FUNC) &_IPTMnew_Netstats_cpp, 9},
+    {"_IPTMnew_Netstats_cpp", (DL_FUNC) &_IPTMnew_Netstats_cpp, 8},
     {"_IPTMnew_inner", (DL_FUNC) &_IPTMnew_inner, 2},
     {"_IPTMnew_MultiplyXB", (DL_FUNC) &_IPTMnew_MultiplyXB, 2},
     {"_IPTMnew_TopicWord", (DL_FUNC) &_IPTMnew_TopicWord, 9},
@@ -536,6 +548,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTMnew_Timepart", (DL_FUNC) &_IPTMnew_Timepart, 4},
     {"_IPTMnew_Timepartsum", (DL_FUNC) &_IPTMnew_Timepartsum, 4},
     {"_IPTMnew_timefinder", (DL_FUNC) &_IPTMnew_timefinder, 3},
+    {"_IPTMnew_timefinder_vec", (DL_FUNC) &_IPTMnew_timefinder_vec, 3},
     {NULL, NULL, 0}
 };
 

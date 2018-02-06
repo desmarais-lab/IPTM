@@ -4,10 +4,10 @@
 \alias{GiR}
 \title{GiR}
 \usage{
-GiR(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, prior.b,
-  prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner, burn, thin,
-  netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"), base.edge,
-  base.text, generate_PP_plots = TRUE)
+GiR(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta, prior.b,
+  prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner,
+  netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"), base.data,
+  generate_PP_plots = TRUE)
 }
 \arguments{
 \item{Nsamp}{number of GiR samples to be generated}
@@ -24,11 +24,11 @@ GiR(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, prior.b,
 
 \item{n.d}{number of words in a document (fixed constant for now)}
 
-\item{alpha}{Dirichlet concentration prior for document-topic distribution}
-
-\item{mvec}{Dirichlet base prior for document-topic distribution}
+\item{alphas}{Dirichlet concentration prior for document-topic distribution}
 
 \item{beta}{Dirichlet concentration prior for topic-word distribution}
+
+\item{zeta}{Dirichlet concentration prior for document-interaction pattern distribution}
 
 \item{prior.b}{prior mean and covariance of b in multivariate Normal distribution}
 
@@ -44,17 +44,11 @@ GiR(Nsamp, nDocs, node, vocab, nIP, K, n.d, alpha, mvec, beta, prior.b,
 
 \item{Inner}{size of inner iteration for Metropolis-Hastings updates}
 
-\item{burn}{iterations to be discarded at the beginning of Metropolis-Hastings chains}
-
-\item{thin}{the thinning interval of Metropolis-Hastings chains}
-
 \item{netstat}{which type of network statistics to use ("dyadic", "triadic", "degree")}
 
 \item{timestat}{additional statistics to be used for timestamps other than netstat ("sender", "receiver", "timeofday", "dayofweek")}
 
-\item{base.edge}{artificial collection of documents to be used as initial state of history}
-
-\item{base.text}{artificial collection of documents to be used as initial state of history}
+\item{base.data}{artificial collection of documents to be used as initial state of history}
 
 \item{generate_PP_plots}{Logical indicating whether to draw PP plots}
 }

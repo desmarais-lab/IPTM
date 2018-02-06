@@ -414,13 +414,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // u_Gibbs
-arma::vec u_Gibbs(arma::vec u_di, arma::vec lambda_di, double delta, int j);
+NumericVector u_Gibbs(NumericVector u_di, NumericVector lambda_di, double delta, int j);
 RcppExport SEXP _IPTM_u_Gibbs(SEXP u_diSEXP, SEXP lambda_diSEXP, SEXP deltaSEXP, SEXP jSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type u_di(u_diSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type lambda_di(lambda_diSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type u_di(u_diSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type lambda_di(lambda_diSEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< int >::type j(jSEXP);
     rcpp_result_gen = Rcpp::wrap(u_Gibbs(u_di, lambda_di, delta, j));

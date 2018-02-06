@@ -89,8 +89,8 @@ Triadic <- function(history, A, sender) {
     .Call('_IPTMnew_Triadic', PACKAGE = 'IPTMnew', history, A, sender)
 }
 
-Netstats_cpp <- function(edge, timestamps, timeintd, senders, cd, A, d, timeunit, netstat) {
-    .Call('_IPTMnew_Netstats_cpp', PACKAGE = 'IPTMnew', edge, timestamps, timeintd, senders, cd, A, d, timeunit, netstat)
+Netstats_cpp <- function(edge, timestamps, timeintd, senders, cd, A, timeunit, netstat) {
+    .Call('_IPTMnew_Netstats_cpp', PACKAGE = 'IPTMnew', edge, timestamps, timeintd, senders, cd, A, timeunit, netstat)
 }
 
 inner <- function(x, y) {
@@ -147,5 +147,9 @@ Timepartsum <- function(mumat, sigma_tau, senders, timestamps) {
 
 timefinder <- function(timestamps, edgetrim, timeunit) {
     .Call('_IPTMnew_timefinder', PACKAGE = 'IPTMnew', timestamps, edgetrim, timeunit)
+}
+
+timefinder_vec <- function(timestamps, d, timeunit) {
+    .Call('_IPTMnew_timefinder_vec', PACKAGE = 'IPTMnew', timestamps, d, timeunit)
 }
 

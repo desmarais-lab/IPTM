@@ -255,7 +255,7 @@ List History2(List edge, NumericVector timestamps, IntegerVector cd, int A, Inte
         histlist[l] = histmat;
     }
     int cdnow = cd[timeintd(0,1)];
-    for (int i = timeintd(2,0)-1; i < timeintd(0,1); i++) {
+    for (int i = max(0, timeintd(2,0)-1); i < timeintd(0,1); i++) {
         if (cd[i] == cdnow) {
         List document2 = edge[i];
         int sender = document2[0];
@@ -309,9 +309,11 @@ NumericMatrix Outdegree(IntegerMatrix timeintd, IntegerVector cd,
     NumericMatrix degreemat(A, 3);
     int cdnow = cd[timeintd(0,1)];
     for (unsigned int l = 0; l < 3; l++) {
+        if (timeintd(l,0) > 0) {
         IntegerVector senders_l = senders[Range(timeintd(l,0)-1, timeintd(l,1)-1)];
         IntegerVector cd_l = cd[Range(timeintd(l,0)-1, timeintd(l,1)-1)];
         degreemat(_,l) = tabulateC(senders_l[cd_l==cdnow], A);
+        }
     }
     return degreemat / 10;
 }
@@ -407,10 +409,10 @@ NumericMatrix Triadic(List history, int A, int sender) {
 //                    Network statistics                     //
 // **********************************************************//
 // [[Rcpp::export]]
-List Netstats_cpp(List edge, NumericVector timestamps, IntegerMatrix timeintd, IntegerVector senders, IntegerVector cd, int A, int d, double timeunit, IntegerVector netstat) {
+List Netstats_cpp(List edge, NumericVector timestamps, IntegerMatrix timeintd, IntegerVector senders, IntegerVector cd, int A, double timeunit, IntegerVector netstat) {
     int P = 3*(2*netstat[0]+2*netstat[1]+4*netstat[2]);
     List out(A);
-    List history = History(edge, timestamps, cd, A, d, timeunit);
+    List history = History2(edge, timestamps, cd, A, timeintd, timeunit);
     NumericMatrix outdegree = Outdegree(timeintd, cd, senders, A);
     for (unsigned int a = 0; a < A; a++) {
         NumericMatrix netstatmat(A, P);
@@ -678,15 +680,44 @@ List timefinder (NumericVector timestamps, IntegerVector edgetrim, double timeun
         int id1 = which_num(time1, timestamps);
         int id2 = which_num(time2, timestamps);
         int id3 = which_num(time3, timestamps);
-        arma::mat intervals(3, 2);
+        arma::mat intervals = arma::zeros(3, 2);
         intervals(0,0) = id1;
         intervals(0,1) = d;
-        intervals(1,0) = id2;
-        intervals(1,1) = id1-1;
-        intervals(2,0) = id3;
-        intervals(2,1) = id2-1;
+        if (id1 > id2) {
+            intervals(1,0) = id2;
+            intervals(1,1) = id1-1;
+        }
+        if (id2 > id3) {
+            intervals(2,0) = id3;
+            intervals(2,1) = id2-1;
+        }
         out[d] = intervals;		
     }
     return out;
 }
 
+// **********************************************************//
+//                    Cache time intervals                   //
+// **********************************************************//
+// [[Rcpp::export]]
+arma::mat timefinder_vec (NumericVector timestamps, int d, double timeunit) {
+    arma::mat intervals = arma::zeros(3, 2);
+        double time0 = timestamps[d-1];
+        double time1 = time0-24*timeunit;
+        double time2 = time0-96*timeunit;
+        double time3 = time0-384*timeunit;
+        int id1 = which_num(time1, timestamps);
+        int id2 = which_num(time2, timestamps);
+        int id3 = which_num(time3, timestamps);
+        intervals(0,0) = id1;
+        intervals(0,1) = d;
+    if (id1 > id2) {
+        intervals(1,0) = id2;
+        intervals(1,1) = id1-1;
+    }
+    if (id2 > id3) {
+        intervals(2,0) = id3;
+        intervals(2,1) = id2-1;
+    }
+    return intervals;
+}
