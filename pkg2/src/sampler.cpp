@@ -509,14 +509,20 @@ NumericVector TopicWord0(int K, NumericVector tableCd, NumericVector tablek, int
 double Topicpart(int K, IntegerVector z_d, NumericVector tableCd,
                   NumericVector tablek, NumericVector alphas){
     IntegerVector table_topics = tabulateC(z_d, K);
-    double denom3 = sum(tableCd) + alphas[1] -1;
-    double denom1 = sum(tablek) -1;
+    double denom3 = sum(tableCd) + alphas[1];
+    if (sum(tableCd) > 0) {
+        denom3 = denom3-1;
+    }
+    double denom1 = sum(tablek) + alphas[0]-1;
     double consts = 0;
     for (unsigned int k = 0; k < z_d.size(); k++) {
     	int zdn = z_d[k]-1;
         double dz = table_topics[zdn]-1;
-        double num1 = tablek[zdn] - 1 + alphas[0]/K;
-        double num3 = tableCd[zdn]-1+alphas[1]*num1/denom1;
+        double num1 = tablek[zdn]-1 + alphas[0]/K;
+        if (tableCd[zdn] > 0) {
+            tableCd[zdn] = tableCd[zdn]-1;
+        }
+        double num3 = tableCd[zdn] + alphas[1]*num1/denom1;
         double ratio = alphas[2] * num3/ denom3;
         consts += log(dz+ratio);
     }

@@ -10,7 +10,7 @@ vocab = c("hi", "hello", "fine", "bye", "what")
 nIP = 2
 K = 4
 n.d = 6
-alphas = c(10, 10, 10)
+alphas = c(2, 2, 2)
 beta = 2
 zeta = 2
 netstat = c("dyadic")
@@ -21,7 +21,7 @@ prior.b = list(rep(0.5, P), 0.5* diag(P))
 prior.delta = c(-2, 0.1)
 prior.eta = list(rep(2, length(node) + length(timestat)), 0.5*diag(length(node) +length(timestat)))
 prior.tau = 5
-sigma.Q = c(0.1, 0.05, 0.5, 1)
+sigma.Q = c(0.1, 0.025, 0.5, 1)
 
 b = matrix(c(prior.b[[1]],prior.b[[1]]), nrow = nIP, byrow = TRUE)
 eta =  matrix(c(prior.eta[[1]],prior.eta[[1]]), nrow = nIP, byrow = TRUE)
@@ -35,10 +35,10 @@ base.data = GenerateDocs(500, node, vocab, nIP, K, n.d, alphas, beta, zeta, b, e
                         backward = FALSE, base = TRUE) 
 
 
-Outer = 1
-Inner = c(1,1,1)
-#Outer = 100
-#Inner = c(5,5,5)
+#Outer = 1
+#Inner = c(1,1,1)
+Outer = 100
+Inner = c(5,5,5)
 Schein <- Schein(1000, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner,
                netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),

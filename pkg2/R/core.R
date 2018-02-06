@@ -957,7 +957,7 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
   deltamat = rep(delta, 1)
   sigma_taumat = rep(sigma_tau, 1)		
   mu = matrix(0, nrow = D, ncol = A)
-  textlist.raw = unlist(textlist)
+  textlist.raw = unlist(textlist[edge.trim])
   accept.rates = rep(0, 4)
   hist.d = c()
   for (d in 1:D) {
@@ -976,8 +976,8 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
       tabulateC(textlist.raw[which(unlist(z[edge.trim]) == k)], V)
         }, rep(0, V))
   table.cd = vapply(1:nIP, function(IP) {
-    if (sum(cd[edge.trim]==IP)>0) {
-      tabulateC(unlist(z[which(cd[edge.trim] == IP)]), K)
+    if (sum(cd[edge.trim]==IP) > 0) {
+      tabulateC(unlist(z[edge.trim][which(cd[edge.trim] == IP)]), K)
     } else {
       rep(0, K)
     }  
@@ -985,9 +985,8 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
   table.dk = vapply(1:D, function(d) {
       tabulateC(unlist(z[[d]]), K)
         }, rep(0, K))
-  table.k = rowSums(table.cd)  
+  table.k = tabulateC(unlist(z[edge.trim]), K)
   totalN = sum(table.k)-1    
- 
  
   #start outer iteration
   for (o in 1:Outer) {
@@ -1011,7 +1010,7 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
 	   		table.k[zw.old] = table.k[zw.old]-1
         if (length(textlist.d) > 0) {
           table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
-       	  topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN, 
+       	  topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN,
        	  						 alphas, beta, V)
           zw.new = lmultinom(topicword.d)
           if (zw.new != zw.old) {
@@ -1051,7 +1050,7 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
 	  }
     table.cd = vapply(1:nIP, function(IP) {
       if (sum(cd[edge.trim]==IP)>0) {
-        tabulateC(unlist(z[which(cd[edge.trim] == IP)]), K)
+        tabulateC(unlist(z[edge.trim][which(cd[edge.trim] == IP)]), K)
         } else {
           rep(0, K)
         }  
@@ -1254,7 +1253,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
   deltamat = rep(delta, 1)
   sigma_taumat = rep(sigma_tau, 1)		
   mu = matrix(0, nrow = D, ncol = A)
-  textlist.raw = unlist(textlist)
+  textlist.raw = unlist(textlist[edge.trim])
   accept.rates = rep(0, 4)
   hist.d = c()
   for (d in 1:D) {
@@ -1275,7 +1274,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
   zuniq = lapply(z, function(x) {sortuniq(x)})            
   table.cd = vapply(1:nIP, function(IP) {
     if (sum(cd[edge.trim] == IP) > 0) {
-      tabulateC(unlist(zuniq[which(cd[edge.trim] == IP)]), K)
+      tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
     } else {
       rep(0, K)
     }  
@@ -1307,7 +1306,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
 	   			zuniq[[d]] = sortuniq(z[[d]][-w])
 	   			table.cd = vapply(1:nIP, function(IP) {
 	   			  if (sum(cd[edge.trim] == IP) > 0) {
-	   			    tabulateC(unlist(zuniq[which(cd[edge.trim] == IP)]), K)
+	   			    tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
 	   			  } else {
 	   			    rep(0, K)
 	   			  }  
@@ -1334,7 +1333,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
 	   			zuniq[[d]] = sortuniq(z[[d]])
 	   			table.cd = vapply(1:nIP, function(IP) {
 	   			  if (sum(cd[edge.trim] == IP) > 0) {
-	   			    tabulateC(unlist(zuniq[which(cd[edge.trim] == IP)]), K)
+	   			    tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
 	   			  } else {
 	   			    rep(0, K)
 	   			  }  
@@ -1348,7 +1347,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
     # C update
     const.C = rep(NA, nIP)
     for (d in edge.trim) {
-    	IPpart = log(tabulateC(cd[-d], nIP) + zeta/nIP)
+    	IPpart = log(tabulateC(cd[edge.trim[-d]], nIP) + zeta/nIP)
       for (IP in 1:nIP) {
         cd[d] = IP
        	Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[hist.d[d]]], senders, cd, A, timeunit, netstat)
@@ -1365,7 +1364,7 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
  	  }
     table.cd = vapply(1:nIP, function(IP) {
       if (sum(cd[edge.trim] == IP) > 0) {
-        tabulateC(unlist(zuniq[which(cd[edge.trim] == IP)]), K)
+        tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
       } else {
         rep(0, K)
       }  
@@ -1886,7 +1885,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
                      cd_assignments = cd_assignments, support, netstat, timestat, base.data = base.data, 
                      topic_token_assignments = NULL, backward = FALSE, base = FALSE)
     Forward_stats[i, ] = GiR_stats(Forward_sample, V, K)
-  	initial = list(delta = delta, sigma_tau = sigma_tau, b = b, eta = eta, psi = psi,
+  	initial = list(delta = delta, sigma_tau = sigma_tau, b = b, eta = eta,
   					cd = Forward_sample$cd, z = Forward_sample$z, sigma.Q = sigma.Q, u = Forward_sample$u)
     Inference_samp = IPTM.inference.GiR2(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q,
                      alphas, beta, zeta, prior.b, prior.delta, prior.eta, prior.tau, Outer, Inner, netstat, timestat, initial = initial)
