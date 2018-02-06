@@ -917,12 +917,12 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
   alpha0 = alphas[1]
   alpha1 = alphas[2]
   alpha = alphas[3]
-  m = rdirichlet_cpp(1, rep(alpha0/K, K))
-  mc = matrix(NA, nIP, K)
-  for (IP in 1:nIP) {
-    mc[IP,] = rdirichlet_cpp(1, alpha1*m)
-  }
   if (length(initial) == 0) {
+  	m = rdirichlet_cpp(1, rep(alpha0/K, K))
+  	mc = matrix(NA, nIP, K)
+  	for (IP in 1:nIP) {
+    	mc[IP,] = rdirichlet_cpp(1, alpha1*m)
+  	}
     cd = multinom_vec(D, psi) 
     theta = tvapply(seq(along = edge), function(d) {rdirichlet_cpp(1, alpha*mc[cd[d],]) }, rep(0, K))
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
@@ -1036,14 +1036,14 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
        IPpart = log(tabulateC(cd[edge.trim[-d]], nIP) + zeta/nIP)
        for (IP in 1:nIP) {
          cd[d] = IP
-       	 Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[hist.d[d]]], senders, cd, A, timeunit, netstat)
-         Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[hist.d[d]]], delta)
+       	 Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
+         Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
          munew = mu_vec(timemat[d,], A, eta.old[IP,])
          Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
          Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k, alphas) 	  	
-         const.C[IP] = Edgepart+Timepart+Topicpart+ IPpart[IP]
+         const.C[IP] = Edgepart+Timepart+Topicpart
       }
-       cd[d] = lmultinom(const.C)
+       cd[d] = lmultinom(const.C+IPpart)
 	 }
 	   for (d in edge.trim) {
          X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
@@ -1350,14 +1350,14 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
     	IPpart = log(tabulateC(cd[edge.trim[-d]], nIP) + zeta/nIP)
       for (IP in 1:nIP) {
         cd[d] = IP
-       	Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[hist.d[d]]], senders, cd, A, timeunit, netstat)
-        Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[hist.d[d]]], delta)
+       	Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
+        Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
         munew = mu_vec(timemat[d,], A, eta.old[IP,])
         Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
         Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k, alphas) 	  	
-        const.C[IP] = Edgepart+Timepart+Topicpart+ IPpart[IP]
+        const.C[IP] = Edgepart+Timepart+Topicpart
       }
-      cd[d] = lmultinom(const.C)
+      cd[d] = lmultinom(const.C+IPpart)
 	}
 	  for (d in edge.trim) {
         X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
@@ -1489,19 +1489,6 @@ GenerateDocs = function(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
                         backward = FALSE, base = FALSE, timeunit = 3600, tz = "America/New_York") { 
   A = length(node)
   V = length(vocab)
-  phi = matrix(NA, K, V)
-  for (k in 1:K) {
-    phi[k,] = rdirichlet_cpp(1, rep(beta/V, V))
-  } 
-  psi = rdirichlet_cpp(1, rep(zeta/nIP, nIP))
-  alpha0 = alphas[1]
-  alpha1 = alphas[2]
-  alpha = alphas[3]
-  m = rdirichlet_cpp(1, rep(alpha0/K, K))
-  mc = matrix(NA, nIP, K)
-  for (IP in 1:nIP) {
-    mc[IP,] = rdirichlet_cpp(1, alpha1*m)
-  }
 
   netstat = as.numeric(c("degree", "dyadic", "triadic" ) %in% netstat)
   timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
@@ -1539,6 +1526,21 @@ GenerateDocs = function(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
       }
     }
   }  
+  if (!backward) {
+  phi = matrix(NA, K, V)
+  for (k in 1:K) {
+    phi[k,] = rdirichlet_cpp(1, rep(beta/V, V))
+  } 
+  psi = rdirichlet_cpp(1, rep(zeta/nIP, nIP))
+  alpha0 = alphas[1]
+  alpha1 = alphas[2]
+  alpha = alphas[3]
+  m = rdirichlet_cpp(1, rep(alpha0/K, K))
+  mc = matrix(NA, nIP, K)
+  for (IP in 1:nIP) {
+    mc[IP,] = rdirichlet_cpp(1, alpha1*m)
+  }
+  }
   VKmat = matrix(0, V, K)
   Cmat = rep(0, nIP)
   u = list()
@@ -1906,7 +1908,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
   if (generate_PP_plots) {
     par(mfrow=c(5,6), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
-  }			
+  }	
   return(list(Forward = Forward_stats, Backward = Backward_stats))
 }                         	          
       

@@ -267,10 +267,9 @@ For each document $d \in [D]$, we sample interaction-pattern assignment from the
 \times\prod_{n=1}^{\bar N_d} (\hat N_{dz_{dn}, \backslash dn}+\alpha \frac{\hat N_{z_{dn}c,\backslash dn}+\alpha_1\frac{\hat N_{z_{dn}, \backslash dn}+\frac{\alpha_0}{K}}{\hat N_{\backslash dn}+\alpha_0}}{\hat N_{c, \backslash dn}+\alpha_1})\\&\times
 \varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2)\times \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\\& 
 \times
-\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad^*}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{ad^*r})u_{ad^*r}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad^*})},
+\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{ad^*r}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}.
 \end{aligned}
 \end{equation}
-where $d^*$ is the last document that is affected by current document $d$ (i.e., $t_d + 384 \approx t_{d^*}$). 
 
 New values for continuous variables $\delta, \boldsymbol{b},$ and $\boldsymbol{\eta}$ and $\sigma^2_\tau$ (if applicable) cannot be sampled directly from their conditional posteriors, but may instead be obtained using the Metropolis--Hastings algorithm. With uninformative priors (i.e., $N({0},\infty)$), the conditional posterior over $\delta$ and $\boldsymbol{b}$ is
 \begin{equation}
@@ -297,7 +296,7 @@ New values for continuous variables $\delta, \boldsymbol{b},$ and $\boldsymbol{\
  	   
  	   We then run inference to update the latent variables given the imputed and observed data. We iterate the two steps---imputation and inference---multiple times to obtain enough number of estimates for ``test" data. Algorithm \ref{alg:PPE} outlines this procedure.
  	   
- 	   \begin{algorithm}[ht]
+ 	   \begin{algorithm}[H]
  	   	\caption{Out-of-Sample Tie Predictions}
  	   	\label{alg:PPE}
  	   	\begin{algorithmic}
