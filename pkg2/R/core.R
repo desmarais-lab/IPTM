@@ -1888,8 +1888,8 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
                      topic_token_assignments = NULL, backward = FALSE, base = FALSE)
     Forward_stats[i, ] = GiR_stats(Forward_sample, V, K)
   	initial = list(delta = delta, sigma_tau = sigma_tau, b = b, eta = eta,
-  					cd = Forward_sample$cd, z = Forward_sample$z, sigma.Q = sigma.Q, u = Forward_sample$u)
-    Inference_samp = IPTM.inference.GiR2(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q,
+  	cd = Forward_sample$cd, z = Forward_sample$z, sigma.Q = sigma.Q, u = Forward_sample$u)
+    Inference_samp = IPTM.inference.GiR(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q,
                      alphas, beta, zeta, prior.b, prior.delta, prior.eta, prior.tau, Outer, Inner, netstat, timestat, initial = initial)
     b = tvapply(1:nIP, function(IP) {Inference_samp$b[[IP]][,ncol(Inference_samp$b[[IP]])]}, rep(0, P))
     eta = tvapply(1:nIP, function(IP) {Inference_samp$eta[[IP]][,ncol(Inference_samp$eta[[IP]])]}, rep(0, Q))
@@ -1909,6 +1909,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
     par(mfrow=c(5,6), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
   }	
+  browser()
   return(list(Forward = Forward_stats, Backward = Backward_stats))
 }                         	          
       

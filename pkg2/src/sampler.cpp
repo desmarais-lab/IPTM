@@ -297,7 +297,7 @@ NumericMatrix Degree(List history, int A, int sender) {
         degreemat(_,l) = rep(outdegree, A); //currently not account for multicast
         degreemat(_,l+3) = colSums(history_l);
       }
-  return degreemat / 10;
+  return degreemat / (10.0);
 }
 
 // **********************************************************//
@@ -315,7 +315,7 @@ NumericMatrix Outdegree(IntegerMatrix timeintd, IntegerVector cd,
         degreemat(_,l) = tabulateC(senders_l[cd_l==cdnow], A);
         }
     }
-    return degreemat / 10;
+    return degreemat / (10.0);
 }
 
 // **********************************************************//
@@ -328,7 +328,7 @@ NumericMatrix Indegree(List history, int A, int sender) {
         IntegerMatrix history_l = history[l];
         degreemat(_,l) = colSums(history_l);
     }
-    return degreemat / 10;
+    return degreemat / (10.0);
 }
 
 // **********************************************************//
@@ -402,7 +402,7 @@ NumericMatrix Triadic(List history, int A, int sender) {
                 triadmat(i, add+7)+triadmat(i, add+8);
             }                    
         }
-    return triadmat2/10;
+    return triadmat2 / (10.0);
 }
 
 // **********************************************************//
