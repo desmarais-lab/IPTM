@@ -326,14 +326,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // TopicWord
-NumericVector TopicWord(int K, NumericVector tabledk, NumericVector tableWd, NumericVector tableCd, NumericVector tablek, int N, NumericVector alphas, double beta, int V);
+NumericVector TopicWord(int K, NumericVector tabledk, IntegerVector tableWd, NumericVector tableCd, NumericVector tablek, int N, NumericVector alphas, double beta, int V);
 RcppExport SEXP _IPTMnew_TopicWord(SEXP KSEXP, SEXP tabledkSEXP, SEXP tableWdSEXP, SEXP tableCdSEXP, SEXP tablekSEXP, SEXP NSEXP, SEXP alphasSEXP, SEXP betaSEXP, SEXP VSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type K(KSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tabledk(tabledkSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type tableWd(tableWdSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type tableWd(tableWdSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tableCd(tableCdSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tablek(tablekSEXP);
     Rcpp::traits::input_parameter< int >::type N(NSEXP);
@@ -341,6 +341,26 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< int >::type V(VSEXP);
     rcpp_result_gen = Rcpp::wrap(TopicWord(K, tabledk, tableWd, tableCd, tablek, N, alphas, beta, V));
+    return rcpp_result_gen;
+END_RCPP
+}
+// TopicWord_min
+NumericVector TopicWord_min(int K, NumericVector tabledk, IntegerVector tableWd, NumericVector tableCd, int totalCd, NumericVector tablek, int N, NumericVector alphas, double beta, int V);
+RcppExport SEXP _IPTMnew_TopicWord_min(SEXP KSEXP, SEXP tabledkSEXP, SEXP tableWdSEXP, SEXP tableCdSEXP, SEXP totalCdSEXP, SEXP tablekSEXP, SEXP NSEXP, SEXP alphasSEXP, SEXP betaSEXP, SEXP VSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type K(KSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type tabledk(tabledkSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type tableWd(tableWdSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type tableCd(tableCdSEXP);
+    Rcpp::traits::input_parameter< int >::type totalCd(totalCdSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type tablek(tablekSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type alphas(alphasSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< int >::type V(VSEXP);
+    rcpp_result_gen = Rcpp::wrap(TopicWord_min(K, tabledk, tableWd, tableCd, totalCd, tablek, N, alphas, beta, V));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -361,8 +381,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// TopicWord0_min
+NumericVector TopicWord0_min(int K, NumericVector tableCd, int totalCd, NumericVector tablek, int N, NumericVector alphas, double beta, int V);
+RcppExport SEXP _IPTMnew_TopicWord0_min(SEXP KSEXP, SEXP tableCdSEXP, SEXP totalCdSEXP, SEXP tablekSEXP, SEXP NSEXP, SEXP alphasSEXP, SEXP betaSEXP, SEXP VSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type K(KSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type tableCd(tableCdSEXP);
+    Rcpp::traits::input_parameter< int >::type totalCd(totalCdSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type tablek(tablekSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type alphas(alphasSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< int >::type V(VSEXP);
+    rcpp_result_gen = Rcpp::wrap(TopicWord0_min(K, tableCd, totalCd, tablek, N, alphas, beta, V));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Topicpart
-double Topicpart(int K, IntegerVector z_d, NumericVector tableCd, NumericVector tablek, NumericVector alphas);
+double Topicpart(int K, IntegerVector z_d, NumericVector tableCd, IntegerVector tablek, NumericVector alphas);
 RcppExport SEXP _IPTMnew_Topicpart(SEXP KSEXP, SEXP z_dSEXP, SEXP tableCdSEXP, SEXP tablekSEXP, SEXP alphasSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -370,9 +408,26 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type K(KSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type z_d(z_dSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tableCd(tableCdSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type tablek(tablekSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type tablek(tablekSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type alphas(alphasSEXP);
     rcpp_result_gen = Rcpp::wrap(Topicpart(K, z_d, tableCd, tablek, alphas));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Topicpart_min
+double Topicpart_min(int K, IntegerVector z_d, NumericVector tableCd, int totalCd, IntegerVector tablek, NumericVector alphas, int nIP);
+RcppExport SEXP _IPTMnew_Topicpart_min(SEXP KSEXP, SEXP z_dSEXP, SEXP tableCdSEXP, SEXP totalCdSEXP, SEXP tablekSEXP, SEXP alphasSEXP, SEXP nIPSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type K(KSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type z_d(z_dSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type tableCd(tableCdSEXP);
+    Rcpp::traits::input_parameter< int >::type totalCd(totalCdSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type tablek(tablekSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type alphas(alphasSEXP);
+    Rcpp::traits::input_parameter< int >::type nIP(nIPSEXP);
+    rcpp_result_gen = Rcpp::wrap(Topicpart_min(K, z_d, tableCd, totalCd, tablek, alphas, nIP));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -414,6 +469,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Edgepart2
+double Edgepart2(arma::vec u, arma::vec lambda, double delta, int sender);
+RcppExport SEXP _IPTMnew_Edgepart2(SEXP uSEXP, SEXP lambdaSEXP, SEXP deltaSEXP, SEXP senderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< int >::type sender(senderSEXP);
+    rcpp_result_gen = Rcpp::wrap(Edgepart2(u, lambda, delta, sender));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Edgepartsum
 double Edgepartsum(List X, arma::vec B, arma::mat u, double delta);
 RcppExport SEXP _IPTMnew_Edgepartsum(SEXP XSEXP, SEXP BSEXP, SEXP uSEXP, SEXP deltaSEXP) {
@@ -425,6 +494,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type u(uSEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
     rcpp_result_gen = Rcpp::wrap(Edgepartsum(X, B, u, delta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Edgepartsum2
+double Edgepartsum2(arma::mat X, arma::vec B, arma::vec u, double delta, int senderd);
+RcppExport SEXP _IPTMnew_Edgepartsum2(SEXP XSEXP, SEXP BSEXP, SEXP uSEXP, SEXP deltaSEXP, SEXP senderdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type B(BSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< int >::type senderd(senderdSEXP);
+    rcpp_result_gen = Rcpp::wrap(Edgepartsum2(X, B, u, delta, senderd));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -537,12 +621,17 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTMnew_inner", (DL_FUNC) &_IPTMnew_inner, 2},
     {"_IPTMnew_MultiplyXB", (DL_FUNC) &_IPTMnew_MultiplyXB, 2},
     {"_IPTMnew_TopicWord", (DL_FUNC) &_IPTMnew_TopicWord, 9},
+    {"_IPTMnew_TopicWord_min", (DL_FUNC) &_IPTMnew_TopicWord_min, 10},
     {"_IPTMnew_TopicWord0", (DL_FUNC) &_IPTMnew_TopicWord0, 7},
+    {"_IPTMnew_TopicWord0_min", (DL_FUNC) &_IPTMnew_TopicWord0_min, 8},
     {"_IPTMnew_Topicpart", (DL_FUNC) &_IPTMnew_Topicpart, 5},
+    {"_IPTMnew_Topicpart_min", (DL_FUNC) &_IPTMnew_Topicpart_min, 7},
     {"_IPTMnew_lmultinom", (DL_FUNC) &_IPTMnew_lmultinom, 1},
     {"_IPTMnew_u_Gibbs", (DL_FUNC) &_IPTMnew_u_Gibbs, 4},
     {"_IPTMnew_Edgepart", (DL_FUNC) &_IPTMnew_Edgepart, 3},
+    {"_IPTMnew_Edgepart2", (DL_FUNC) &_IPTMnew_Edgepart2, 4},
     {"_IPTMnew_Edgepartsum", (DL_FUNC) &_IPTMnew_Edgepartsum, 4},
+    {"_IPTMnew_Edgepartsum2", (DL_FUNC) &_IPTMnew_Edgepartsum2, 5},
     {"_IPTMnew_mu_vec", (DL_FUNC) &_IPTMnew_mu_vec, 3},
     {"_IPTMnew_mu_mat", (DL_FUNC) &_IPTMnew_mu_mat, 4},
     {"_IPTMnew_Timepart", (DL_FUNC) &_IPTMnew_Timepart, 4},

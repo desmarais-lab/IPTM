@@ -208,11 +208,14 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, 
   for (d in edge.trim) {
     X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
   }
+  
   table.W = tvapply(1:K, function(k) {
       tabulateC(textlist.raw[which(unlist(z[-emptytext]) == k)], V)
         }, rep(0, V))
+  totalN = sum(table.W)-1 
+  table.C = tabulateC(cd, nIP)
   table.cd = vapply(1:nIP, function(IP) {
-    if (sum(cd==IP)>0) {
+    if (sum(cd==IP) > 0) {
       tabulateC(unlist(z[which(cd == IP)]), K)
     } else {
       rep(0, K)
@@ -221,8 +224,7 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, 
   table.dk = vapply(1:D, function(d) {
       tabulateC(unlist(z[[d]]), K)
         }, rep(0, K))
-  table.k = rowSums(table.cd)  
-  totalN = sum(table.k)-1    
+  table.k = rowSums(table.dk)     
   #start outer iteration
   for (o in 1:Outer) {
     print(o)
@@ -236,64 +238,60 @@ IPTM.inference = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alphas, 
             }
         }
     }
-    # Z update	
-    topicsum = 0
-    for (d in 1:D) {
-	   	textlist.d = textlist[[d]]
-	   	for (w in 1:length(z[[d]])) {
-	   		zw.old = z[[d]][w]
-	   		table.cd[zw.old, cd[d]] = table.cd[zw.old, cd[d]]-1
-	   		table.dk[zw.old, d] = table.dk[zw.old, d]-1
-	   		table.k[zw.old] = table.k[zw.old]-1
-        if (length(textlist.d) > 0) {
-          table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
-       	  topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN, 
-       	  						 alphas, beta, V)
-          zw.new = lmultinom(topicword.d)
-          if (zw.new != zw.old) {
-              z[[d]][w] = zw.new
-          }
-          table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
-        } else {
-          topicword.d = TopicWord0(K, table.cd[,cd[d]], table.k, totalN, alphas, beta, V)
-          zw.new = lmultinom(topicword.d)
-          if (zw.new != zw.old) {
-              z[[d]][w] = zw.new
-          }
-        }
-       table.cd[z[[d]][w], cd[d]] = table.cd[z[[d]][w], cd[d]]+1 
-       table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
-	     table.k[z[[d]][w]] = table.k[z[[d]][w]]+1
-       topicsum = topicsum + topicword.d[z[[d]][w]] 
-      }
+    # cd update	
+     for (d in 1:D) {
+     	table.C[cd[d]] = table.C[cd[d]]-1
+     	table.cd[, cd[d]] = table.cd[, cd[d]] - tabulateC(z[[d]], K)
+        for (IP in 1:nIP) {
+         cd[d] = IP
+         IPpart = log(table.C[IP] + 1 + zeta/nIP)
+       	 Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
+       	 Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
+       	 munew = mu_vec(timemat[d,], A, eta.old[IP,])
+         Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
+         Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k-tabulateC(z[[d]], K), alphas)
+         const.C[IP] = Edgepart+Timepart+Topicpart+IPpart
+       }
+       cd[d] = lmultinom(const.C)
+       table.C[cd[d]] = table.C[cd[d]] + 1
+       table.cd[, cd[d]] = table.cd[, cd[d]] + tabulateC(z[[d]], K)
     }
-
-    # C update
-    const.C = rep(NA, nIP)
-    for (d in 1:D) {
-    	IPpart = log(tabulateC(cd[-d], nIP) + zeta/nIP)
-      for (IP in 1:nIP) {
-        cd[d] = IP
-       	Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[hist.d[d]]], senders, cd, A, timeunit, netstat)
-        Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[hist.d[d]]], delta)
-        munew = mu_vec(timemat[d,], A, eta.old[IP,])
-        Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
-        Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k, alphas) 	  	
-        const.C[IP] = Edgepart+Timepart+Topicpart+ IPpart[IP]
-      }
-      cd[d] = lmultinom(const.C)
-	}
-	  for (d in edge.trim) {
-        X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
-	  }
-    table.cd = vapply(1:nIP, function(IP) {
-      if (sum(cd==IP)>0) {
-        tabulateC(unlist(z[which(cd == IP)]), K)
-        } else {
-          rep(0, K)
-        }  
-    }, rep(0, K))
+    for (d in edge.trim) {
+         X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
+	 }
       
+	 #Z update
+	 topicsum = 0
+     for (d in 1:D) {   
+       textlist.d = textlist[[d]]
+ 	   for (w in 1:length(z[[d]])) {
+ 	   		zw.old = z[[d]][w]
+ 	   		table.cd[zw.old, cd[d]] = table.cd[zw.old, cd[d]]-1
+ 	   		table.dk[zw.old, d] = table.dk[zw.old, d]-1
+ 	   		table.k[zw.old] = table.k[zw.old]-1
+         if (length(textlist.d) > 0) {
+             table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
+        	 topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN,
+        	  						alphas, beta, V)
+            zw.new = lmultinom(topicword.d)
+            if (zw.new != zw.old) {
+               z[[d]][w] = zw.new
+           }
+           table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
+           } else {
+           topicword.d = TopicWord0(K, table.cd[,cd[d]], table.k, totalN, alphas, beta, V)
+           zw.new = lmultinom(topicword.d)
+           if (zw.new != zw.old) {
+               z[[d]][w] = zw.new
+           }
+         }
+        table.cd[z[[d]][w], cd[d]] = table.cd[z[[d]][w], cd[d]]+1
+        table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
+ 	    table.k[z[[d]][w]] = table.k[z[[d]][w]]+1
+ 	    topicsum = topicsum + topicword.d[z[[d]][w]]
+	 	}
+	 }
+
   # adaptive M-H   
     #if (o > 1) {
     #	accept.rates[1] = accept.rates[1]/Inner[1]
@@ -662,9 +660,10 @@ IPTM.inference.min = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
     }
 
     # C update
+    table.C = rep(0, nIP)
     const.C = rep(NA, nIP)
     for (d in 1:D) {
-    	IPpart = log(tabulateC(cd[-d], nIP) + zeta/nIP)
+    	IPpart = log(table.C + zeta/nIP)
       for (IP in 1:nIP) {
         cd[d] = IP
        	Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[hist.d[d]]], senders, cd, A, timeunit, netstat)
@@ -675,6 +674,7 @@ IPTM.inference.min = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
         const.C[IP] = Edgepart+Timepart+Topicpart+ IPpart[IP]
       }
       cd[d] = lmultinom(const.C)
+      table.C[cd[d]] = table.C[cd[d]]+1
 	}
 	  for (d in edge.trim) {
         X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
@@ -972,9 +972,12 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
   for (d in edge.trim) {
     X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
   }
+  const.C = rep(NA, nIP)
   table.W = tvapply(1:K, function(k) {
       tabulateC(textlist.raw[which(unlist(z[edge.trim]) == k)], V)
         }, rep(0, V))
+  totalN = sum(table.W)-1 
+  table.C = tabulateC(cd[edge.trim], nIP)
   table.cd = vapply(1:nIP, function(IP) {
     if (sum(cd[edge.trim]==IP) > 0) {
       tabulateC(unlist(z[edge.trim][which(cd[edge.trim] == IP)]), K)
@@ -985,9 +988,7 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
   table.dk = vapply(1:D, function(d) {
       tabulateC(unlist(z[[d]]), K)
         }, rep(0, K))
-  table.k = tabulateC(unlist(z[edge.trim]), K)
-  totalN = sum(table.k)-1    
- 
+  table.k = rowSums(table.dk[,edge.trim])   
   #start outer iteration
   for (o in 1:Outer) {
     # Data augmentation
@@ -1000,79 +1001,66 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
             }
         }
     }
-    # Z update	
-    for (d in edge.trim) {
-	   	textlist.d = textlist[[d]]
-	   	for (w in 1:length(z[[d]])) {
-	   		zw.old = z[[d]][w]
-	   		table.cd[zw.old, cd[d]] = table.cd[zw.old, cd[d]]-1
-	   		table.dk[zw.old, d] = table.dk[zw.old, d]-1
-	   		table.k[zw.old] = table.k[zw.old]-1
-        if (length(textlist.d) > 0) {
-          table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
-       	  topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN,
-       	  						 alphas, beta, V)
-          zw.new = lmultinom(topicword.d)
-          if (zw.new != zw.old) {
-              z[[d]][w] = zw.new
-          }
-          table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
-        } else {
-          topicword.d = TopicWord0(K, table.cd[,cd[d]], table.k, totalN, alphas, beta, V)
-          zw.new = lmultinom(topicword.d)
-          if (zw.new != zw.old) {
-              z[[d]][w] = zw.new
-          }
-        }
-       table.cd[z[[d]][w], cd[d]] = table.cd[z[[d]][w], cd[d]]+1 
-       table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
-	   table.k[z[[d]][w]] = table.k[z[[d]][w]]+1
-      }
-    }
-
-    # C update
-     const.C = rep(NA, nIP)
+    # cd update	
      for (d in edge.trim) {
-       IPpart = log(tabulateC(cd[edge.trim[-d]], nIP) + zeta/nIP)
-       for (IP in 1:nIP) {
+     	table.C[cd[d]] = table.C[cd[d]]-1
+     	table.cd[, cd[d]] = table.cd[, cd[d]] - tabulateC(z[[d]], K)
+        for (IP in 1:nIP) {
          cd[d] = IP
+         IPpart = log(table.C[IP] + 1 + zeta/nIP)
        	 Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
-         Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
-         munew = mu_vec(timemat[d,], A, eta.old[IP,])
+       	 Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
+       	 munew = mu_vec(timemat[d,], A, eta.old[IP,])
          Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
-         Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k, alphas) 	  	
-         const.C[IP] = Edgepart+Timepart+Topicpart
-      }
-       cd[d] = lmultinom(const.C+IPpart)
-	 }
-	   for (d in edge.trim) {
+         Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k-tabulateC(z[[d]], K), alphas)
+         const.C[IP] = Edgepart+Timepart+Topicpart+IPpart
+       }
+       cd[d] = lmultinom(const.C)
+       table.C[cd[d]] = table.C[cd[d]] + 1
+       table.cd[, cd[d]] = table.cd[, cd[d]] + tabulateC(z[[d]], K)
+    }
+    for (d in edge.trim) {
          X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
-	  }
-    table.cd = vapply(1:nIP, function(IP) {
-      if (sum(cd[edge.trim]==IP)>0) {
-        tabulateC(unlist(z[edge.trim][which(cd[edge.trim] == IP)]), K)
-        } else {
-          rep(0, K)
-        }  
-    }, rep(0, K))
-      
-  # adaptive M-H   
-    #if (o > 1) {
-    #	accept.rates[1] = accept.rates[1]/Inner[1]
-    #	accept.rates[2] = accept.rates[2]/Inner[2]
-    #  accept.rates[3] = accept.rates[3]/Inner[1]
-    #  accept.rates[4] = accept.rates[1]/Inner[3]
-    #	sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
-    #}
-    #accept.rates = rep(0, 4)
+	 }
     
+    #Z update
+     for (d in edge.trim) {   
+       textlist.d = textlist[[d]]
+ 	   for (w in 1:length(z[[d]])) {
+ 	   		zw.old = z[[d]][w]
+ 	   		table.cd[zw.old, cd[d]] = table.cd[zw.old, cd[d]]-1
+ 	   		table.dk[zw.old, d] = table.dk[zw.old, d]-1
+ 	   		table.k[zw.old] = table.k[zw.old]-1
+         if (length(textlist.d) > 0) {
+             table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
+        	 topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN,
+        	  						alphas, beta, V)
+            zw.new = lmultinom(topicword.d)
+            if (zw.new != zw.old) {
+               z[[d]][w] = zw.new
+           }
+           table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
+           } else {
+           topicword.d = TopicWord0(K, table.cd[,cd[d]], table.k, totalN, alphas, beta, V)
+           zw.new = lmultinom(topicword.d)
+           if (zw.new != zw.old) {
+               z[[d]][w] = zw.new
+           }
+         }
+        table.cd[z[[d]][w], cd[d]] = table.cd[z[[d]][w], cd[d]]+1
+        table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
+ 	    table.k[z[[d]][w]] = table.k[z[[d]][w]]+1
+	 	}
+	 }
+ 	       
+  # M-H       
     prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
     			 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
     post.old1 = Edgepartsum(X[[max.edge]], b.old[cd[max.edge],], u[[max.edge]], delta)
     b.new = matrix(NA, nIP, P)
     for (inner in 1:Inner[1]) {
       for (IP in 1:nIP) {
-			  b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
+		 b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
 	  }
       delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
       prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
@@ -1084,7 +1072,6 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
         delta = delta.new
         prior.old1 = prior.new1
         post.old1 = post.new1
-      #  accept.rates[1] = accept.rates[1]+1
       }
         for (IP in 1:nIP) {
           bmat[[IP]] = cbind(bmat[[IP]], b.old[IP,])
@@ -1108,7 +1095,6 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
         eta.old = eta.new
         prior.old2 = prior.new2
         post.old2 = post.new2
-      #  accept.rates[2] = accept.rates[2]+1
       }
       for (IP in 1:nIP) {
           etamat[[IP]] = cbind(etamat[[IP]], eta.old[IP,])
@@ -1128,7 +1114,6 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
         sigma_tau = sigma_tau.new
         prior.old3 = prior.new3
         post.old3 = post.new3
-     #   accept.rates[3] = accept.rates[3]+1
       }
         sigma_taumat = c(sigma_taumat, sigma_tau)
     }
@@ -1270,8 +1255,9 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
   }
   table.W = tvapply(1:K, function(k) {
       tabulateC(textlist.raw[which(unlist(z[edge.trim]) == k)], V)
-        }, rep(0, V))
-  zuniq = lapply(z, function(x) {sortuniq(x)})            
+  }, rep(0, V))
+  zuniq = lapply(z, function(x) {sortuniq(x)}) 
+  table.C = tabulateC(cd[edge.trim], nIP)           
   table.cd = vapply(1:nIP, function(IP) {
     if (sum(cd[edge.trim] == IP) > 0) {
       tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
@@ -1279,11 +1265,13 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
       rep(0, K)
     }  
   }, rep(0, K))
+  total.cd = length(edge.trim)
   table.dk = vapply(1:D, function(d) {
-      tabulateC(unlist(z[[d]]), K)
-        }, rep(0, K))
+     tabulateC(unlist(z[[d]]), K)
+       }, rep(0, K))
   table.k = rowSums(table.cd > 0) 
   totalN = nIP    
+  const.C = rep(NA, nIP)
   #start outer iteration
   for (o in 1:Outer) {
     # Data augmentation
@@ -1296,90 +1284,77 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
             }
         }
     }
-    # Z update	
-    for (d in edge.trim) {
-	   	textlist.d = textlist[[d]]
-	   	for (w in 1:length(z[[d]])) {
-	   		zw.old = z[[d]][w]
-	   		table.dk[zw.old, d] = table.dk[zw.old, d]-1
-	   		if (!identical(zuniq[[d]], sortuniq(z[[d]][-w]))) {
-	   			zuniq[[d]] = sortuniq(z[[d]][-w])
-	   			table.cd = vapply(1:nIP, function(IP) {
-	   			  if (sum(cd[edge.trim] == IP) > 0) {
-	   			    tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
-	   			  } else {
-	   			    rep(0, K)
-	   			  }  
-	   			}, rep(0, K))      
-	   			table.k = rowSums(table.cd > 0) 
-	   		}
-	   	 if (length(textlist.d) > 0) {
-          table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
-       	  topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN, 
-       	  						 alphas, beta, V)
-          zw.new = lmultinom(topicword.d)
-          if (zw.new != zw.old) {
-              z[[d]][w] = zw.new
-          }
-          table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
-        } else {
-          topicword.d = TopicWord0(K, table.cd[,cd[d]], table.k, totalN, alphas, beta, V)
-          zw.new = lmultinom(topicword.d)
-          if (zw.new != zw.old) {
-              z[[d]][w] = zw.new
-          }
-        }
-		if (!identical(zuniq[[d]], sortuniq(z[[d]]))) {
-	   			zuniq[[d]] = sortuniq(z[[d]])
-	   			table.cd = vapply(1:nIP, function(IP) {
-	   			  if (sum(cd[edge.trim] == IP) > 0) {
-	   			    tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
-	   			  } else {
-	   			    rep(0, K)
-	   			  }  
-	   			}, rep(0, K))   
-	   			table.k = rowSums(table.cd > 0) 
-	   		}
-       table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
-      }
-    }
 
-    # C update
-    const.C = rep(NA, nIP)
-    for (d in edge.trim) {
-    	IPpart = log(tabulateC(cd[edge.trim[-d]], nIP) + zeta/nIP)
-      for (IP in 1:nIP) {
-        cd[d] = IP
-       	Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
-        Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
-        munew = mu_vec(timemat[d,], A, eta.old[IP,])
-        Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
-        Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k, alphas) 	  	
-        const.C[IP] = Edgepart+Timepart+Topicpart
-      }
-      cd[d] = lmultinom(const.C+IPpart)
-	}
-	  for (d in edge.trim) {
-        X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
- 	  }
-    table.cd = vapply(1:nIP, function(IP) {
-      if (sum(cd[edge.trim] == IP) > 0) {
-        tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
-      } else {
-        rep(0, K)
-      }  
-    }, rep(0, K)) 
-    table.k = rowSums(table.cd > 0) 
-    
-  # adaptive M-H   
-  #  if (o > 1) {
-  #  	accept.rates[1] = accept.rates[1]/5
-  #  	accept.rates[2] = accept.rates[2]/5
-  #    accept.rates[3] = accept.rates[3]/5
-  #    accept.rates[4] = accept.rates[1]
-  #  	sigma.Q = adaptive.MH(sigma.Q, accept.rates, update.size = 0.2*sigma.Q)
-  #  }
-  #  accept.rates = rep(0, 4)
+     # cd update	
+     for (d in edge.trim) {
+     	table.C[cd[d]] = table.C[cd[d]]-1
+     	table.cd[, cd[d]] = table.cd[, cd[d]] - tabulateC(zuniq[[d]], K)
+     	table.k = rowSums(table.cd > 0) 
+        for (IP in 1:nIP) {
+         cd[d] = IP
+         IPpart = log(table.C[IP] + 1 + zeta/nIP)
+       	 Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
+       	 Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
+       	 munew = mu_vec(timemat[d,], A, eta.old[IP,])
+         Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
+         Topicpart = Topicpart_min(K, z[[d]], table.cd[,IP], total.cd-1, table.k, alphas, nIP)
+         const.C[IP] = Edgepart+Timepart+Topicpart+IPpart
+       }
+       cd[d] = lmultinom(const.C)
+       table.C[cd[d]] = table.C[cd[d]] + 1
+       table.cd[, cd[d]] = table.cd[, cd[d]] + tabulateC(zuniq[[d]], K)
+       table.k = rowSums(table.cd > 0) 
+    }  
+	 for (d in edge.trim) {
+         X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
+	 }
+    # # Z update	
+    # for (d in edge.trim) {
+	   	# textlist.d = textlist[[d]]
+	   	# for (w in 1:length(z[[d]])) {
+	   		# zw.old = z[[d]][w]
+	   		# table.dk[zw.old, d] = table.dk[zw.old, d]-1
+	   		# if (!identical(zuniq[[d]], sortuniq(z[[d]][-w]))) {
+	   			# zuniq[[d]] = sortuniq(z[[d]][-w])
+	   			# table.cd = vapply(1:nIP, function(IP) {
+	   			# if (sum(cd[edge.trim] == IP) > 0) {
+	   			    # tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
+	   			  # } else {
+	   			    # rep(0, K)
+	   			  # }  
+	   			# }, rep(0, K))      
+	   			# table.k = rowSums(table.cd > 0) 
+	   		 # }
+	   	 # if (length(textlist.d) > 0) {
+          # table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
+       	  # topicword.d = TopicWord_min(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], total.cd, table.k, totalN, 
+       	  						 # alphas, beta, V)
+          # zw.new = lmultinom(topicword.d)
+          # if (zw.new != zw.old) {
+              # z[[d]][w] = zw.new
+          # }
+          # table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
+        # } else {
+          # topicword.d = TopicWord0_min(K, table.cd[,cd[d]], total.cd, table.k, totalN, alphas, beta, V)
+          # zw.new = lmultinom(topicword.d)
+          # if (zw.new != zw.old) {
+              # z[[d]][w] = zw.new
+          # }
+        # }
+		# if (!identical(zuniq[[d]], sortuniq(z[[d]]))) {
+	   			# zuniq[[d]] = sortuniq(z[[d]])
+	   			# table.cd = vapply(1:nIP, function(IP) {
+	   			  # if (sum(cd[edge.trim] == IP) > 0) {
+	   			    # tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
+	   			  # } else {
+	   			    # rep(0, K)
+	   			  # }  
+	   			# }, rep(0, K))   
+	   			# table.k = rowSums(table.cd > 0) 
+	   		# }
+       # table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
+      # }
+    # }
     
     prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
     			 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
@@ -1399,7 +1374,6 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
         delta = delta.new
         prior.old1 = prior.new1
         post.old1 = post.new1
-      #  accept.rates[1] = accept.rates[1]+1
       }
         for (IP in 1:nIP) {
           bmat[[IP]] = cbind(bmat[[IP]], b.old[IP,])
@@ -1423,7 +1397,6 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
         eta.old = eta.new
         prior.old2 = prior.new2
         post.old2 = post.new2
-      #  accept.rates[2] = accept.rates[2]+1
       }
       for (IP in 1:nIP) {
           etamat[[IP]] = cbind(etamat[[IP]], eta.old[IP,])
@@ -1443,7 +1416,6 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
         sigma_tau = sigma_tau.new
         prior.old3 = prior.new3
         post.old3 = post.new3
-      #  accept.rates[3] = accept.rates[3]+1
       }
         sigma_taumat = c(sigma_taumat, sigma_tau)
     }
@@ -1889,7 +1861,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
     Forward_stats[i, ] = GiR_stats(Forward_sample, V, K)
   	initial = list(delta = delta, sigma_tau = sigma_tau, b = b, eta = eta,
   	cd = Forward_sample$cd, z = Forward_sample$z, sigma.Q = sigma.Q, u = Forward_sample$u)
-    Inference_samp = IPTM.inference.GiR(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q,
+    Inference_samp = IPTM.inference.GiR2(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q,
                      alphas, beta, zeta, prior.b, prior.delta, prior.eta, prior.tau, Outer, Inner, netstat, timestat, initial = initial)
     b = tvapply(1:nIP, function(IP) {Inference_samp$b[[IP]][,ncol(Inference_samp$b[[IP]])]}, rep(0, P))
     eta = tvapply(1:nIP, function(IP) {Inference_samp$eta[[IP]][,ncol(Inference_samp$eta[[IP]])]}, rep(0, Q))
@@ -1908,8 +1880,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
   if (generate_PP_plots) {
     par(mfrow=c(5,6), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
-  }	
-  browser()
+  } 
   return(list(Forward = Forward_stats, Backward = Backward_stats))
 }                         	          
       

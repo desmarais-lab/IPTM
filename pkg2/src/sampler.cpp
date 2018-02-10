@@ -475,7 +475,7 @@ arma::mat MultiplyXB(List X, arma::vec B){
 //        Topic and Word contribution in update of Z         //
 // **********************************************************//
 // [[Rcpp::export]]
-NumericVector TopicWord(int K, NumericVector tabledk, NumericVector tableWd, 
+NumericVector TopicWord(int K, NumericVector tabledk, IntegerVector tableWd,
                         NumericVector tableCd, NumericVector tablek, int N,
                         NumericVector alphas, double beta, int V){
     NumericVector num1 = tablek + alphas[0]/K;
@@ -484,6 +484,23 @@ NumericVector TopicWord(int K, NumericVector tabledk, NumericVector tableWd,
     NumericVector denom2 = log(tablek+beta);
     NumericVector num3 = tableCd + alphas[1] * num1/denom1;
     double denom3 = sum(tableCd) + alphas[1];
+    NumericVector consts = num2-denom2+log(tabledk + alphas[2] * num3/denom3);
+    return consts;
+}
+
+// **********************************************************//
+//        Topic and Word contribution in update of Z         //
+// **********************************************************//
+// [[Rcpp::export]]
+NumericVector TopicWord_min(int K, NumericVector tabledk, IntegerVector tableWd,
+                        NumericVector tableCd, int totalCd, NumericVector tablek, int N,
+                        NumericVector alphas, double beta, int V){
+    NumericVector num1 = tablek + alphas[0]/K;
+    double denom1 = N + alphas[0];
+    NumericVector num2 = log(tableWd+beta/V);
+    NumericVector denom2 = log(tablek+beta);
+    NumericVector num3 = tableCd + alphas[1] * num1/denom1;
+    double denom3 = totalCd + alphas[1];
     NumericVector consts = num2-denom2+log(tabledk + alphas[2] * num3/denom3);
     return consts;
 }
@@ -506,25 +523,65 @@ NumericVector TopicWord0(int K, NumericVector tableCd, NumericVector tablek, int
 //        Topic and Word contribution in update of Z         //
 // **********************************************************//
 // [[Rcpp::export]]
+NumericVector TopicWord0_min(int K, NumericVector tableCd, int totalCd,
+                             NumericVector tablek, int N,
+                         NumericVector alphas, double beta, int V){
+    NumericVector num1 = tablek + alphas[0]/K;
+    double denom1 = N + alphas[0];
+    NumericVector num3 = tableCd + alphas[1] * num1/denom1;
+    double denom3 = totalCd + alphas[1];
+    NumericVector consts = log(alphas[2] * num3/denom3);
+    return consts;
+}
+
+// **********************************************************//
+//        Topic and Word contribution in update of Z         //
+// **********************************************************//
+// [[Rcpp::export]]
 double Topicpart(int K, IntegerVector z_d, NumericVector tableCd,
-                  NumericVector tablek, NumericVector alphas){
-    IntegerVector table_topics = tabulateC(z_d, K);
-    double denom3 = sum(tableCd) + alphas[1];
-    if (sum(tableCd) > 0) {
-        denom3 = denom3-1;
-    }
-    double denom1 = sum(tablek) + alphas[0]-1;
+                  IntegerVector tablek, NumericVector alphas){
+    IntegerVector table_topics(K);
     double consts = 0;
     for (unsigned int k = 0; k < z_d.size(); k++) {
-    	int zdn = z_d[k]-1;
-        double dz = table_topics[zdn]-1;
-        double num1 = tablek[zdn]-1 + alphas[0]/K;
-        if (tableCd[zdn] > 0) {
-            tableCd[zdn] = tableCd[zdn]-1;
-        }
-        double num3 = tableCd[zdn] + alphas[1]*num1/denom1;
-        double ratio = alphas[2] * num3/ denom3;
+        int zdn = z_d[k] - 1;
+        double num1 = tablek[zdn] + alphas[0] / K;
+        double denom1 = sum(tablek) + alphas[0];
+        double denom3 = sum(tableCd) + alphas[1];
+        double num3 = tableCd[zdn] + alphas[1] * num1 / denom1;
+        double dz = table_topics[zdn];
+        double ratio = alphas[2] * num3 / denom3;
         consts += log(dz+ratio);
+        table_topics[zdn] += 1;
+        tableCd[zdn] += 1;
+        tablek[zdn] += 1;
+    }
+    return consts;
+}
+
+// **********************************************************//
+//        Topic and Word contribution in update of Z         //
+// **********************************************************//
+// [[Rcpp::export]]
+double Topicpart_min(int K, IntegerVector z_d, NumericVector tableCd, int totalCd,
+                 IntegerVector tablek, NumericVector alphas, int nIP){
+    IntegerVector table_topics(K);
+    double consts = 0;
+    for (unsigned int k = 0; k < z_d.size(); k++) {
+        int zdn = z_d[k] - 1;
+        double num1 = tablek[zdn] + alphas[0] / K;
+        double denom1 = nIP + alphas[0];
+        double denom3 = totalCd + alphas[1];
+        double num3 = tableCd[zdn] + alphas[1] * num1 / denom1;
+        double dz = table_topics[zdn];
+        double ratio = alphas[2] * num3 / denom3;
+        consts += log(dz+ratio);
+        if (tableCd[zdn] == 0) {
+            tablek[zdn] += 1;
+        }
+        if (table_topics[zdn] == 0) {
+            tableCd[zdn] += 1;
+        }
+        table_topics[zdn] += 1;
     }
     return consts;
 }
@@ -607,11 +664,63 @@ double Edgepart(arma::mat u, arma::mat lambda, double delta){
 //              Likelihood evaluation of Edgepart            //
 // **********************************************************//
 // [[Rcpp::export]]
+double Edgepart2(arma::vec u, arma::vec lambda, double delta, int sender){
+  arma::vec normal = arma::zeros(u.size()-1);
+    double prob = 0;
+    int iter = 0;
+    for (unsigned int j = 0; j < u.size(); j++) {
+      if (sender != j) {
+        double pre = delta+lambda[j];
+        if (pre > 35) {
+          normal[iter] = pre;
+        } else {
+          if (pre < -10) {
+            normal[iter] = exp(pre);
+          } else {
+            normal[iter] = log(exp(pre)+1);
+          }
+        }
+        prob += (delta+lambda[j])*u[j];
+        iter = iter+1;
+      }
+    }
+    double sumnorm = sum(normal);
+    double normalizer = 0;
+    if (sumnorm >= 13) {
+      normalizer = sumnorm;
+    } else {
+      if (exp(sumnorm) <= 1) {
+        normalizer = -745;
+      } else {
+        normalizer = log(exp(sumnorm)-1);
+      }
+    }
+  double  edgesum = prob-normalizer;
+  return edgesum;
+}
+
+// **********************************************************//
+//              Likelihood evaluation of Edgepart            //
+// **********************************************************//
+// [[Rcpp::export]]
 double Edgepartsum(List X, arma::vec B, arma::mat u, double delta){
     arma::mat lambda = MultiplyXB(X, B);
     double edgesum = Edgepart(u, lambda, delta);
     return edgesum;
 }
+
+
+// **********************************************************//
+//              Likelihood evaluation of Edgepart            //
+// **********************************************************//
+// [[Rcpp::export]]
+double Edgepartsum2(arma::mat X, arma::vec B, arma::vec u, double delta, int senderd){
+  arma::vec lambda = X * B;
+  int sender = senderd - 1;
+  double edgesum = Edgepart2(u, lambda, delta, sender);
+  return edgesum;
+}
+
 
 
 // **********************************************************//

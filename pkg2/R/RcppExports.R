@@ -105,12 +105,24 @@ TopicWord <- function(K, tabledk, tableWd, tableCd, tablek, N, alphas, beta, V) 
     .Call('_IPTMnew_TopicWord', PACKAGE = 'IPTMnew', K, tabledk, tableWd, tableCd, tablek, N, alphas, beta, V)
 }
 
+TopicWord_min <- function(K, tabledk, tableWd, tableCd, totalCd, tablek, N, alphas, beta, V) {
+    .Call('_IPTMnew_TopicWord_min', PACKAGE = 'IPTMnew', K, tabledk, tableWd, tableCd, totalCd, tablek, N, alphas, beta, V)
+}
+
 TopicWord0 <- function(K, tableCd, tablek, N, alphas, beta, V) {
     .Call('_IPTMnew_TopicWord0', PACKAGE = 'IPTMnew', K, tableCd, tablek, N, alphas, beta, V)
 }
 
+TopicWord0_min <- function(K, tableCd, totalCd, tablek, N, alphas, beta, V) {
+    .Call('_IPTMnew_TopicWord0_min', PACKAGE = 'IPTMnew', K, tableCd, totalCd, tablek, N, alphas, beta, V)
+}
+
 Topicpart <- function(K, z_d, tableCd, tablek, alphas) {
     .Call('_IPTMnew_Topicpart', PACKAGE = 'IPTMnew', K, z_d, tableCd, tablek, alphas)
+}
+
+Topicpart_min <- function(K, z_d, tableCd, totalCd, tablek, alphas, nIP) {
+    .Call('_IPTMnew_Topicpart_min', PACKAGE = 'IPTMnew', K, z_d, tableCd, totalCd, tablek, alphas, nIP)
 }
 
 lmultinom <- function(lprops) {
@@ -125,8 +137,16 @@ Edgepart <- function(u, lambda, delta) {
     .Call('_IPTMnew_Edgepart', PACKAGE = 'IPTMnew', u, lambda, delta)
 }
 
+Edgepart2 <- function(u, lambda, delta, sender) {
+    .Call('_IPTMnew_Edgepart2', PACKAGE = 'IPTMnew', u, lambda, delta, sender)
+}
+
 Edgepartsum <- function(X, B, u, delta) {
     .Call('_IPTMnew_Edgepartsum', PACKAGE = 'IPTMnew', X, B, u, delta)
+}
+
+Edgepartsum2 <- function(X, B, u, delta, senderd) {
+    .Call('_IPTMnew_Edgepartsum2', PACKAGE = 'IPTMnew', X, B, u, delta, senderd)
 }
 
 mu_vec <- function(timemat, A, eta) {

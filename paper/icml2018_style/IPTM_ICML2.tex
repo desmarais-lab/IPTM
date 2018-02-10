@@ -267,7 +267,7 @@ For each document $d \in [D]$, we sample interaction-pattern assignment from the
 \times\prod_{n=1}^{\bar N_d} (\hat N_{dz_{dn}, \backslash dn}+\alpha \frac{\hat N_{z_{dn}c,\backslash dn}+\alpha_1\frac{\hat N_{z_{dn}, \backslash dn}+\frac{\alpha_0}{K}}{\hat N_{\backslash dn}+\alpha_0}}{\hat N_{c, \backslash dn}+\alpha_1})\\&\times
 \varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2)\times \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\\& 
 \times
-\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{ad^*r}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}.
+\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}.
 \end{aligned}
 \end{equation}
 
@@ -394,18 +394,6 @@ New values for continuous variables $\delta, \boldsymbol{b},$ and $\boldsymbol{\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Now, we can marginalize out $\theta$ and $\psi$ and then the big joint distribution becomes
-\begin{equation}
-\begin{aligned}
-&P(\boldsymbol{z},\boldsymbol{c}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}, \boldsymbol{w}, \boldsymbol{a}, \boldsymbol{r}, \boldsymbol{t}|\zeta, \gamma, \alpha, \beta, \boldsymbol{\mu}_b, \Sigma_b,\mu_\delta,\sigma^2_\delta)
-\\&\propto P(\boldsymbol{z}|\gamma, \alpha, \boldsymbol{c})P(\boldsymbol{w}|\boldsymbol{z}, \beta) P(\boldsymbol{c}|\zeta) P(\boldsymbol{b}|\boldsymbol{\mu}_b, \Sigma_b ) P(\boldsymbol{\eta}|\boldsymbol{\mu}_\eta, \Sigma_\eta )
-\\&\times P(\delta|\mu_\delta,\sigma^2_\delta) P(\boldsymbol{u}| \boldsymbol{c},\boldsymbol{b}, \delta) P(\boldsymbol{a}, \boldsymbol{t}|\boldsymbol{c}, \boldsymbol{\eta})P(\boldsymbol{r}|\boldsymbol{a},\boldsymbol{u}),
-\end{aligned}
-\end{equation}
-where 
-and here we will sequentially update $\boldsymbol{z},\boldsymbol{c}, \boldsymbol{b},\boldsymbol{\eta}, \delta, \boldsymbol{u}$.
-
 
 \end{document}
 
