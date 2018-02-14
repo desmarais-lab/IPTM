@@ -1032,11 +1032,11 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
  	   		table.dk[zw.old, d] = table.dk[zw.old, d]-1
  	   		table.k[zw.old] = table.k[zw.old]-1
          if (length(textlist.d) > 0) {
-             table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
-        	 topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN,
+           table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
+        	   topicword.d = TopicWord(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], table.k, totalN,
         	  						alphas, beta, V)
-            zw.new = lmultinom(topicword.d)
-            if (zw.new != zw.old) {
+           zw.new = lmultinom(topicword.d)
+           if (zw.new != zw.old) {
                z[[d]][w] = zw.new
            }
            table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
@@ -1308,53 +1308,53 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
 	 for (d in edge.trim) {
          X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
 	 }
-    # # Z update	
-    # for (d in edge.trim) {
-	   	# textlist.d = textlist[[d]]
-	   	# for (w in 1:length(z[[d]])) {
-	   		# zw.old = z[[d]][w]
-	   		# table.dk[zw.old, d] = table.dk[zw.old, d]-1
-	   		# if (!identical(zuniq[[d]], sortuniq(z[[d]][-w]))) {
-	   			# zuniq[[d]] = sortuniq(z[[d]][-w])
-	   			# table.cd = vapply(1:nIP, function(IP) {
-	   			# if (sum(cd[edge.trim] == IP) > 0) {
-	   			    # tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
-	   			  # } else {
-	   			    # rep(0, K)
-	   			  # }  
-	   			# }, rep(0, K))      
-	   			# table.k = rowSums(table.cd > 0) 
-	   		 # }
-	   	 # if (length(textlist.d) > 0) {
-          # table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
-       	  # topicword.d = TopicWord_min(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], total.cd, table.k, totalN, 
-       	  						 # alphas, beta, V)
-          # zw.new = lmultinom(topicword.d)
-          # if (zw.new != zw.old) {
-              # z[[d]][w] = zw.new
-          # }
-          # table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
-        # } else {
-          # topicword.d = TopicWord0_min(K, table.cd[,cd[d]], total.cd, table.k, totalN, alphas, beta, V)
-          # zw.new = lmultinom(topicword.d)
-          # if (zw.new != zw.old) {
-              # z[[d]][w] = zw.new
-          # }
-        # }
-		# if (!identical(zuniq[[d]], sortuniq(z[[d]]))) {
-	   			# zuniq[[d]] = sortuniq(z[[d]])
-	   			# table.cd = vapply(1:nIP, function(IP) {
-	   			  # if (sum(cd[edge.trim] == IP) > 0) {
-	   			    # tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
-	   			  # } else {
-	   			    # rep(0, K)
-	   			  # }  
-	   			# }, rep(0, K))   
-	   			# table.k = rowSums(table.cd > 0) 
-	   		# }
-       # table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
-      # }
-    # }
+    #Z update	
+    for (d in edge.trim) {
+	   	textlist.d = textlist[[d]]
+	   	for (w in 1:length(z[[d]])) {
+	   		zw.old = z[[d]][w]
+	   		table.dk[zw.old, d] = table.dk[zw.old, d]-1
+	   		if (!identical(zuniq[[d]], sortuniq(z[[d]][-w]))) {
+	   			zuniq[[d]] = sortuniq(z[[d]][-w])
+	   			table.cd = vapply(1:nIP, function(IP) {
+	   			if (sum(cd[edge.trim] == IP) > 0) {
+	   			    tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
+	   			  } else {
+	   			    rep(0, K)
+	   			  }  
+	   			}, rep(0, K))      
+	   			table.k = rowSums(table.cd > 0) 
+	   		 }
+	   	 if (length(textlist.d) > 0) {
+          table.W[zw.old, textlist.d[w]] = table.W[zw.old, textlist.d[w]]-1
+       	  topicword.d = TopicWord_min(K, table.dk[,d], table.W[,textlist.d[w]], table.cd[,cd[d]], total.cd, table.k, totalN, 
+       	  				alphas, beta, V)
+          zw.new = lmultinom(topicword.d)
+          if (zw.new != zw.old) {
+              z[[d]][w] = zw.new
+          }
+          table.W[z[[d]][w], textlist.d[w]] = table.W[z[[d]][w], textlist.d[w]]+1
+        } else {
+          topicword.d = TopicWord0_min(K, table.cd[,cd[d]], total.cd, table.k, totalN, alphas, beta, V)
+          zw.new = lmultinom(topicword.d)
+          if (zw.new != zw.old) {
+              z[[d]][w] = zw.new
+          }
+        }
+		if (!identical(zuniq[[d]], sortuniq(z[[d]]))) {
+	   			zuniq[[d]] = sortuniq(z[[d]])
+	   			table.cd = vapply(1:nIP, function(IP) {
+	   			  if (sum(cd[edge.trim] == IP) > 0) {
+	   			    tabulateC(unlist(zuniq[edge.trim][which(cd[edge.trim] == IP)]), K)
+	   			  } else {
+	   			    rep(0, K)
+	   			  }  
+	   			}, rep(0, K))   
+	   			table.k = rowSums(table.cd > 0) 
+	   		}
+       table.dk[z[[d]][w], d] = table.dk[z[[d]][w], d]+1
+      }
+    }
     
     prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
     			 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
@@ -1861,7 +1861,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
     Forward_stats[i, ] = GiR_stats(Forward_sample, V, K)
   	initial = list(delta = delta, sigma_tau = sigma_tau, b = b, eta = eta,
   	cd = Forward_sample$cd, z = Forward_sample$z, sigma.Q = sigma.Q, u = Forward_sample$u)
-    Inference_samp = IPTM.inference.GiR2(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q,
+    Inference_samp = IPTM.inference.GiR(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q,
                      alphas, beta, zeta, prior.b, prior.delta, prior.eta, prior.tau, Outer, Inner, netstat, timestat, initial = initial)
     b = tvapply(1:nIP, function(IP) {Inference_samp$b[[IP]][,ncol(Inference_samp$b[[IP]])]}, rep(0, P))
     eta = tvapply(1:nIP, function(IP) {Inference_samp$eta[[IP]][,ncol(Inference_samp$eta[[IP]])]}, rep(0, Q))
@@ -1881,6 +1881,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
     par(mfrow=c(5,6), oma = c(3,3,3,3), mar = c(2,1,1,1))
     GiR_PP_Plots(Forward_stats, Backward_stats)
   } 
+  browser()
   return(list(Forward = Forward_stats, Backward = Backward_stats))
 }                         	          
       
