@@ -57,6 +57,10 @@ History <- function(edge, timestamps, p_d, node, d, timeunit) {
     .Call('_IPTM_History', PACKAGE = 'IPTM', edge, timestamps, p_d, node, d, timeunit)
 }
 
+History2 <- function(edge, p_d, node, when, timeunit) {
+    .Call('_IPTM_History2', PACKAGE = 'IPTM', edge, p_d, node, when, timeunit)
+}
+
 Degree <- function(history, node, sender) {
     .Call('_IPTM_Degree', PACKAGE = 'IPTM', history, node, sender)
 }

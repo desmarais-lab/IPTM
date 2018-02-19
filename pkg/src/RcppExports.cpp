@@ -180,6 +180,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// History2
+List History2(List edge, NumericMatrix p_d, IntegerVector node, double when, double timeunit);
+RcppExport SEXP _IPTM_History2(SEXP edgeSEXP, SEXP p_dSEXP, SEXP nodeSEXP, SEXP whenSEXP, SEXP timeunitSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type edge(edgeSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type p_d(p_dSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type node(nodeSEXP);
+    Rcpp::traits::input_parameter< double >::type when(whenSEXP);
+    Rcpp::traits::input_parameter< double >::type timeunit(timeunitSEXP);
+    rcpp_result_gen = Rcpp::wrap(History2(edge, p_d, node, when, timeunit));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Degree
 List Degree(List history, IntegerVector node, int sender);
 RcppExport SEXP _IPTM_Degree(SEXP historySEXP, SEXP nodeSEXP, SEXP senderSEXP) {
@@ -621,6 +636,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_which_cpp", (DL_FUNC) &_IPTM_which_cpp, 2},
     {"_IPTM_pdmat", (DL_FUNC) &_IPTM_pdmat, 3},
     {"_IPTM_History", (DL_FUNC) &_IPTM_History, 6},
+    {"_IPTM_History2", (DL_FUNC) &_IPTM_History2, 5},
     {"_IPTM_Degree", (DL_FUNC) &_IPTM_Degree, 3},
     {"_IPTM_Dyadic", (DL_FUNC) &_IPTM_Dyadic, 3},
     {"_IPTM_Triadic", (DL_FUNC) &_IPTM_Triadic, 3},

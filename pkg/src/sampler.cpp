@@ -239,6 +239,62 @@ List History(List edge, NumericVector timestamps, NumericMatrix p_d, IntegerVect
 }
 
 // **********************************************************//
+//              Construct the history of interaction         //
+// **********************************************************//
+// [[Rcpp::export]]
+List History2(List edge, NumericMatrix p_d, IntegerVector node, double when, double timeunit) {
+    int nIP = p_d.ncol();
+    List IPmat(nIP);
+    for (int IP = 1; IP < (nIP+1); IP++) {
+        List IPlist_IP(3);
+        for (unsigned int l = 0; l < 3; l++){
+            NumericMatrix IP_l(node.size(), node.size());
+            IPlist_IP[l] = IP_l;
+        }
+        IPmat[IP-1] = IPlist_IP;
+    }
+    NumericVector timestamps(edge.size());
+    for (unsigned int d = 0; d < edge.size(); d++) {
+        List document = edge[d];
+        timestamps[d] = Rcpp::as<double>(document[2]);
+    }
+    int iter = which_num(when, timestamps);
+    
+    for (int i = 0; i < iter; i++) {
+        List document2 = edge[i];
+        int sender = document2[0];
+        IntegerVector receiver = document2[1];
+        double time = Rcpp::as<double>(document2[2]);
+        double time1 = when-384*timeunit;
+        double time2 = when-96*timeunit;
+        double time3 = when-24*timeunit;
+        for (unsigned int r = 0; r < receiver.size(); r++){
+            for (int IP = 0; IP < nIP; IP++) {
+                List IPlist_IP = IPmat[IP];
+                if (time >= time3) {
+                    NumericMatrix IP_l = IPlist_IP[0];
+                    IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
+                    IPlist_IP[0] = IP_l;
+                }
+                if (time >= time2 && time < time3) {
+                    NumericMatrix IP_l = IPlist_IP[1];
+                    IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
+                    IPlist_IP[1] = IP_l;
+                }
+                if (time >= time1 && time < time2) {
+                    NumericMatrix IP_l = IPlist_IP[2];
+                    IP_l(sender-1, receiver[r]-1) += p_d(i, IP);
+                    IPlist_IP[2] = IP_l;
+                }
+                IPmat[IP] = IPlist_IP;
+            }
+        }
+    }
+    return IPmat;
+}
+
+
+// **********************************************************//
 //                  Calculate Degree statistics              //
 // **********************************************************//
 // [[Rcpp::export]]

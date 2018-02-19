@@ -918,20 +918,16 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
   alpha1 = alphas[2]
   alpha = alphas[3]
   if (length(initial) == 0) {
-  	m = rdirichlet_cpp(1, rep(alpha0/K, K))
-  	mc = matrix(NA, nIP, K)
-  	for (IP in 1:nIP) {
-    	mc[IP,] = rdirichlet_cpp(1, alpha1*m)
-  	}
-    cd = multinom_vec(D, psi) 
-    theta = tvapply(seq(along = edge), function(d) {rdirichlet_cpp(1, alpha*mc[cd[d],]) }, rep(0, K))
+  	#m = rdirichlet_cpp(1, rep(alpha0/K, K))
+    theta = tvapply(seq(along = edge), function(d) {rdirichlet_cpp(1, alpha*rep(alpha0/K, K)) }, rep(0, K))
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     sigma_tau = rhalfcauchy(1, prior.tau)
+    while (sigma_tau > 10) {sigma_tau = rhalfcauchy(1, prior.tau)}
     b.old = rmvnorm_arma(nIP, prior.b[[1]], prior.b[[2]])
     eta.old = rmvnorm_arma(nIP, prior.eta[[1]], prior.eta[[2]])
     z = lapply(seq(along = edge), function(d) multinom_vec(max(1, length(textlist[[d]])), theta[d, ]))
     sigma.Q = sigma.Q
-    psi = rdirichlet_cpp(1, rep(zeta/nIP, nIP))
+    cd = multinom_vec(D, rep(zeta/nIP, nIP)) 
     u = list()
     for (d in edge.trim) {
       u[[d]] = matrix(rbinom(A^2, 1, 1/A), nrow = A, ncol = A)
@@ -944,7 +940,10 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
     b.old = initial$b
     eta.old = initial$eta
     cd = initial$cd
+    #cd[edge.trim] = multinom_vec(length(edge.trim), rep(zeta/nIP, nIP)) 
     z = initial$z
+    #theta = tvapply(seq(along = edge), function(d) {rdirichlet_cpp(1, alpha*alpha1*rep(alpha0/K, K)) }, rep(0, K))
+	#z[edge.trim] = lapply(edge.trim, function(d) multinom_vec(max(1, length(textlist[[d]])), theta[d, ])) 
     sigma.Q = initial$sigma.Q
     u = initial$u
   }						 
@@ -991,10 +990,10 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
   table.k = rowSums(table.dk[,edge.trim])   
   #start outer iteration
   for (o in 1:Outer) {
-    # Data augmentation
+    #Data augmentation
     for (d in edge.trim) {
         lambda = MultiplyXB(X[[d]], b.old[cd[d],])
-        for (i in node[-senders[d]]) {
+         for (i in node[-senders[d]]) {
             for (j in sample(node[-i], A-1)) {
                 probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
                 u[[d]][i, j] = lmultinom(probij)-1
@@ -1007,7 +1006,7 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
      	table.cd[, cd[d]] = table.cd[, cd[d]] - tabulateC(z[[d]], K)
         for (IP in 1:nIP) {
          cd[d] = IP
-         IPpart = log(table.C[IP] + 1 + zeta/nIP)
+         IPpart = log(table.C[IP] + zeta/nIP)
        	 Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
        	 Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
        	 munew = mu_vec(timemat[d,], A, eta.old[IP,])
@@ -1021,7 +1020,7 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
     }
     for (d in edge.trim) {
          X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
-	 }
+	}
     
     #Z update
      for (d in edge.trim) {   
@@ -1557,6 +1556,7 @@ GenerateDocs = function(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
     i.d = which(timevec == min(timevec))
     j.d = which(u[[base.length+d]][i.d,] == 1)
     t.d = t.d+timevec[i.d]
+    if (length(i.d) > 1) browser()
     senders[base.length+d] = i.d
     timestamps[base.length+d] = t.d
     edge[[base.length+d]] = list(author = i.d, recipients = j.d, timestamp = t.d)
@@ -1625,8 +1625,8 @@ GiR_stats = function(GiR_sample, V, K, timeunit = 3600) {
   GiR_stats[P+Q+5] = mean(GiR_sample$cd)
   Tokens_in_Topic = tabulate(vapply(1:D, function(d){as.numeric(names(text[[d]]))}, rep(0, n.d)), K)
   GiR_stats[(P+Q+6):(P+Q+5+nIP)] = vapply(1:nIP, function(IP) {sum(cd==IP)}, c(1))
-  GiR_stats[(P+Q+6+nIP):(P+Q+5+nIP+K)] = Tokens_in_Topic
-  GiR_stats[(P+Q+6+nIP+K):(P+Q+5+nIP+K+V)] = tabulate(unlist(text), V)
+  GiR_stats[(P+Q+6+nIP):(P+Q+5+nIP+K)] = Tokens_in_Topic / D
+  GiR_stats[(P+Q+6+nIP+K):(P+Q+5+nIP+K+V)] = tabulate(unlist(text), V) / D
   return(GiR_stats)
 }
 
@@ -1861,7 +1861,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
     Forward_stats[i, ] = GiR_stats(Forward_sample, V, K)
   	initial = list(delta = delta, sigma_tau = sigma_tau, b = b, eta = eta,
   	cd = Forward_sample$cd, z = Forward_sample$z, sigma.Q = sigma.Q, u = Forward_sample$u)
-    Inference_samp = IPTM.inference.GiR(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q,
+    Inference_samp = IPTM.inference.GiR2(Forward_sample$edge, node, Forward_sample$text, vocab, nIP, K, sigma.Q,
                      alphas, beta, zeta, prior.b, prior.delta, prior.eta, prior.tau, Outer, Inner, netstat, timestat, initial = initial)
     b = tvapply(1:nIP, function(IP) {Inference_samp$b[[IP]][,ncol(Inference_samp$b[[IP]])]}, rep(0, P))
     eta = tvapply(1:nIP, function(IP) {Inference_samp$eta[[IP]][,ncol(Inference_samp$eta[[IP]])]}, rep(0, Q))

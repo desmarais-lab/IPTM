@@ -2,29 +2,29 @@ library(IPTMnew)
 library(FastGP)
 library(MCMCpack)
 library(LaplacesDemon)
-set.seed(526113325)
+set.seed(526113322)
 nDocs = 20
 node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
 
 nIP = 2
 K = 4
-n.d = 10
-# alphas = c(25, 50, 50)
-# beta = 50
-# zeta = 10
-alphas = c(5,5,25)
-beta = 50
-zeta = 5
+n.d = 100
+alphas = c(30, 30, 30)
+beta = 30
+zeta = 10
+#alphas = c(30,15,5)
+#beta = 30
+#zeta = 5
 netstat = c("dyadic")
 timestat = c("timeofday", "dayofweek")
 L = 3
 P = 6
 prior.b = list(rep(0.5, P), 0.5* diag(P))
-prior.delta = c(-2, 0.1)
+prior.delta = c(-5, 0.1)
 prior.eta = list(rep(2.5, length(node) + length(timestat)), 0.5*diag(length(node) +length(timestat)))
-prior.tau = 5
-sigma.Q = c(0.01, 0.0001, 0.01, 0.5)
+prior.tau = 1
+sigma.Q = c(0.00001, 0.000001, 0.001, 0.005)
 
 b = matrix(c(prior.b[[1]],prior.b[[1]]), nrow = nIP, byrow = TRUE)
 eta =  matrix(c(prior.eta[[1]],prior.eta[[1]]), nrow = nIP, byrow = TRUE)
@@ -39,10 +39,10 @@ base.data = GenerateDocs(500, node, vocab, nIP, K, n.d, alphas, beta, zeta, b, e
 
 
 Outer = 1
-#Inner = c(1,1,1)
+Inner = c(1,1,1)
 Outer = 10
 Inner = c(5,5,5)
-Schein <- Schein(50, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
+Schein <- Schein(5000, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner,
                netstat = c("dyadic"), timestat = c("timeofday", "dayofweek"),
               base.data = base.data, generate_PP_plots = TRUE)
