@@ -1,0 +1,104 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{geometry}
+\geometry{
+	a4paper,
+	total={170mm,257mm},
+	left=27mm,
+	right=30mm,
+	top=30mm,
+	bottom= 30mm
+}
+\usepackage{tabu}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{longtable}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+		\node[shape=circle,draw,inner sep=0.5pt] (char) {#1};}}
+\usetikzlibrary{fit,positioning}
+\usepackage{authblk}
+\usepackage{natbib}
+\usepackage[algo2e]{algorithm2e}
+\usepackage{algorithmic}  
+\usepackage{algorithm}
+\usepackage{comment}
+\usepackage{array}% http://ctan.org/pkg/array
+\makeatletter
+\g@addto@macro{\endtabular}{\rowfont{}}% Clear row font
+\makeatother
+\newcommand{\rowfonttype}{}% Current row font
+\newcommand{\rowfont}[1]{% Set current row font
+	\gdef\rowfonttype{#1}#1%
+}
+\newcolumntype{L}{>{\rowfonttype}l}
+\title{IPTM Issues}
+\author{Bomin Kim}
+\begin{document}
+\maketitle
+\section{Interaction-pattern specific statsitics?}
+The draft says we use $\boldsymbol{x}_{adrc}$ for recipient generating process, and $\boldsymbol{y}_{adc}$ cor timestmaps generating process. However, we currently do not use $\boldsymbol{y}_{adc}$. Instead, we use $\boldsymbol{y}_{ad}$--- sender-specific intercepts and two time indicators (weekends and AM/PM).\\ \newline
+\textbf{Q1.} Is it fine to use non-IP-specific statistis? No identifiability issues?\\\newline
+\textbf{Answer:} ?\\\\newline 
+\textbf{Q2.} If it is fine, can we switch to $\boldsymbol{x}_{adr}$---where we maintain all definition of network statistics but drop $c$ by not accounting for the proportions---as well?\\\newline
+\textbf{Reason:} Since we use $\boldsymbol{x}_{adrc}$ via $\frac{N_{dc}}{N_d}$, every topic-token assignment (i.e. update of $z_{dn}$) and interaction-pattern assignment require re-calculation of ``entire" history statistics. Here is how it works in topic-token assignment:\\ \newline
+for (d in 1:D) \{\\
+for (w in 1:$N_d$) \{\\
+for (k in 1:K) \{\\
+	Assume $z_{dn}=k$ then (if this changes $N_{dc}$) compute $\frac{N_{dc}}{N_d}$ again\\
+	\textcolor{red}{Re-calculate $x_{adrc}$ for $d=d^*$ where $d^*$ is the last document affected by $d$  ($t_{d^*}\approx t_d+384$)}\\
+	Re-calculate $\lambda_{adr}$ for $d=d^*$ where $d^*$ is the last document affected by $d$ ($t_{d^*}\approx t_d+384$)\\
+	Re-calculate $\mu_{adc}$ for $d$ \\		
+	$P(z_{dn}=k) \propto $ Equation (15) evaluated for $d^*$\\
+		\}\\
+	\}\\
+\}\\ \newline
+However, if we drop $c$ in $x_{adrc}$, we do not need to re-calculate the network statistics---they are truely observed given the corpus. Only $\lambda_{adr}$ and $\mu_{ad}$ will vary by topic-token assignments and interaction-pattern assignments, and these are not computationally heavy.
+Currently, one outer iteration (given 5 inner updates for M-H) takes around 400 secs in my machine, mostly due to the network statistics updates.
+
+\section{PPE--- from generative proces or full conditional distributions?}
+I thought we arrived at the conclusion to use ``full conditional distributions" for posterior predictive experiments. However, due to our definition of network statistics:
+\begin{equation}
+\begin{aligned}
+&P(a_d = a|\boldsymbol{r}_d, t_d, \boldsymbol{w}_d, \boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta)\\& \propto \mbox{(how likely the sender is ``a" given the recipeintsfor document d)} \\&\times \mbox{(how likely the sender is ``a" given the timestamps for document d)} \\&\times \mbox{(how this assignment changes the future likelihoods for document }   d+1,...,d^*) 
+\\&  \propto \frac{\exp\Big\{\sum\limits_{r \neq a} (\delta+\lambda_{adr})r_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}\times\varphi_{\tau}(\tau_{d}; \mu_{ad}, \sigma_\tau^2) \prod
+\limits_{a'\neq a}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a' d}, \sigma_\tau^2) \big)\\& \times
+\prod_{d=d+1}^{d^*}\Big(
+\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}
+\\&\quad\times\varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2) \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\Big)\\& \mbox{ via new calculation of $x_{adrc}$ for $d=d+1,\ldots, d^*$ assuming $a_d=a$},
+\end{aligned}
+\end{equation}
+for all $a=1,...,A$ and use multinomial sampling. Very complicated but still do-able. Similarly for recipient predictions,
+\begin{equation}
+\begin{aligned}
+&P(r_{dr} = 1|a_d, t_d, \boldsymbol{w}_d, \boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta)\\& \propto \mbox{(how likely the missing recipient element is ``1" given the author of document d)} \\&\times \mbox{(how this assignment changes the future likelihoods for document }   d+1,...,d^*) 
+\\&  \propto \mbox{exp}\{\delta+\lambda_{adr}\} \times
+\prod_{d=d+1}^{d^*}\Big(
+\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}\Big)\\& \mbox{ via new calculation of $x_{adrc}$ for $d=d+1,\ldots, d^*$ assuming $r_{dr}=1$},
+\end{aligned}
+\end{equation}
+and
+\begin{equation}
+\begin{aligned}
+&P(r_{dr} = 0|a_d, \boldsymbol{r}_d,\boldsymbol{w}_d, \boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta)\\& \propto \mbox{(how likely the missing recipient element is ``1" given the author of document d)} \\&\times \mbox{(how this assignment changes the future likelihoods for document }   d+1,...,d^*) 
+\\&  \propto \text{I}(\lVert\boldsymbol{u}_{ad\backslash r}\rVert_1 > 0 )\times
+\prod_{d=d+1}^{d^*}\Big(
+\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}\Big)\\& \mbox{ via new calculation of $x_{adrc}$ for $d=d+1,\ldots, d^*$ assuming $r_{dr}=0$},
+\end{aligned}                                                                         
+\end{equation}                                                                     
+where this time we don't need to account for time-parts since there is no connection between recipients and timestamps. Again, we can use multinomial between (0/1).                         
+                                                          
+However, when it comes to the conditional distribution of timestamps,  
+\begin{equation}
+\begin{aligned}
+&P(\tau_{d} = \tau|a_d, t_d, \boldsymbol{w}_d, \boldsymbol{l}, \boldsymbol{z}, \boldsymbol{b}, \boldsymbol{\eta},\delta)\\& \propto \mbox{(how likely the missing time-increment is ``$\tau$" given the author of document d)} \\&\times \mbox{(how this assignment changes the future likelihoods for document }   d+1,...,d^*) 
+\\&  \propto \Big(\varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2)\times \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\Big)\\& \times
+\prod_{d=d+1}^{d^*}\Big(\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}\\&\times\varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2) \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\Big)\\& \mbox{ via new calculation of $x_{adrc}$  and $y_{adc}$ for $d=d+1,\ldots, d^*$ assuming $\tau_d=\tau$}.
+\end{aligned}                                                                         
+\end{equation}                                                  
+Since this is not discrete, Any way to directly sampling missing value of $\tau$ from this distribution? I misunderstood that this last sampling can be simply reduced to $\tau \sim \mbox{lognormal}(\mu_{a_dd}, \sigma_\tau^2)$, but it is not. Possibly M-H, Slice, Hamiltonian, or rejection sampling...?\\\newline
+To impute the missing values from generative process (instead of full conditionals), we need to assume that ``this document is the last document". This makes things simpler since we do not need to recalculate future covariates and include $\prod_{d=d+1}^{d^*}$ term in the sampling equations. For example, we could go back to the old experiment---predicting sender, recipient, timestamps jointly for $d^{pred}$ given the $d=1,\ldots,d^{pred}-1$ entirely observed such that we simply follow the generative process---although extremely time consuming given that we need to run inference on $d=1,\ldots,d^{pred}-1$ for every prediction.
+\end{document}

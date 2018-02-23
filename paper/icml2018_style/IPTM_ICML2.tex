@@ -150,7 +150,7 @@ In order to capture the overall prevalence of each topic in the corpus, we assum
 &w_{dn} \sim\mbox{Multinomial} (\phi_{z_{dn}}).
 \end{aligned}
 \end{equation}
-
+Pseudocode for content generating process is provided in the supplementary material.
 
 \subsection{Tie Generating Process}\label{subsec:Tie generating process}
 We generate ties---author $a_d$, recipients $\boldsymbol{r}_d$, and timestamp $t_d$---using a continuous-time process
@@ -383,10 +383,39 @@ New values for continuous variables $\delta, \boldsymbol{b},$ and $\boldsymbol{\
 
 % In the unusual situation where you want a paper to appear in the
 % references without citing it in the main text, use \nocite
-\nocite{langley00}
+
 
 \bibliography{IPTM}
 \bibliographystyle{icml2018}
+
+\section{Psuedocode for posterior predictive checks} \label{sec: Pseudocode2}
+\begin{algorithm}[H]
+	\caption{Collapsed Content Generating Process}
+	\begin{algorithmic}
+		\STATE \textbf{Input}: number of new data to generate $R$,\\
+		observed text data $ \{\boldsymbol{w}_d\}_{d=1}^D$,\\
+		estimated latent variables $(\boldsymbol{u},  \boldsymbol{l},\boldsymbol{z}, \boldsymbol{b}, \delta, \boldsymbol{\eta},  \sigma_\tau^2),$\\
+		hyperparameters $(\alpha, \beta, \boldsymbol{m})$,\\
+		number of vocabularies $V$\\
+		\vskip 0.1in
+		
+		\FOR{$r=1$ {\bfseries to}  $R$}
+		\STATE Initialize $N_{vk}$ and $N_k$ from $\boldsymbol{z}$ and  $\boldsymbol{w}$  
+		\FOR{$d = 1$ {\bfseries to}  $D$} 
+		\IF{$N_{d} > 0$}
+		\FOR {$n = 1$  {\bfseries to}  $N_{d}$}
+		\STATE Draw	$w_{dn}$ from $P(w_{dn} = v)= \frac{N_{vz_{dn}} +\frac{\beta}{V}}{N_{z_{dn}} + \beta}$\\  			
+		\STATE Increment $N_{w_{dn}z_{dn}}$ and $N_{z_{dn}}$ 		
+		\ENDFOR
+		\ENDIF
+		\STATE  Compute $\boldsymbol{x}_{d}$ given $\{(a_{d}, \boldsymbol{r}_{d}, t_{d})\}_{[1:(d-1)]}$
+		\STATE	Draw ($a_{d}$, $\boldsymbol{r}_{d}$, $t_{d}$) following Section 2.3\\
+		\ENDFOR
+		\STATE Store every $r^{th}$ new data $\{(a_{d}, \boldsymbol{r}_{d}, t_{d}, \boldsymbol{w}_{d})\}_{d=1}^D$ 
+		\ENDFOR
+	\end{algorithmic}
+\end{algorithm}        
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DELETE THIS PART. DO NOT PLACE CONTENT AFTER THE REFERENCES!
