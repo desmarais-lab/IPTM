@@ -3,15 +3,15 @@ library(FastGP)
 library(MCMCpack)
 library(LaplacesDemon)
 set.seed(526113322)
-nDocs = 20
+nDocs = 10
 node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
 
 nIP = 2
 K = 4
-n.d = 100
-alphas = c(30, 30, 30)
-beta = 30
+n.d = 10
+alphas = c(100, 50, 10)
+beta = 500
 zeta = 10
 #alphas = c(30,15,5)
 #beta = 30

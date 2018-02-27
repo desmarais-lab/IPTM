@@ -34,7 +34,7 @@ table.dk = matrix(0, K, D)
 table.cd = matrix(0, K, nIP)
 for (d in 1:D) {
 	for (n in 1:n.d) {
-	  ratio2 = (table.k+alpha0/K)/sum(table.k+alpha0/K)
+	  ratio2 = (table.k+alpha0/K) / sum(table.k+alpha0/K)
       ratio1 = (table.cd[,cd[d]]+alpha1*ratio2) / sum(table.cd[,cd[d]]+alpha1*ratio2)
 	  prob = table.dk[,d]+alpha*ratio1
       z[d,n] = which(rmultinom(1, 1, prob)==1)
@@ -54,7 +54,7 @@ table.k.null = tabulate(z, K)
 #table.cd = sapply(1:nIP, function(IP) {tabulate(z[which(cd==IP),],K)})
 
 #inference on z using equation (15)---without word part that we ignored for simplified model
-for (i in 1:100){
+for (i in 1:10){
   for (d in 1:D) {
     for (n in 1:n.d) {
       #excluding \dn

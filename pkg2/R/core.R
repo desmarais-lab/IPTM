@@ -991,36 +991,36 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
   #start outer iteration
   for (o in 1:Outer) {
     #Data augmentation
-    for (d in edge.trim) {
-        lambda = MultiplyXB(X[[d]], b.old[cd[d],])
-         for (i in node[-senders[d]]) {
-            for (j in sample(node[-i], A-1)) {
-                probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
-                u[[d]][i, j] = lmultinom(probij)-1
-            }
-        }
-    }
+    # for (d in edge.trim) {
+        # lambda = MultiplyXB(X[[d]], b.old[cd[d],])
+         # for (i in node[-senders[d]]) {
+            # for (j in sample(node[-i], A-1)) {
+                # probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
+                # u[[d]][i, j] = lmultinom(probij)-1
+            # }
+        # }
+    # }
     # cd update	
-     for (d in edge.trim) {
-     	table.C[cd[d]] = table.C[cd[d]]-1
-     	table.cd[, cd[d]] = table.cd[, cd[d]] - tabulateC(z[[d]], K)
-        for (IP in 1:nIP) {
-         cd[d] = IP
-         IPpart = log(table.C[IP] + zeta/nIP)
-       	 Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
-       	 Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
-       	 munew = mu_vec(timemat[d,], A, eta.old[IP,])
-         Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
-         Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k-tabulateC(z[[d]], K), alphas)
-         const.C[IP] = Edgepart+Timepart+Topicpart+IPpart
-       }
-       cd[d] = lmultinom(const.C)
-       table.C[cd[d]] = table.C[cd[d]] + 1
-       table.cd[, cd[d]] = table.cd[, cd[d]] + tabulateC(z[[d]], K)
-    }
-    for (d in edge.trim) {
-         X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
-	}
+     # for (d in edge.trim) {
+     	# table.C[cd[d]] = table.C[cd[d]]-1
+     	# table.cd[, cd[d]] = table.cd[, cd[d]] - tabulateC(z[[d]], K)
+        # for (IP in 1:nIP) {
+         # cd[d] = IP
+         # IPpart = log(table.C[IP] + zeta/nIP)
+       	 # Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
+       	 # Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
+       	 # munew = mu_vec(timemat[d,], A, eta.old[IP,])
+         # Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
+         # Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k-tabulateC(z[[d]], K), alphas)
+         # const.C[IP] = Edgepart+Timepart+Topicpart+IPpart
+       # }
+       # cd[d] = lmultinom(const.C)
+       # table.C[cd[d]] = table.C[cd[d]] + 1
+       # table.cd[, cd[d]] = table.cd[, cd[d]] + tabulateC(z[[d]], K)
+    # }
+    # for (d in edge.trim) {
+         # X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
+	# }
     
     #Z update
      for (d in edge.trim) {   
@@ -1053,69 +1053,69 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
 	 }
  	       
   # M-H       
-    prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
-    			 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
-    post.old1 = Edgepartsum(X[[max.edge]], b.old[cd[max.edge],], u[[max.edge]], delta)
-    b.new = matrix(NA, nIP, P)
-    for (inner in 1:Inner[1]) {
-      for (IP in 1:nIP) {
-		 b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
-	  }
-      delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
-      prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
-    				 dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), TRUE)
-      post.new1 = Edgepartsum(X[[max.edge]], b.new[cd[max.edge],], u[[max.edge]], delta.new)
-      loglike.diff = prior.new1+post.new1-prior.old1-post.old1
-      if (log(runif(1, 0, 1)) < loglike.diff) {
-        b.old = b.new
-        delta = delta.new
-        prior.old1 = prior.new1
-        post.old1 = post.new1
-      }
-        for (IP in 1:nIP) {
-          bmat[[IP]] = cbind(bmat[[IP]], b.old[IP,])
-        }
-        deltamat = c(deltamat, delta)
-    }
+    # prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
+    			 # dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
+    # post.old1 = Edgepartsum(X[[max.edge]], b.old[cd[max.edge],], u[[max.edge]], delta)
+    # b.new = matrix(NA, nIP, P)
+    # for (inner in 1:Inner[1]) {
+      # for (IP in 1:nIP) {
+		 # b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
+	  # }
+      # delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
+      # prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
+    				 # dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), TRUE)
+      # post.new1 = Edgepartsum(X[[max.edge]], b.new[cd[max.edge],], u[[max.edge]], delta.new)
+      # loglike.diff = prior.new1+post.new1-prior.old1-post.old1
+      # if (log(runif(1, 0, 1)) < loglike.diff) {
+        # b.old = b.new
+        # delta = delta.new
+        # prior.old1 = prior.new1
+        # post.old1 = post.new1
+      # }
+        # for (IP in 1:nIP) {
+          # bmat[[IP]] = cbind(bmat[[IP]], b.old[IP,])
+        # }
+        # deltamat = c(deltamat, delta)
+    # }
      
-      mu = mu_mat(timemat, A, eta.old, cd)
-	  prior.old2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
-	  post.old2 = Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
-      eta.new = matrix(NA, nIP, Q)
-      for (inner in 1:Inner[2]) {
-          for (IP in 1:nIP) {
-			  eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
-		  }
-      mu = mu_mat(timemat, A, eta.new, cd)
-      prior.new2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
-      post.new2 = Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
-      loglike.diff = prior.new2+post.new2-prior.old2-post.old2
-      if (log(runif(1, 0, 1)) < loglike.diff) {
-        eta.old = eta.new
-        prior.old2 = prior.new2
-        post.old2 = post.new2
-      }
-      for (IP in 1:nIP) {
-          etamat[[IP]] = cbind(etamat[[IP]], eta.old[IP,])
-        }
-    }
+      # mu = mu_mat(timemat, A, eta.old, cd)
+	  # prior.old2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
+	  # post.old2 = Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
+      # eta.new = matrix(NA, nIP, Q)
+      # for (inner in 1:Inner[2]) {
+          # for (IP in 1:nIP) {
+			  # eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
+		  # }
+      # mu = mu_mat(timemat, A, eta.new, cd)
+      # prior.new2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
+      # post.new2 = Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
+      # loglike.diff = prior.new2+post.new2-prior.old2-post.old2
+      # if (log(runif(1, 0, 1)) < loglike.diff) {
+        # eta.old = eta.new
+        # prior.old2 = prior.new2
+        # post.old2 = post.new2
+      # }
+      # for (IP in 1:nIP) {
+          # etamat[[IP]] = cbind(etamat[[IP]], eta.old[IP,])
+        # }
+    # }
       
-    prior.old3 = dhalfcauchy(sigma_tau, prior.tau, TRUE)
-    post.old3 = post.old2
-    for (inner in 1:Inner[3]) {
-      sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
-      prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau, TRUE)
-      post.new3 =  Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
-      loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
-                   log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
-                   prior.new3+post.new3-prior.old3-post.old3
-      if (log(runif(1, 0, 1)) < loglike.diff) {
-        sigma_tau = sigma_tau.new
-        prior.old3 = prior.new3
-        post.old3 = post.new3
-      }
-        sigma_taumat = c(sigma_taumat, sigma_tau)
-    }
+    # prior.old3 = dhalfcauchy(sigma_tau, prior.tau, TRUE)
+    # post.old3 = post.old2
+    # for (inner in 1:Inner[3]) {
+      # sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
+      # prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau, TRUE)
+      # post.new3 =  Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
+      # loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
+                   # log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
+                   # prior.new3+post.new3-prior.old3-post.old3
+      # if (log(runif(1, 0, 1)) < loglike.diff) {
+        # sigma_tau = sigma_tau.new
+        # prior.old3 = prior.new3
+        # post.old3 = post.new3
+      # }
+        # sigma_taumat = c(sigma_taumat, sigma_tau)
+    # }
   }
   chain.final = list(cd = cd, z = z, b = bmat, eta = etamat, delta = deltamat, sigma_tau = sigma_taumat,
                      u = u, sigma.Q =sigma.Q, edge.trim = edge.trim)
@@ -1424,6 +1424,169 @@ IPTM.inference.GiR = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alph
   return(chain.final)
 }	
 
+#' @title GenerateDocs2
+#' @description Generate a collection of documents according to the generative process of IPTM
+#'
+#' @param nDocs number of documents to be generated
+#' @param node vector of node id's (ID starting from 1)
+#' @param vocab all vocabularies used over the corpus
+#' @param nIP total number of interaction patterns
+#' @param K total number of topics
+#' @param n.d number of words in a document (fixed constant for now)
+#' @param alphas Dirichlet concentration prior for document-topic distribution
+#' @param beta Dirichlet concentration prior for topic-word distribution
+#' @param zeta Dirichlet concentration prior for document-interaction pattern distribution
+#' @param b coefficients for recipients
+#' @param eta coefficients for timestamps
+#' @param delta tuning parameter for the number of recipients
+#' @param sigma_tau variance parameter for the timestamps
+#' @param cd_assignments document-interaction pattern assignments
+#' @param support support of latent recipients
+#' @param netstat which type of network statistics to use ("dyadic", "triadic", "degree")
+#' @param timestat additional statistics to be used for timestamps other than netstat ("sender", "receiver", "timeofday", "dayofweek")
+#' @param base.data edges before 384 hours that is used to calculate initial history of interactions
+#' @param topic_token_assignments matrix of topic-token assignments
+#' @param backward Logigal indicating whether we are generating backward samples (if FALSE -> forward)
+#' @param base Logical indicating whether or not we are generating base edges (< 384)
+#' @param timeunit hour (= 3600) or day (=3600*24) and so on
+#' @param tz timezone such as EST and PST
+#'
+#' @return generated data including (author, recipients, timestamp, words)
+#'
+#' @export
+GenerateDocs2 = function(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
+                        b, eta, delta, sigma_tau, cd_assignments = NULL, support, netstat, timestat,
+                        base.data = NULL, topic_token_assignments = NULL,
+                        backward = FALSE, base = FALSE, timeunit = 3600, tz = "America/New_York") { 
+  A = length(node)
+  V = length(vocab)
+
+  netstat = as.numeric(c("degree", "dyadic", "triadic" ) %in% netstat)
+  timestat = as.numeric(c("dayofweek","timeofday") %in% timestat)
+  L = 3
+  P = L*(2*netstat[1]+2*netstat[2]+4*netstat[3])
+  t.d = ifelse(base, 0, base.data$edge[[1]][[3]]+384*timeunit)
+  edge = base.data$edge
+  text = base.data$text
+  base.length = length(edge)
+  timemat = matrix(0, nrow = nDocs+base.length, ncol = sum(timestat))
+  timestamps = rep(NA, nDocs+base.length)
+  senders = rep(NA, nDocs+base.length)
+  cd = rep(NA, nDocs+base.length)
+  timeinterval = list()
+  if (base.length > 0) {
+  	timestamps[1:base.length] = vapply(edge, function(d) { d[[3]] }, c(1))
+  	senders[1:base.length] = vapply(edge, function(d) { d[[1]] }, c(1))
+  	timeinterval[1:base.length] = lapply(1:base.length, function(d) timefinder_vec(timestamps[1:d], d, timeunit))
+  	cd[1:base.length] = base.data$cd
+  }
+  alpha0 = alphas[1]
+  alpha1 = alphas[2]
+  alpha = alphas[3]
+  if (!base) {
+    if (sum(timestat) > 0) {
+      Sys.setenv(TZ = tz)
+      time_ymd = as.POSIXct(vapply(base.data$edge, function(d) {d[[3]]}, c(1)), tz = getOption("tz"), origin = "1970-01-01")
+      if (timestat[1] > 0) {
+        days = vapply(time_ymd, function(d) {wday(d)}, c(1))
+        days[days==1] = 8
+        timemat[1:base.length,1] = as.numeric(cut(days, c(1,6,8), c("weekdays","weekends")))-1
+        it = 1
+      }
+      if (timestat[2] > 0) {
+        hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
+        timemat[1:base.length,it+1] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
+      }
+    }
+  }  
+  VKmat = matrix(0, V, K)
+  Cmat = rep(0, nIP)
+  phi.k = rep(NA, V)
+  table.k = rep(0, K)
+  table.cd = matrix(0, K, nIP)
+  u = list()
+  for (d in 1:nDocs) {
+    u[[base.length+d]] = matrix(0, A, A)
+    text[[base.length+d]] = rep(NA, n.d)
+    if (!backward) {
+      cd[base.length+d] =  multinom_vec(1, Cmat + zeta / nIP)
+      Cmat[cd[base.length+d]] = Cmat[cd[base.length+d]] + 1
+      topic.d = rep(NA, n.d)	
+      table.dk = rep(0, K)
+      for (n in 1:n.d){
+      	ratio2 = (table.k+alpha0/K) / sum(table.k+alpha0/K)
+        ratio1 = (table.cd[,cd[base.length+d]]+alpha1*ratio2) / sum(table.cd[,cd[base.length+d]]+alpha1*ratio2)
+	 theta.d = table.dk+alpha*ratio1
+      	topic.d[n] = multinom_vec(1, theta.d)
+      	table.k[topic.d[n]] = table.k[topic.d[n]]+1
+      	table.cd[topic.d[n], cd[base.length+d]] = table.cd[topic.d[n], cd[base.length+d]]+1
+      	table.dk[topic.d[n]] = table.dk[topic.d[n]]+1
+      	for (w in 1:V) {
+          phi.k[w] = (VKmat[w, topic.d[n]]+beta/V)/(sum(VKmat[,topic.d[n]])+beta)
+        } 
+        text[[base.length+d]][n] = multinom_vec(1, phi.k)
+        VKmat[text[[base.length+d]][n], topic.d[n]] = VKmat[text[[base.length+d]][n], topic.d[n]]+1
+      }
+      names(text[[base.length+d]]) = topic.d
+    } else {
+      cd[base.length+d] = cd_assignments[base.length+d]
+      topic.d = topic_token_assignments[[base.length+d]]
+      for (n in 1:n.d){
+        for (w in 1:V) {
+          phi.k[w] = (VKmat[w, topic.d[n]]+beta/V)/(sum(VKmat[,topic.d[n]])+beta)
+        } 
+        text[[base.length+d]][n] = multinom_vec(1, phi.k)
+        VKmat[text[[base.length+d]][n], topic.d[n]] = VKmat[text[[base.length+d]][n], topic.d[n]]+1
+      }
+      names(text[[base.length+d]]) = topic.d
+    }
+    if (t.d >= 384*timeunit) {
+       timeinterval = timefinder_vec(timestamps[1:(base.length+d-1)], base.length+d-1, timeunit)
+       X = Netstats_cpp(edge, timestamps[1:(base.length+d-1)], timeinterval, senders[1:(base.length+d-1)], cd[1:(base.length+d)], A, timeunit, netstat)
+       lambda = MultiplyXB(X, b[cd[base.length+d],])   
+    } else {
+       lambda = matrix(0, A, A)
+    }
+    timevec = rep(NA, A)
+    for (i in node) {
+      u[[base.length+d]][i,-i] = r.gibbs.measure(1, lambda[i,-i], delta, support)
+      mu = mu_vec(timemat[base.length+d, ], A, eta[cd[base.length+d],])
+      time = rlnorm(1, mu, sigma_tau)
+      timevec[i] = time*timeunit
+    }
+    i.d = which(timevec == min(timevec))
+    j.d = which(u[[base.length+d]][i.d,] == 1)
+    t.d = t.d+timevec[i.d]
+    senders[base.length+d] = i.d
+    timestamps[base.length+d] = t.d
+    edge[[base.length+d]] = list(author = i.d, recipients = j.d, timestamp = t.d)
+    if (t.d <= exp(38.7) & sum(timestat) > 0) {
+        Sys.setenv(TZ = tz)
+     	it = 0
+      time_ymd = as.POSIXct(edge[[base.length+d]][[3]], tz = getOption("tz"), origin = "1970-01-01")
+      if (timestat[1] > 0) {
+      	it = it + 1
+        days = vapply(time_ymd, function(d) {wday(d)}, c(1))
+        days[days==1] = 8
+        timemat[base.length+d,it] = as.numeric(cut(days, c(1,6,8), c("weekdays","weekends")))-1
+      }
+      if (timestat[2] > 0) {
+      	it = it + 1
+        hours = vapply(time_ymd, function(d) {hour(d)}, c(1))
+        timemat[base.length+d,it] = as.numeric(cut(hours, c(-1,12,24), c("AM", "PM")))-1
+      }
+    }
+  }
+  if (base == TRUE & t.d > 384*timeunit) {
+    cutoff = which_num(384*timeunit, vapply(1:length(edge), function(d) {edge[[d]][[3]]}, c(1)))-1
+    edge = edge[1:cutoff]
+    text = text[1:cutoff]
+    cd = cd[1:cutoff]
+  }
+  return(list(edge = edge, text = text, base = base.length, u = u, z = lapply(text, function(d){as.numeric(names(d))}), 
+  		b = b, eta = eta, delta = delta, sigma_tau = sigma_tau, cd = cd))							
+} 
+
 #' @title GenerateDocs
 #' @description Generate a collection of documents according to the generative process of IPTM
 #'
@@ -1513,7 +1676,6 @@ GenerateDocs = function(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
   }
   }
   VKmat = matrix(0, V, K)
-  Cmat = rep(0, nIP)
   u = list()
   for (d in 1:nDocs) {
     u[[base.length+d]] = matrix(0, A, A)
@@ -1528,7 +1690,7 @@ GenerateDocs = function(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
       names(text[[base.length+d]]) = topic.d
     } else {
       cd[base.length+d] = cd_assignments[base.length+d]
-      phi.k = rep(NA, K)
+      phi.k = rep(NA, V)
       topic.d = topic_token_assignments[[base.length+d]]
       for (n in 1:n.d){
         for (w in 1:V) {
@@ -1556,7 +1718,6 @@ GenerateDocs = function(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
     i.d = which(timevec == min(timevec))
     j.d = which(u[[base.length+d]][i.d,] == 1)
     t.d = t.d+timevec[i.d]
-    if (length(i.d) > 1) browser()
     senders[base.length+d] = i.d
     timestamps[base.length+d] = t.d
     edge[[base.length+d]] = list(author = i.d, recipients = j.d, timestamp = t.d)
@@ -1853,10 +2014,8 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
     delta = rnorm(1, prior.delta[1], sqrt(prior.delta[2]))
     sigma_tau = rhalfcauchy(1, prior.tau)
 	while (sigma_tau > 10) {sigma_tau = rhalfcauchy(1, prior.tau)}
-	psi = rdirichlet_cpp(1, rep(zeta/nIP, nIP))
-    cd_assignments = vapply(1:nDocs+length(base.data$edge), function(i) which(rmultinom(1,1,psi)==1), c(1))
-    Forward_sample = GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta, b, eta, delta, sigma_tau, 
-                     cd_assignments = cd_assignments, support, netstat, timestat, base.data = base.data, 
+    Forward_sample = GenerateDocs2(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta, b, eta, delta, sigma_tau, 
+                     cd_assignments = NULL, support, netstat, timestat, base.data = base.data, 
                      topic_token_assignments = NULL, backward = FALSE, base = FALSE)
     Forward_stats[i, ] = GiR_stats(Forward_sample, V, K)
   	initial = list(delta = delta, sigma_tau = sigma_tau, b = b, eta = eta,
@@ -1872,7 +2031,7 @@ Schein = function(Nsamp, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
     for (d in 1:length(z)) {
       names(z[[d]]) = Forward_sample$text[[d]]
     }
-    Backward_sample = GenerateDocs(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta, b, eta, delta, sigma_tau,
+    Backward_sample = GenerateDocs2(nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta, b, eta, delta, sigma_tau,
                       cd_assignments = cd_assignments, support, netstat, timestat, base.data = base.data, 
                       topic_token_assignments = z, backward = TRUE, base = FALSE)
     Backward_stats[i, ] = GiR_stats(Backward_sample, V, K)
