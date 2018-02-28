@@ -221,6 +221,78 @@ V(\tau_{ad}) &= V(\mu_{ad}),
 where $\tau_{ad}$ is a positive real number. Possible choices of distribution include Exponential, Weibull, Gamma, and lognormal\footnote{lognormal distribution is not exponential family but can be used via modeling of $\log(\tau_d)$.} distributions, which are commonly used in time-to-event modeling. Based on the choice of distribution, we may introduce any additional parameter (e.g., $\sigma_\tau^2$) to account for the variance.
 
 Our preliminary analysis revealed that the Dare County email networks and the Enron data set showed the best fitting when we assume lognormal distribution on the observed time-increments---i.e., $\log(\tau_{a_dd}) \sim N(\mu_{a_d d}, \sigma^2_\tau)$---compared to Gamma or Weibull distributions. We also observed significant lack-of-fit for single parameter distribution (e.g., Exponential distribution) since it failed to capture the variance in time-increments. Therefore, we chose lognormal distribution by taking the log-transformation and apply $\mu = E(\log(\tau_{ad})) = \mu_{ad}$ and $ \sigma_\tau^2=V(\log(\tau_{ad})) = V(\mu_{ad})$, using identity link function $g = I$. 
+
+
+%%%%%%%%% NEW SECTION %%%%%%%%%%%
+
+\subsubsection{Latent Recipients (SPARSE)}\label{subsubsec:Hypothetical Recipients}
+For every possible author--recipient pair $(a,r)_{a \neq r}$, we define the ``recipient intensity", which is the likelihood of document $d$ being sent from $a$ to $r$:
+\begin{equation}
+\lambda_{adr} = {\boldsymbol{b}_{c_d}}^{\top}\boldsymbol{x}_{adrc_d},
+\end{equation}
+where $\boldsymbol{b}_c$ is $P$--dimensional vector of coefficients and $\boldsymbol{x}_{adrc}$ is a set of network features which vary depending on the hypotheses regarding canonical processes relevant to network theory such as popularity, reciprocity, and transitivity. We place a Normal prior $\boldsymbol{b}_c \sim N(\boldsymbol{\mu}_b, \Sigma_b)$.
+
+In the example of email networks, we form the covariate vector for recipients $\boldsymbol{x}_{adrc}$ using dynamic network statistics on three time intervals prior to $t^+_{d-1}$ (i.e., immediately after the previous document was sent). We compute eight network statistics within each time interval \cite{PerryWolfe2012}, where the intervals are $[t^+_{d-1}-384h, t^+_{d-1}-96h), [t^+_{d-1}-96h, t^+_{d-1}-24h)$ and $[t^+_{d-1}-24h, t^+_{d-1})$. We define the intervals to have equal length in the log-scale, and use $i=1$ to denote the earliest interval---i.e., $[t^+_{d-1}-384h, t^+_{d-1}-96h)$---and i = 3 to denote the latest. The network statistics (illustrated in Figure \ref{fig:dynamic network statistics}) are:
+\begin{figure}[b]
+	\vskip -0.1in
+	\centering
+	\includegraphics[height= 1.5cm, trim= 0cm 0cm 37cm 0cm, clip=true]{plots/netstats-1.png} \vspace{-.1cm}
+	\includegraphics[height=1.5cm,, trim= 30cm 0cm 0cm 0cm, clip=true]{plots/netstats-1.png}
+	\caption{Eight dynamic network statistics used for the application to email networks.}
+	\label{fig:dynamic network statistics}	
+\end{figure}
+\begin{itemize}
+	\item[1.] outdegree$(a,c,i)=\sum\limits_{d^\prime:t_{d^\prime \in i}} I(c_{d^\prime} = c)I(a_{d^\prime} = a)$;
+	\item[2.] indegree$(r,c,i)=\sum\limits_{d^\prime:t_{d^\prime \in i}} I(c_{d^\prime} = c)I(u_{d^\prime r} = 1)$;
+	\item[3.] send$(a,r,c,i)$\\
+	$=\sum\limits_{d^\prime:t_{d^\prime \in i}} I(c_{d^\prime} = c)I(a_{d^\prime} = a)I(u_{d^\prime r} = 1)$;
+	\item[4.] receive$(a,r,c,i)=\mbox{send}(r,a,c,i)$;
+	\item[5.] 2-send$(a,r,c,i) $\\= $\sum\limits_{\substack{i^\prime, i^{\prime\prime}\geq i:\\i^\prime = i \mbox{ \small or }i^{\prime\prime}=i}}\sum\limits_{h \neq a, r} \mbox{send}(a,h,c,i^\prime)\mbox{send}(h,r,c,i^{\prime\prime})$;
+	\item[6.] 2-receive$(a,r,c,i) $\\= $\sum\limits_{\substack{i^\prime, i^{\prime\prime}\geq i:\\i^\prime = i \mbox{ \small or }i^{\prime\prime}=i}}\sum\limits_{h \neq a, r} \mbox{send}(h,a,c,i^\prime)\mbox{send}(r,h,c,i^{\prime\prime})$;
+	\item[6.] sibling$(a,r,c,i) $\\= $\sum\limits_{\substack{i^\prime, i^{\prime\prime}\geq i:\\i^\prime = i \mbox{ \small or }i^{\prime\prime}=i}}\sum\limits_{h \neq a, r} \mbox{send}(h,a,c,i^\prime)\mbox{send}(h,r,c,i^{\prime\prime})$;
+	\item[6.] cosibling$(a,r,c,i) $\\= $\sum\limits_{\substack{i^\prime, i^{\prime\prime}\geq i:\\i^\prime = i \mbox{ \small or }i^{\prime\prime}=i}}\sum\limits_{h \neq a, r} \mbox{send}(a,h,c,i^\prime)\mbox{send}(r,h,c,i^{\prime\prime})$;
+\end{itemize}
+where $I(\cdot)$ is an indicator function. Note that in order to obtain two-path statistics (i.e., 2-send, 2-receive, sibling, and cosibling) within a single time interval $i$, we compute the number of two-paths from $a$ to $r$ in interaction pattern $c$ by summing over the pairs of intervals $(i^\prime, i^{\prime\prime})$ where the earlier email in the path was sent during interval $i$. 
+
+Next, we hypothesize ``If $a$ were the
+author of document $d$, who would be the recipent/recipients?" To do this, we draw each author's set of recipients from a non-empty Gibbs measure \cite{fellows2017removing}---a probability measure we defined in order to 1) allow multiple recipients or ``multicast", 2) prevent from obtaining zero recipient, and 3) ensure tractable normalizing constant. 
+
+Because the IPTM allows multicast, we draw a binary (0/1) vector $\boldsymbol{u}_{ad}= (u_{ad1},
+\ldots, u_{adA})$
+\begin{equation} \boldsymbol{u}_{ad}  \sim
+\mbox{Gibbs}(\delta, \boldsymbol{\lambda}_{ad}),
+\end{equation}
+where $\delta$ is a real number controlling the average number of recipients and $\boldsymbol{\lambda}_{id}= \{\lambda_{adr}\}_{r=1}^A$. We place a Normal prior $\delta \sim N(\mu_\delta,\sigma^2_\delta)$. In particular, we define $\mbox{Gibbs}(\delta, \boldsymbol{\lambda}_{ad})$ as
+\begin{equation}
+\begin{aligned}
+&p(\boldsymbol{u}_{ad}|\delta, \boldsymbol{\lambda}_{ad}) \\&= \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0 )\big) + \sum_{r\neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})} ,
+\end{aligned}
+\label{eqn:Gibbs}
+\end{equation}
+where $Z(\delta,\boldsymbol{\lambda}_{ad})= \prod_{r \neq a} (\mbox{exp}\{\delta+\lambda_{adr}\} + 1)-1$ is the normalizing constant and $\lVert \cdot \rVert_1$ is the $l_1$--norm. We provide the derivation of the normalizing constant as a tractable form in the supplementary material. 
+
+\subsubsection{Latent Timestamps}\label{subsubsec:Hypothetical Timestamps}
+Similarly, we hypothesize ``If $a$ were the author of document $d$, when would it be sent?" and define the ``timing rate" for author $i$
+\begin{equation}
+\mu_{ad} = g^{-1}(\boldsymbol{\eta}_{c_d}^\top \boldsymbol{y}_{adc_d}),
+\end{equation}
+where $\boldsymbol{\eta}_c$ is $Q$--dimensional vector of coefficients with a Normal prior $\boldsymbol{\eta}_c \sim N(\boldsymbol{\mu}_\eta,\Sigma_\eta)$, $\boldsymbol{y}_{adc}$ is a set of time-related covariates, which can be any feature that could affect timestamps of the document, and $g(\cdot)$ is the appropriate link function such as identity, log, or inverse. 
+
+For example, the covariate vector for timestamps $\boldsymbol{y}_{adc}$ can include author-specific intercepts to account for individual differences in document-sending behavior. In addition, temporal features which possibly affect ``when to send" can be added---e.g., an indicator of weekends/weekdays and an indicator of AM/PM when the previous document was sent. 
+
+In modeling ``when", we do not directly model the timestamp $t_d$. Instead, we assume that each author's the time-increment or ``time to next document" (i.e., $\tau_{d} = t_d-t_{d-1}$) is drawn from a specific distribution in the exponential family.  We follow the generalized linear model framework:
+\begin{equation}
+\begin{aligned}
+E(\tau_{ad}) &= \mu_{ad},\\
+V(\tau_{ad}) &= V(\mu_{ad}),
+\end{aligned}
+\end{equation}
+where $\tau_{ad}$ is a positive real number. Possible choices of distribution include Exponential, Weibull, Gamma, and lognormal\footnote{lognormal distribution is not exponential family but can be used via modeling of $\log(\tau_d)$.} distributions, which are commonly used in time-to-event modeling. Based on the choice of distribution, we may introduce any additional parameter (e.g., $\sigma_\tau^2$) to account for the variance.
+
+Our preliminary analysis revealed that the Dare County email networks and the Enron data set showed the best fitting when we assume lognormal distribution on the observed time-increments---i.e., $\log(\tau_{a_dd}) \sim N(\mu_{a_d d}, \sigma^2_\tau)$---compared to Gamma or Weibull distributions. We also observed significant lack-of-fit for single parameter distribution (e.g., Exponential distribution) since it failed to capture the variance in time-increments. Therefore, we chose lognormal distribution by taking the log-transformation and apply $\mu = E(\log(\tau_{ad})) = \mu_{ad}$ and $ \sigma_\tau^2=V(\log(\tau_{ad})) = V(\mu_{ad})$, using identity link function $g = I$. 
+
+
+
 \subsubsection{Actual Data}\label{subsubsec:Actual Data}
 Finally, we choose the actual author, recipients, and timestamp---which will be observed---by selecting the author--recipient-set pair with the smallest time-increment \cite{snijders1996stochastic}:
 \begin{equation}
@@ -231,6 +303,8 @@ t_d &=t_{d-1} + \tau_{a_d d}.
 \end{aligned}
 \end{equation}
 Therefore, it is an author-driven process in that the author of a document determines its recipients and its timestamp, based on the author's urgency to send the document to chosen recipients. 
+
+
 
 \section{Posterior Inference}\label{sec:Inference}
 Given that we only observe the authors, recipients, timestamps, and tokens $ \{ (a_d, \boldsymbol{r}_d, t_d,  \boldsymbol{w}_d)\}_{d=1}^D$ in real-world, our inference goal is to invert the generative process to obtain the posterior distribution over the unknown parameters, conditioned on the observed data and hyperparamters $\alpha_0, \alpha_1, \alpha, \beta, \zeta, \boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, {\mu}_\delta,\sigma^2_\delta$. After integrating out $\Phi$, $\Psi$, and $\Theta$ using Dirichlet-multinomial conjugacy \cite{griffiths2004finding}, we draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each parameter from its conditional posterior given the observed data, hyperparamters, and the current values of the other parameters. We express each parameter’s conditional posterior in a closed form using the data augmentation schemes in $\boldsymbol{u}$ \cite{tanner1987calculation}. In this section, we outline a Metropolis-within-Gibbs sampling algorithm and each latent variable's conditional posterior. Pseudocode is provided in the supplementary material.
