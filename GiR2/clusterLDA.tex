@@ -1,0 +1,151 @@
+\title{Cluster LDA}
+%\author{
+%        Vitaly Surazhsky \\
+%                Department of Computer Science\\
+%        Technion---Israel Institute of Technology\\
+%        Technion City, Haifa 32000, \underline{Israel}
+%            \and
+%        Yossi Gil\\
+%        Department of Computer Science\\
+%        Technion---Israel Institute of Technology\\
+%        Technion City, Haifa 32000, \underline{Israel}
+%}
+\date{\today}
+
+\documentclass[12pt]{article}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\begin{document}
+\maketitle
+
+%\begin{abstract}
+%This is the paper's abstract \ldots
+%\end{abstract}
+
+\section{Standard Generative Process}
+For this reduced case of IPTM, we assume that the document-cluster assignments $c_d \in \{1,\ldots, C\}$ for $d \in [D]$ are known and fixed.
+Following the cluster-based topic model, document $d$ has the document-topic distribution
+\begin{equation}
+\boldsymbol{\theta}_d \sim \mbox{Dirichlet}(\alpha, \boldsymbol{\xi}_{c_d}),
+\end{equation}
+where $\alpha$ are the concentration parameter and $\boldsymbol{\xi}_{c_d}$ is the base measure corresponding to the cluster of document $d$.
+In order to capture the overall prevalence of each topic in the corpus, we assume that each $\boldsymbol{\xi}_{c}$ is given Dirichlet priors with a single corpus-level base measure $\boldsymbol{m}$
+\begin{equation}
+\boldsymbol{\xi}_c\sim \mbox{Dirichlet}\Big(\alpha_1, \boldsymbol{m}\Big),
+\end{equation}
+where $\alpha_1$ is the concentration parameter determining the extent to which the group-specific base measures are affected by the corpus-level base measure. Finally, the corpus-level base measure is assumed to have Dirichlet prior with uniform base measure
+\begin{equation}
+\boldsymbol{m}\sim \mbox{Dirichlet}\Big(\alpha_0, (\frac{1}{K},\ldots,\frac{1}{K})\Big).
+\end{equation}
+Given that $\bar N_d = \max(1, N_d)$ where $N_d$ is known, a topic $z_{dn}$ is drawn from the document-topic distribution for each $n \in [\bar N_d]$---i.e.,
+\begin{equation}
+\begin{aligned}
+&z_{dn} \sim \mbox{Multinomial}(\boldsymbol{\theta}_d).\\
+\end{aligned}
+\end{equation}
+\section{Current Derivatoin}
+The predictive probability
+\begin{equation}
+\begin{aligned}
+\Pr(z_{N_d+1} = k|\boldsymbol{z}, \alpha, \boldsymbol{\xi}_{c_d} ) &= \int_{\boldsymbol{\theta}_d} \Pr(k|\boldsymbol{\theta}_d)\times\Pr(\boldsymbol{\theta}_d|\boldsymbol{z}, \alpha, \boldsymbol{\xi}_{c_d} )d\boldsymbol{\theta}_d \\&=\int_{\boldsymbol{\theta}_d} \prod_{k=1}^K
+(\theta_{dk})\times
+\Big(\prod_{n=1}^{N_d}\Pr(z_{dn}|\boldsymbol{\theta}_d) \times \Pr(\boldsymbol{\theta}_d|\alpha, \boldsymbol{\xi}_{c_d}) \Big)d\boldsymbol{\theta}_d \\& = 
+\int_{\boldsymbol{\theta}_d}\prod_{k=1}^K
+(\theta_{dk})\times \prod_{k=1}^K(\theta_{dk})^{N_{dk}}\times\frac{\Gamma(\sum_{k=1}^K \alpha \xi_{c_dk})}{\prod_{k=1}^K\Gamma(\alpha\xi_{c_dk})}\prod_{k=1}^K (\theta_{dk})^{(\alpha\xi_{c_dk})-1}d\boldsymbol{\theta}_d\\& \propto
+\int_{\boldsymbol{\theta}_d}\prod_{k=1}^K
+(\theta_{dk})\times \mbox{Dir}(N_{dk}+\alpha\xi_{c_dk})d\boldsymbol{\theta}_d \quad\quad (\mbox{Expectation!})
+\\& = \frac{N_{dk}+\alpha\xi_{c_dk}}{N_d + \alpha}.
+\end{aligned}
+\end{equation}
+Then, we move to the next cluster-level hierarchy:
+\begin{equation}
+\begin{aligned}
+&\Pr(z_{N_d+1} = k|\boldsymbol{z}, \alpha, \alpha_1, \boldsymbol{m}) \\&= \int_{\boldsymbol{\xi}_{c_d}} \Pr(z_{N_d+1} = k|\boldsymbol{z}, \alpha, \boldsymbol{\xi}_{c_d} )\times\Pr(\boldsymbol{\xi}_{c_d}|\boldsymbol{z}, \alpha_1, \boldsymbol{m})d\boldsymbol{\xi}_{c_d}\\&=\int_{\boldsymbol{\xi}_{c_d}} \prod_{k=1}^K
+( \frac{N_{dk}+\alpha\xi_{c_dk}}{N_d + \alpha})\times
+\Big(\prod_{d':c_d'=c_d}\prod_{n=1}^{N_d}\Pr(z_{dn}|\boldsymbol{\xi}_{c_d}) \times \Pr(\boldsymbol{\xi}_{c_d}|\alpha_1, \boldsymbol{m}) \Big)d\boldsymbol{\xi}_{c_d}\\& 
+ = \frac{N_{dk}}{N_d + \alpha}+\frac{\alpha}{{N_d + \alpha}}\int_{\boldsymbol{\xi}_{c_d}} \prod_{k=1}^K
+ ( \xi_{c_dk})\times
+ \prod_{k=1}^K ({\xi}_{c_dk})^{N_{c_dk}}\times \frac{\Gamma(\sum_{k=1}^K \alpha_1 m_{k})}{\prod_{k=1}^K\Gamma(\alpha_1m_{k})}\prod_{k=1}^K (\xi_{c_dk})^{(\alpha_1m_{k})-1}d\boldsymbol{\xi}_{c_d}\\&
+\propto \frac{N_{dk}}{N_d + \alpha}+\frac{\alpha}{{N_d + \alpha}}
+\int_{\boldsymbol{\xi}_{c_d}}\prod_{k=1}^K
+(\xi_{c_dk})\times \mbox{Dir}(N_{c_dk}+\alpha_1m_{k})d\boldsymbol{\xi}_{c_d} \quad\quad (\mbox{Expectation!})
+\\& = \frac{N_{dk}+\alpha\frac{N_{c_dk}+\alpha_1m_k}{N_{c_d}+\alpha_1}}{N_d + \alpha}.
+\end{aligned}
+\end{equation}
+NOTE: I am not sure if we can directly use $\Pr(z_{dn}|\boldsymbol{\xi}_{c_d})$ as Multinomial when we move from the first line to the second one.\\ \newline
+Finally, we move to the next corpus-level hierarchy:
+\begin{equation}
+\begin{aligned}
+&\Pr(z_{N_d+1} = k|\boldsymbol{z}, \alpha, \alpha_1, \alpha_0) \\&= \int_{\boldsymbol{m}} \Pr(z_{N_d+1} = k|\boldsymbol{z}, \alpha, \alpha_1, \boldsymbol{m} )\times\Pr(\boldsymbol{m}|\boldsymbol{z}, \alpha_0, \boldsymbol{u})d\boldsymbol{m}\\&=\int_{\boldsymbol{m}} \prod_{k=1}^K
+(\frac{N_{dk}+\alpha\frac{N_{c_dk}+\alpha_1m_k}{N_{c_d}+\alpha_1}}{N_d + \alpha})\times
+\Big(\prod_{d=1}^D\prod_{n=1}^{N_d}\Pr(z_{dn}|\boldsymbol{m}) \times \Pr(\boldsymbol{m}|\alpha_0, \boldsymbol{u}) \Big)d\boldsymbol{m}\\& 
+= \frac{N_{dk}}{N_d + \alpha}+\frac{\alpha}{{N_d + \alpha}}\times\\&\Big(\frac{N_{c_dk}}{N_{c_d}+\alpha_1}+\frac{\alpha_1}{N_{c_d}+\alpha_1}\int_{\boldsymbol{m}} \prod_{k=1}^K
+(m_{k})\times
+\prod_{k=1}^K ({m_k})^{N_{k}}\times \frac{\Gamma(\sum_{k=1}^K \alpha_0/K)}{\prod_{k=1}^K\Gamma(\alpha_0/K)}\prod_{k=1}^K (m_{k})^{(\alpha_0/K)-1}d\boldsymbol{m}\Big)\\&
+\propto \frac{N_{dk}}{N_d + \alpha}+\frac{\alpha}{{N_d + \alpha}}\times\\&\Big(\frac{N_{c_dk}}{N_{c_d}+\alpha_1}+\frac{\alpha_1}{N_{c_d}+\alpha_1}\int_{\boldsymbol{m}}\prod_{k=1}^K
+(m_{k})\times \mbox{Dir}(N_{k}+\alpha_0/K)d\boldsymbol{m} \Big)\quad\quad (\mbox{Expectation!})\\& = \frac{N_{dk}}{N_d + \alpha}+\frac{\alpha}{{N_d + \alpha}}\Big(\frac{N_{c_dk}}{N_{c_d}+\alpha_1}+\frac{\alpha_1}{N_{c_d}+\alpha_1}\frac{N_{k}+\alpha_0/K}{N+\alpha_0}\Big)
+\\&=
+\frac{N_{dk}+\alpha\frac{N_{c_dk}+\alpha_1\frac{N_{k}+\alpha_0/K}{N+\alpha_0}}{N_{c_d}+\alpha_1}}{N_d + \alpha}.
+\end{aligned}
+\end{equation}
+NOTE: Again, I am not sure if we can directly use $\Pr(z_{dn}|\boldsymbol{m})$ as Multinomial when we move from the first line to the second one.
+\section{Integrating out $\Theta, \Xi, \boldsymbol{m}$}
+The big joint distribution is:
+\begin{equation}
+\begin{aligned}
+&\prod_{d=1}^D \prod_{n=1}^{N_d}\Pr(z_{dn}|\boldsymbol{\theta}_d) \times\prod_{d=1}^D \Pr(\boldsymbol{\theta}_d|\alpha, \boldsymbol{\xi}_{c_d}) \times \prod_{c=1}^C \Pr(\boldsymbol{\xi}_c|\alpha_1, \boldsymbol{m})  \times \Pr(\boldsymbol{m}|\alpha_0)\\&
+=\prod_{d=1}^D \prod_{n=1}^{N_d}\mbox{Multinom}(z_{dn}|\boldsymbol{\theta}_d) \times\prod_{d=1}^D \mbox{Dir}(\boldsymbol{\theta}_d|\alpha, \boldsymbol{\xi}_{c_d}) \times \prod_{c=1}^C \mbox{Dir}(\boldsymbol{\xi}_c|\alpha_1, \boldsymbol{m})  \times \mbox{Dir}(\boldsymbol{m}|\alpha_0).
+\end{aligned}
+\end{equation}
+We want to integrate out $\boldsymbol{\theta}$, $\boldsymbol{\xi}$, and $\boldsymbol{m}$:
+\begin{equation}
+\begin{aligned}
+&\int_{\boldsymbol{m}}\int_{{\Xi}}\int_{\Theta}\prod_{d=1}^D \prod_{n=1}^{N_d}\Pr(z_{dn}|\boldsymbol{\theta}_d) \times\prod_{d=1}^D \Pr(\boldsymbol{\theta}_d|\alpha, \boldsymbol{\xi}_{c_d}) \times \prod_{c=1}^C \Pr(\boldsymbol{\xi}_c|\alpha_1, \boldsymbol{m})  \times \Pr(\boldsymbol{m}|\alpha_0) d\Theta d \Xi dM\\&
+= \int_{\boldsymbol{m}}\int_{{\Xi}}\prod_{c=1}^C \Pr(\boldsymbol{\xi}_c|\alpha_1, \boldsymbol{m})  \times \Pr(\boldsymbol{m}|\alpha_0) \times \Big(\int_{\Theta}\prod_{d=1}^D \prod_{n=1}^{N_d}\Pr(z_{dn}|\boldsymbol{\theta}_d) \times\prod_{d=1}^D \Pr(\boldsymbol{\theta}_d|\alpha, \boldsymbol{\xi}_{c_d}) d\Theta \Big)d \Xi dM.
+\end{aligned}
+\end{equation}
+First, we can work on the integration of $\boldsymbol{\theta}$ as below:
+\begin{equation}
+\begin{aligned}
+&\int_{\Theta}\prod_{d=1}^D \prod_{n=1}^{N_d}\Pr(z_{dn}|\boldsymbol{\theta}_d) \times\prod_{d=1}^D \Pr(\boldsymbol{\theta}_d|\alpha, \boldsymbol{\xi}_{c_d}) d\Theta\\&
+=\prod_{d=1}^D\int_{\boldsymbol{\theta}_d} \prod_{n=1}^{N_d}\mbox{Multinom}(z_{dn}|\boldsymbol{\theta}_d) \times \mbox{Dir}(\boldsymbol{\theta}_d|\alpha, \boldsymbol{\xi}_{c_d}) d\boldsymbol{\theta}_d \\& 
+= \prod_{d=1}^D \int_{\boldsymbol{\theta}_d} \prod_{k=1}^K(\theta_{dk})^{N_{dk}}\times\frac{\Gamma(\sum_{k=1}^K \alpha \xi_{c_dk})}{\prod_{k=1}^K\Gamma(\alpha\xi_{c_dk})}\prod_{k=1}^K (\theta_{dk})^{(\alpha\xi_{c_dk})-1} d\boldsymbol{\theta}_d\\&
+= \prod_{d=1}^D \frac{\Gamma(\sum_{k=1}^K \alpha \xi_{c_dk})}{\prod_{k=1}^K\Gamma(\alpha\xi_{c_dk})}\int_{\boldsymbol{\theta}_d} \prod_{k=1}^K (\theta_{dk})^{(\alpha\xi_{c_dk})+N_{dk}-1} d\boldsymbol{\theta}_d\\&
+=\prod_{d=1}^D \frac{\Gamma(\sum_{k=1}^K \alpha \xi_{c_dk})}{\prod_{k=1}^K\Gamma(\alpha\xi_{c_dk})}\frac{\prod_{k=1}^K\Gamma(\alpha\xi_{c_dk}+N_{dk})}{\Gamma(\sum_{k=1}^K \alpha \xi_{c_dk}+N_{dk})}\int_{\boldsymbol{\theta}_d} \frac{\Gamma(\sum_{k=1}^K \alpha \xi_{c_dk}+N_{dk})}{\prod_{k=1}^K\Gamma(\alpha\xi_{c_dk}+N_{dk})}\prod_{k=1}^K (\theta_{dk})^{(\alpha\xi_{c_dk})+N_{dk}-1} d\boldsymbol{\theta}_d\\&
+=\prod_{d=1}^D \frac{\Gamma(\sum_{k=1}^K \alpha \xi_{c_dk})}{\Gamma(\sum_{k=1}^K \alpha \xi_{c_dk}+N_{dk})}\frac{\prod_{k=1}^K\Gamma(\alpha\xi_{c_dk}+N_{dk})}{\prod_{k=1}^K\Gamma(\alpha\xi_{c_dk})}\\& =
+\prod_{d=1}^D \frac{\Gamma(\alpha)}{\Gamma(\alpha+N_{d})}\frac{\prod_{k=1}^K\Gamma(\alpha\xi_{c_dk}+N_{dk})}{\prod_{k=1}^K\Gamma(\alpha\xi_{c_dk})},
+\end{aligned}
+\end{equation}
+where $N_{dk}$ is the number of times topic $k$ is assigned in document $d$. Since $\frac{\Gamma(\alpha)}{\Gamma(\alpha+N_{d})}$ is only a function of hyperparameters, we drop the term and then Equation (6) can be re-written as:
+\begin{equation}
+\begin{aligned}
+& \int_{\boldsymbol{m}}\int_{{\Xi}}\prod_{c=1}^C \Pr(\boldsymbol{\xi}_c|\alpha_1, \boldsymbol{m})  \times \Pr(\boldsymbol{m}|\alpha_0) \times \Big(\int_{\Theta}\prod_{d=1}^D \prod_{n=1}^{N_d}\Pr(z_{dn}|\boldsymbol{\theta}_d) \times\prod_{d=1}^D \Pr(\boldsymbol{\theta}_d|\alpha, \boldsymbol{\xi}_{c_d}) d\Theta \Big)d \Xi dM\\&\propto\int_{\boldsymbol{m}}\int_{{\Xi}} \prod_{c=1}^C \Pr(\boldsymbol{\xi}_c|\alpha_1, \boldsymbol{m})  \times \Pr(\boldsymbol{m}|\alpha_0) \times \prod_{d=1}^D\prod_{k=1}^K\frac{\Gamma(\alpha\xi_{c_dk}+N_{dk})}{\Gamma(\alpha\xi_{c_dk})} d \Xi dM\\& =\int_{\boldsymbol{m}}  \Pr(\boldsymbol{m}|\alpha_0) \Big(\int_{{\Xi}} \prod_{c=1}^C \Pr(\boldsymbol{\xi}_c|\alpha_1, \boldsymbol{m})\times \prod_{d=1}^D\prod_{k=1}^K\frac{\Gamma(\alpha\xi_{c_dk}+N_{dk})}{\Gamma(\alpha\xi_{c_dk})}  d \Xi\Big) dM.
+\end{aligned}
+\end{equation}
+Then, we can work on the integration of $\Xi$ as below:
+\begin{equation}
+\begin{aligned}
+&\int_{{\Xi}} \prod_{c=1}^C \Pr(\boldsymbol{\xi}_c|\alpha_1, \boldsymbol{m})\times \prod_{d=1}^D\prod_{k=1}^K\frac{\Gamma(\alpha\xi_{c_dk}+N_{dk})}{\Gamma(\alpha\xi_{c_dk})}  d \Xi\\& = \prod_{c=1}^C\int_{{\xi}_c} \mbox{Dir}(\boldsymbol{\xi}_c|\alpha_1, \boldsymbol{m}) \times \prod_{d:c_d = c} \prod_{k=1}^K\frac{\Gamma(\alpha\xi_{ck}+N_{dk})}{\Gamma(\alpha\xi_{ck})}   d\xi_c\\&
+ = \prod_{c=1}^C\int_{{\xi}_c} \frac{\Gamma(\sum_{k=1}^K \alpha_1 m_{k})}{\prod_{k=1}^K\Gamma(\alpha_1 m_{k})}\prod_{k=1}^K \Big((\xi_{ck})^{(\alpha_1 m_k)-1} \times  \prod_{d:c_d = c} \frac{\Gamma(\alpha\xi_{ck}+N_{dk})}{\Gamma(\alpha\xi_{ck})}\Big) d\xi_c\\&  = \prod_{c=1}^C\frac{\Gamma(\sum_{k=1}^K \alpha_1 m_{k})}{\prod_{k=1}^K\Gamma(\alpha_1 m_{k})}\int_{{\xi}_c} \prod_{k=1}^K \Big((\xi_{ck})^{(\alpha_1 m_k)-1} \times  \prod_{d:c_d = c} \frac{\Gamma(\alpha\xi_{ck}+N_{dk})}{\Gamma(\alpha\xi_{ck})}\Big) d\xi_c.
+\end{aligned}
+\end{equation}
+Here, we need to know from Equation (36) of Hierarchical Dirichlet Process (\url{http://qwone.com/~jason/trg/papers/teh-hierarchical-04.pdf}) that 
+\begin{equation}
+\begin{aligned}
+\frac{\Gamma(\alpha\xi_{ck}+N_{dk})}{\Gamma(\alpha\xi_{ck})}&= \prod_{i_{dk}=1}^{N_{dk}}(i_{dk}-1+\alpha\xi_{ck})\\& = \sum_{i_{dk}=0}^{N_{dk}} s(N_{dk}, i_{dk}) (\alpha\xi_{ck})^{i_{dk}},
+\end{aligned}
+\end{equation}
+where $s(i_{dk}, N_{dk})$ is the coefficient of $(\alpha\xi_{ck})^{i_{dk}}$, which are unsigned Stirling numbers of the first kind. Plugging this into Equation (9), we have
+\begin{equation}
+\begin{aligned}
+& \prod_{c=1}^C\frac{\Gamma(\sum_{k=1}^K \alpha_1 m_{k})}{\prod_{k=1}^K\Gamma(\alpha_1 m_{k})}\int_{{\xi}_c} \prod_{k=1}^K \Big((\xi_{ck})^{(\alpha_1 m_k)-1} \times  \prod_{d:c_d = c} \sum_{i_{dk}=0}^{N_{dk}} s(N_{dk}, i_{dk}) (\alpha\xi_{ck})^{i_{dk}}\Big) d\xi_c.
+\end{aligned}
+\end{equation}
+Maybe we need to introduce auxiliary variable $\boldsymbol{i} = (i_{dk}: \forall d, k)$ and move forward, but I have no idea....
+
+\end{document}

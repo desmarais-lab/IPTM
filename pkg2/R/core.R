@@ -991,36 +991,37 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
   #start outer iteration
   for (o in 1:Outer) {
     #Data augmentation
-    # for (d in edge.trim) {
-        # lambda = MultiplyXB(X[[d]], b.old[cd[d],])
-         # for (i in node[-senders[d]]) {
-            # for (j in sample(node[-i], A-1)) {
-                # probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
-                # u[[d]][i, j] = lmultinom(probij)-1
-            # }
-        # }
-    # }
+    for (d in edge.trim) {
+        lambda = MultiplyXB(X[[d]], b.old[cd[d],])
+        for (i in node[-senders[d]]) {
+            for (j in sample(node[-i], A-1)) {
+                probij = u_Gibbs(u[[d]][i, ], lambda[i,], delta, j)
+                u[[d]][i, j] = lmultinom(probij)-1
+            }
+        }
+    }
     # cd update	
-     # for (d in edge.trim) {
-     	# table.C[cd[d]] = table.C[cd[d]]-1
-     	# table.cd[, cd[d]] = table.cd[, cd[d]] - tabulateC(z[[d]], K)
-        # for (IP in 1:nIP) {
-         # cd[d] = IP
-         # IPpart = log(table.C[IP] + zeta/nIP)
-       	 # Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
-       	 # Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
-       	 # munew = mu_vec(timemat[d,], A, eta.old[IP,])
-         # Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
-         # Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k-tabulateC(z[[d]], K), alphas)
-         # const.C[IP] = Edgepart+Timepart+Topicpart+IPpart
-       # }
-       # cd[d] = lmultinom(const.C)
-       # table.C[cd[d]] = table.C[cd[d]] + 1
-       # table.cd[, cd[d]] = table.cd[, cd[d]] + tabulateC(z[[d]], K)
-    # }
-    # for (d in edge.trim) {
-         # X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
-	# }
+    for (d in edge.trim) {
+     	table.C[cd[d]] = table.C[cd[d]]-1
+     	table.cd[, cd[d]] = table.cd[, cd[d]] - tabulateC(z[[d]], K)
+        for (IP in 1:nIP) {
+        	cd[d] = IP
+         	IPpart = log(table.C[IP] + zeta/nIP)
+       	 	#Xnew =  Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
+       	 	#Edgepart = Edgepartsum(Xnew, b.old[IP,], u[[d]], delta)
+       	 	#munew = mu_vec(timemat[d,], A, eta.old[IP,])
+         	#Timepart = Timepart(munew, sigma_tau, senders[d], timeinc[d])
+         	Topicpart = Topicpart(K, z[[d]], table.cd[,IP], table.k-tabulateC(z[[d]], K), alphas)
+         	#const.C[IP] = Edgepart+Timepart+Topicpart+IPpart
+         	const.C[IP] = Topicpart+IPpart
+       	}
+        cd[d] = lmultinom(const.C)
+        table.C[cd[d]] = table.C[cd[d]] + 1
+        table.cd[, cd[d]] = table.cd[, cd[d]] + tabulateC(z[[d]], K)
+    }
+    for (d in edge.trim) {
+        X[[d]] = Netstats_cpp(edge, timestamps, timeinterval[[d]], senders, cd, A, timeunit, netstat)
+	}
     
     #Z update
      for (d in edge.trim) {   
@@ -1053,69 +1054,69 @@ IPTM.inference.GiR2 = function(edge, node, textlist, vocab, nIP, K, sigma.Q, alp
 	 }
  	       
   # M-H       
-    # prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
-    			 # dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
-    # post.old1 = Edgepartsum(X[[max.edge]], b.old[cd[max.edge],], u[[max.edge]], delta)
-    # b.new = matrix(NA, nIP, P)
-    # for (inner in 1:Inner[1]) {
-      # for (IP in 1:nIP) {
-		 # b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
-	  # }
-      # delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
-      # prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
-    				 # dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), TRUE)
-      # post.new1 = Edgepartsum(X[[max.edge]], b.new[cd[max.edge],], u[[max.edge]], delta.new)
-      # loglike.diff = prior.new1+post.new1-prior.old1-post.old1
-      # if (log(runif(1, 0, 1)) < loglike.diff) {
-        # b.old = b.new
-        # delta = delta.new
-        # prior.old1 = prior.new1
-        # post.old1 = post.new1
-      # }
-        # for (IP in 1:nIP) {
-          # bmat[[IP]] = cbind(bmat[[IP]], b.old[IP,])
-        # }
-        # deltamat = c(deltamat, delta)
-    # }
+    prior.old1 = priorsum(prior.b[[2]], prior.b[[1]], b.old)+
+    			 dnorm(delta, prior.delta[1], sqrt(prior.delta[2]), TRUE)
+    post.old1 = Edgepartsum(X[[max.edge]], b.old[cd[max.edge],], u[[max.edge]], delta)
+    b.new = matrix(NA, nIP, P)
+    for (inner in 1:Inner[1]) {
+      for (IP in 1:nIP) {
+		 b.new[IP, ] = rmvnorm_arma(1, b.old[IP,], sigma.Q[1]*proposal.var1)
+	  }
+      delta.new = rnorm(1, delta, sqrt(sigma.Q[4]))
+      prior.new1 = priorsum(prior.b[[2]], prior.b[[1]], b.new)+
+    			   dnorm(delta.new, prior.delta[1], sqrt(prior.delta[2]), TRUE)
+      post.new1 = Edgepartsum(X[[max.edge]], b.new[cd[max.edge],], u[[max.edge]], delta.new)
+      loglike.diff = prior.new1+post.new1-prior.old1-post.old1
+      if (log(runif(1, 0, 1)) < loglike.diff) {
+        b.old = b.new
+        delta = delta.new
+        prior.old1 = prior.new1
+        post.old1 = post.new1
+      }
+        for (IP in 1:nIP) {
+          bmat[[IP]] = cbind(bmat[[IP]], b.old[IP,])
+        }
+        deltamat = c(deltamat, delta)
+    }
      
-      # mu = mu_mat(timemat, A, eta.old, cd)
-	  # prior.old2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
-	  # post.old2 = Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
-      # eta.new = matrix(NA, nIP, Q)
-      # for (inner in 1:Inner[2]) {
-          # for (IP in 1:nIP) {
-			  # eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
-		  # }
-      # mu = mu_mat(timemat, A, eta.new, cd)
-      # prior.new2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
-      # post.new2 = Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
-      # loglike.diff = prior.new2+post.new2-prior.old2-post.old2
-      # if (log(runif(1, 0, 1)) < loglike.diff) {
-        # eta.old = eta.new
-        # prior.old2 = prior.new2
-        # post.old2 = post.new2
-      # }
-      # for (IP in 1:nIP) {
-          # etamat[[IP]] = cbind(etamat[[IP]], eta.old[IP,])
-        # }
-    # }
+      mu = mu_mat(timemat, A, eta.old, cd)
+	  prior.old2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
+	  post.old2 = Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
+      eta.new = matrix(NA, nIP, Q)
+      for (inner in 1:Inner[2]) {
+          for (IP in 1:nIP) {
+			  eta.new[IP, ] = rmvnorm_arma(1, eta.old[IP,], sigma.Q[2]*proposal.var2)
+		  }
+      	  mu = mu_mat(timemat, A, eta.new, cd)
+      	  prior.new2 = priorsum(prior.eta[[2]], prior.eta[[1]], eta.old)
+      	  post.new2 = Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
+      	  loglike.diff = prior.new2+post.new2-prior.old2-post.old2
+      	  if (log(runif(1, 0, 1)) < loglike.diff) {
+        	eta.old = eta.new
+        	prior.old2 = prior.new2
+        	post.old2 = post.new2
+      	  }
+      	  for (IP in 1:nIP) {
+          	etamat[[IP]] = cbind(etamat[[IP]], eta.old[IP,])
+      	  }
+      }
       
-    # prior.old3 = dhalfcauchy(sigma_tau, prior.tau, TRUE)
-    # post.old3 = post.old2
-    # for (inner in 1:Inner[3]) {
-      # sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
-      # prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau, TRUE)
-      # post.new3 =  Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
-      # loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
-                   # log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
-                   # prior.new3+post.new3-prior.old3-post.old3
-      # if (log(runif(1, 0, 1)) < loglike.diff) {
-        # sigma_tau = sigma_tau.new
-        # prior.old3 = prior.new3
-        # post.old3 = post.new3
-      # }
-        # sigma_taumat = c(sigma_taumat, sigma_tau)
-    # }
+    prior.old3 = dhalfcauchy(sigma_tau, prior.tau, TRUE)
+    post.old3 = post.old2
+    for (inner in 1:Inner[3]) {
+      sigma_tau.new = rtruncnorm(1, 0, Inf, sigma_tau, sqrt(sigma.Q[3]))
+      prior.new3 = dhalfcauchy(sigma_tau.new, prior.tau, TRUE)
+      post.new3 =  Timepartsum(mu[edge.trim,], sigma_tau, senders[edge.trim], timeinc[edge.trim])
+      loglike.diff = log(dtruncnorm(sigma_tau, 0, Inf, sigma_tau.new, sqrt(sigma.Q[3])))-
+                   log(dtruncnorm(sigma_tau.new, 0, Inf, sigma_tau, sqrt(sigma.Q[3])))+
+                   prior.new3+post.new3-prior.old3-post.old3
+      if (log(runif(1, 0, 1)) < loglike.diff) {
+        sigma_tau = sigma_tau.new
+        prior.old3 = prior.new3
+        post.old3 = post.new3
+      }
+        sigma_taumat = c(sigma_taumat, sigma_tau)
+    }
   }
   chain.final = list(cd = cd, z = z, b = bmat, eta = etamat, delta = deltamat, sigma_tau = sigma_taumat,
                      u = u, sigma.Q =sigma.Q, edge.trim = edge.trim)

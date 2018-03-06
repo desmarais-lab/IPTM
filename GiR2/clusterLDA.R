@@ -92,9 +92,9 @@ abline(0,1)
 
 ##########################maximal
 library(MCMCpack)
-alpha = 5
-alpha0 = 100
-alpha1 = 50
+alpha =1
+alpha0 = 1
+alpha1 = 1
 K = 4
 D = 10
 samp = 500
@@ -180,9 +180,9 @@ abline(0,1)
 ##################
 library(MCMCpack)
 alpha = 5
-alpha1 = 50
+alpha1 = 5
 K = 4
-D = 10
+D = 50
 samp = 500
 results = matrix(NA, nrow = samp, ncol = 2*K)
 for (s in 1:samp) {
@@ -193,7 +193,7 @@ nIP = 4
 m = rdirichlet(1, alpha1*rep(1/K, K))
 #mc = rdirichlet(nIP, alpha1*m)
 theta = t(sapply(1:D, function(d){rdirichlet(1, alpha*m)}))
-n.d =10
+n.d =50
 z = matrix(NA, D, n.d)
 for (d in 1:D) {
   hi = rmultinom(n.d, 1, theta[d,])
@@ -236,10 +236,10 @@ abline(0,1)
 #################
 #collapsed
 library(MCMCpack)
-alpha = 10
-alpha1 = 10
+alpha =5
+alpha1 = 5
 K = 4
-D = 10
+D = 100
 samp = 500
 results = matrix(NA, nrow = samp, ncol = 2*K)
 for (s in 1:samp) {
@@ -250,7 +250,7 @@ nIP = 2
 #m = rdirichlet(1, alpha1*rep(1/K, K))
 #mc = rdirichlet(nIP, alpha1*m)
 #theta = t(sapply(1:D, function(d){rdirichlet(1, alpha*m)}))
-n.d =10
+n.d =100
 z = matrix(NA, D, n.d)
 table.k = rep(0, K)
 table.dk = matrix(0, K, D)
@@ -292,9 +292,11 @@ results[s,] = cbind(table.k.null, table.k)
 #even in this simplified model (only topic being random variable) and started with the true topic assignments, 
 #we see that the topic assignments do not converges to true distribution
 }
-
-plot(sort(results[,1]), sort(results[,5]))
-abline(0,1)
+par(mfrow = c(1,4))
+for (i in 1:4){
+plot(sort(results[,i]), sort(results[,i+K]))
+abline(0,1)	
+}
 
 
 

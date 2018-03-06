@@ -3,16 +3,16 @@ library(FastGP)
 library(MCMCpack)
 library(LaplacesDemon)
 set.seed(526113322)
-nDocs = 10
+nDocs = 100
 node = 1:4
 vocab = c("hi", "hello", "fine", "bye", "what")
 
 nIP = 2
 K = 4
-n.d = 10
-alphas = c(100, 50, 10)
-beta = 500
-zeta = 10
+n.d = 100
+alphas = c(25, 25, 25)
+beta = 25
+zeta = 25
 #alphas = c(30,15,5)
 #beta = 30
 #zeta = 5
@@ -24,7 +24,7 @@ prior.b = list(rep(0.5, P), 0.5* diag(P))
 prior.delta = c(-5, 0.1)
 prior.eta = list(rep(2.5, length(node) + length(timestat)), 0.5*diag(length(node) +length(timestat)))
 prior.tau = 1
-sigma.Q = c(0.00001, 0.000001, 0.001, 0.005)
+sigma.Q = c(0.001, 0.0001, 0.01, 0.05)
 
 b = matrix(c(prior.b[[1]],prior.b[[1]]), nrow = nIP, byrow = TRUE)
 eta =  matrix(c(prior.eta[[1]],prior.eta[[1]]), nrow = nIP, byrow = TRUE)
@@ -40,7 +40,7 @@ base.data = GenerateDocs(500, node, vocab, nIP, K, n.d, alphas, beta, zeta, b, e
 
 Outer = 1
 Inner = c(1,1,1)
-Outer = 10
+Outer = 20
 Inner = c(5,5,5)
 Schein <- Schein(5000, nDocs, node, vocab, nIP, K, n.d, alphas, beta, zeta,
               prior.b, prior.delta, prior.eta, prior.tau, sigma.Q, Outer, Inner,

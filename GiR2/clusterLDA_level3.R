@@ -4,23 +4,23 @@ library(MCMCpack)
 ###########################################
 #maximal assumption which uses full counts#
 ###########################################
-alpha = 5               #document-level parameter
+alpha = 50              #document-level parameter
 alpha1 = 50			#cluster-level parameter
-alpha0 = 100			#corpus-level parameter
+alpha0 = 50			#corpus-level parameter
 
 K = 4
-D = 10
+D = 100
 
 #samp is the number of GiR samples 
-samp = 5000     #takes about a minute with 1000
+samp = 1000    #takes about a minute with 1000
 results = matrix(NA, nrow = samp, ncol = 2*K)
 for (s in 1:samp) {
-# alpha = 5              #document-level parameter
-# alpha1 = 5			#cluster-level parameter
-# alpha0 = 5			#corpus-level parameter
-alpha = 10               #document-level parameter
-alpha1 = 10			#cluster-level parameter
-alpha0 = 10			#corpus-level parameter
+# alpha = 5      #document-level parameter
+# alpha1 = 5	 #cluster-level parameter
+# alpha0 = 5	 #corpus-level parameter
+#alpha = 10               #document-level parameter
+#alpha1 = 10			#cluster-level parameter
+#alpha0 = 10			#corpus-level parameter
 
 alphas = c(alpha0, alpha1, alpha)
 
@@ -35,7 +35,7 @@ cd = sapply(1:D, function(d) which(rmultinom(1, 1, rep(1/nIP, nIP))==1))
 #theta = t(sapply(1:D, function(d){rdirichlet(1, alpha*mc[cd[d],])}))
 
 #collapsed cluster LDA generating process
-n.d = 10
+n.d = 100
 z = matrix(NA, D, n.d)
 table.k = rep(0, K)
 table.dk = matrix(0, K, D)
@@ -62,11 +62,11 @@ table.k.null = tabulate(z, K)
 #table.cd = sapply(1:nIP, function(IP) {tabulate(z[which(cd==IP),],K)})
 
 #inference on z using equation (15)---without word part that we ignored for simplified model
-for (i in 1:10){
-	alphas = slice(alphas, c(5,1,0.1), 5)
-	alpha0 = alphas[1]
-	alpha1 = alphas[2]
-	alpha = alphas[3]
+for (i in 1:1000){
+#	alphas = slice(alphas, c(5,2.5,1), 5)
+#	alpha0 = alphas[1]
+#	alpha1 = alphas[2]
+#	alpha = alphas[3]
 
   for (d in 1:D) {
     for (n in 1:n.d) {
@@ -157,7 +157,7 @@ table.k.null = tabulate(z, K)
 # for real data analysis, need to start from Z that is initialized using standard LDA 
 
 #inference on z using equation (15)---without word part that we ignored for simplified model
-for (i in 1:100){
+for (i in 1:10){
   for (d in 1:D) {
     for (n in 1:n.d) {
       #excluding \dn
@@ -197,6 +197,8 @@ head(results)
 
 
 slice = function(alphas, sigmas, S) {
+	alphas.left = rep(NA, length(alphas))
+	alphas.right = rep(NA, length(alphas))
 	for (s in 1:S) {
 		unew = runif(1, 0, f(alphas))
 		for (i in 1:length(alphas)) {
