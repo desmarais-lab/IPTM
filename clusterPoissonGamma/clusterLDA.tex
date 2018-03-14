@@ -1,0 +1,111 @@
+\title{Poisson Tucker Decomposition version of \\
+	the Interaction-pattern Partitioned Topic Model}
+%\author{
+%        Vitaly Surazhsky \\
+%                Department of Computer Science\\
+%        Technion---Israel Institute of Technology\\
+%        Technion City, Haifa 32000, \underline{Israel}
+%            \and
+%        Yossi Gil\\
+%        Department of Computer Science\\
+%        Technion---Israel Institute of Technology\\
+%        Technion City, Haifa 32000, \underline{Israel}
+%}
+\author{Bomin Kim}
+\date{\today}
+
+\documentclass[11pt]{article}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\begin{document}
+\maketitle
+
+%\begin{abstract}
+%This is the paper's abstract \ldots
+%\end{abstract}
+
+\section{Generative Process}
+To maintain single interaction pattern assignments (instead of admixture form which adds huge complexity in network history calculations), we assume an interaction-pattern distribution over $C$ unique interaction patterns
+\begin{equation}
+\boldsymbol{\psi}\sim \mbox{Dirichlet}\Big(\zeta, (\frac{1}{C},\ldots,\frac{1}{C})\Big),
+\end{equation}
+where $\zeta$ is the concentration parameter, and then each document $d \in [D]$ draws an interaction pattern $c_d$ as below:
+\begin{equation}
+c_d\sim \mbox{Multinomial}(\boldsymbol{\psi}).
+\end{equation}
+Next, we model the contents using Poisson Tucker Decomposition of Schein et al. (2016). First, each interaction pattern $c \in [C]$ has the IP-specific topic distribution
+\begin{equation}
+\theta_{ck} \sim \mbox{Gamma}(a_c,b_c),
+\end{equation}
+and each topic $k\in[K]$ has the topic-word distribution
+\begin{equation}
+\phi_{kv} \sim \mbox{Gamma}(\epsilon_0,\epsilon_0).
+\end{equation}
+Then, the number of tokens of type $v$ in document $d$ is
+\begin{equation}
+w_{dv} \sim \mbox{Poisson}(\sum_{k=1}^K \theta_{c_dk}\phi_{kv}),
+\end{equation}
+Therefore, $\boldsymbol{w}_d = (w_{d1},\ldots,w_{dV})$ is a very sparse vector with sum($\boldsymbol{w}_d$) = $N_d$. \\ \\
+For tie generating process, we use the current version of the IPTM. For every possible author--recipient pair $(a,r)_{a \neq r}$, we define the ``recipient intensity", which is the likelihood of document $d$ being sent from $a$ to $r$:
+\begin{equation}
+\lambda_{adr} = {\boldsymbol{b}_{c_d}}^{\top}\boldsymbol{x}_{adrc_d},
+\end{equation}
+where we place a Normal prior $\boldsymbol{b}_c \sim N(\boldsymbol{\mu}_b, \Sigma_b)$. Similarly, we hypothesize ``If $a$ were the author of document $d$, when would it be sent?" and define the ``timing rate" for author $i$
+\begin{equation}
+\mu_{ad} = g^{-1}(\boldsymbol{\eta}_{c_d}^\top \boldsymbol{w}_{adc_d}),
+\end{equation}
+ with a Normal prior $\boldsymbol{\eta}_c \sim N(\boldsymbol{\mu}_\eta,\Sigma_\eta)$. We then follow the generalized linear model framework:
+\begin{equation}
+\begin{aligned}
+E(\tau_{ad}) &= \mu_{ad},\\
+V(\tau_{ad}) &= V(\mu_{ad}).
+\end{aligned}
+\end{equation}
+\section{Derivation}
+We first derive the sampling equation of $\theta$ and $\phi$, respectively. 
+\begin{equation}
+\theta_{ck}| \mbox{rest} \sim \mbox{Gamma}(a_c + \boldsymbol{w}_{ck}, b_c + \sum_{d: c_d = c}\sum_{v=1}^V\phi_{kv}),
+\end{equation} 
+where $\boldsymbol{w}_{ck} = \sum\limits_{d:c_d=c} \sum_{v=1}^V w_{dkv}$ with $w_{dkv} \sim \mbox{Multinomial}(w_{dv}, \theta_{c_dk}\phi_{kv})$.
+\begin{equation}
+\phi_{kv}| \mbox{rest} \sim \mbox{Gamma}(\epsilon_0 + \boldsymbol{w}_{kv}, \epsilon_0 +\sum_{d=1}^D\theta_{c_dk} ),
+\end{equation} 
+where $\boldsymbol{w}_{kv} = \sum_{d=1}^D w_{dkv}$ with $w_{dkv} \sim \mbox{Multinomial}(w_{dv}, \theta_{c_dk}\phi_{kv})$.\\ \newline
+Since $u_{adr}$ is a binary random variable, new values may be sampled directly using
+\begin{equation}
+\begin{aligned}
+&P(u_{adr}=1| \boldsymbol{u}_{ad\backslash r}, \boldsymbol{c},\boldsymbol{b}, \delta, \boldsymbol{x})
+\propto \mbox{exp}\{\delta+\lambda_{adr}\};\\
+&P(u_{adr}=0| \boldsymbol{u}_{ad\backslash r}, \boldsymbol{c},\boldsymbol{b}, \delta, \boldsymbol{x})\propto \text{I}(\lVert\boldsymbol{u}_{ad\backslash r}\rVert_1 > 0 ),
+\end{aligned}
+\label{eqn:latentreceiver}
+\end{equation}
+where $I(\cdot)$ is the indicator function that is used to prevent from the instances where the author has no recipients to send the document. \\\newline
+New values for continuous variables $\delta, \boldsymbol{b},$ and $\boldsymbol{\eta}$ and $\sigma^2_\tau$ (if applicable) cannot be sampled directly from their conditional posteriors, but may instead be obtained using the Metropolis--Hastings algorithm. With uninformative priors (i.e., $N({0},\infty)$), the conditional posterior over $\delta$ and $\boldsymbol{b}$ is
+\begin{equation}
+\prod_{d=1}^D
+\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})},
+\end{equation}
+where the two variables share the conditional posterior and thus can be jointly sampled. Likewise, assuming uninformative priors on $\boldsymbol{\eta}$ (i.e., $N({0},\infty)$) and $\sigma_{\tau}^2$ (i.e., half-Cauchy($\infty$)), the conditional posterior is
+\begin{equation}
+\prod_{d=1}^D\Big(\varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2)\times \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\Big).
+\end{equation}
+Finally, for each document $d \in [D]$, we sample interaction-pattern assignment from the discrete distribution over $C$ interaction patterns using 
+\begin{equation}
+\begin{aligned}
+&P(c_d = c|\boldsymbol{\theta}, \zeta, \boldsymbol{u},\boldsymbol{a}, \boldsymbol{t})
+\\&\propto P(c_d=c|\boldsymbol{c}_{\backslash d}, \zeta) P(\boldsymbol{\theta}_c|a_c, b_c, \boldsymbol{w}, c_d=c, \boldsymbol{c}_{\backslash d}, \boldsymbol{\theta}_{\backslash c})\\&\times P( \boldsymbol{w}_d|c_d = c, \boldsymbol{\theta}_c, \boldsymbol{\phi})\\
+&\times P(a_d, t_d|c_d = c, \boldsymbol{\eta}, \sigma_\tau^2) P(\boldsymbol{u}|c_d=c, \boldsymbol{c}_{\backslash d}, \boldsymbol{b}, \delta) 
+\\&\propto (\hat N_{c, \backslash d}+\frac{\zeta}{C}) \\&
+\times \prod_{k=1}^K\mbox{dGamma}(\theta_{ck}; a_c + \boldsymbol{w}_{ck}, b_c +\sum\limits_{d:c_d=c} \sum_{v=1}^V\phi_{kv})\\&\times \prod_{v=1}^V \mbox{dPois}(w_{dv}; \sum_{k=1}^K \theta_{ck}\phi_{kv})\\&\times
+\varphi_{\tau}(\tau_{d}; \mu_{a_d d}, \sigma_\tau^2)\times \prod_{a\neq a_d}\big(1-\Phi_{\tau}(\tau_{d}; \mu_{a d}, \sigma_\tau^2) \big)\\& 
+\times
+\prod_{a=1}^A \frac{\exp\Big\{\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} (\delta+\lambda_{adr})u_{adr}\Big\}}{Z(\delta,\boldsymbol{\lambda}_{ad})}.\\
+\end{aligned}
+\end{equation}
+\end{document}

@@ -239,8 +239,8 @@ library(MCMCpack)
 alpha =5
 alpha1 = 5
 K = 4
-D = 100
-samp = 500
+D = 50
+samp = 1000
 results = matrix(NA, nrow = samp, ncol = 2*K)
 for (s in 1:samp) {
 #assume IP is fixed
@@ -250,7 +250,7 @@ nIP = 2
 #m = rdirichlet(1, alpha1*rep(1/K, K))
 #mc = rdirichlet(nIP, alpha1*m)
 #theta = t(sapply(1:D, function(d){rdirichlet(1, alpha*m)}))
-n.d =100
+n.d =50
 z = matrix(NA, D, n.d)
 table.k = rep(0, K)
 table.dk = matrix(0, K, D)
@@ -271,7 +271,7 @@ table.k = tabulate(z, K)
 table.dk = sapply(1:D, function(d) tabulate(z[d,], K))
 
 #inference on z using equation (15)---without word part that we ignored for simplified model
-for (i in 1:100){
+for (i in 1:500){
   for (d in 1:D) {
     for (n in 1:n.d) {
       #excluding \dn
