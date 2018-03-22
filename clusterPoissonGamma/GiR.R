@@ -1,12 +1,17 @@
 library(MCMCpack)
 
-generate = function(D, V, C, K, a_C, b_C, e, xi) {
-	 ksi = rdirichlet(1, xi*rep(1/C, C))
-	 cd = sapply(1:D, function(d) which(rmultinom(1, 1, ksi)==1))
-	#cd = sample(1:C, D, TRUE)
+generate = function(D, V, C, K, a_C, b, e, xi) {
+	 #psi = sapply(1:C, function(c) rgamma(1, gamma0/C, xi))
+	 #cd = sapply(1:D, function(d) which(rmultinom(1, 1, psi)==1))
+	 psi = rdirichlet(1, xi * rep(1/C, C))
+	 cd = sapply(1:D, function(d) which(rmultinom(1, 1, psi)==1))
+	 pi.dc = matrix(0, D, C)
+	 for (d in 1:D) {
+	 	pi.dc[d,cd[d]] = rgamma(1, a_C[cd[d]], b)
+	 }
 	theta.ck = matrix(NA, C, K)
 	for (c in 1:C) {
-		theta.ck[c,] = rgamma(K, a_C[c], b_C[c])
+		theta.ck[c,] = rgamma(K, e, e)
 	}
 	phi.kv = matrix(NA, K, V)
 	for (k in 1:K) {
@@ -15,98 +20,91 @@ generate = function(D, V, C, K, a_C, b_C, e, xi) {
 	W.dv = matrix(NA, D, V)
 	for (d in 1:D) {
 		for (v in 1:V) {
-			W.dv[d,v] = rpois(1, sum(theta.ck[cd[d],]*phi.kv[,v]))
+			W.dv[d,v] = rpois(1, pi.dc[d,]%*%theta.ck%*%phi.kv[,v])
 		}
 	}
-	return(list(W.dv = W.dv, cd = cd, theta.ck = theta.ck, phi.kv = phi.kv))
+	return(list(cd = cd, W.dv = W.dv, pi.dc = pi.dc, theta.ck = theta.ck, phi.kv = phi.kv))
 }	
 
-update = function(W.dv, cd, theta.ck, phi.kv, a_C, b_C, e, xi, niter) {
+update = function(cd, W.dv, pi.dc, theta.ck, phi.kv, a_C, b, e, xi, niter) {
 	D = nrow(W.dv)
 	V = ncol(W.dv)
 	C = nrow(theta.ck)
 	K = ncol(theta.ck)
 	for (n in 1:niter) {
-		alloc = allocate_naive(W.dv, cd, theta.ck, phi.kv)
+		alloc = allocate_naive(W.dv, pi.dc, theta.ck, phi.kv)
+		W.dc = alloc$W.dc
 		W.ck = alloc$W.ck
 		W.kv = alloc$W.kv
-		W.dk = alloc$W.dk
-		for (c in 1:C) {
-			theta.ck[c,] = rgamma(K, a_C[c] + W.ck[c,], b_C[c]+sum(cd==c)*rowSums(phi.kv))
-		}
-		theta.dk = t(sapply(1:D, function(d) {theta.ck[cd[d],]}))
-		for (k in 1:K) {
-			phi.kv[k,] = rgamma(V, e + W.kv[k,], e + colSums(theta.dk))
-		}
 		for (d in 1:D) {
-			W.ck[cd[d],] = W.ck[cd[d],] - W.dk[d,]
-			prior = log(tabulate(cd[-d], C)+ xi/C)
-			thetapart = sapply(1:C, function(c) {
-				cd[d] = c; 
-				W.ck[cd[d],] = W.ck[cd[d],]+W.dk[d,];
-				sum(sapply(1:C, function(c) {
-					sum(dgamma(theta.ck[c,], a_C[c] + W.ck[c,], b_C[c]+sum(cd==c)*rowSums(phi.kv), log = TRUE))}))
-				})	
-			Wpart = sapply(1:C, function(c) {sum(sapply(1:V, function(v) {dpois(W.dv[d,v], sum(theta.ck[c,]*phi.kv[,v]) , log = TRUE)}))	})
-			prob = prior+Wpart+thetapart
-			prob = exp(prob - max(prob))
-			if (sum(is.na(prob)) > 0) browser()
-			cd[d] = which(rmultinom(1, 1, prob)==1)
-			W.ck[cd[d],] = W.ck[cd[d],] + W.dk[d,]
+			pi.dc[d,cd[d]] = rgamma(1, a_C[cd[d]] + W.dc[d,cd[d]], b + theta.ck[cd[d],] %*% rowSums(phi.kv))
+			# if (sum(pi.dc[d,]) == 0) browser()
+			# prob = log(tabulate(cd[-d], C) + xi/C) + sapply(1:C, function(c) {
+				# dgamma(pi.dc[d,cd[d]], a_C[c] + W.dc[d,cd[d]], b + theta.ck[c,] %*% rowSums(phi.kv), log = TRUE)
+				# })
+			# cdnew = which(rmultinom(1, 1, exp(prob - max(prob)))==1)
+			# if (cdnew != cd[d]) {
+				# pi.dc[d, cdnew] = pi.dc[d, cd[d]]
+				# pi.dc[d, -cdnew] = 0
+				# cd[d] = cdnew
+			# }
+		}
+		theta.ck = matrix(rgamma(C*K, e + W.ck, e + outer(colSums(pi.dc),rowSums(phi.kv))), C, K)
+		for (v in 1:V) {
+			phi.kv[,v] = rgamma(K, e + W.kv[,v], e + colSums(pi.dc)%*%theta.ck)
 		}
 	}
-	return(list(W.dv = W.dv, cd = cd, theta.ck = theta.ck, phi.kv = phi.kv))
+	return(list(cd = cd, W.dv = W.dv, pi.dc = pi.dc, theta.ck = theta.ck, phi.kv = phi.kv))
 }
 
 
-allocate_naive = function(W.dv, cd, theta.ck, phi.kv) {
+allocate_naive = function(W.dv, pi.dc, theta.ck, phi.kv) {
 	D = nrow(W.dv)
 	V = ncol(W.dv)
 	C = nrow(theta.ck)
 	K = ncol(theta.ck)
-	W.dk = matrix(0, D, K)
+	W.dc = matrix(0, D, C)
 	W.ck = matrix(0, C, K)
 	W.kv = matrix(0, K, V)
 	for (d in 1:D) {
 		for (v in 1:V) {
 			if (W.dv[d,v] > 0) {
-				p.ck = theta.ck[cd[d],] * phi.kv[,v]
-				W.dvk = tabulate(sapply(1:W.dv[d,v], function(x) which(rmultinom(1, 1, p.ck)==1)), K)
-				W.dk[d, ] = W.dk[d, ] + W.dvk
-				W.ck[cd[d], ] = W.ck[cd[d], ] + W.dvk
-				W.kv[,v] = W.kv[,v] + W.dvk
+				p.ck = outer(pi.dc[d,], phi.kv[,v]) * theta.ck		
+				W.dvck = matrix(rmultinom(1, W.dv[d,v], p.ck), C, K)
+				W.dc[d, ] = W.dc[d, ] + rowSums(W.dvck)
+				W.ck = W.ck + W.dvck
+				W.kv[,v] = W.kv[,v] + colSums(W.dvck)
 			}
 		}
 	}	
-	return(list(W.dk = W.dk, W.ck = W.ck, W.kv = W.kv))
+	return(list(W.dc = W.dc, W.ck = W.ck, W.kv = W.kv))
 }
 
-D = 10
+D = 5
 V = 6
 C = 2
-K = 2
+K = 4
 e = 0.1
 xi = 5
 niter = 5
 alpha = 1
 beta = 0.01
 Schein = function(D, V, C, K, alpha, beta, e, xi, niter, nsamp) {
-	results = matrix(NA, nrow = nsamp, ncol = 10)
+	results = matrix(NA, nrow = nsamp, ncol = 14)
 	for (n in 1:nsamp) {
 		if (n %% 100 == 0) print(n)
 		a_C = rgamma(C, alpha, beta)
-		#a_C = rep(10, C)
-		b_C = rep(1, C)
-		forward = generate(D, V, C, K, a_C, b_C, e, xi)
-		backward = update(forward$W.dv, forward$cd, forward$theta.ck, forward$phi.kv, a_C, b_C, e, xi, niter)
-		results[n, 1:5] = c(mean(forward$cd), mean(c(forward$theta.ck)), var(c(forward$theta.ck)), mean(c(forward$phi.kv)), var(c(forward$phi.kv)))
-		results[n, 6:10] = c(mean(backward$cd), mean(c(backward$theta.ck)), var(c(backward$theta.ck)), mean(c(backward$phi.kv)), var(c(backward$phi.kv)))
+		b = 1
+		forward = generate(D, V, C, K, a_C, b, e, xi)
+		backward = update(forward$cd, forward$W.dv, forward$pi.dc, forward$theta.ck, forward$phi.kv, a_C, b, e, xi, niter)
+		results[n, 1:7] = c(mean(forward$cd), mean(c(forward$pi.dc)), var(c(forward$pi.dc)), mean(c(forward$theta.ck)), var(c(forward$theta.ck)), mean(c(forward$phi.kv)), var(c(forward$phi.kv)))
+		results[n, 8:14] = c(mean(backward$cd), mean(c(backward$pi.dc)), var(c(backward$pi.dc)), mean(c(backward$theta.ck)), var(c(backward$theta.ck)), mean(c(backward$phi.kv)), var(c(backward$phi.kv)))
 	}
-	Forward_stats = results[,1:5]
-	colnames(Forward_stats) = c("cd", "mean(theta)", "var(theta)", "mean(phi)", "var(phi)")
-	Backward_stats = results[,6:10]
+	Forward_stats = results[,1:7]
+	colnames(Forward_stats) = c("cd","mean(pi)", "var(pi)","mean(theta)", "var(theta)", "mean(phi)", "var(phi)")
+	Backward_stats = results[,8:14]
 	colnames(Backward_stats) = colnames(Forward_stats)
-	par(mfrow = c(2,3))
+	par(mfrow = c(2,4))
 	GiR_PP_Plots(Forward_stats, Backward_stats)
 	return(results)
 }
@@ -126,19 +124,6 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
     all = c(Backward_stats[, i], Forward_stats[, i])
     
     quantiles = 100
-    if (grepl("b_", nms[i]) ) {
-      quantiles = 1000
-    }
-    if (grepl("eta_", nms[i]) ) {
-      quantiles = 1000
-    }
-    if (grepl("delta", nms[i]) ) {
-      quantiles = 1000
-    }
-    if (grepl("sigma_tau", nms[i]) ) {
-      quantiles = 1000
-    }
-    
     uniqueValues = quantile(all,seq(0, 1, length = quantiles))
     qx1 = numeric(length(uniqueValues))
   	qx2 = numeric(length(uniqueValues))
@@ -179,4 +164,4 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
   }
 }      
 
-test = Schein(D, V, C, K, alpha, beta, e, xi, 5, 10000)
+test = Schein(D, V, C, K, alpha, beta, e, xi, 5, 20000)
