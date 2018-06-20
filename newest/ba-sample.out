@@ -1,0 +1,25 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Interaction-partitioned Topic Model}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Interaction Patterns}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Generative Process for Contents}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Generative Process for Network Dynamics}{section.2}% 5
+\BOOKMARK [3][-]{section*.1}{Candidate receivers}{subsection.2.3}% 6
+\BOOKMARK [3][-]{section*.2}{Candidate timestamps}{subsection.2.3}% 7
+\BOOKMARK [3][-]{section*.3}{Senders, receivers, and timestamps}{subsection.2.3}% 8
+\BOOKMARK [1][-]{section.3}{Posterior inference}{}% 9
+\BOOKMARK [2][-]{subsection.3.1}{Conditional posteriors}{section.3}% 10
+\BOOKMARK [3][-]{section*.5}{Candidate receivers}{subsection.3.1}% 11
+\BOOKMARK [3][-]{section*.6}{Coefficients for edge covariates}{subsection.3.1}% 12
+\BOOKMARK [3][-]{section*.7}{Coefficients for timestamp covariates}{subsection.3.1}% 13
+\BOOKMARK [1][-]{section.4}{Application to email data}{}% 14
+\BOOKMARK [2][-]{subsection.4.1}{Covariates}{section.4}% 15
+\BOOKMARK [3][-]{section*.8}{Edge covariates}{subsection.4.1}% 16
+\BOOKMARK [3][-]{section*.10}{Timestamp covariates}{subsection.4.1}% 17
+\BOOKMARK [2][-]{subsection.4.2}{Model selection}{section.4}% 18
+\BOOKMARK [2][-]{subsection.4.3}{Posterior predictive checks}{section.4}% 19
+\BOOKMARK [2][-]{subsection.4.4}{Exploratory analysis}{section.4}% 20
+\BOOKMARK [3][-]{section*.13}{Coefficients for edge covariates}{subsection.4.4}% 21
+\BOOKMARK [3][-]{section*.15}{Coefficients for timestamp covariates}{subsection.4.4}% 22
+\BOOKMARK [1][-]{section.5}{Conclusion}{}% 23
+\BOOKMARK [1][-]{section*.18}{Appendix}{}% 24
+\BOOKMARK [1][-]{section*.26}{References}{}% 25

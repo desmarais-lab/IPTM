@@ -1,0 +1,305 @@
+\begin{thebibliography}{41}
+\newcommand{\enquote}[1]{``#1''}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{{\tt #1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\ifx\endbibitem\undefined \let\endbibitem\relax\fi
+
+\bibitem[{Alem{\'a}n and Calvo(2013)}]{aleman2013explaining}
+Alem{\'a}n, E. and Calvo, E. (2013).
+\newblock \enquote{Explaining policy ties in presidential congresses: A network
+  analysis of bill initiation data.}
+\newblock {\em Political Studies\/}, 61(2): 356--377.
+\endbibitem
+
+\bibitem[{ben Aaron et~al.(2017)ben Aaron, Denny, Desmarais, and
+  Wallach}]{ben2017transparency}
+ben Aaron, J., Denny, M., Desmarais, B., and Wallach, H. (2017).
+\newblock \enquote{Transparency by Conformity: A Field Experiment Evaluating
+  Openness in Local Governments.}
+\newblock {\em Public Administration Review\/}, 77(1): 68--77.
+\endbibitem
+
+\bibitem[{Blei et~al.(2003)Blei, Ng, and Jordan}]{Blei2003}
+Blei, D.~M., Ng, A.~Y., and Jordan, M.~I. (2003).
+\newblock \enquote{Latent Dirichlet Allocation.}
+\newblock {\em J. Mach. Learn. Res.\/}, 3: 993--1022.
+\endbibitem
+
+\bibitem[{Bratton and Rouse(2011)}]{bratton2011networks}
+Bratton, K.~A. and Rouse, S.~M. (2011).
+\newblock \enquote{Networks in the legislative arena: How group dynamics affect
+  cosponsorship.}
+\newblock {\em Legislative Studies Quarterly\/}, 36(3): 423--460.
+\endbibitem
+
+\bibitem[{Burgess et~al.(2004)Burgess, Jackson, and Edwards}]{burgess2004email}
+Burgess, A., Jackson, T., and Edwards, J. (2004).
+\newblock \enquote{Email overload: Tolerance levels of employees within the
+  workplace.}
+\newblock In {\em Innovations Through Information Technology: 2004 Information
+  Resources Management Association International Conference, New Orleans,
+  Louisiana, USA, May 23-26, 2004\/}, volume~1, 205. IGI Global.
+\endbibitem
+
+\bibitem[{Butts(2008)}]{Butts2008}
+Butts, C.~T. (2008).
+\newblock \enquote{A RELATIONAL EVENT FRAMEWORK FOR SOCIAL ACTION.}
+\newblock {\em Sociological Methodology\/}, 38(1): 155--200.
+\endbibitem
+
+\bibitem[{Camber~Warren(2010)}]{camber2010geometry}
+Camber~Warren, T. (2010).
+\newblock \enquote{The geometry of security: Modeling interstate alliances as
+  evolving networks.}
+\newblock {\em Journal of Peace Research\/}, 47(6): 697--709.
+\endbibitem
+
+\bibitem[{Chatterjee et~al.(2013)Chatterjee, Diaconis
+  et~al.}]{chatterjee2013estimating}
+Chatterjee, S., Diaconis, P., et~al. (2013).
+\newblock \enquote{Estimating and understanding exponential random graph
+  models.}
+\newblock {\em The Annals of Statistics\/}, 41(5): 2428--2461.
+\endbibitem
+
+\bibitem[{Cranmer et~al.(2012{\natexlab{a}})Cranmer, Desmarais, and
+  Kirkland}]{cranmer2012toward}
+Cranmer, S.~J., Desmarais, B.~A., and Kirkland, J.~H. (2012{\natexlab{a}}).
+\newblock \enquote{Toward a network theory of alliance formation.}
+\newblock {\em International Interactions\/}, 38(3): 295--324.
+\endbibitem
+
+\bibitem[{Cranmer et~al.(2012{\natexlab{b}})Cranmer, Desmarais, and
+  Menninga}]{cranmer2012complex}
+Cranmer, S.~J., Desmarais, B.~A., and Menninga, E.~J. (2012{\natexlab{b}}).
+\newblock \enquote{Complex dependencies in the alliance network.}
+\newblock {\em Conflict Management and Peace Science\/}, 29(3): 279--313.
+\endbibitem
+
+\bibitem[{Dai et~al.(2013)Dai, Ding, Wahba et~al.}]{dai2013multivariate}
+Dai, B., Ding, S., Wahba, G., et~al. (2013).
+\newblock \enquote{Multivariate bernoulli distribution.}
+\newblock {\em Bernoulli\/}, 19(4): 1465--1483.
+\endbibitem
+
+\bibitem[{Desmarais and Cranmer(2017)}]{desmarais2017statistical}
+Desmarais, B.~A. and Cranmer, S.~J. (2017).
+\newblock \enquote{Statistical Inference in Political Networks Research.}
+\newblock In Victor, J.~N., Montgomery, A.~H., and Lubell, M. (eds.), {\em The
+  Oxford Handbook of Political Networks\/}. Oxford University Press.
+\endbibitem
+
+\bibitem[{Fahmy and Young(2016)}]{fahmy2016gender}
+Fahmy, C. and Young, J.~T. (2016).
+\newblock \enquote{Gender Inequality and Knowledge Production in Criminology
+  and Criminal Justice.}
+\newblock {\em Journal of Criminal Justice Education\/}, 1--21.
+\endbibitem
+
+\bibitem[{Fellows and Handcock(2017)}]{fellows2017removing}
+Fellows, I. and Handcock, M. (2017).
+\newblock \enquote{Removing Phase Transitions from Gibbs Measures.}
+\newblock In {\em Artificial Intelligence and Statistics\/}, 289--297.
+\endbibitem
+
+\bibitem[{Geweke(2004)}]{geweke2004getting}
+Geweke, J. (2004).
+\newblock \enquote{Getting it right: Joint distribution tests of posterior
+  simulators.}
+\newblock {\em Journal of the American Statistical Association\/}, 99(467):
+  799--804.
+\endbibitem
+
+\bibitem[{Geweke et~al.(1991)}]{geweke1991evaluating}
+Geweke, J. et~al. (1991).
+\newblock {\em Evaluating the accuracy of sampling-based approaches to the
+  calculation of posterior moments\/}, volume 196.
+\newblock Federal Reserve Bank of Minneapolis, Research Department Minneapolis,
+  MN, USA.
+\endbibitem
+
+\bibitem[{Hunter et~al.(2008)Hunter, Handcock, Butts, Goodreau, and
+  Morris}]{hunter2008ergm}
+Hunter, D.~R., Handcock, M.~S., Butts, C.~T., Goodreau, S.~M., and Morris, M.
+  (2008).
+\newblock \enquote{ergm: A package to fit, simulate and diagnose
+  exponential-family models for networks.}
+\newblock {\em Journal of statistical software\/}, 24(3): nihpa54860.
+\endbibitem
+
+\bibitem[{Hyndman and Koehler(2006)}]{hyndman2006another}
+Hyndman, R.~J. and Koehler, A.~B. (2006).
+\newblock \enquote{Another look at measures of forecast accuracy.}
+\newblock {\em International journal of forecasting\/}, 22(4): 679--688.
+\endbibitem
+
+\bibitem[{Kanungo and Jain(2008)}]{kanungo2008modeling}
+Kanungo, S. and Jain, V. (2008).
+\newblock \enquote{Modeling email use: a case of email system transition.}
+\newblock {\em System Dynamics Review\/}, 24(3): 299--319.
+\endbibitem
+
+\bibitem[{Kinne(2016)}]{kinne2016agreeing}
+Kinne, B.~J. (2016).
+\newblock \enquote{Agreeing to arm: Bilateral weapons agreements and the global
+  arms trade.}
+\newblock {\em Journal of Peace Research\/}, 53(3): 359--377.
+\endbibitem
+
+\bibitem[{Krafft et~al.(2012)Krafft, Moore, Desmarais, and
+  Wallach}]{Krafft2012}
+Krafft, P., Moore, J., Desmarais, B., and Wallach, H.~M. (2012).
+\newblock \enquote{Topic-Partitioned Multinetwork Embeddings.}
+\newblock In Pereira, F., Burges, C., Bottou, L., and Weinberger, K. (eds.),
+  {\em Advances in Neural Information Processing Systems 25\/}, 2807--2815.
+  Curran Associates, Inc.
+\endbibitem
+
+\bibitem[{Kronegger et~al.(2011)Kronegger, Mali, Ferligoj, and
+  Doreian}]{kronegger2011collaboration}
+Kronegger, L., Mali, F., Ferligoj, A., and Doreian, P. (2011).
+\newblock \enquote{Collaboration structures in Slovenian scientific
+  communities.}
+\newblock {\em Scientometrics\/}, 90(2): 631--647.
+\endbibitem
+
+\bibitem[{Lai et~al.(2017)Lai, She, and Tao}]{lai2017connecting}
+Lai, C.-H., She, B., and Tao, C.-C. (2017).
+\newblock \enquote{Connecting the dots: A longitudinal observation of relief
+  organizations' representational networks on social media.}
+\newblock {\em Computers in Human Behavior\/}, 74: 224--234.
+\endbibitem
+
+\bibitem[{Liang(2015)}]{liang2015changing}
+Liang, X. (2015).
+\newblock \enquote{The Changing Impact of Geographic Distance: A Preliminary
+  Analysis on the Co-author Networks in Scientometrics (1983-2013).}
+\newblock In {\em System Sciences (HICSS), 2015 48th Hawaii International
+  Conference on\/}, 722--731. IEEE.
+\endbibitem
+
+\bibitem[{Lim et~al.(2013)Lim, Chen, and Buntine}]{lim2013twitter}
+Lim, K.~W., Chen, C., and Buntine, W. (2013).
+\newblock \enquote{Twitter-Network Topic Model: A Full Bayesian Treatment for
+  Social Network and Text Modeling.}
+\newblock In {\em NIPS2013 Topic Model workshop\/}, 1--5.
+\endbibitem
+
+\bibitem[{McCallum et~al.(2005)McCallum, Corrada-Emmanuel, and
+  Wang}]{mccallum2005author}
+McCallum, A., Corrada-Emmanuel, A., and Wang, X. (2005).
+\newblock \enquote{The Author-Recipient-Topic Model for Topic and Role
+  Discovery in Social Networks, with Application to Enron and Academic Email.}
+\newblock In {\em Workshop on Link Analysis, Counterterrorism and Security\/},
+  33.
+\endbibitem
+
+\bibitem[{Neal and Kypraios(2015)}]{neal2015exact}
+Neal, P. and Kypraios, T. (2015).
+\newblock \enquote{Exact Bayesian inference via data augmentation.}
+\newblock {\em Statistics and Computing\/}, 25(2): 333--347.
+\endbibitem
+
+\bibitem[{Nelder and Baker(1972)}]{nelder1972generalized}
+Nelder, J.~A. and Baker, R.~J. (1972).
+\newblock {\em Generalized linear models\/}.
+\newblock Wiley Online Library.
+\endbibitem
+
+\bibitem[{Peng et~al.(2016)Peng, Liu, Wu, and Liu}]{peng2016follower}
+Peng, T.-Q., Liu, M., Wu, Y., and Liu, S. (2016).
+\newblock \enquote{Follower-followee network, communication networks, and vote
+  agreement of the US members of congress.}
+\newblock {\em Communication Research\/}, 43(7): 996--1024.
+\endbibitem
+
+\bibitem[{Perry and Wolfe(2013)}]{PerryWolfe2012}
+Perry, P.~O. and Wolfe, P.~J. (2013).
+\newblock \enquote{Point process modelling for directed interaction networks.}
+\newblock {\em Journal of the Royal Statistical Society: Series B (Statistical
+  Methodology)\/}, 75(5): 821--849.
+\endbibitem
+
+\bibitem[{Pew(2016)}]{pew2016}
+Pew, R.~C. (2016).
+\newblock \enquote{Social Media Fact Sheet.}
+\newblock {\em Accessed on 03/07/17\/}.
+\endbibitem
+
+\bibitem[{Rao(2000)}]{rao2000applied}
+Rao, P. (2000).
+\newblock \enquote{Applied survival analysis: regression modeling of time to
+  event data.}
+\newblock {\em Journal of the American Statistical Association\/}, 95(450):
+  681--681.
+\endbibitem
+
+\bibitem[{Rizopoulos(2012)}]{rizopoulos2012joint}
+Rizopoulos, D. (2012).
+\newblock {\em Joint models for longitudinal and time-to-event data: With
+  applications in R\/}.
+\newblock CRC Press.
+\endbibitem
+
+\bibitem[{Robins et~al.(2007)Robins, Pattison, Kalish, and
+  Lusher}]{robins2007introduction}
+Robins, G., Pattison, P., Kalish, Y., and Lusher, D. (2007).
+\newblock \enquote{An introduction to exponential random graph (p*) models for
+  social networks.}
+\newblock {\em Social networks\/}, 29(2): 173--191.
+\endbibitem
+
+\bibitem[{Rubin et~al.(1984)}]{rubin1984bayesianly}
+Rubin, D.~B. et~al. (1984).
+\newblock \enquote{Bayesianly justifiable and relevant frequency calculations
+  for the applied statistician.}
+\newblock {\em The Annals of Statistics\/}, 12(4): 1151--1172.
+\endbibitem
+
+\bibitem[{Schein et~al.(2016)Schein, Zhou, Blei, and
+  Wallach}]{schein2016bayesian}
+Schein, A., Zhou, M., Blei, D.~M., and Wallach, H. (2016).
+\newblock \enquote{Bayesian poisson tucker decomposition for learning the
+  structure of international relations.}
+\newblock {\em arXiv preprint arXiv:1606.01855\/}.
+\endbibitem
+
+\bibitem[{Snijders et~al.(2007)Snijders, Steglich, and
+  Schweinberger}]{snijders2007modeling}
+Snijders, T., Steglich, C., and Schweinberger, M. (2007).
+\newblock {\em Modeling the coevolution of networks and behavior\/}.
+\newblock na.
+\endbibitem
+
+\bibitem[{Snijders(1996)}]{snijders1996stochastic}
+Snijders, T.~A. (1996).
+\newblock \enquote{Stochastic actor-oriented models for network change.}
+\newblock {\em Journal of mathematical sociology\/}, 21(1-2): 149--172.
+\endbibitem
+
+\bibitem[{Sz{\'o}stek(2011)}]{szostek2011dealing}
+Sz{\'o}stek, A.~M. (2011).
+\newblock \enquote{?Dealing with My Emails?: Latent user needs in email
+  management.}
+\newblock {\em Computers in Human Behavior\/}, 27(2): 723--729.
+\endbibitem
+
+\bibitem[{Tanner and Wong(1987)}]{tanner1987calculation}
+Tanner, M.~A. and Wong, W.~H. (1987).
+\newblock \enquote{The calculation of posterior distributions by data
+  augmentation.}
+\newblock {\em Journal of the American statistical Association\/}, 82(398):
+  528--540.
+\endbibitem
+
+\bibitem[{Yoon and Park(2014)}]{yoon2014strategies}
+Yoon, H.~Y. and Park, H.~W. (2014).
+\newblock \enquote{Strategies affecting Twitter-based networking pattern of
+  South Korean politicians: social network analysis and exponential random
+  graph model.}
+\newblock {\em Quality \& Quantity\/}, 1--15.
+\endbibitem
+
+\end{thebibliography}

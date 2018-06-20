@@ -34,6 +34,7 @@
 
 \section{Generative Process}
 To maintain single interaction pattern assignments (instead of admixture form which adds huge complexity in network history calculations), we assume each document $d \in [D]$ draws an interaction pattern $c_d$ as below:
+\iffalse
 \begin{equation}
 c_d\sim \mbox{Multinomial}(\boldsymbol{\psi}),
 \end{equation}
@@ -42,6 +43,7 @@ where
 \psi \sim \mbox{Dirichlet}\Big(\xi, (\frac{1}{C},\ldots,\frac{1}{C})\Big).
 \end{equation}
 Alternatively, following degree-corrected GPIRM we can use
+\fi
 \begin{equation}
 c_d\sim \mbox{Multinomial}(\frac{\psi_1}{\sum_c \psi_c},\ldots,\frac{\psi_C}{\sum_c \psi_c}),
 \end{equation}
@@ -49,17 +51,13 @@ where
 \begin{equation}
 \psi_c\sim \Gamma(\frac{\gamma_0}{C}, \xi).
 \end{equation}
-Next, we model the contents using Poisson Tucker Decomposition of Schein et al. (2016). First, each document $d \in [D]$
+Next, we model the contents using Poisson Tucker Decomposition of Schein et al. (2016). First, each document $d \in [D]$ has Gamma weights
 \begin{equation}
-\pi_{dc}=
-\begin{cases}
- \sim \Gamma(a_c, b)&\mbox{ if } c_d = c\\
- 0&\mbox{ if } c_d \neq c
-\end{cases}
+\pi_{d}\sim \Gamma(a, b).
 \end{equation}
-\textcolor{red}{Q: If we want this positive real numbers instead of indicator (such as degree-corrected GPIRM). Is this how you did? If so, how to derive
-	the conditionals for Gibbs sampling of $c_d$? If not, how to specify the prior for $\pi_{dc}$ so as to achieve/enforce single membership constraints? }\\\newline
-Then, each interaction pattern $c \in [C]$ has the IP-specific topic distribution
+%\textcolor{red}{Q: If we want this positive real numbers instead of indicator (such as degree-corrected GPIRM). Is this how you did? If so, how to derive
+%	the conditionals for Gibbs sampling of $c_d$? If not, how to specify the prior for $\pi_{dc}$ so as to achieve/enforce single membership constraints? }\\\newline
+Next, each interaction pattern $c \in [C]$ has the IP-specific topic distribution
 \begin{equation}
 \theta_{ck} \sim  \Gamma(\epsilon_0,\epsilon_0),
 \end{equation}
@@ -69,15 +67,15 @@ and each topic $k\in[K]$ has the topic-word distribution
 \end{equation}
 Then, the number of tokens of type $v$ in document $d$ is
 \begin{equation}
-w_{dv} \sim \mbox{Poisson}(\sum_{c=1}^C \sum_{k=1}^K \pi_{dc}\theta_{ck}\phi_{kv}),
+w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{c=1}^C \sum_{k=1}^K I_{dc} \theta_{ck}\phi_{kv}),
 \end{equation}
-which is identical to $w_{dv} \sim \mbox{Poisson}(\pi_{dc_d}\sum_{k=1}^K \theta_{c_dk}\phi_{kv})$. Also note that $\boldsymbol{w}_d = (w_{d1},\ldots,w_{dV})$ is a very sparse vector with sum($\boldsymbol{w}_d$) = $N_d$. 
+where $I_{dc}$ is an indicator for $I(c=c_d)$. Note that Equation (6) above is identical to $w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{k=1}^K \theta_{c_dk}\phi_{kv})$. Also note that $\boldsymbol{w}_d = (w_{d1},\ldots,w_{dV})$ is a very sparse vector with sum($\boldsymbol{w}_d$) = $N_d$. 
 
 \section{Derivation}
 We first derive the sampling equation of $\pi$, $\theta$ and $\phi$, respectively. 
-First, for $c = c_d$, we update $\pi_{dc}$ as below.
+First, we update $\pi_{d}$ as below.
 \begin{equation}
-\pi_{dc}| \mbox{rest} \sim \mbox{Gamma}(a_c + \boldsymbol{w}_{dc}, b + \sum_{v=1}^V\theta_{ck}\phi_{kv}),
+\pi_{d}| \mbox{rest} \sim \mbox{Gamma}(a + \boldsymbol{w}_{dc}, b + \sum_{v=1}^V\theta_{ck}\phi_{kv}),
 \end{equation} 
 where $\boldsymbol{w}_{dc} = \sum_{k=1}^K\sum_{v=1}^V w_{dvck}$ with $w_{dvck} \sim \mbox{Multinomial}(w_{dv}, \pi_{dc}\theta_{ck}\phi_{kv})$.
 \begin{equation}
