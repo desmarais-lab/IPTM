@@ -31,12 +31,5 @@
 \backcite {schein2016bayesian}{{3}{2.2}{subsection.2.2}}
 \backcite {nelder1972generalized}{{5}{2.3}{equation.2.9}}
 \backcite {snijders1996stochastic}{{5}{2.3}{section*.3}}
-\backcite {tanner1987calculation}{{7}{3.1}{section*.4}}
-\backcite {neal2015exact}{{7}{3.1}{section*.4}}
-\backcite {ben2017transparency}{{8}{4}{section.4}}
-\backcite {PerryWolfe2012}{{9}{4.1}{section*.7}}
-\backcite {snijders1996stochastic}{{12}{4.2}{subsection.4.2}}
-\backcite {snijders2007modeling}{{12}{4.2}{subsection.4.2}}
-\backcite {hyndman2006another}{{13}{2}{Hfootnote.2}}
-\backcite {rubin1984bayesianly}{{14}{4.3}{subsection.4.3}}
-\backcite {geweke1991evaluating}{{16}{4.4}{subsection.4.4}}
+\backcite {tanner1987calculation}{{7}{3}{section*.6}}
+\backcite {neal2015exact}{{7}{3}{section*.6}}

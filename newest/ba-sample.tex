@@ -143,7 +143,7 @@ w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{c=1}^C \sum_{k=1}^K I_{dc} \theta_{ck}\p
 \end{equation}
 where $I_{dc}$ is an indicator for $I(c=c_d)$. Note that Equation (2.6) above is identical to $w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{k=1}^K \theta_{c_dk}\phi_{kv})$. Also note that $\boldsymbol{w}_d = (w_{d1},\ldots,w_{dV})$ is a very sparse vector with $\sum(\boldsymbol{w}_d) = N_d$, where $N_d$ denotes the total number of words in a document. ~\looseness=-1
 \subsection{Generative Process for Network Dynamics}\label{subsec:Tie generating process}	
-The generative process for network portion of the documents---the senders, receivers, and timestamps---exactly follows that of the hyperedge event model (HEM), except that now we consider the interaction pattern assignments of the documents.
+The generative process for network portion of the documents---the senders, receivers, and timestamps---exactly follows that of the hyperedge event model (HEM), except that now we consider the interaction pattern assignments of the documents in order to understand the differences in network dynamics across the interaction patterns.
 While the HEM can be applied for two types of hyperedges---edges with (1) one sender and one or more receivers, and (2) one or more senders and one receiver---here we only present the generative process for those involving one sender and one or more receivers, considering our email applications. %One notable feature of the IPTM generative process is that we draw auxiliary variables that serve as candidate data. Data is generated from the IPTM through a sampling process applied to the auxiliary variables. The auxiliary variables drawn for document $d$ include, for each sender $a$, a time increment from document $d-1$ at which sender $a$ would send document $d$, and an $A-1$ length vector indicating which nodes would receive document $d$ if it were sent by sender $a$.  The data generated for document $d$ under the IPTM corresponds to the sender that would send document $d$ the soonest---at the smallest time increment from document $d-1$. The receivers of document $d$ generated under the IPTM correspond to those receivers to which the sender with the minimum time increment would have sent document $d$. We explain these steps in more detail below. 
 ~\looseness=-1
 \subsubsection{Candidate receivers}\label{subsubsec: Tie}
@@ -194,6 +194,7 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 		\end{aligned}
 	\end{equation}
 ~\looseness=-1
+
 		Therefore, it is a sender-driven process in that the receivers and timestamps of a document are jointly determined by the sender's urgency to send the document to the selected receivers. Note that our generative process accounts for tied events such that in case of tied documents---i.e., multiple senders draw exactly the same candidate timestamps---we assume that all documents are generated and occur simultaneously. Algorithm \ref{alg:generative} provides a summary on Section \ref{sec:generative process}, which presents the entire generative process for documents given the corpus-wide global variables.
 	\begin{algorithm}[!t]
 		\spacingset{1}
@@ -235,26 +236,40 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 	\newpage
 	\section{Posterior inference}\label{sec:inference}
 	In this section we describe how we invert the generative process to obtain the posterior distribution over the latent variables---interaction pattern assignments $\{c_d\}_{d=1}^D$, topic-word factors $\{\{\phi_{kv}\}_{v=1}^V\}_{k=1}^K$, interaction pattern-topic factors $\{\{\theta_{ck}\}_{k=1}^K\}_{c=1}^C$, document-specific factors $\{\pi_{d}\}_{d=1}^D$, candidate receivers $\{\boldsymbol{u}_d\}_{d=1}^D$, coefficients for receiver selection features $\{\boldsymbol{b}_c\}_{c=1}^C$, and coefficients for event timing features $\{\boldsymbol{\eta}_c\}_{c=1}^C$---conditioned on the observed data $\{(s_d, \boldsymbol{r}_d, t_d, \boldsymbol{w}_d)\}_{d=1}^D$, covariates $\{(\boldsymbol{x}_d, \boldsymbol{y}_d)\}_{d=1}^D$, and hyperparamters $(\boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, \gamma_0, \xi, \epsilon_0)$. We draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each latent variable from its conditional posterior via a Metropolis-within-Gibbs sampling algorithm. In the next subsection, we provide each latent variable's conditional posterior along with pseudocode of MCMC in Algorithm \ref{alg:MCMC}.
-	
-	\subsection{Conditional posteriors}\label{subsec:conditionaldist}
+		\subsubsection{Interaction pattern factors and assignments}
+				\subsubsection{Content related factors}
+%	\subsection{Conditional posteriors}\label{subsec:conditionaldist}
 	\subsubsection{Candidate receivers}
-	In the HEM, direct computation of the posterior densities for the latent variables $\boldsymbol{b}$ and $\boldsymbol{\eta}$---i.e., $P(\boldsymbol{b}|\boldsymbol{x},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})$ and $P(\boldsymbol{\eta}|\boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})$---is not possible. However, it is possible to augment the data by candidate receivers $\boldsymbol{u}$ such that we can obtain their conditional posterior by collapsing the known distributions---$P(\boldsymbol{b}, \boldsymbol{u}|\boldsymbol{x},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})$ and $P(\boldsymbol{\eta}, \boldsymbol{u}| \boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})$---through integrating out $\boldsymbol{u}$. We adapt this common tool in Bayesian statistics called ``data augmentation" \citep{tanner1987calculation,neal2015exact}. Since $u_{adr}$ is a binary random variable, its new value may be sampled directly from a multinomial distribution with probabilities
-	\begin{equation}
-		\begin{aligned}
-			&\Pr(u_{adr}=1| \boldsymbol{u}_{ad\backslash r}, \boldsymbol{b}, \boldsymbol{x},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})
-			\propto \mbox{exp}(\lambda_{adr});\\
-			&\Pr(u_{adr}=0| \boldsymbol{u}_{ad\backslash r},\boldsymbol{b}, \boldsymbol{x},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})\propto \text{I}(\lVert\boldsymbol{u}_{ad\backslash r}\rVert_1 > 0 ),
+	In the IPTM, direct computation of the posterior densities for the latent variables $\boldsymbol{b}$ and $\boldsymbol{\eta}$---i.e., $P(\boldsymbol{b}|\boldsymbol{x},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$ and $P(\boldsymbol{\eta}|\boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$---is not possible. However, it is possible to augment the data by candidate receivers $\boldsymbol{u}$ such that we can obtain their conditional posterior by collapsing the known distributions---$P(\boldsymbol{b}, \boldsymbol{u}|\boldsymbol{x},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$ and $P(\boldsymbol{\eta}, \boldsymbol{u}| \boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$---through integrating out $\boldsymbol{u}$. We adapt this common tool in Bayesian statistics called ``data augmentation" \citep{tanner1987calculation,neal2015exact}. Since $u_{idj}$ is a binary random variable, it may be sampled from a Bernoulli distribution with probability $p_{idj} =\frac{\exp(\lambda_{idj})}{\exp(\lambda_{idj})+\text{I}(\lVert\boldsymbol{u}_{id\backslash j}\rVert_1 > 0 )}$, since
+		\begin{equation}
+				\begin{aligned}
+			&\Pr(u_{idj}=1| \,\boldsymbol{u}_{id\backslash j}, \boldsymbol{b}, \boldsymbol{x},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c}) \propto \exp(\lambda_{idj}) \\
+			&\Pr(u_{idj}=0|\, \boldsymbol{u}_{id\backslash j},\boldsymbol{b}, \boldsymbol{x},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})\propto \text{I}(\lVert\boldsymbol{u}_{id\backslash j}\rVert_1 > 0 ),
 		\end{aligned}
 		\label{eqn:latentreceiver}
 	\end{equation}
-	where $I(\cdot)$ is the indicator function that is used to prevent from the instances where a sender chooses zero number of receivers. 
-	\subsubsection{Coefficients for edge covariates}
-	Unlike the candidate receivers above, new values for $\boldsymbol{b}$ cannot be sampled directly from its conditional posterior, but may instead be obtained using the Metropolis--Hastings (M-H) algorithm. Assuming an uninformative prior (i.e., $N({0},\infty)$), the conditional posterior over $\boldsymbol{b}$ is
+	where the subscript ``$\backslash j$'' denotes a quantity excluding data from position $j$ and $\text{I}(\cdot)$ is the indicator function that prevents empty receiver sets. 
+	\subsubsection{Coefficients for receiver selection features}
+	Unlike the candidate receivers above, the conditional posterior for $\boldsymbol{b}=\{\boldsymbol{b}_c\}_{c=1}^C$ does not have a closed form; however each vector $\boldsymbol{b}_c$ may instead be re-sampled using the Metropolis--Hastings (MH) algorithm. Assuming an uninformative prior (i.e., $N({0},\infty)$), the conditional posterior for $\boldsymbol{b}_c$ is proportional to~\looseness=-1
 	\begin{equation}
-		\Pr(\boldsymbol{b}| \boldsymbol{u}, \boldsymbol{x}, \boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})\propto \prod_{d=1}^D
-		\prod_{a=1}^A \frac{1}{Z(\boldsymbol{\lambda}_{ad})}\exp\Big(\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0)\big) + \sum\limits_{r \neq a} \lambda_{adr}u_{adr}\Big).
+		\Pr(\boldsymbol{b}_c| \,\boldsymbol{u}, \boldsymbol{x}, \boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})\propto \prod_{d:c_d=c}
+		\prod_{i=1}^A \frac{1}{Z(\boldsymbol{\lambda}_{id})}\exp\Big(\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0)\big) + \sum\limits_{j \neq i} \lambda_{idj}u_{idj}\Big).
 		\label{eqn:latentedge}
 	\end{equation}
+	\subsubsection{Coefficients for event timing features}
+	Likewise, we use the MH algorithm to update the latent variable $\boldsymbol{\eta}=\{\boldsymbol{\eta}_c\}_{c=1}^C$. Assuming an uninformative prior for each $\boldsymbol{\eta}_c$ (i.e., $N({0},\infty)$), the conditional posterior for an untied event case is proportional to~\looseness=-1
+	\begin{equation}
+		\Pr(\boldsymbol{\eta}_c|\, \boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})\propto \prod_{d:c_d=c}\Big(f_{\tau}(\tau_{d}; \mu_{s_d d}, V(\mu))\times \prod_{i\neq s_d}\big(1-F_{\tau}(\tau_{d}; \mu_{id}, V(\mu)) \big)\Big),
+		\label{eqn:latenttime}
+	\end{equation}
+	where $f_{\tau}(\tau_{d}; \mu_{s_d d}, V(\mu))$ is the probability that the $d^{\textrm{th}}$ observed time increment comes from the specified distribution $f_\tau(\cdot)$ with the observed sender's mean $\mu_{s_d d}$, and $\prod_{i\neq s_d}\big(1-F_{\tau}(\tau_{d}; \mu_{id},V(\mu)) \big)$ is the probability that the rest of (unobserved) senders for document $d$ all draw time increments greater than $\tau_d$. Moreover, under the existence of tied events, the conditional posterior of $\boldsymbol{\eta}_c$ is written as proportional to
+	\begin{equation}
+		\begin{aligned}
+			\Pr(\boldsymbol{\eta}_c|\, \boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})&\propto \prod_{m=1}^M\Big(\prod_{d:t_d=t_m^*}f_{\tau}(t_m^*-t_{m-1}^*; \mu_{s_d d}, V(\mu)) \\&\times \prod_{i \notin \{s_d\}_{d:t_d=t_m^*}}\big(1-F_{\tau}(t_m^*-t_{m-1}^*; \mu_{id}, V(\mu)) \big)\Big),
+		\end{aligned}
+		\label{eqn:latenttime2}
+	\end{equation}
+	where $t_1^*,\ldots,t_M^*$ are the unique timepoints across $D$ documents ($M \leq E$). If $M=D$ (i.e., no tied events), equation (\ref{eqn:latenttime2}) reduces to equation (\ref{eqn:latenttime}). Note that when we have the latent variable to quantify the variance in time increments $V(\mu)$ (based on the choice of timestamp distribution in Section \ref{subsubsec:Time}), we also use equation (\ref{eqn:latenttime}) (or equation (\ref{eqn:latenttime2}) in case there exist tied events) for the additional MH update---e.g., $\Pr(k|\, \boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})$ for Weibull, $\Pr(\theta|\, \boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})$ for gamma, and  $\Pr(\sigma^2_\tau| \,\boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})$ for log-normal.~\looseness=-1	
 	\begin{algorithm}[!t]
 		\spacingset{1}
 		\SetAlgoLined
@@ -284,21 +299,7 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 		\end{algorithmic}
 		\label{alg:MCMC}
 	\end{algorithm}
-	\subsubsection{Coefficients for timestamp covariates}
-	Likewise, we use the M-H algorithm to update the latent variable $\boldsymbol{\eta}$. Assuming an uninformative prior $\boldsymbol{\eta}$ (i.e., $N({0},\infty)$), the conditional posterior for an untied event case is
-	\begin{equation}
-		\Pr(\boldsymbol{\eta}| \boldsymbol{u}, \boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})\propto \prod_{d=1}^D\Big(f_{\tau}(\tau_{d}; \mu_{a_d d}, V(\mu_{a_d d}))\times \prod_{a\neq a_d}\big(1-F_{\tau}(\tau_{d}; \mu_{a d}, V(\mu_{a_d d})) \big)\Big),
-		\label{eqn:latenttime}
-	\end{equation}
-	where $f_{\tau}(\tau_{d}; \mu_{a_d d}, V(\mu_{a_d d}))$ is the probability that the $d^{th}$ observed time increment comes from the specified distribution $f_\tau(\cdot)$ with the observed sender's mean $\mu_{a_d d}$, and $\prod_{a\neq a_d}\big(1-F_{\tau}(\tau_{d}; \mu_{a d},V(\mu_{a_d d})) \big)$ is the probability that the rest of (unobserved) senders for event $d$ all draw time increments greater than $\tau_d$. Moreover, under the existence of tied events, the conditional posterior of $\boldsymbol{\eta}$ is written as
-	\begin{equation}
-		\begin{aligned}
-			\Pr(\boldsymbol{\eta}| \boldsymbol{u}, \boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})&\propto \prod_{m=1}^M\Big(\prod_{d:t_d=t_m^*}f_{\tau}(t_m^*-t_{m-1}^*; \mu_{a_d d}, V(\mu_{a_d d})) \\&\times \prod_{a \notin \{a_d\}_{d:t_d=t_m^*}}\big(1-F_{\tau}(t_m^*-t_{m-1}^*; \mu_{a d}, V(\mu_{a_d d})) \big)\Big),
-		\end{aligned}
-		\label{eqn:latenttime2}
-	\end{equation}
-	where $t_1^*,\ldots,t_M^*$ are the unique timepoints across $D$ events ($M \leq D$). If $M=D$ (i.e., no tied events), equation (\ref{eqn:latenttime2}) reduces to equation (\ref{eqn:latenttime}). Note that when we have the latent variable to quantify the variance in time increments $V(\mu)$ (based on the choice of timestamp distribution in Section \ref{subsec:Time}), we also use equation (\ref{eqn:latenttime}) (or equation (\ref{eqn:latenttime2}) in case there exist tied events) for the additional M-H update---e.g., $\Pr(k| \boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})$ for Weibull, $\Pr(\theta| \boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})$ for gamma, and  $\Pr(\sigma^2_\tau| \boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t})$ for log-normal distribution.
-
+\iffalse
 	\section{Application to email data}\label{sec:Emails}
 	We now present a case study applying our method to Montgomery county government email data.
 	Our data come from the North Carolina county government email dataset collected by \cite{ben2017transparency} that includes internal email corpora covering the inboxes and outboxes of managerial-level employees of North Carolina county governments. Out of over twenty counties, we chose Montgomery County to 1) test our model using data with a large proportion of hyperedges (16.76\%), all of which are emails sent from one sender to two or more receivers, and 2) limit the scope of this initial application. The Montgomery County email network contains 680 emails, sent and received by 18 department managers over a period of 3 months (March--May) in 2012. For this case study,
@@ -515,7 +516,6 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 	Motivated by a growing class of dynamic network models which deal with edges exchanged in continuous time, the hyperedge event model (HEM) can effectively learn the underlying dynamics in edge and timestamp formations, providing novel insights to the literature. The HEM explicitly models hyperedges through a receiver-selection distribution that forces the sender to select at least one recevier, which is a more realistic approach for events with one sender and one or more receivers and one or more sender and one receiver compared to treating them as pure duplicates. In modeling the timestamps (more precisely time increments) of events, our generalized linear model (GLM) based formulation offers new innovations by eliminating the need to stick with one parameter distribution (e.g., exponential distribution). To our knowledge, the HEM is the only existing model that can be used to generate the sender, recipients, and time stamp of interactions in real time. To make better use of the proposed model, we provide an algorithm for predictive experiments that help to learn which specification of HEM provides a better fit to the data. 
 	
 	We have demonstrated the effectiveness of our model by analyzing Montgomery County government emails, where emails serve as a canonical example of directed edges with one sender and one or more receivers. The estimated effects for edge covariates reveal that the HEM is able to understand the structural dynamics similar to those used in the exponential random graph model (ERGM), but we also learn about the effects of timestamp covariates by integrating a survival model for event timing. Although we illustrate the entire framework and application in the context of one type of hyperedge, one sender and one or more receivers, our model can be easily extended to allow the opposite case, one or more sender and one receiver, by slight modification of the generative process (shown in Appendix A). This extension involves promising applications to socio-political networks such as international sanctions and co-sponsorship of bills, and biological networks such as those formed through neural dendrites. %Furthermore, while the model's applicability is limited to small-sized networks since we assume fixed set of nodes across entire timepoints, we can adjust the model to allow time-varying nodes or improve its computational efficiency such that the model is well applicable to large-scale networks. Considering the recent explosion of network dataset with huge number of nodes (e.g., online comnunications), the development of model adjustments for better applicability are the object of future work.
-	
 	\begin{acknowledgement}
 		This work was supported in part by the University of Massachusetts Amherst Center for Intelligent Information Retrieval and in part by National Science Foundation grants DGE-1144860, SES-1619644, and CISE-1320219. Any opinions, findings, and conclusions or recommendations are those of the authors and do not necessarily reflect those of the
 		sponsors.
@@ -614,7 +614,7 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 			\sdescription{Add description for supplement material.}
 		\end{supplement}
 		\fi
-		
+			\fi
 		\bibliographystyle{ba}
 	\bibliography{baIPTM}
 		

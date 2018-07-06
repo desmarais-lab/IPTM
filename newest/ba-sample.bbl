@@ -1,4 +1,4 @@
-\begin{thebibliography}{39}
+\begin{thebibliography}{36}
 \newcommand{\enquote}[1]{``#1''}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
@@ -90,14 +90,6 @@ Fahmy, C. and Young, J.~T. (2016).
 \newblock \enquote{Gender Inequality and Knowledge Production in Criminology
   and Criminal Justice.}
 \newblock {\em Journal of Criminal Justice Education\/}, 1--21.
-\endbibitem
-
-\bibitem[{Geweke(2004)}]{geweke2004getting}
-Geweke, J. (2004).
-\newblock \enquote{Getting it right: Joint distribution tests of posterior
-  simulators.}
-\newblock {\em Journal of the American Statistical Association\/}, 99(467):
-  799--804.
 \endbibitem
 
 \bibitem[{Geweke et~al.(1991)}]{geweke1991evaluating}
@@ -214,21 +206,6 @@ Perry, P.~O. and Wolfe, P.~J. (2013).
 Pew, R.~C. (2016).
 \newblock \enquote{Social Media Fact Sheet.}
 \newblock {\em Accessed on 03/07/17\/}.
-\endbibitem
-
-\bibitem[{Rao(2000)}]{rao2000applied}
-Rao, P. (2000).
-\newblock \enquote{Applied survival analysis: regression modeling of time to
-  event data.}
-\newblock {\em Journal of the American Statistical Association\/}, 95(450):
-  681--681.
-\endbibitem
-
-\bibitem[{Rizopoulos(2012)}]{rizopoulos2012joint}
-Rizopoulos, D. (2012).
-\newblock {\em Joint models for longitudinal and time-to-event data: With
-  applications in R\/}.
-\newblock CRC Press.
 \endbibitem
 
 \bibitem[{Robins et~al.(2007)Robins, Pattison, Kalish, and
