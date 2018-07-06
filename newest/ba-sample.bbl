@@ -1,4 +1,4 @@
-\begin{thebibliography}{41}
+\begin{thebibliography}{39}
 \newcommand{\enquote}[1]{``#1''}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
@@ -78,12 +78,6 @@ Cranmer, S.~J., Desmarais, B.~A., and Menninga, E.~J. (2012{\natexlab{b}}).
 \newblock {\em Conflict Management and Peace Science\/}, 29(3): 279--313.
 \endbibitem
 
-\bibitem[{Dai et~al.(2013)Dai, Ding, Wahba et~al.}]{dai2013multivariate}
-Dai, B., Ding, S., Wahba, G., et~al. (2013).
-\newblock \enquote{Multivariate bernoulli distribution.}
-\newblock {\em Bernoulli\/}, 19(4): 1465--1483.
-\endbibitem
-
 \bibitem[{Desmarais and Cranmer(2017)}]{desmarais2017statistical}
 Desmarais, B.~A. and Cranmer, S.~J. (2017).
 \newblock \enquote{Statistical Inference in Political Networks Research.}
@@ -96,12 +90,6 @@ Fahmy, C. and Young, J.~T. (2016).
 \newblock \enquote{Gender Inequality and Knowledge Production in Criminology
   and Criminal Justice.}
 \newblock {\em Journal of Criminal Justice Education\/}, 1--21.
-\endbibitem
-
-\bibitem[{Fellows and Handcock(2017)}]{fellows2017removing}
-Fellows, I. and Handcock, M. (2017).
-\newblock \enquote{Removing Phase Transitions from Gibbs Measures.}
-\newblock In {\em Artificial Intelligence and Statistics\/}, 289--297.
 \endbibitem
 
 \bibitem[{Geweke(2004)}]{geweke2004getting}

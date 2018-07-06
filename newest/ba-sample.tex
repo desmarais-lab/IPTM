@@ -100,145 +100,141 @@ document to an ``interaction pattern"---a generative process for contents and ti
 	\end{frontmatter}
 	
 	\section{Introduction}\label{sec:introduction}
-In recent decades, real-time digitized textual communication has developed into a ubiquitous form of social and professional interaction \citep{kanungo2008modeling, szostek2011dealing, burgess2004email, pew2016}. From the perspective of the computational social scientist, this has lead to a growing need for methods of modeling interactions that manifest as text exchanged in continuous time. A number of models that build upon topic modeling through Latent Dirichlet Allocation (LDA) \citep{Blei2003} to incorporate link data as well as textual content have been developed recently \citep{mccallum2005author,lim2013twitter,Krafft2012}. These models are innovative in their extensions that incorporate network tie information. However, none of the models that are currently available in the literature integrate the rich random-graph structure offered by state of the art models for network structure---such as the exponential random graph model (ERGM) \citep{robins2007introduction,chatterjee2013estimating,hunter2008ergm}. The ERGM is the canonical model for modeling the structure of a static network. It is flexible enough to specify a generative model that accounts for nearly any pattern of tie formation (e.g., reciprocity, clustering, popularity effects) \citep{desmarais2017statistical}. Several models have been developed that handle time-stamped ties in which tie formation is governed by structural dynamics similar to those used in ERGMs \citep{PerryWolfe2012,Butts2008,snijders1996stochastic}. We develop the interaction-partitioned topic model (IPTM) which simultaneously models the network structural patterns that govern time-stamped tie formation, and the content in the communications.
+In recent decades, real-time digitized textual communication has developed into a ubiquitous form of social and professional interaction \citep{kanungo2008modeling, szostek2011dealing, burgess2004email, pew2016}. From the perspective of the computational social scientist, this has lead to a growing need for methods of modeling interactions that manifest as text exchanged in continuous time. A number of models that build upon topic modeling through Latent Dirichlet Allocation (LDA) \citep{Blei2003} to incorporate link data as well as textual content have been developed recently \citep{mccallum2005author,lim2013twitter,Krafft2012}. These models are innovative in their extensions that incorporate network tie information. However, none of the models that are currently available in the literature integrate the rich random-graph structure offered by state of the art models for network structure---such as the exponential random graph model (ERGM) \citep{robins2007introduction,chatterjee2013estimating,hunter2008ergm}. The ERGM is the canonical model for modeling the structure of a static network. It is flexible enough to specify a generative model that accounts for nearly any pattern of tie formation (e.g., reciprocity, clustering, popularity effects) \citep{desmarais2017statistical}. Several models have been developed that handle time-stamped ties in which tie formation is governed by structural dynamics similar to those used in ERGMs \citep{PerryWolfe2012,Butts2008,snijders1996stochastic}. We develop the interaction-partitioned topic model (IPTM) which simultaneously models the network structural patterns that govern time-stamped tie formation, and the content in the communications.~\looseness=-1
 
-The models on which we build, including the relational event model \citep{Butts2008}, the point process model \citep{PerryWolfe2012}, and most closely the hyperedge event model (HEM), provide frameworks for explaining or predicting ties between nodes using the network sub-structures in which the two nodes are embedded (e.g., predict a tie is highly likely to form between two nodes if those two nodes have many shared partners). Models based on network structure have been used for many applications in which the ties between nodes are annotated with text. The text, despite providing rich information regarding the strength, scope, and character of the ties, has been largely excluded from these analyses, due to the inability of these network models to incorporate textual attributes of ties. These application domains include, among other applicaitons, the study of legislative networks in which networks reflect legislators' co-support of bills, but exclude bill text \citep{bratton2011networks,aleman2013explaining}; the study of alliance networks in which networks reflect countries' co-signing of treaties, but exclude treaty text \citep{camber2010geometry,cranmer2012complex,cranmer2012toward,kinne2016agreeing}; the study of scientific co-authorship networks that exclude the text of the co-authored papers \citep{kronegger2011collaboration,liang2015changing,fahmy2016gender}; and the study of text-based interaction on social media (e.g., users tied via `mentions' on twitter) \citep{yoon2014strategies,peng2016follower,lai2017connecting}.
+The models on which we build, including the relational event model \citep{Butts2008}, the point process model \citep{PerryWolfe2012}, and most closely the hyperedge event model (HEM), provide frameworks for explaining or predicting ties between nodes using the network sub-structures in which the two nodes are embedded (e.g., predict a tie is highly likely to form between two nodes if those two nodes have many shared partners). Models based on network structure have been used for many applications in which the ties between nodes are annotated with text. The text, despite providing rich information regarding the strength, scope, and character of the ties, has been largely excluded from these analyses, due to the inability of these network models to incorporate textual attributes of ties. These application domains include, among other applicaitons, the study of legislative networks in which networks reflect legislators' co-support of bills, but exclude bill text \citep{bratton2011networks,aleman2013explaining}; the study of alliance networks in which networks reflect countries' co-signing of treaties, but exclude treaty text \citep{camber2010geometry,cranmer2012complex,cranmer2012toward,kinne2016agreeing}; the study of scientific co-authorship networks that exclude the text of the co-authored papers \citep{kronegger2011collaboration,liang2015changing,fahmy2016gender}; and the study of text-based interaction on social media (e.g., users tied via `mentions' on twitter) \citep{yoon2014strategies,peng2016follower,lai2017connecting}.~\looseness=-1
 
 In defining and testing the IPTM we embed core conceptual property---interaction pattern---to link the content component of the model, and network component of the model such that knowing who is communicating with whom at what time (i.e., the network component) provides information about the content of communication, and vice versa (Section \ref{sec:generative process}). The IPTM leads to an efficient inference using the Markov Chain Monte Carlo (MCMC) algorithm (Section \ref{sec:inference}) and acheives good predictive peformance (Section \ref{sec:Emails}). Finally, the IPTM discovers interesting and interpretable latent structure through application to email corpora of internal communications by government officials in Dare County, NC (Section \ref{sec:Emails}). 
-
+~\looseness=-1
 	
 	\section{Interaction-partitioned Topic Model}\label{sec:generative process}
-		In this section we define the IPTM by describing a process according to which documents are generated in continuous time. Data generated under the IPTM consists of $D$ unique documents. A single document, indexed by $d \in [D]$, is represented by the four components: the sender $a_d \in [A]$, an indicator vector of receivers $\boldsymbol{r}_d = \{u_{dr} \}_{r=1}^{A}$, the timestamp $t_d \in (0, \infty)$, and a set of tokens $\boldsymbol{w}_d= \{w_{dn} \}_{n=1}^{N_d}$ that comprise the text of the document, where $N_d$ denotes the total number of tokens in a document. For simplicity, we assume that documents are ordered by time such that $t_d < t_{d+1}$.
+		In this section we define the IPTM by describing a process according to which documents are generated in continuous time. Data generated under the IPTM consists of $D$ unique documents. A single document indexed by $d \in [D]$---where $[D]$ denotes a categorical set with $D$ levels $[D] = \{1,\ldots,D\}$---is represented by the four components: the sender $s_d \in [A]$, an indicator vector of receivers $\boldsymbol{r}_d$, where $r_{dj}=1$ if $j \in [A]$ is a receiver of document $d$ and 0 otherwise, the timestamp $t_d \in (0, \infty)$, and a set of word counts $\boldsymbol{w}_d= \{w_{dv} \}_{v=1}^{V}$---where each $w_{dv}$ is an integer greater or equal to zero and $V$ is the size of vocabularies---that comprise the text of the document, . For simplicity, we assume that documents are ordered by time such that $t_d < t_{d+1}$.~\looseness=-1
 		
 \subsection{Interaction Patterns}\label{subsec:Interaction patterns}
 They key idea that combines the IPTM component modeling ``what" with
 the component modeling ``who," ``whom," and ``when" is that different
-documents comes from the introduction of ``interaction patterns."  Each interaction pattern $c \in [C]$ is characterized by a set of features that affects networks and timestamps---such as the number of messages sent from $a$ to $r$ in some time interval---and corresponding coefficients. We associate each document with the interaction pattern that best describes how people interact, and that is reflected to what people talk about via topic assignments. To be specific, each document $d \in [D]$ draws an interaction pattern $c_d$ as below
+documents comes from the introduction of ``interaction patterns."  Each interaction pattern $c \in [C]$ is characterized by a set of features that affects networks and timestamps---such as the number of messages sent from $i$ to $j$ in some time interval---and corresponding coefficients. We associate each document with the interaction pattern that best describes how people interact, and that is reflected to what people talk about via topic assignments. To be specific, each document $d \in [D]$ draws an interaction pattern $c_d$
 \begin{equation}
-c_d\sim \mbox{Categorical}(\frac{\psi_1}{\sum_c \psi_c},\ldots,\frac{\psi_C}{\sum_c \psi_c}),
+c_d\sim \mbox{Categorical}({\psi_1},\ldots,{\psi_C}),
 \end{equation}
-and we assume the interaction-pattern specific weights from Gamma distribution
+and we assume the interaction pattern-specific factors are gamma-distributed
 \begin{equation}
-\psi_c\sim \Gamma(\frac{\gamma_0}{C}, \zeta),
+\psi_c\sim \Gamma(\epsilon_0,\epsilon_0),
 \end{equation}
-where $\gamma_0$ and $\zeta$ are the shape and rate parameters.
+where we place an uninformative gamma prior over these shape and rate parameters.~\looseness=-1
 
 \subsection{Generative Process for Contents}\label{subsec:Content generating process}
 
-The words $\boldsymbol{w}_d$ are generated by extending the well-known Bayesian topic model, latent Dirichlet allocation (LDA) \citep{Blei2003} to follow the form of Bayesian Poisson Tucker decomposition (BPTD) \citep{schein2016bayesian}. As in LDA, we generate the corpus-wide global variables that describe the content via topics. First, the topic-word factors for each topic $k\in [K]$ and word  $v\in [V]$ are also gamma-distributed; however, we assume that these factors are drawn directly from an uninformative gamma prior
-\begin{equation}
-\phi_{kv} \sim  \Gamma(\epsilon_0,\epsilon_0).
-\end{equation}
-Next, following the cluster-based topic model, document $d$ has the document-topic distribution
-\begin{equation}
-\boldsymbol{\theta}_d \sim \mbox{Dirichlet}(\alpha, \boldsymbol{m}_{c_d}),
-\end{equation}
-where $\alpha$ are the concentration parameter and $\boldsymbol{m}=(m_1,\ldots,m_K)$ is the base measure.
-In order to capture the overall prevalence of each topic in the corpus, we assume that each $\boldsymbol{m}_{c}$ is given Dirichlet priors with a single corpus-level base measure $\boldsymbol{m}$
-\begin{equation}
-\boldsymbol{m}_c\sim \mbox{Dirichlet}\Big(\alpha_1, \boldsymbol{m}\Big),
-\end{equation}
-where $\alpha_1$ is the concentration parameter determining the extent to which the group-specific base measures are affected by the corpus-level base measure. Finally, the corpus-level base measure is assumed to have Dirichlet prior with uniform base measure
-\begin{equation}
-\boldsymbol{m}\sim \mbox{Dirichlet}\Big(\alpha_0, (\frac{1}{K},\ldots,\frac{1}{K})\Big).
-\end{equation}
-Given that $\bar N_d = \max(1, N_d)$ where $N_d$ is known, a topic $z_{dn}$ is drawn from the document-topic distribution and then a word $w_{dn}$ is drawn from the chosen topic for each $n \in [\bar N_d]$---i.e.,
+The words $\boldsymbol{w}_d$ are generated by extending the well-known Bayesian topic model, latent Dirichlet allocation (LDA) \citep{Blei2003}, to follow the form of Bayesian Poisson Tucker decomposition (BPTD) \citep{schein2016bayesian}. As in LDA, we generate the corpus-wide global variables that describe the content via topics. First, the topic-word factors for each topic $k\in [K]$ and word type $v\in [V]$ and the interaction pattern-topic factors for each interaction pattern $c \in [C]$ are both gamma-distributed, where we again assume that these factors are drawn directly from an uninformative gamma prior
 \begin{equation}
 \begin{aligned}
-&z_{dn} \sim \mbox{Multinomial}(\boldsymbol{\theta}_d),\\
-&w_{dn} \sim\mbox{Multinomial} (\phi_{z_{dn}}).
+\phi_{kv}& \sim  \Gamma(\epsilon_0,\epsilon_0),\\
+\theta_{ck}& \sim  \Gamma(\epsilon_0,\epsilon_0).
 \end{aligned}
 \end{equation}
+
+Next, we generate the document-specific factors for each document $d \in [D]$ from uninformative gamma prior
+\begin{equation}
+\pi_{d}\sim \Gamma(\epsilon_0,\epsilon_0),
+\end{equation}
+which serves as the weight of document in the corpus. Finally, given the specifications above, the number of words of type $v\in [V]$ in document $d$ is drawn from 
+\begin{equation}
+w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{c=1}^C \sum_{k=1}^K I_{dc} \theta_{ck}\phi_{kv}),
+\end{equation}
+where $I_{dc}$ is an indicator for $I(c=c_d)$. Note that Equation (2.6) above is identical to $w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{k=1}^K \theta_{c_dk}\phi_{kv})$. Also note that $\boldsymbol{w}_d = (w_{d1},\ldots,w_{dV})$ is a very sparse vector with $\sum(\boldsymbol{w}_d) = N_d$, where $N_d$ denotes the total number of words in a document. ~\looseness=-1
 \subsection{Generative Process for Network Dynamics}\label{subsec:Tie generating process}	
-The generative process for network portion of the documents---the senders, receivers, and timestamps---exactly follows that of the hyperedge event model (HEM).
-While the HEM can be applied for two types of hyperedges---edges with (1) one sender and one or more receivers, and (2) one or more senders and one receiver---here we only present the generative process for those involving one sender and one or more receivers, considering our email applications. One notable feature of the IPTM generative process is that we draw auxiliary variables that serve as candidate data. Data is generated from the IPTM through a sampling process applied to the auxiliary variables. The auxiliary variables drawn for document $d$ include, for each sender $a$, a time increment from document $d-1$ at which sender $a$ would send document $d$, and an $A-1$ length vector indicating which nodes would receive document $d$ if it were sent by sender $a$.  The data generated for document $d$ under the IPTM corresponds to the sender that would send document $d$ the soonest---at the smallest time increment from document $d-1$. The receivers of document $d$ generated under the IPTM correspond to those receivers to which the sender with the minimum time increment would have sent document $d$. We explain these steps in more detail below. 
-	\subsubsection{Candidate receivers}\label{subsubsec: Tie}
-	For every possible sender--receiver pair $(a,r)_{a \neq r}$, we define the ``receiver intensity"---an approximate logit of the probability that edge $d$ is being sent from sender $a$ to receiver $r$---as a linear combination of statistics relevant to the receiver selection process:
+The generative process for network portion of the documents---the senders, receivers, and timestamps---exactly follows that of the hyperedge event model (HEM), except that now we consider the interaction pattern assignments of the documents.
+While the HEM can be applied for two types of hyperedges---edges with (1) one sender and one or more receivers, and (2) one or more senders and one receiver---here we only present the generative process for those involving one sender and one or more receivers, considering our email applications. %One notable feature of the IPTM generative process is that we draw auxiliary variables that serve as candidate data. Data is generated from the IPTM through a sampling process applied to the auxiliary variables. The auxiliary variables drawn for document $d$ include, for each sender $a$, a time increment from document $d-1$ at which sender $a$ would send document $d$, and an $A-1$ length vector indicating which nodes would receive document $d$ if it were sent by sender $a$.  The data generated for document $d$ under the IPTM corresponds to the sender that would send document $d$ the soonest---at the smallest time increment from document $d-1$. The receivers of document $d$ generated under the IPTM correspond to those receivers to which the sender with the minimum time increment would have sent document $d$. We explain these steps in more detail below. 
+~\looseness=-1
+\subsubsection{Candidate receivers}\label{subsubsec: Tie}
+	Given the interaction pattern of document $d$---i.e., $c_d$, we define the ``receiver intensity" for every possible sender--receiver pair $(i,j)$ where $i \!\neq\! j$ as a linear combination of statistics relevant to the receiver selection process:
 	\begin{equation}
-		\lambda_{adr} = {\boldsymbol{b}}^{\top}\boldsymbol{x}_{adr},
+		\lambda_{idj} = {\boldsymbol{b}_{c_d}}^{\top}\boldsymbol{x}_{idj{c_d}},
 	\end{equation}
-	where $\boldsymbol{b}$ is a $P$--dimensional vector of coefficients and $\boldsymbol{x}_{adr}$ is a set of receiver selection features. Such features can capture common network processes that include, but are not limited to, popularity, reciprocity, and transitivity, as well as the effects of attribute features defined on the sender, receivers, and/or sender-receiver pairs (e.g., the gender of the sender and/or receiver, an indicator of whether the sender is a supervisor of the receiver's). In addition, we include an intercept term to account for the average (or baseline) number of receivers. We place a Normal prior $\boldsymbol{b} \sim N(\boldsymbol{\mu}_b, \Sigma_b)$.
+	where $\boldsymbol{b}_c$ is a $P$--dimensional vector of coefficients and $\boldsymbol{x}_{idjc}$ is a set of receiver selection features which vary depending on the hypotheses regarding canonical processes relevant to network theory such as popularity, reciprocity, and transitivity, as well as the effects of attributes of the sender and receivers, or sender--receiver pairs. We place a Normal prior $\boldsymbol{b}_c \sim N(\boldsymbol{\mu}_b, \Sigma_b)$.~\looseness=-1
 	
-	A basic assumption of the HEM is that, at any given time, everyone is planning to send a document to one or more receivers. So for each edge $d$ and each sender $a$, the HEM draws a list of candidate receivers that would be receivers on edge $d$ if $a$ were the sender. For an edge $d$, we first define an $A\times A$ matrix $\boldsymbol{u}_d$ where the $a^{th}$ row denotes sender $a$'s receiver vector of zeros and 1's---i.e., 1's indicate the nodes to which $a$ intends to send edge $d$. We then assume that each receiver vector $\boldsymbol{u}_{ad}$ comes from a modification of the multivariate Bernoulli (MB) distribution \citep{dai2013multivariate}---a model that has been used to model graphs in which the state of each edge indicator is drawn independently from an edge-specific Bernoulli distribution. In order to avoid drawing edges with no receivers, we define a probability measure ``MB$_{G}$" motivated by the Gibbs measure \citep{fellows2017removing}. The probability measure we define amounts to a non-empty Gibbs measure, in which the all-zero vector is excluded from the support of the multivariate Bernoulli distribution. As a result, this measure helps us to 1) allow a sender to select multiple receivers for a single edge, 2) force the sender to select at least one receiver, and 3) ensure a tractable normalizing constant for the receiver selection distribution. To be specific, we draw a binary vector $\boldsymbol{u}_{ad}= (u_{ad1},
-	\ldots, u_{adA})$ 
-	\begin{equation} \boldsymbol{u}_{ad}  \sim
-		\mbox{MB}_{G}(\boldsymbol{\lambda}_{ad}),
+	We then draw a binary receiver vector $\boldsymbol{u}_{id}= (u_{id1},
+	\ldots, u_{idA})$ from a probability measure ``MB$_{G}$", which helps us to 1) allow a sender to select multiple receivers for a single document, 2) force the sender to select at least one receiver, and 3) ensure a tractable normalizing constant for the receiver selection distribution. To be specific, we assume
+	\begin{equation} \boldsymbol{u}_{id}  \sim
+		\mbox{MB}_{G}(\boldsymbol{\lambda}_{id}),
 	\end{equation}
-	where $\boldsymbol{\lambda}_{ad}= \{\lambda_{adr}\}_{r=1}^A$. In particular, we define $\mbox{MB}_{G}(\boldsymbol{\lambda}_{ad})$ as
+	where $\boldsymbol{\lambda}_{id}= (\lambda_{id1},\ldots,\lambda_{idA})$. In particular, we define $\mbox{MB}_{G}(\boldsymbol{\lambda}_{id})$ as
 	\begin{equation}
 		\begin{aligned}
-			&\Pr(\boldsymbol{u}_{ad}|\boldsymbol{b}, \boldsymbol{x}_{ad}) = \frac{1}{Z(\boldsymbol{\lambda}_{ad})}\exp\Big(\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{ad}\rVert_1 > 0 )\big) + \sum_{r\neq a} \lambda_{adr}u_{adr}\Big) ,
+			&\Pr(\boldsymbol{u}_{id}|\boldsymbol{b}, \boldsymbol{x}_{id}, c_d) = \frac{1}{Z(\boldsymbol{\lambda}_{id})}\exp\Big(\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\big) + \sum_{j\neq i} \lambda_{idj}u_{idj}\Big) ,
 		\end{aligned}
 		\label{eqn:Gibbs}
 	\end{equation}
-	where $Z(\boldsymbol{\lambda}_{ad})= \prod_{r \neq a} \big(\mbox{exp}(\lambda_{adr}) + 1\big)-1$ is the normalizing constant and $\lVert \cdot \rVert_1$ is the $l_1$--norm. Again, this is approximately equivalent to assuming that each $u_{adr}$ is drawn with the probability of 1 being logit($\lambda_{adr}$), excluding the case when $u_{adr}=0$ for all $r \in [A]$. We provide detailed derivation steps for the normalizing constant $Z(\boldsymbol{\lambda}_{ad})$ in Appendix B. 
+	where $Z(\boldsymbol{\lambda}_{id})= \prod_{r \neq a} \big(\mbox{exp}(\lambda_{idj}) + 1\big)-1$ is the normalizing constant and is the $\ell_1$-norm, and the log-indicator term $\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\big)$ ensures that empty receiver sets are excluded from the distribution's support. This is approximately equivalent to assuming that each $u_{idj}$ is drawn with the probability of 1 being logit($\lambda_{idj}$), excluding the case when $u_{idj}=0$ for all $j \in [A]$.
 	
 	\subsubsection{Candidate timestamps}\label{subsubsec:Time}
-	Similarly, for each sender and edge combination, the HEM draws a candidate time at which the edge would be sent. The timing rate for sender $a$ and edge $d$ is
+	Similarly, for each sender and document combination, our model draws a candidate timestamp at which the document would be sent given the candidate sender and receiver combinations. Given the interaction pattern assignment $c_d$, the timing rate for sender $i$ and document $d$ is
 	\begin{equation}
-		\mu_{ad} = g^{-1}(\boldsymbol{\eta}^\top \boldsymbol{y}_{ad}),
+		\mu_{id} = g^{-1}(\boldsymbol{\eta}_{c_d}^\top \boldsymbol{y}_{idc_d}),
 	\end{equation}
-	where $\boldsymbol{\eta}$ is a $Q$--dimensional vector of coefficients with a Normal prior $\boldsymbol{\eta} \sim N(\boldsymbol{\mu}_\eta,\Sigma_\eta)$, $\boldsymbol{y}_{ad}$ is a set of event timing features---covariates that could affect timestamps of the edge, and $g(\cdot)$ is the appropriate link function such as identity, log, or inverse. 
+	where $\boldsymbol{\eta}_c$ is a $Q$--dimensional vector of coefficients with a Normal prior $\boldsymbol{\eta}_c \sim N(\boldsymbol{\mu}_\eta,\Sigma_\eta)$, $\boldsymbol{y}_{adc}$ is a set of event timing features---covariates that could affect timestamps of the document, and $g(\cdot)$ is the appropriate link function such as identity, log, or inverse. 
 	
-	In modeling ``when," we do not directly model the timestamp $t_d$. Instead, we assume that each sender's ``time increment"---i.e., waiting time to next interaction since $t_{d-1}$---is drawn from a specific distribution in the exponential family. We define the time increment from edge $d-1$ to edge $d$ as $\tau_{d}$ (i.e., $\tau_{d}= t_d-t_{d-1}$) and specify the distribution of candidate timestamps with sender-specfic mean $\mu_{ad}$. Following the generalized linear model (GLM) framework \citep{nelder1972generalized}, we assume the mean and variance of the $\tau_{ad}$ satistify
+	%In modeling ``when," we do not directly model the timestamp $t_d$. Instead, we assume that each sender's ``time increment"---i.e., waiting time to next interaction since $t_{d-1}$---is drawn from a specific distribution in the exponential family. We define the time increment from edge $d-1$ to edge $d$ as $\tau_{d}$ (i.e., $\tau_{d}= t_d-t_{d-1}$) and specify the distribution of candidate timestamps with sender-specfic mean $\mu_{ad}$. 
+	Next, following the generalized linear model (GLM) framework \citep{nelder1972generalized}, we assume the mean and variance of the $\tau_{id}$---i.e., each sender's ``time increment" from document $d-1$ to document $d$ or $t_d-t_{d-1}$---satistify
 	\begin{equation}
 		\begin{aligned}
-			E(\tau_{ad}) &= \mu_{ad},\\
-			V(\tau_{ad}) &= V(\mu_{ad}),
+			E(\tau_{id}) &= \mu_{id},\\
+			V(\tau_{id}) &= V(\mu_{id}),
 		\end{aligned}
 	\end{equation}
-	where $\tau_{ad}$ here is a positive real number. Possible choices of distribution include exponential, Weibull, gamma, and log-normal\footnote{The log-normal distribution is not exponential family but can be used via modeling of $\log(\tau_d)$.} distributions, which are commonly used in time-to-event modeling \citep{rao2000applied,rizopoulos2012joint}. Based on the specific distribution, we may need other latent variables to draw the time increment, to account for the variance of time increments, beyond the coefficients for the features used to model the rate. $V(\mu)$---e.g., the shape parameter $k$ for the Weibull, the shape parameter $\theta$ for the gamma, and the variance parameter $\sigma_\tau^2$ for the log-normal. We use $f_\tau(\cdot; \mu, V(\mu))$ and $F_\tau(\cdot; \mu, V(\mu))$ to denote the probability density function (p.d.f) and cumulative density function (c.d.f), respectively, with mean $\mu$ and variance $V(\mu)$.
+	where $\tau_{id}$ here is a positive real number drawn from a specific distribution among the possible choices including exponential, Weibull, gamma, and log-normal. We may need other latent variables to draw the time increment based on the choice of distribution, to account for the variance of time increments, beyond the coefficients for the features used to model the rate. $V(\mu)$---e.g., the shape parameter $k$ for the Weibull, the shape parameter $\theta$ for the gamma, and the variance parameter $\sigma_\tau^2$ for the log-normal. We use $f_\tau(\cdot; \mu, V(\mu))$ and $F_\tau(\cdot; \mu, V(\mu))$ to denote the probability density function (p.d.f) and cumulative density function (c.d.f), respectively, with mean $\mu$ and variance $V(\mu)$.~\looseness=-1
 	\subsubsection{Senders, receivers, and timestamps}\label{subsubsec:Observed}
-	Finally, under the HEM the observed sender, receivers, and timestamp of edge $d$ is generated by selecting the sender--receiver-set pair with the smallest time increment \citep{snijders1996stochastic}:
+	Finally, under the IPTM the observed sender, receivers, and timestamp of document $d$ is generated by selecting the sender--receiver-set pair with the smallest time increment \citep{snijders1996stochastic}, along with the words generated according to Section \ref{subsec:Content generating process}:
 	\begin{equation}
 		\begin{aligned}
-			a_d &= \mbox{argmin}_{a}(\tau_{ad}),\\
-			\boldsymbol{r}_d &= \boldsymbol{u}_{a_d d},\\
-			t_d &=t_{d-1} + \tau_{a_d d}.
+			s_d &= \mbox{argmin}_{i}(\tau_{id}),\\
+			\boldsymbol{r}_d &= \boldsymbol{u}_{s_d d},\\
+			t_d &=t_{d-1} + \tau_{s_d d},\\
+					\boldsymbol{r}_d &=(w_{d1},\ldots,w_{dV})
 		\end{aligned}
 	\end{equation}
-	\begin{figure}[!t]
-		\centering
-		\includegraphics[width=0.625\textwidth]{img/diagram2.png}	
-		\caption {An illustrative example of the generative process of the HEM.}
-		\label{figure:diagram}
-	\end{figure}	
-		Therefore, it is a sender-driven process in that the receivers and timestamps of an edge are jointly determined by the sender's urgency to send the edge to the selected receivers. Note that our generative process accounts for tied events such that in case of tied events (i.e., multiple senders draw exactly same candidate timestamps), we observe all of the tied events without assigning the orders of tied events. Algorithm \ref{alg:generative} summarizes the entire generative process for directed edges with one sender and one or more receivers, and Figure \ref{figure:diagram} presents an illustrative example on how the $d$th edge is generated, assuming $t_{d-1} = 0$ for simplicity.
+~\looseness=-1
+		Therefore, it is a sender-driven process in that the receivers and timestamps of a document are jointly determined by the sender's urgency to send the document to the selected receivers. Note that our generative process accounts for tied events such that in case of tied documents---i.e., multiple senders draw exactly the same candidate timestamps---we assume that all documents are generated and occur simultaneously. Algorithm \ref{alg:generative} provides a summary on Section \ref{sec:generative process}, which presents the entire generative process for documents given the corpus-wide global variables.
 	\begin{algorithm}[!t]
 		\spacingset{1}
 		\SetAlgoLined
 		\caption{Generative Process: one sender and one or more receivers}
-		\begin{algorithmic}
-			\STATE \textbf{Input}: number of edges and nodes $(D, A)$, covariates $(\boldsymbol{x}, \boldsymbol{y})$, and the coefficients $(\boldsymbol{b}, \boldsymbol{\eta})$
-			\vskip 0.1in
-			\FOR{d=1 to D}
-			\FOR{a=1 to $A$}
-			\FOR{r=1 to $A$ (r $\neq$ a)}
-			\STATE	set $\lambda_{adr} = {\boldsymbol{b}}^{\top}\boldsymbol{x}_{adr}$
+	\begin{algorithmic}
+		\STATE \textbf{Input}: number of documents, nodes, interaction patterns, topics, and word types $(D, A, C, K, V)$, covariates $(\boldsymbol{x}, \boldsymbol{y})$, and coefficients $(\boldsymbol{b}, \boldsymbol{\eta})$
+		\vskip 0.1in
+		\FOR{$d=1$ to $D$}
+		\STATE	draw $c_d\sim \mbox{Categorical}(\psi_1,\ldots,{\psi_C})$
+		\STATE draw $\pi_{d}\sim \Gamma(\epsilon_0,\epsilon_0)$
+		\FOR{$v=1$ to $V$}
+		\STATE $w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{c=1}^C \sum_{k=1}^K I_{dc} \theta_{ck}\phi_{kv})$
 			\ENDFOR
-			\STATE	draw $\boldsymbol{u}_{ad}  \sim
-			\mbox{MB}_G(\boldsymbol{\lambda}_{ad})$
-			\STATE		set $\mu_{ad} = g^{-1}(\boldsymbol{\eta}^\top \boldsymbol{y}_{ad})$
-			\STATE		draw $\tau_{ad} \sim f_\tau(\mu_{ad}, V(\mu_{ad}))$
-			\ENDFOR
-			
-			\IF{$n \geq 2$ tied events} 
-			\STATE	set $a_d, \ldots, a_{d+n-1}= \mbox{argmin}_{a}(\tau_{ad})$
-			\STATE	set $\boldsymbol{r}_d=\boldsymbol{u}_{a_d d},\ldots,\boldsymbol{r}_{d+n-1}=\boldsymbol{u}_{a_{d+n-1} d}$
-			\STATE	set $t_d, \ldots, t_{d+n-1}=t_{d-1} + \min_a\tau_{ad}$
-			\STATE		jump to $d = d+n$
-			\ELSE
-			\STATE	set $a_d= \mbox{argmin}_{a}(\tau_{ad})$
-			\STATE		set $\boldsymbol{r}_d = \boldsymbol{u}_{a_d d}$
-			\STATE	set $t_d =t_{d-1} + \min_a\tau_{ad}$
-			\ENDIF
-			\ENDFOR
-		\end{algorithmic}
+		\FOR{$i=1$ to $A$}
+		\FOR{$j=1$ to $A$ ($j \neq i$)}
+		\STATE	set $\lambda_{idj} = {\boldsymbol{b}}^{\top}\boldsymbol{x}_{idj}$
+		\ENDFOR
+		\STATE	draw $\boldsymbol{u}_{id}  \sim
+		\mbox{MB}_G(\boldsymbol{\lambda}_{id})$
+		\STATE		set $\mu_{id} = g^{-1}(\boldsymbol{\eta}^\top \boldsymbol{y}_{id})$
+		\STATE		draw $\tau_{id} \sim f_\tau(\mu_{id}, V(\mu))$
+		\ENDFOR
+		
+		\IF{$n \geq 2$ tied events} 
+		\STATE	set $s_d,\ldots, s_{d+n-1}=\mbox{argmin}_{i}(\tau_{id}),$
+		\STATE	set $\boldsymbol{r}_d=\boldsymbol{u}_{s_d d},\ldots,\boldsymbol{r}_{d+n-1}=\boldsymbol{u}_{s_{d+n-1} d}$
+		\STATE	set $t_d, \ldots, t_{d+n-1}=t_{d-1} + \min_i\tau_{id}$
+		\STATE		jump to $e = d+n$
+		\ELSE
+		\STATE	set $s_d= \mbox{argmin}_{i}(\tau_{id})$
+		\STATE		set $\boldsymbol{r}_d= \boldsymbol{u}_{s_d d}$
+		\STATE	set $t_d =t_{d-1} + \min_i\tau_{id}$
+		\ENDIF
+		\ENDFOR
+	\end{algorithmic}
 		\label{alg:generative}
 	\end{algorithm}
-	
+	\newpage
 	\section{Posterior inference}\label{sec:inference}
-	In this section we describe how we invert the generative process to obtain the posterior distribution over the latent variables---candidate receivers $\{\boldsymbol{u}_d\}_{d=1}^D$, coefficients for edge covariates $\boldsymbol{b}$, and coefficients for timestamp covariates $\boldsymbol{\eta}$---conditioned on the observed data $\{(a_d, \boldsymbol{r}_d, t_d)\}_{d=1}^D$, covariates $\{(\boldsymbol{x}_d, \boldsymbol{y}_d)\}_{d=1}^D$, and hyperparamters $(\boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta)$. We draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each latent variable from its conditional posterior via a Metropolis-within-Gibbs sampling algorithm. In this section, we provide each latent variable's conditional posterior, and demonstrate how we perform the prior-posterior simulator test of \cite{geweke2004getting}, in which we evaluate the integrity of both our mathematical derivations and the sampling code, for the HEM. At the end of this section, we provide the pseudocode of our MCMC algorithm in Algorithm \ref{alg:MCMC}.
+	In this section we describe how we invert the generative process to obtain the posterior distribution over the latent variables---interaction pattern assignments $\{c_d\}_{d=1}^D$, topic-word factors $\{\{\phi_{kv}\}_{v=1}^V\}_{k=1}^K$, interaction pattern-topic factors $\{\{\theta_{ck}\}_{k=1}^K\}_{c=1}^C$, document-specific factors $\{\pi_{d}\}_{d=1}^D$, candidate receivers $\{\boldsymbol{u}_d\}_{d=1}^D$, coefficients for receiver selection features $\{\boldsymbol{b}_c\}_{c=1}^C$, and coefficients for event timing features $\{\boldsymbol{\eta}_c\}_{c=1}^C$---conditioned on the observed data $\{(s_d, \boldsymbol{r}_d, t_d, \boldsymbol{w}_d)\}_{d=1}^D$, covariates $\{(\boldsymbol{x}_d, \boldsymbol{y}_d)\}_{d=1}^D$, and hyperparamters $(\boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, \gamma_0, \xi, \epsilon_0)$. We draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each latent variable from its conditional posterior via a Metropolis-within-Gibbs sampling algorithm. In the next subsection, we provide each latent variable's conditional posterior along with pseudocode of MCMC in Algorithm \ref{alg:MCMC}.
 	
 	\subsection{Conditional posteriors}\label{subsec:conditionaldist}
 	\subsubsection{Candidate receivers}
@@ -557,60 +553,6 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 		\end{algorithmic}
 		\label{alg:generative2}
 	\end{algorithm}
-	\subsection*{Appendix B: Normalizing constant of MB$_{G}$}\label{appendix: non-empty Gibbs measure}
-	Our probability measure ``MB$_{G}$''---the multivariate Bernoulli distribution with non-empty Gibbs measure---defines the probability of sender $a$ selecting the binary receiver vector $\boldsymbol{u}_{ad}$ as
-	\begin{equation*} 
-		\begin{aligned}
-			& \Pr(\boldsymbol{u}_{ad}|\boldsymbol{b}, \boldsymbol{x}_{ad}) = \frac{1}{Z(\boldsymbol{\lambda}_{ad})}\exp\Big(\mbox{log}\big(\text{I}(\lVert \boldsymbol{u}_{ad} \rVert_1 > 0)\big) + \sum_{r \neq a} \lambda_{adr}u_{adr} \Big),
-		\end{aligned}
-	\end{equation*}
-	where the receiver intensity is a linear combination of edge covariates---i.e., $\lambda_{adr} = {\boldsymbol{b}}^{\top}\boldsymbol{x}_{adr}$---as defined in Secton \ref{subsec: Tie}.
-	
-	To use this distribution efficiently, we derive a closed-form expression for $Z(\boldsymbol{\lambda}_{ad})$ that does not require brute-force summation over the support of $\boldsymbol{u}_{ad}$ (\textit{i.e.} $\forall \boldsymbol{u}_{ad} \in [0,1]^A$). We recognize that if $\boldsymbol{u}_{ad}$ were drawn via independent Bernoulli distributions in which $\Pr({u}_{adr}=1|\boldsymbol{b}, \boldsymbol{x}_{ad})$ was given by logit$(\lambda_{adr})$, then 
-	\begin{equation*}
-		\Pr(\boldsymbol{u}_{ad}|\boldsymbol{b}, \boldsymbol{x}_{ad}) \propto \exp\Big(\sum_{r \neq a } \lambda_{adr}u_{adr}\Big).  	 
-	\end{equation*}
-	This is straightforward to verify by looking at 
-	\begin{equation*}
-		\begin{aligned}
-			&\Pr(u_{adr}=1|\boldsymbol{u}_{ad[-r]}, \boldsymbol{b}, \boldsymbol{x}_{ad})
-			=\frac{\exp{(\lambda_{adr})}}{\exp{(\lambda_{adr})} + 1}.
-		\end{aligned}\end{equation*}
-		We denote the logistic-Bernoulli normalizing constant as $Z^{l}(\boldsymbol{\lambda}_{ad})$, which is defined as 
-		\begin{equation*}
-			Z^{l}( \boldsymbol{\lambda}_{ad})=\sum_{\boldsymbol{u}_{ad} \in [0,1]^{A}} \exp\Big(\sum_{r\neq a} \lambda_{adr}u_{adr}\Big).
-		\end{equation*}
-		Now, since 
-		\begin{equation*}
-			\begin{aligned}
-				&\exp\Big(\mbox{log}\Big(\text{I}(\lVert \boldsymbol{u}_{ad} \rVert_1 > 0)\Big) + \sum_{r \neq a} \lambda_{adr}u_{adr} \Big)= \exp\Big( \sum_{r \neq a} \lambda_{adr}u_{adr} \Big),
-			\end{aligned}
-		\end{equation*}
-		except when $\lVert \boldsymbol{u}_{ad} \rVert_1=0$, we note that 
-		\begin{equation*}
-			\begin{aligned}
-				Z(\boldsymbol{\lambda}_{ad})& = Z^{l}(\boldsymbol{\lambda}_{ad}) -\exp\Big( \sum\limits_{\forall u_{adr}=0}\lambda_{adr}u_{adr} \Big)
-				\\& = Z^{l}(\boldsymbol{\lambda}_{ad}) -  1.
-			\end{aligned}
-		\end{equation*}
-		We can therefore derive a closed form expression for $Z(\boldsymbol{\lambda}_{ad})$ via a closed form expression for $Z^{l}(\boldsymbol{\lambda}_{ad})$. This can be done by looking at the probability of the zero vector under the logistic-Bernoulli model:
-		\begin{equation*}
-			\begin{aligned}
-				&\frac{1}{Z^{l}(\boldsymbol{\lambda}_{ad})}\exp\Big(\sum\limits_{\forall u_{adr}=0}\lambda_{adr}u_{adr} \Big)= \prod_{r \neq a}   \Big(1-\frac{ \exp{(\lambda_{adr})}}{\exp{(\lambda_{adr})} + 1}\Big).
-			\end{aligned}  
-		\end{equation*}
-		Then, we have 
-		\begin{equation*}
-			\begin{aligned}
-				& \frac{1}{Z^{l}(\boldsymbol{\lambda}_{ad})} &= \prod\limits_{r \neq a}\frac{1}{ \exp(\lambda_{adr})+ 1}.
-			\end{aligned}  
-		\end{equation*}
-		Finally, the closed form expression for the normalizing constant is  
-		\begin{equation*}
-			\begin{aligned}Z(\boldsymbol{\lambda}_{ad}) = \prod_{r \neq a } \big(\mbox{exp}(\lambda_{adr}) + 1\big)-1.
-			\end{aligned}  
-		\end{equation*}
-		\newpage
 		\subsection*{Appendix C: Comparison of PPC results: log-normal vs. exponential}\label{appendix: PPCexp}
 		\begin{figure}[H]
 			\centering
