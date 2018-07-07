@@ -115,7 +115,7 @@ They key idea that combines the IPTM component modeling ``what" with
 the component modeling ``who," ``whom," and ``when" is that different
 documents comes from the introduction of ``interaction patterns."  Each interaction pattern $c \in [C]$ is characterized by a set of features that affects networks and timestamps---such as the number of messages sent from $i$ to $j$ in some time interval---and corresponding coefficients. We associate each document with the interaction pattern that best describes how people interact, and that is reflected to what people talk about via topic assignments. To be specific, each document $d \in [D]$ draws an interaction pattern $c_d$
 \begin{equation}
-c_d\sim \mbox{Categorical}({\psi_1},\ldots,{\psi_C}),
+c_d\sim \mbox{Categorical}(\frac{\psi_1}{\sum_{c=1}^C \psi_c},\ldots,\frac{\psi_C}{\sum_{c=1}^C \psi_c}),
 \end{equation}
 and we assume the interaction pattern-specific factors are gamma-distributed
 \begin{equation}
@@ -141,7 +141,7 @@ which serves as the weight of document in the corpus. Finally, given the specifi
 \begin{equation}
 w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{c=1}^C \sum_{k=1}^K I_{dc} \theta_{ck}\phi_{kv}),
 \end{equation}
-where $I_{dc}$ is an indicator for $I(c=c_d)$. Note that Equation (2.6) above is identical to $w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{k=1}^K \theta_{c_dk}\phi_{kv})$. Also note that $\boldsymbol{w}_d = (w_{d1},\ldots,w_{dV})$ is a very sparse vector with $\sum(\boldsymbol{w}_d) = N_d$, where $N_d$ denotes the total number of words in a document. ~\looseness=-1
+where $I_{dc}$ is an indicator for $I(c_d=c)$. Note that Equation (2.6) above is identical to $w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{k=1}^K \theta_{c_dk}\phi_{kv})$. Also note that $\boldsymbol{w}_d = (w_{d1},\ldots,w_{dV})$ is a very sparse vector with $\sum(\boldsymbol{w}_d) = N_d$, where $N_d$ denotes the total number of words in a document. ~\looseness=-1
 \subsection{Generative Process for Network Dynamics}\label{subsec:Tie generating process}	
 The generative process for network portion of the documents---the senders, receivers, and timestamps---exactly follows that of the hyperedge event model (HEM), except that now we consider the interaction pattern assignments of the documents in order to understand the differences in network dynamics across the interaction patterns.
 While the HEM can be applied for two types of hyperedges---edges with (1) one sender and one or more receivers, and (2) one or more senders and one receiver---here we only present the generative process for those involving one sender and one or more receivers, considering our email applications. %One notable feature of the IPTM generative process is that we draw auxiliary variables that serve as candidate data. Data is generated from the IPTM through a sampling process applied to the auxiliary variables. The auxiliary variables drawn for document $d$ include, for each sender $a$, a time increment from document $d-1$ at which sender $a$ would send document $d$, and an $A-1$ length vector indicating which nodes would receive document $d$ if it were sent by sender $a$.  The data generated for document $d$ under the IPTM corresponds to the sender that would send document $d$ the soonest---at the smallest time increment from document $d-1$. The receivers of document $d$ generated under the IPTM correspond to those receivers to which the sender with the minimum time increment would have sent document $d$. We explain these steps in more detail below. 
@@ -204,7 +204,7 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 		\STATE \textbf{Input}: number of documents, nodes, interaction patterns, topics, and word types $(D, A, C, K, V)$, covariates $(\boldsymbol{x}, \boldsymbol{y})$, and coefficients $(\boldsymbol{b}, \boldsymbol{\eta})$
 		\vskip 0.1in
 		\FOR{$d=1$ to $D$}
-		\STATE	draw $c_d\sim \mbox{Categorical}(\psi_1,\ldots,{\psi_C})$
+		\STATE	draw $c_d\sim \mbox{Categorical}(\frac{\psi_1}{\sum_c \psi_c},\ldots,\frac{\psi_C}{\sum_c\psi_c})$
 		\STATE draw $\pi_{d}\sim \Gamma(\epsilon_0,\epsilon_0)$
 		\FOR{$v=1$ to $V$}
 		\STATE $w_{dv} \sim \mbox{Poisson}(\pi_{d}\sum_{c=1}^C \sum_{k=1}^K I_{dc} \theta_{ck}\phi_{kv})$
@@ -235,12 +235,49 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 	\end{algorithm}
 	\newpage
 	\section{Posterior inference}\label{sec:inference}
-	In this section we describe how we invert the generative process to obtain the posterior distribution over the latent variables---interaction pattern assignments $\{c_d\}_{d=1}^D$, topic-word factors $\{\{\phi_{kv}\}_{v=1}^V\}_{k=1}^K$, interaction pattern-topic factors $\{\{\theta_{ck}\}_{k=1}^K\}_{c=1}^C$, document-specific factors $\{\pi_{d}\}_{d=1}^D$, candidate receivers $\{\boldsymbol{u}_d\}_{d=1}^D$, coefficients for receiver selection features $\{\boldsymbol{b}_c\}_{c=1}^C$, and coefficients for event timing features $\{\boldsymbol{\eta}_c\}_{c=1}^C$---conditioned on the observed data $\{(s_d, \boldsymbol{r}_d, t_d, \boldsymbol{w}_d)\}_{d=1}^D$, covariates $\{(\boldsymbol{x}_d, \boldsymbol{y}_d)\}_{d=1}^D$, and hyperparamters $(\boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, \gamma_0, \xi, \epsilon_0)$. We draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each latent variable from its conditional posterior via a Metropolis-within-Gibbs sampling algorithm. In the next subsection, we provide each latent variable's conditional posterior along with pseudocode of MCMC in Algorithm \ref{alg:MCMC}.
-		\subsubsection{Interaction pattern factors and assignments}
-				\subsubsection{Content related factors}
+	In this section we describe how we invert the generative process to obtain the posterior distribution over the latent variables---interaction pattern factors $\{\psi_c\}_{c=1}^C$ and assignments $\{c_d\}_{d=1}^D$, topic-word factors $\{\{\phi_{kv}\}_{v=1}^V\}_{k=1}^K$, interaction pattern-topic factors $\{\{\theta_{ck}\}_{k=1}^K\}_{c=1}^C$, document-specific factors $\{\pi_{d}\}_{d=1}^D$, candidate receivers $\{\boldsymbol{u}_d\}_{d=1}^D$, coefficients for receiver selection features $\{\boldsymbol{b}_c\}_{c=1}^C$, and coefficients for event timing features $\{\boldsymbol{\eta}_c\}_{c=1}^C$---conditioned on the observed data $\{(s_d, \boldsymbol{r}_d, t_d, \boldsymbol{w}_d)\}_{d=1}^D$, covariates $\{(\boldsymbol{x}_d, \boldsymbol{y}_d)\}_{d=1}^D$, and hyperparamters $(\boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, \gamma_0, \xi, \epsilon_0)$. We draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each latent variable from its conditional posterior via a Metropolis-within-Gibbs sampling algorithm. In the next subsection, we provide each latent variable's conditional posterior along with pseudocode of MCMC in Algorithm \ref{alg:MCMC}.
+		\subsubsection{Interaction pattern factors}
+		\begin{equation}
+		\begin{aligned}
+	\Pr(\psi_c|\boldsymbol{\psi}_{\backslash c}, \boldsymbol{c}) & \propto \Pr(\boldsymbol{c}|\psi_c, \boldsymbol{\psi}_{\backslash c}) \times \Pr(\psi_c)\\
+	& \propto (\prod_{d=1}^D \frac{\psi_{c_d}}{\sum_{c=1}^C\psi_c} )\times \psi_c^{\epsilon_0-1} \times \exp(-\epsilon_0 \psi_c)\\
+	&\propto (\psi_c)^{\sum_{d=1}^D I_{dc}+\epsilon_0-1}\times \exp(-\epsilon_0 \psi_c)\\
+&	\sim \Gamma(\sum_{d=1}^D I_{dc}+\epsilon_0, \epsilon_0)
+		\end{aligned}	
+		\end{equation}
+				\subsubsection{Topic-word factors}
+				\begin{equation}
+				\begin{aligned}
+				\Pr(\phi_{kv}|\,\boldsymbol{\phi}_{\backslash k,v},\boldsymbol{\theta},\boldsymbol{w},\boldsymbol{\pi},\boldsymbol{c}) & \propto \Pr(\boldsymbol{w}_{kv}|\,\phi_{kv},\boldsymbol{\phi}_{\backslash k,v},\boldsymbol{\theta},\boldsymbol{\pi},\boldsymbol{c}) \times \Pr(\phi_{kv})\\
+				& \propto (\prod_{d=1}^D \frac{(\pi_{d} \theta_{c_dk}\phi_{kv})^{w_{dkv}}\times \exp(-\pi_{d} \theta_{c_dk}\phi_{kv})}{w_{dkv}!} )\times \phi_{kv}^{\epsilon_0-1} \times \exp(-\epsilon_0 \phi_{kv})\\
+				&\propto (\phi_{kv})^{\sum_{d=1}^D w_{dkv}+\epsilon_0-1}\times \exp(-(\epsilon_0 +\sum_{d=1}^D\pi_{d} \theta_{c_dk})\phi_{kv})\\
+				&	\sim \Gamma(\sum_{d=1}^D w_{dkv}+\epsilon_0, \sum_{d=1}^D\pi_{d} \theta_{c_dk}+\epsilon_0),
+				\end{aligned}	
+				\end{equation}
+				where $(w_{d1v},\ldots,w_{dkv}) \sim \mbox{Multinomial}(w_{dv}, \{ \theta_{c_dk}\phi_{kv}\}_{k=1}^K)$.
+	\subsubsection{Interaction pattern-topic factors}
+				\begin{equation}
+				\begin{aligned}
+				\Pr(\theta_{ck}|\,\boldsymbol{\theta}_{\backslash c,k},\boldsymbol{\phi},\boldsymbol{w},\boldsymbol{\pi},\boldsymbol{c}) & \propto \Pr(\boldsymbol{w}_{ck}|\,\theta_{ck},\boldsymbol{\theta}_{\backslash c,k},\boldsymbol{\phi},\boldsymbol{\pi},\boldsymbol{c}) \times \Pr(\theta_{ck})\\
+				& \propto (\prod_{d:c_d=c}\prod_{v=1}^V \frac{(\pi_{d} \theta_{ck}\phi_{kv})^{w_{dkv}}\times \exp(-\pi_{d} \theta_{ck}\phi_{kv})}{w_{dkv}!} )\times \theta_{ck}^{\epsilon_0-1} \times \exp(-\epsilon_0 \theta_{ck})\\
+				&\propto (\theta_{ck})^{\sum_{d:c_d=c}\sum_{v=1}^V w_{dkv}+\epsilon_0-1}\times \exp(-(\epsilon_0 +\sum_{d:c_d=c}\sum_{v=1}^V\pi_{d} \phi_{kv})\theta_{ck})\\
+				&	\sim \Gamma(\sum_{d:c_d=c}\sum_{v=1}^V w_{dkv}+\epsilon_0, \sum_{d:c_d=c}\sum_{v=1}^V\pi_{d} \phi_{kv}+\epsilon_0),
+				\end{aligned}	
+				\end{equation}
+				where $(w_{d1v},\ldots,w_{dkv}) \sim \mbox{Multinomial}(w_{dv}, \{ \theta_{c_dk}\phi_{kv}\}_{k=1}^K)$.					
+	\subsubsection{Document-specific factors}
+	\begin{equation}
+	\begin{aligned}
+	\Pr(\pi_d|\,\boldsymbol{\pi}_{\backslash d},\boldsymbol{\phi},\boldsymbol{\theta},\boldsymbol{w},\boldsymbol{c}) & \propto \Pr(\boldsymbol{w}_d|\,\pi_d,\boldsymbol{\pi}_{\backslash d},\boldsymbol{\phi},\boldsymbol{\theta},\boldsymbol{c}) \times \Pr(\pi_d)\\
+	& \propto (\prod_{k=1}^K\prod_{v=1}^V \frac{(\pi_{d} \theta_{c_dk}\phi_{kv})^{w_{dkv}}\times \exp(-\pi_{d} \theta_{c_dk}\phi_{kv})}{w_{dkv}!} )\times \pi_d^{\epsilon_0-1} \times \exp(-\epsilon_0 \pi_d)\\
+	&\propto (\pi_d)^{\sum_{k=1}^K\sum_{v=1}^V w_{dkv}+\epsilon_0-1}\times \exp(-(\epsilon_0 +\sum_{k=1}^K\sum_{v=1}^V \theta_{c_dk}\phi_{kv})\pi_{d})\\
+	&	\sim \Gamma(N_d+\epsilon_0, \sum_{k=1}^K\sum_{v=1}^V\theta_{c_dk} \phi_{kv}+\epsilon_0),
+	\end{aligned}	
+	\end{equation}
+since $\sum_{k=1}^K\sum_{v=1}^V w_{dkv}=N_d$.																	
 %	\subsection{Conditional posteriors}\label{subsec:conditionaldist}
 	\subsubsection{Candidate receivers}
-	In the IPTM, direct computation of the posterior densities for the latent variables $\boldsymbol{b}$ and $\boldsymbol{\eta}$---i.e., $P(\boldsymbol{b}|\boldsymbol{x},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$ and $P(\boldsymbol{\eta}|\boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$---is not possible. However, it is possible to augment the data by candidate receivers $\boldsymbol{u}$ such that we can obtain their conditional posterior by collapsing the known distributions---$P(\boldsymbol{b}, \boldsymbol{u}|\boldsymbol{x},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$ and $P(\boldsymbol{\eta}, \boldsymbol{u}| \boldsymbol{y},\boldsymbol{a}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$---through integrating out $\boldsymbol{u}$. We adapt this common tool in Bayesian statistics called ``data augmentation" \citep{tanner1987calculation,neal2015exact}. Since $u_{idj}$ is a binary random variable, it may be sampled from a Bernoulli distribution with probability $p_{idj} =\frac{\exp(\lambda_{idj})}{\exp(\lambda_{idj})+\text{I}(\lVert\boldsymbol{u}_{id\backslash j}\rVert_1 > 0 )}$, since
+	In the IPTM, direct computation of the posterior densities for the latent variables $\boldsymbol{b}$ and $\boldsymbol{\eta}$---i.e., $\Pr(\boldsymbol{b}|\boldsymbol{x},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$ and $\Pr(\boldsymbol{\eta}|\boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$---is not possible. However, it is possible to augment the data by candidate receivers $\boldsymbol{u}$ such that we can obtain their conditional posterior by collapsing the known distributions---$\Pr(\boldsymbol{b}, \boldsymbol{u}|\boldsymbol{x},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$ and $\Pr(\boldsymbol{\eta}, \boldsymbol{u}| \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t}, \boldsymbol{c})$---through integrating out $\boldsymbol{u}$. We adapt this common tool in Bayesian statistics called ``data augmentation" \citep{tanner1987calculation,neal2015exact}. Since $u_{idj}$ is a binary random variable, it may be sampled from a Bernoulli distribution with probability $p_{idj} =\frac{\exp(\lambda_{idj})}{\exp(\lambda_{idj})+\text{I}(\lVert\boldsymbol{u}_{id\backslash j}\rVert_1 > 0 )}$, since
 		\begin{equation}
 				\begin{aligned}
 			&\Pr(u_{idj}=1| \,\boldsymbol{u}_{id\backslash j}, \boldsymbol{b}, \boldsymbol{x},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c}) \propto \exp(\lambda_{idj}) \\
@@ -269,7 +306,23 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 		\end{aligned}
 		\label{eqn:latenttime2}
 	\end{equation}
-	where $t_1^*,\ldots,t_M^*$ are the unique timepoints across $D$ documents ($M \leq E$). If $M=D$ (i.e., no tied events), equation (\ref{eqn:latenttime2}) reduces to equation (\ref{eqn:latenttime}). Note that when we have the latent variable to quantify the variance in time increments $V(\mu)$ (based on the choice of timestamp distribution in Section \ref{subsubsec:Time}), we also use equation (\ref{eqn:latenttime}) (or equation (\ref{eqn:latenttime2}) in case there exist tied events) for the additional MH update---e.g., $\Pr(k|\, \boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})$ for Weibull, $\Pr(\theta|\, \boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})$ for gamma, and  $\Pr(\sigma^2_\tau| \,\boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})$ for log-normal.~\looseness=-1	
+	where $t_1^*,\ldots,t_M^*$ are the unique timepoints across $D$ documents ($M \leq E$). If $M=D$ (i.e., no tied events), equation (\ref{eqn:latenttime2}) reduces to equation (\ref{eqn:latenttime}). Note that when we have the latent variable to quantify the variance in time increments $V(\mu)$ (based on the choice of timestamp distribution in Section \ref{subsubsec:Time}), we also use equation (\ref{eqn:latenttime}) (or equation (\ref{eqn:latenttime2}) in case there exist tied events) for the additional MH update---e.g., $\Pr(k|\, \boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})$ for Weibull, $\Pr(\theta|\, \boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})$ for gamma, and  $\Pr(\sigma^2_\tau| \,\boldsymbol{\eta},\boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c})$ for log-normal.
+	\subsubsection{Interaction pattern assignments}
+	Conditional posterior of the interaction pattern assignments $\boldsymbol{c}=\{c_d\}_{d=1}^D$ is quite complicated since it is the only component that connects the network dynamics and contents. Despite its complexity, we can still perform efficient inference by sampling from categorical distribution.
+		\begin{equation}
+		\begin{aligned}
+	&	\Pr(c_d=c|\,\boldsymbol{c}_{\backslash d},\boldsymbol{\psi},\boldsymbol{\phi},\boldsymbol{\theta},\boldsymbol{\pi},\boldsymbol{w},\boldsymbol{u},\boldsymbol{b},\boldsymbol{x},\boldsymbol{\eta},\boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t}) \\& \propto \Pr(\psi_c|\boldsymbol{\psi}_{\backslash c}, \boldsymbol{c}) \times 	\prod_{k=1}^K\prod_{v=1}^V\Pr(\phi_{kv}|\,\boldsymbol{\phi}_{\backslash k,v},\boldsymbol{\theta},\boldsymbol{w},\boldsymbol{\pi},\boldsymbol{c}) \times \prod_{c=1}^C\prod_{k=1}^K	\Pr(\theta_{ck}|\,\boldsymbol{\theta}_{\backslash c,k},\boldsymbol{\phi},\boldsymbol{w},\boldsymbol{\pi},\boldsymbol{c})\\&
+	\times	\Pr(\pi_d|\,\boldsymbol{\pi}_{\backslash d},\boldsymbol{\phi},\boldsymbol{\theta},\boldsymbol{w},\boldsymbol{c}) \times \prod_{i=1}^A\Pr(\boldsymbol{u}_{id}| \, \boldsymbol{b}, \boldsymbol{x},\boldsymbol{c}) \times \Pr(\boldsymbol{b}_c| \,\boldsymbol{u}, \boldsymbol{x}, \boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c}) \times  \Pr(\boldsymbol{\eta}_c|\, \boldsymbol{u}, \boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t},\boldsymbol{c}),
+		\end{aligned}	
+		\end{equation}
+		which is the product of the entire equations we used in Section \ref{sec:inference}. We could further simplify this as below:
+				\begin{equation}
+				\begin{aligned}
+				&	\Pr(c_d=c|\,\boldsymbol{c}_{\backslash d},\boldsymbol{\psi},\boldsymbol{\phi},\boldsymbol{\theta},\boldsymbol{\pi},\boldsymbol{w},\boldsymbol{u},\boldsymbol{b},\boldsymbol{x},\boldsymbol{\eta},\boldsymbol{y},\boldsymbol{s}, \boldsymbol{r},\boldsymbol{t}) \\& \propto \psi_c \times 	\prod_{k=1}^K\prod_{v=1}^V \frac{(\pi_{d} \theta_{ck}\phi_{kv})^{w_{dkv}}\times \exp(-\pi_{d} \theta_{ck}\phi_{kv})}{w_{dkv}!}\\& \times \prod_{i=1}^A \frac{1}{Z(\boldsymbol{\lambda}_{id})}\exp\Big(\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\big) + \sum_{j\neq i} \lambda_{idj}u_{idj}\Big) \mbox{ using } \boldsymbol{b}_c \mbox{ and }\boldsymbol{x}_c  \\&\times \Big(f_{\tau}(\tau_{d}; \mu_{s_d d}, V(\mu))\times \prod_{i\neq s_d}\big(1-F_{\tau}(\tau_{d}; \mu_{id}, V(\mu)) \big)\Big)\mbox{ using } \boldsymbol{\eta}_c \mbox{ and }\boldsymbol{y}_c \\&\propto
+				 \psi_c \times 	\prod_{k=1}^K\prod_{v=1}^V {( \theta_{ck})^{w_{dkv}}\times \exp(-\pi_{d} \sum_{k=1}^K\sum_{v=1}^V \theta_{ck}\phi_{kv})}\\& \times \prod_{i=1}^A \frac{1}{Z(\boldsymbol{\lambda}_{id})}\exp\Big(\mbox{log}\big(\text{I}( \lVert \boldsymbol{u}_{id}\rVert_1 > 0 )\big) + \sum_{j\neq i} \lambda_{idj}u_{idj}\Big) \mbox{ using } \boldsymbol{b}_c \mbox{ and }\boldsymbol{x}_c  \\&\times \Big(f_{\tau}(\tau_{d}; \mu_{s_d d}, V(\mu))\times \prod_{i\neq s_d}\big(1-F_{\tau}(\tau_{d}; \mu_{id}, V(\mu)) \big)\Big)\mbox{ using } \boldsymbol{\eta}_c \mbox{ and }\boldsymbol{y}_c.
+				\end{aligned}	
+				\end{equation}
+	~\looseness=-1				
 	\begin{algorithm}[!t]
 		\spacingset{1}
 		\SetAlgoLined
@@ -299,6 +352,7 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 		\end{algorithmic}
 		\label{alg:MCMC}
 	\end{algorithm}
+
 \iffalse
 	\section{Application to email data}\label{sec:Emails}
 	We now present a case study applying our method to Montgomery county government email data.
