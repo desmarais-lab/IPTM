@@ -108,7 +108,7 @@ In defining and testing the IPTM we embed core conceptual property---interaction
 ~\looseness=-1
 	
 	\section{Interaction-partitioned Topic Model}\label{sec:generative process}
-		In this section we define the IPTM by describing a process according to which documents are generated in continuous time. Data generated under the IPTM consists of $D$ unique documents. A single document indexed by $d \in [D]$---where $[D]$ denotes a categorical set with $D$ levels $[D] = \{1,\ldots,D\}$---is represented by the four components: the sender $s_d \in [A]$, an indicator vector of receivers $\boldsymbol{r}_d$, where $r_{dj}=1$ if $j \in [A]$ is a receiver of document $d$ and 0 otherwise, the timestamp $t_d \in (0, \infty)$, and a set of word counts $\boldsymbol{w}_d= \{w_{dv} \}_{v=1}^{V}$---where each $w_{dv}$ is an integer greater or equal to zero and $V$ is the size of vocabularies---that comprise the text of the document, . For simplicity, we assume that documents are ordered by time such that $t_d < t_{d+1}$.~\looseness=-1
+		In this section we define the IPTM by describing a process according to which documents are generated in continuous time. Data generated under the IPTM consists of $D$ unique documents. A single document indexed by $d \in [D]$---where $[D]$ denotes a categorical set with $D$ levels $[D] = \{1,\ldots,D\}$---is represented by the four components: the sender $s_d \in [A]$, an indicator vector of receivers $\boldsymbol{r}_d$, where $r_{dj}=1$ if $j \in [A]$ is a receiver of document $d$ and 0 otherwise, the timestamp $t_d \in (0, \infty)$, and a set of word counts $\boldsymbol{w}_d= \{w_{dv} \}_{v=1}^{V}$---where each $w_{dv}$ is an integer greater or equal to zero and $V$ is the size of vocabularies---that comprise the text of the document. For simplicity, we assume that documents are ordered by time such that $t_d < t_{d+1}$.~\looseness=-1
 		
 \subsection{Interaction Patterns}\label{subsec:Interaction patterns}
 They key idea that combines the IPTM component modeling ``what" with
@@ -195,7 +195,7 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 	\end{equation}
 ~\looseness=-1
 
-		Therefore, it is a sender-driven process in that the receivers and timestamps of a document are jointly determined by the sender's urgency to send the document to the selected receivers. Note that our generative process accounts for tied events such that in case of tied documents---i.e., multiple senders draw exactly the same candidate timestamps---we assume that all documents are generated and occur simultaneously. Algorithm \ref{alg:generative} provides a summary on Section \ref{sec:generative process}, which presents the entire generative process for documents given the corpus-wide global variables.
+		Therefore, it is a sender-driven process in that the receivers and timestamps of a document are jointly determined by the sender's urgency to send the document to the selected receivers. Note that our generative process accounts for tied events such that in case of tied documents---i.e., multiple senders draw exactly the same candidate timestamps---we assume that all documents are generated and occur simultaneously. Algorithm \ref{alg:generative} provides a summary on Section \ref{sec:generative process}, which presents the entire generative process for documents given the gamma-distributed factors.
 	\begin{algorithm}[!t]
 		\spacingset{1}
 		\SetAlgoLined
@@ -235,7 +235,7 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 	\end{algorithm}
 	\newpage
 	\section{Posterior inference}\label{sec:inference}
-	In this section we describe how we invert the generative process to obtain the posterior distribution over the latent variables---interaction pattern factors $\{\psi_c\}_{c=1}^C$ and assignments $\{c_d\}_{d=1}^D$, topic-word factors $\{\{\phi_{kv}\}_{v=1}^V\}_{k=1}^K$, interaction pattern-topic factors $\{\{\theta_{ck}\}_{k=1}^K\}_{c=1}^C$, document-specific factors $\{\pi_{d}\}_{d=1}^D$, candidate receivers $\{\boldsymbol{u}_d\}_{d=1}^D$, coefficients for receiver selection features $\{\boldsymbol{b}_c\}_{c=1}^C$, and coefficients for event timing features $\{\boldsymbol{\eta}_c\}_{c=1}^C$---conditioned on the observed data $\{(s_d, \boldsymbol{r}_d, t_d, \boldsymbol{w}_d)\}_{d=1}^D$, covariates $\{(\boldsymbol{x}_d, \boldsymbol{y}_d)\}_{d=1}^D$, and hyperparamters $(\boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, \gamma_0, \xi, \epsilon_0)$. We draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each latent variable from its conditional posterior via a Metropolis-within-Gibbs sampling algorithm. In the next subsection, we provide each latent variable's conditional posterior along with pseudocode of MCMC in Algorithm \ref{alg:MCMC}.
+	In this section we describe how we invert the generative process to obtain the posterior distribution over the latent variables---interaction pattern factors $\{\psi_c\}_{c=1}^C$ and assignments $\{c_d\}_{d=1}^D$, topic-word factors $\{\{\phi_{kv}\}_{v=1}^V\}_{k=1}^K$, interaction pattern-topic factors $\{\{\theta_{ck}\}_{k=1}^K\}_{c=1}^C$, document-specific factors $\{\pi_{d}\}_{d=1}^D$, candidate receivers $\{\boldsymbol{u}_d\}_{d=1}^D$, coefficients for receiver selection features $\{\boldsymbol{b}_c\}_{c=1}^C$, and coefficients for event timing features $\{\boldsymbol{\eta}_c\}_{c=1}^C$---conditioned on the observed data $\{(s_d, \boldsymbol{r}_d, t_d, \boldsymbol{w}_d)\}_{d=1}^D$, covariates $\{(\boldsymbol{x}_d, \boldsymbol{y}_d)\}_{d=1}^D$, and hyperparamters $(\boldsymbol{\mu}_b, \Sigma_b, \boldsymbol{\mu}_\eta, \Sigma_\eta, \gamma_0, \xi, \epsilon_0)$. We draw the samples using Markov chain Monte Carlo (MCMC) methods, repeatedly resampling the value of each latent variable from its conditional posterior via a Metropolis-within-Gibbs sampling algorithm. In the following, we provide each latent variable's conditional posterior along with pseudocode of MCMC in Algorithm \ref{alg:MCMC}.
 		\subsubsection{Interaction pattern factors}
 		\begin{equation}
 		\begin{aligned}
@@ -323,37 +323,38 @@ since $\sum_{k=1}^K\sum_{v=1}^V w_{dkv}=N_d$.
 				\end{aligned}	
 				\end{equation}
 	~\looseness=-1				
-	\begin{algorithm}[!t]
-		\spacingset{1}
-		\SetAlgoLined
-		\caption{MCMC Algorithm}
-		\begin{algorithmic}
-			\STATE \textbf{Input}: number of outer and inner iterations $(O, I_1, I_2)$ and initial values of $(\boldsymbol{u}, \boldsymbol{b}, \boldsymbol{\eta})$
-			\vskip 0.1in
-			\FOR{o=1 to O}
-			\FOR{d=1 to D}
-			\FOR{a = 1 to A}
-			\FOR{r = 1 to A (r $\neq$ a)}
-			\STATE update $u_{adr}$ using Gibbs update ---equation (\ref{eqn:latentreceiver})
-			\ENDFOR
-			\ENDFOR
-			\ENDFOR
-			\FOR{n=1 to $I_1$}
-			\STATE update $\boldsymbol{b}$ using M-H algorithm---equation (\ref{eqn:latentedge})
-			\ENDFOR
-			\FOR{n=1 to $I_2$}
-			\STATE update $\boldsymbol{\eta}$ using M-H algorithm---equation (\ref{eqn:latenttime}) or (\ref{eqn:latenttime2}) 
-			\ENDFOR
-			\IF {extra parameter for $V(\mu)$} 
-			\STATE update the variance parameter using M-H algorithm---equation (\ref{eqn:latenttime}) or (\ref{eqn:latenttime2}) 
-			\ENDIF
-			\ENDFOR
-			\STATE	summarize the results with the last chain of $\boldsymbol{b}$ and $\boldsymbol{\eta}$
-		\end{algorithmic}
-		\label{alg:MCMC}
-	\end{algorithm}
-
-\iffalse
+		\begin{algorithm}[!t]
+			\spacingset{1}
+			\SetAlgoLined
+			\caption{MCMC algorithm}
+			\begin{algorithmic}
+				\STATE \textbf{Input}: number of outer and inner iterations $(O, I_1, I_2)$ and initial values of $(\boldsymbol{\psi}, \boldsymbol{u}, \boldsymbol{b}, \boldsymbol{\eta})$
+				\vskip 0.1in
+				\FOR{$o=1$ to $O$}
+				\FOR{$d=1$ to $D$}
+				\FOR{$i = 1$ to $A$}
+				\FOR{$j = 1$ to $A$ ($j \neq i$)}
+				\STATE update $u_{idj}$ using Gibbs update ---equation (\ref{eqn:latentreceiver})
+				\ENDFOR
+				\ENDFOR
+				\ENDFOR
+				\FOR{$n=1$ to $I_1$}
+				\STATE update $\boldsymbol{b}$ using MH algorithm---equation (\ref{eqn:latentedge})
+				\ENDFOR
+				\FOR{$n=1$ to $I_2$}
+				\STATE update $\boldsymbol{\eta}$ using MH algorithm---equation (\ref{eqn:latenttime}) or (\ref{eqn:latenttime2}) 
+				\ENDFOR
+				\IF {extra parameter for $V(\mu)$} 
+				\STATE update the variance parameter using MH algorithm---equation (\ref{eqn:latenttime}) or (\ref{eqn:latenttime2}) 
+				\ENDIF
+				\ENDFOR
+				\STATE	summarize the results with the last chain of $\boldsymbol{b}$ and $\boldsymbol{\eta}$
+			\end{algorithmic}
+			\label{alg:MCMC}
+		\end{algorithm}
+		
+		
+		\iffalse
 	\section{Application to email data}\label{sec:Emails}
 	We now present a case study applying our method to Montgomery county government email data.
 	Our data come from the North Carolina county government email dataset collected by \cite{ben2017transparency} that includes internal email corpora covering the inboxes and outboxes of managerial-level employees of North Carolina county governments. Out of over twenty counties, we chose Montgomery County to 1) test our model using data with a large proportion of hyperedges (16.76\%), all of which are emails sent from one sender to two or more receivers, and 2) limit the scope of this initial application. The Montgomery County email network contains 680 emails, sent and received by 18 department managers over a period of 3 months (March--May) in 2012. For this case study,

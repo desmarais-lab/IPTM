@@ -1,4 +1,4 @@
-\begin{thebibliography}{36}
+\begin{thebibliography}{31}
 \newcommand{\enquote}[1]{``#1''}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
@@ -11,14 +11,6 @@ Alem{\'a}n, E. and Calvo, E. (2013).
 \newblock \enquote{Explaining policy ties in presidential congresses: A network
   analysis of bill initiation data.}
 \newblock {\em Political Studies\/}, 61(2): 356--377.
-\endbibitem
-
-\bibitem[{ben Aaron et~al.(2017)ben Aaron, Denny, Desmarais, and
-  Wallach}]{ben2017transparency}
-ben Aaron, J., Denny, M., Desmarais, B., and Wallach, H. (2017).
-\newblock \enquote{Transparency by Conformity: A Field Experiment Evaluating
-  Openness in Local Governments.}
-\newblock {\em Public Administration Review\/}, 77(1): 68--77.
 \endbibitem
 
 \bibitem[{Blei et~al.(2003)Blei, Ng, and Jordan}]{Blei2003}
@@ -92,14 +84,6 @@ Fahmy, C. and Young, J.~T. (2016).
 \newblock {\em Journal of Criminal Justice Education\/}, 1--21.
 \endbibitem
 
-\bibitem[{Geweke et~al.(1991)}]{geweke1991evaluating}
-Geweke, J. et~al. (1991).
-\newblock {\em Evaluating the accuracy of sampling-based approaches to the
-  calculation of posterior moments\/}, volume 196.
-\newblock Federal Reserve Bank of Minneapolis, Research Department Minneapolis,
-  MN, USA.
-\endbibitem
-
 \bibitem[{Hunter et~al.(2008)Hunter, Handcock, Butts, Goodreau, and
   Morris}]{hunter2008ergm}
 Hunter, D.~R., Handcock, M.~S., Butts, C.~T., Goodreau, S.~M., and Morris, M.
@@ -107,12 +91,6 @@ Hunter, D.~R., Handcock, M.~S., Butts, C.~T., Goodreau, S.~M., and Morris, M.
 \newblock \enquote{ergm: A package to fit, simulate and diagnose
   exponential-family models for networks.}
 \newblock {\em Journal of statistical software\/}, 24(3): nihpa54860.
-\endbibitem
-
-\bibitem[{Hyndman and Koehler(2006)}]{hyndman2006another}
-Hyndman, R.~J. and Koehler, A.~B. (2006).
-\newblock \enquote{Another look at measures of forecast accuracy.}
-\newblock {\em International journal of forecasting\/}, 22(4): 679--688.
 \endbibitem
 
 \bibitem[{Kanungo and Jain(2008)}]{kanungo2008modeling}
@@ -216,26 +194,12 @@ Robins, G., Pattison, P., Kalish, Y., and Lusher, D. (2007).
 \newblock {\em Social networks\/}, 29(2): 173--191.
 \endbibitem
 
-\bibitem[{Rubin et~al.(1984)}]{rubin1984bayesianly}
-Rubin, D.~B. et~al. (1984).
-\newblock \enquote{Bayesianly justifiable and relevant frequency calculations
-  for the applied statistician.}
-\newblock {\em The Annals of Statistics\/}, 12(4): 1151--1172.
-\endbibitem
-
 \bibitem[{Schein et~al.(2016)Schein, Zhou, Blei, and
   Wallach}]{schein2016bayesian}
 Schein, A., Zhou, M., Blei, D.~M., and Wallach, H. (2016).
 \newblock \enquote{Bayesian poisson tucker decomposition for learning the
   structure of international relations.}
 \newblock {\em arXiv preprint arXiv:1606.01855\/}.
-\endbibitem
-
-\bibitem[{Snijders et~al.(2007)Snijders, Steglich, and
-  Schweinberger}]{snijders2007modeling}
-Snijders, T., Steglich, C., and Schweinberger, M. (2007).
-\newblock {\em Modeling the coevolution of networks and behavior\/}.
-\newblock na.
 \endbibitem
 
 \bibitem[{Snijders(1996)}]{snijders1996stochastic}
