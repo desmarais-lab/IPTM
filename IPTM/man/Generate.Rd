@@ -4,11 +4,11 @@
 \alias{Generate}
 \title{Generate}
 \usage{
-Generate(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support,
+Generate(c_d, A, psi, theta, phi, beta, eta, sigma2, X, Y, support,
   timeunit = 3600, timedist = "lognormal", prior.epsilon)
 }
 \arguments{
-\item{D}{number of events to be generated}
+\item{c_d}{interaction pattern assignments}
 
 \item{A}{vector of node id's (ID starting from 1)}
 

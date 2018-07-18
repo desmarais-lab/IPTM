@@ -125,7 +125,7 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 #' @title Generate
 #' @description Generate a collection of events according to the generative process
 #'
-#' @param D number of events to be generated
+#' @param c_d interaction pattern assignments
 #' @param A vector of node id's (ID starting from 1)
 #' @param psi C-length vector of interaction pattern weights
 #' @param theta C x K matrix of pattern-topic weights
@@ -143,7 +143,8 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 #' @return generated data including (sender, recipients, timestamp)
 #'
 #' @export
-Generate = function(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, timeunit = 3600, timedist = "lognormal", prior.epsilon) {
+Generate = function(c_d, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, timeunit = 3600, timedist = "lognormal", prior.epsilon) {
+	D = length(c_d)
 	P = ncol(beta)
 	Q = ncol(eta)
 	C = length(psi)
@@ -152,7 +153,6 @@ Generate = function(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, tim
 	u = list()
 	data = list()
 	pi = c()
-	c_d = sample(1:C, D, TRUE, prob = psi)
 	w_d = matrix(0, D, V)
 	t_d = 0
 	lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta[c_d[d],]))
@@ -221,6 +221,7 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 		theta = initialval$theta
 		phi = initialval$phi
 		pi = initialval$pi
+		c_d = initialval$c_d
 	} else {
 		u = lapply(1:D, function(d) matrix(0, A, A))
 		beta = matrix(prior.beta$mean, nrow = C, ncol = P, byrow = TRUE)
@@ -230,6 +231,7 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 		theta = matrix(rgamma(C * K, prior.epsilon, prior.epsilon), C, K, byrow = TRUE)
 		phi = matrix(rgamma(K * V, prior.epsilon, prior.epsilon), K, V, byrow = TRUE)
 		pi = rgamma(D, prior.epsilon, prior.epsilon)
+		c_d = sample(1:C, D, replace = TRUE, prob = psi)
 	}
 	#output matrix
 	betamat = lapply(1:C, function(c) matrix(beta[c,], nrow = outer-burn, ncol = P, byrow = TRUE))
@@ -241,23 +243,22 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 	timeinc = c(timestamps[1]-lasttime, timestamps[-1]-timestamps[-length(timestamps)]) / timeunit
 	timeinc[timeinc == 0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
 	words = t(vapply(data, function(d) { d[[4]] }, rep(0, V)))
-	c_d = sample(1:C, D, replace = TRUE, prob = psi)
 	w_dkv = array(0, dim = c(D, K, V))
 	for (o in 1:outer) {
 		if (o %% 100 == 0) print(o)
-		psi = rgamma(C, tabulate(c_d, C) + prior.epsilon, prior.epsilon)
-		for (d in 1:D) {
-			pi[d] = rgamma(1, sum(words[d,])+ prior.epsilon, sum(theta[c_d[d], ] %*% phi)+ prior.epsilon)
-			w_dkv[d, , ] = vapply(1:V, function(v) {rmultinom(1, words[d,v], theta[c_d[d], ] * phi[,v])}, rep(0, K))
-		}
-		for (k in 1:K) {
-			for (v in 1:V) {
-				phi[k, v] = rgamma(1, sum(w_dkv[, k, v]) + prior.epsilon, sum(pi*theta[c_d,k])+ prior.epsilon)
-			}
-			for (c in 1:C) {
-				theta[c, k] = rgamma(1, sum(w_dkv[c_d==c, k, ]) + prior.epsilon, sum(pi[c_d==c]*sum(phi[k,]))+ prior.epsilon)
-			}
-		}
+		# psi = rgamma(C, tabulate(c_d, C) + prior.epsilon, prior.epsilon)
+		# for (d in 1:D) {
+			# pi[d] = rgamma(1, sum(words[d,])+ prior.epsilon, sum(theta[c_d[d], ] %*% phi)+ prior.epsilon)
+			# w_dkv[d, , ] = vapply(1:V, function(v) {rmultinom(1, words[d,v], theta[c_d[d], ] * phi[,v])}, rep(0, K))
+		# }
+		# for (k in 1:K) {
+			# for (v in 1:V) {
+				# phi[k, v] = rgamma(1, sum(w_dkv[, k, v]) + prior.epsilon, sum(pi*theta[c_d,k])+ prior.epsilon)
+			# }
+			# for (c in 1:C) {
+				# theta[c, k] = rgamma(1, sum(w_dkv[c_d==c, k, ]) + prior.epsilon, sum(pi[c_d==c]*sum(phi[k,]))+ prior.epsilon)
+			# }
+		# }
 				
 		lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta[c_d[d], ]))
 		u = u_cpp(lambda, u)

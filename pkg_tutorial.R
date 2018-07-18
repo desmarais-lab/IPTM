@@ -45,8 +45,8 @@ support = gibbs.measure.support(A-1)
 prior.beta = list(mean = rep(0, P), var = diag(P))
 prior.eta = list(mean = rep(0, Q), var = diag(Q))
 prior.sigma2 = list(a = 4, b = 1)
-Nsamp = 2500
-outer = 10
+Nsamp = 1000
+outer = 5
 inner = c(5, 5, 5)
 burn = 0
 #Schein test
@@ -55,10 +55,11 @@ for (n in 1:Nsamp) {
 	beta = rmvnorm(C, prior.beta$mean, prior.beta$var)
 	eta = rmvnorm(C, prior.eta$mean, prior.eta$var)
 	sigma2 = 1/rgamma(1, prior.sigma2$a, prior.sigma2$b)
-	initial = Generate(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, prior.epsilon=1)
+	c_d = sample(1:C, D, TRUE)
+	initial = Generate(c_d, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, prior.epsilon=1)
 	infer =  Inference(initial$data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, prior.beta, 
 				prior.eta, prior.sigma2, initial = initial, proposal.var = c(0.01, 0.1, 0.01, 0.5), lasttime = 0)
-    initial2 = Generate(D, A, infer$psi, infer$theta, infer$phi, t(sapply(1:C, function(c) infer$beta[[c]][outer,])),  t(sapply(1:C, function(c) infer$eta[[c]][outer,])), infer$sigma2[outer,], X, Y, support, prior.epsilon = prior.epsilon)                  
+    initial2 = Generate(c_d, A, infer$psi, infer$theta, infer$phi, t(sapply(1:C, function(c) infer$beta[[c]][outer,])),  t(sapply(1:C, function(c) infer$eta[[c]][outer,])), infer$sigma2[outer,], X, Y, support, prior.epsilon = prior.epsilon)                  
                 
 	result[n, ] = c(mean(vapply(initial$data, function(x) sum(x$r_d), c(1))),
                   var(vapply(initial$data, function(x) sum(x$r_d), c(1))),
