@@ -7,3 +7,4 @@
 *.history
 
 *.blg
+.Rproj.user

@@ -1,0 +1,21 @@
+Package: IPTM
+Title: The Interaction-Partitioned Topic Model
+Version: 0.1.0
+Author: c(person("Bomin", "Kim", email = "bomin8319@gmail.com", role = c("aut", "cre")), person("Bruce", "Desmarais", role = "ctb"))
+Maintainer: Bomin Kim <bomin8319@gmail.com>
+Description: This is an R implementation of the interaction-partitioned topic model, which is a probabilistic model for who communicates with whom about what, and when.
+Depends: R (>= 3.4.0)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    Rcpp,
+    combinat,
+    lubridate,
+    RcppArmadillo,
+    MCMCpack,
+    LaplacesDemon,
+LinkingTo:
+    Rcpp,
+    RcppArmadillo,
+RoxygenNote: 6.0.1.9000

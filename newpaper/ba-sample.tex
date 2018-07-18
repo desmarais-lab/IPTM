@@ -190,7 +190,7 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 			s_d &= \mbox{argmin}_{i}(\tau_{id}),\\
 			\boldsymbol{r}_d &= \boldsymbol{u}_{s_d d},\\
 			t_d &=t_{d-1} + \tau_{s_d d},\\
-					\boldsymbol{r}_d &=(w_{d1},\ldots,w_{dV})
+					\boldsymbol{w}_d &=(w_{d1},\ldots,w_{dV})
 		\end{aligned}
 	\end{equation}
 ~\looseness=-1
@@ -223,11 +223,13 @@ While the HEM can be applied for two types of hyperedges---edges with (1) one se
 		\STATE	set $s_d,\ldots, s_{d+n-1}=\mbox{argmin}_{i}(\tau_{id}),$
 		\STATE	set $\boldsymbol{r}_d=\boldsymbol{u}_{s_d d},\ldots,\boldsymbol{r}_{d+n-1}=\boldsymbol{u}_{s_{d+n-1} d}$
 		\STATE	set $t_d, \ldots, t_{d+n-1}=t_{d-1} + \min_i\tau_{id}$
+		\STATE set $\boldsymbol{w}_d=(w_{d1},\ldots,w_{dV})$
 		\STATE		jump to $e = d+n$
 		\ELSE
 		\STATE	set $s_d= \mbox{argmin}_{i}(\tau_{id})$
 		\STATE		set $\boldsymbol{r}_d= \boldsymbol{u}_{s_d d}$
 		\STATE	set $t_d =t_{d-1} + \min_i\tau_{id}$
+			\STATE set $\boldsymbol{w}_d=(w_{d1},\ldots,w_{dV})$
 		\ENDIF
 		\ENDFOR
 	\end{algorithmic}
