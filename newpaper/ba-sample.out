@@ -1,11 +1,11 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
 \BOOKMARK [1][-]{section.2}{Interaction-partitioned Topic Model}{}% 2
 \BOOKMARK [2][-]{subsection.2.1}{Interaction Patterns}{section.2}% 3
-\BOOKMARK [2][-]{subsection.2.2}{Generative Process for Contents}{section.2}% 4
-\BOOKMARK [2][-]{subsection.2.3}{Generative Process for Network Dynamics}{section.2}% 5
-\BOOKMARK [3][-]{section*.1}{Candidate receivers}{subsection.2.3}% 6
-\BOOKMARK [3][-]{section*.2}{Candidate timestamps}{subsection.2.3}% 7
-\BOOKMARK [3][-]{section*.3}{Senders, receivers, and timestamps}{subsection.2.3}% 8
+\BOOKMARK [2][-]{subsection.2.2}{Generative Process for Network Dynamics}{section.2}% 4
+\BOOKMARK [3][-]{section*.1}{Candidate receivers}{subsection.2.2}% 5
+\BOOKMARK [3][-]{section*.2}{Candidate timestamps}{subsection.2.2}% 6
+\BOOKMARK [3][-]{section*.3}{Senders, receivers, and timestamps}{subsection.2.2}% 7
+\BOOKMARK [2][-]{subsection.2.3}{Generative Process for Contents}{section.2}% 8
 \BOOKMARK [1][-]{section.3}{Posterior inference}{}% 9
 \BOOKMARK [2][-]{section*.4}{Interaction pattern factors}{section.3}% 10
 \BOOKMARK [3][-]{section*.5}{Topic-word factors}{section*.4}% 11

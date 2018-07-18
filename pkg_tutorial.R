@@ -52,24 +52,24 @@ burn = 0
 #Schein test
 result = matrix(NA, Nsamp, 2*(10+P+Q))
 for (n in 1:Nsamp) {
-	beta = rmvnorm(1, prior.beta$mean, prior.beta$var)
-	eta = rmvnorm(1, prior.eta$mean, prior.eta$var)
+	beta = rmvnorm(C, prior.beta$mean, prior.beta$var)
+	eta = rmvnorm(C, prior.eta$mean, prior.eta$var)
 	sigma2 = 1/rgamma(1, prior.sigma2$a, prior.sigma2$b)
 	initial = Generate(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, prior.epsilon=1)
-	infer =  Inference(initial$data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, prior.beta, prior.eta, prior.sigma2, 
-                    initial = initial, proposal.var = c(0.01, 0.1, 0.01, 0.5), lasttime = 0)
-    initial2 = Generate(D, A, infer$psi, infer$theta, infer$phi, infer$beta[outer,], infer$eta[outer,], infer$sigma2[outer,], X, Y, support, prior.epsilon=1)                  
+	infer =  Inference(initial$data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, prior.beta, 
+				prior.eta, prior.sigma2, initial = initial, proposal.var = c(0.01, 0.1, 0.01, 0.5), lasttime = 0)
+    initial2 = Generate(D, A, infer$psi, infer$theta, infer$phi, t(sapply(1:C, function(c) infer$beta[[c]][outer,])),  t(sapply(1:C, function(c) infer$eta[[c]][outer,])), infer$sigma2[outer,], X, Y, support, prior.epsilon = prior.epsilon)                  
                 
 	result[n, ] = c(mean(vapply(initial$data, function(x) sum(x$r_d), c(1))),
                   var(vapply(initial$data, function(x) sum(x$r_d), c(1))),
  				 mean(vapply(2:D, function(d) initial$data[[d]]$t_d-initial$data[[d-1]]$t_d, c(1))),
  				var(vapply(2:D, function(d) initial$data[[d]]$t_d-initial$data[[d-1]]$t_d, c(1))),
-                  initial$beta, initial$eta, initial$sigma2, mean(initial$pi), mean(initial$psi), mean(initial$theta), mean(initial$phi), mean(initial$c_d),
+                  initial$beta[1,], initial$eta[1,], initial$sigma2, mean(initial$pi), mean(initial$psi), mean(initial$theta), mean(initial$phi), mean(initial$c_d),
                  mean(vapply(initial2$data, function(x) sum(x$r_d), c(1))),
  			var(vapply(initial2$data, function(x) sum(x$r_d), c(1))),
                   mean(vapply(2:D, function(d) initial2$data[[d]]$t_d-initial2$data[[d-1]]$t_d, c(1))),
  				var(vapply(2:D, function(d) initial2$data[[d]]$t_d-initial2$data[[d-1]]$t_d, c(1))),
-                  initial2$beta, initial2$eta, initial2$sigma2, mean(initial2$pi), mean(initial2$psi), mean(initial2$theta), mean(initial2$phi), mean(initial2$c_d))		
+                  initial2$beta[1,], initial2$eta[1,], initial2$sigma2, mean(initial2$pi), mean(initial2$psi), mean(initial2$theta), mean(initial2$phi), mean(initial2$c_d))		
 }
 par(mfrow=c(4,5))
 GiR_PP_Plots(result[1:(n-1),c(1:(10+P+Q))], result[1:(n-1),c((11+P+Q):(2*(10+P+Q)))])

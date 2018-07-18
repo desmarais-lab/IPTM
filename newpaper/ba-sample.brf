@@ -27,9 +27,9 @@
 \backcite {yoon2014strategies}{{2}{1}{section.1}}
 \backcite {peng2016follower}{{2}{1}{section.1}}
 \backcite {lai2017connecting}{{2}{1}{section.1}}
-\backcite {Blei2003}{{3}{2.2}{subsection.2.2}}
-\backcite {schein2016bayesian}{{3}{2.2}{subsection.2.2}}
-\backcite {nelder1972generalized}{{5}{2.3}{equation.2.9}}
-\backcite {snijders1996stochastic}{{5}{2.3}{section*.3}}
+\backcite {nelder1972generalized}{{4}{2.2}{equation.2.6}}
+\backcite {snijders1996stochastic}{{5}{2.2}{section*.3}}
+\backcite {Blei2003}{{5}{2.3}{subsection.2.3}}
+\backcite {schein2016bayesian}{{5}{2.3}{subsection.2.3}}
 \backcite {tanner1987calculation}{{8}{3}{section*.8}}
 \backcite {neal2015exact}{{8}{3}{section*.8}}

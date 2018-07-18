@@ -130,8 +130,8 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 #' @param psi C-length vector of interaction pattern weights
 #' @param theta C x K matrix of pattern-topic weights
 #' @param phi K x V matrix of topic-word weights
-#' @param beta P-length vector of coefficients for recipients
-#' @param eta Q-length vector of coefficients for timestamps
+#' @param beta C x P matrix of patern-specific coefficients for recipients
+#' @param eta C x Q matrix of patern-specific coefficients for timestamps
 #' @param sigma2 variance parameter for the timestamps
 #' @param X an array of dimension D x A x A x P for covariates used for Gibbs measure
 #' @param Y an array of dimension D x A x Q for covariates used for timestamps GLM
@@ -144,22 +144,21 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 #'
 #' @export
 Generate = function(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, timeunit = 3600, timedist = "lognormal", prior.epsilon) {
-	P = length(beta)
-	Q = length(eta)
+	P = ncol(beta)
+	Q = ncol(eta)
 	C = length(psi)
 	K = ncol(theta)
 	V = ncol(phi)
 	u = list()
 	data = list()
 	pi = c()
-	c_d = c()
+	c_d = sample(1:C, D, TRUE, prob = psi)
 	w_d = matrix(0, D, V)
 	t_d = 0
-	lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta))
-	mu = mu_cpp(Y, eta)
+	lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta[c_d[d],]))
+	mu = t(vapply(1:D, function(d) mu_cpp_d(Y[d,,], eta[c_d[d],]), rep(0, A)))
 	d = 1
 	while (d <= D) {
-		c_d[d] = sample(1:C, 1, prob = psi)
 		pi[d] = rgamma(1, prior.epsilon, prior.epsilon)
 		w_d[d, ] = rpois(V, pi[d]*(theta[c_d[d],]%*%phi))
 		u[[d]] = matrix(0, A, A)
@@ -215,8 +214,8 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 	
 	if (length(initialval) > 0) {
 		u = initialval$u
-		beta = matrix(initialval$beta, nrow = 1)
-		eta = matrix(initialval$eta, nrow = 1)
+		beta = initialval$beta
+		eta = initialval$eta
 		sigma2 = initialval$sigma2
 		psi = initialval$psi
 		theta = initialval$theta
@@ -224,17 +223,17 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 		pi = initialval$pi
 	} else {
 		u = lapply(1:D, function(d) matrix(0, A, A))
-		beta = matrix(prior.beta$mean, nrow = 1)
-		eta = matrix(prior.eta$mean, nrow = 1)
+		beta = matrix(prior.beta$mean, nrow = C, ncol = P, byrow = TRUE)
+		eta = matrix(prior.eta$mean, nrow = C, ncol = Q, byrow = TRUE)
 		sigma2 = prior.sigma2$b / (prior.sigma2$a-1)
 		psi = rgamma(C, prior.epsilon, prior.epsilon)
-		theta = matrix(rgamma(C * K, prior.epsilon, prior.epsilon), C, K)
-		phi = matrix(rgamma(K * V, prior.epsilon, prior.epsilon), K, V)
+		theta = matrix(rgamma(C * K, prior.epsilon, prior.epsilon), C, K, byrow = TRUE)
+		phi = matrix(rgamma(K * V, prior.epsilon, prior.epsilon), K, V, byrow = TRUE)
 		pi = rgamma(D, prior.epsilon, prior.epsilon)
 	}
 	#output matrix
-	betamat = matrix(beta, nrow = outer-burn, ncol = P)
-	etamat = matrix(eta, nrow = outer-burn, ncol = Q)
+	betamat = lapply(1:C, function(c) matrix(beta[c,], nrow = outer-burn, ncol = P, byrow = TRUE))
+	etamat = lapply(1:C, function(c) matrix(eta[c,], nrow = outer-burn, ncol = Q, byrow = TRUE))
 	sigma2mat = matrix(sigma2, nrow = outer-burn, ncol = 1)
 	loglike = matrix(NA, nrow = outer-burn, ncol = 1)
 	senders = vapply(data, function(d) { d[[1]] }, c(1))
@@ -260,17 +259,17 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 			}
 		}
 				
-		lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta))
+		lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta[c_d[d], ]))
 		u = u_cpp(lambda, u)
 		for (d in 1:D) {
 		  u[[d]][senders[d],] = data[[d]][[2]]
 		}
-		prior.old1 = dmvnorm_arma(beta, prior.beta$mean, prior.beta$var)
+		prior.old1 = sum(dmvnorm_arma(beta, prior.beta$mean, prior.beta$var))
     	post.old1 = Edgepartsum(lambda, u)
     	for (i1 in 1:inner[1]) {
-			beta.new = rmvnorm_arma(1, beta, proposal.var[1]*diag(P))
-     		prior.new1 = dmvnorm_arma(beta.new, prior.beta$mean, prior.beta$var)
-			lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta.new))
+			beta.new = t(vapply(1:C, function(c) rmvnorm_arma(1, beta[c,], proposal.var[1]*diag(P)), rep(0, P)))
+     		prior.new1 = sum(dmvnorm_arma(beta.new, prior.beta$mean, prior.beta$var))
+			lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta.new[c_d[d],]))
 			post.new1 = Edgepartsum(lambda, u)
       		loglike.diff = prior.new1+post.new1-prior.old1-post.old1
 			if (log(runif(1, 0, 1)) < loglike.diff) {
@@ -279,17 +278,17 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
         			post.old1 = post.new1
 	      	}
 		}
-		prior.old2 = dmvnorm_arma(eta, prior.eta$mean, prior.eta$var) 
-    	mu = mu_cpp(Y, eta)
+		prior.old2 = sum(dmvnorm_arma(eta, prior.eta$mean, prior.eta$var))
+    	mu = t(vapply(1:D, function(d) mu_cpp_d(Y[d,,], eta[c_d[d],]), rep(0, A)))
         if (timedist == "lognormal") {
             post.old2 = Timepartsum(mu, sqrt(sigma2), senders, timeinc)
         } else {
             post.old2 = Timepartsum2(mu, senders, timeinc)
         }
 		for (i2 in 1:inner[2]) {
-			eta.new = rmvnorm_arma(1, eta, proposal.var[2]*diag(Q))
-     	 	prior.new2 = dmvnorm_arma(eta.new, prior.eta$mean, prior.eta$var) 	
-      		mu = mu_cpp(Y, eta.new)
+			eta.new = t(vapply(1:C, function(c) rmvnorm_arma(1, eta[c,], proposal.var[2]*diag(Q)), rep(0, Q)))
+     	 	prior.new2 = sum(dmvnorm_arma(eta.new, prior.eta$mean, prior.eta$var))
+      		mu = t(vapply(1:D, function(d) mu_cpp_d(Y[d,,], eta.new[c_d[d],]), rep(0, A)))
             if (timedist == "lognormal") {
                 post.new2 = Timepartsum(mu, sqrt(sigma2), senders, timeinc)
             } else {
@@ -304,7 +303,7 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 		}
 		prior.old3 = dinvgamma(sigma2, prior.sigma2$a, prior.sigma2$b) 
     	post.old3 = post.old2
-    	mu = mu_cpp(Y, eta)
+    	mu = t(vapply(1:D, function(d) mu_cpp_d(Y[d,,], eta[c_d[d],]), rep(0, A)))
         
         if (timedist == "lognormal") {
 		for (i3 in 1:inner[3]) {
@@ -320,8 +319,10 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
         }
         }
 		if (o > burn) {
-			betamat[o-burn, ] = beta
-			etamat[o-burn, ] = eta
+			for (c in 1:C) {
+			betamat[[c]][o-burn, ] = beta[c, ]
+			etamat[[c]][o-burn, ] = eta[c, ]
+			}
 			sigma2mat[o-burn, ] = sigma2	
 			loglike[o-burn, ] = post.old1 + post.old3
 		}		
@@ -333,7 +334,10 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 #' @title PPC
 #' @description Generate a collection of events according to the posterior predictive checks
 #'
-#' @param D number of events to be generated
+#' @param c_d interaction pattern assignments
+#' @param psi C-length vector of interaction pattern weights
+#' @param theta C x K matrix of pattern-topic weights
+#' @param phi K x V matrix of topic-word weights
 #' @param beta P-length vector of coefficients for recipients
 #' @param eta Q-length vector of coefficients for timestamps
 #' @param sigma2 variance parameter for the timestamps
@@ -346,19 +350,25 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 #' @return generated data including (sender, recipients, timestamp)
 #'
 #' @export
-PPC = function(D, beta, eta, sigma2, X, Y, timeunit = 3600, u, timedist = "lognormal") {
-    P = length(beta)
-    Q = length(eta)
+PPC = function(c_d, psi, theta, phi, beta, eta, sigma2, X, Y, timeunit = 3600, u, timedist = "lognormal") {
+    D = length(c_d)
+    P = ncol(beta)
+    Q = ncol(eta)
     A = dim(X)[2]
+    C = length(psi)
+	K = ncol(theta)
+	V = ncol(phi)
     u = u
     data = list()
     lambda = list()
     mu = matrix(NA, D, A)
+    w_d = matrix(0, D, V)
     d = 1
     while (d <= D) {
-        lambda[[d]] = lambda_cpp(X[d,,,], beta)
+    	w_d[d, ] = rpois(V, pi[d]*(theta[c_d[d],]%*%phi))
+        lambda[[d]] = lambda_cpp(X[d,,,], beta[c_d[d],])
         u[[d]] = u_cpp_d(lambda[[d]], u[[d]])
-        mu[d, ] = mu_cpp_d(Y[d,,], eta)
+        mu[d, ] = mu_cpp_d(Y[d,,], eta[c_d[d],])
         if (timedist == "lognormal") {
             tau = rlnorm(A, mu[d, ], sqrt(sigma2))
         } else {
@@ -368,7 +378,7 @@ PPC = function(D, beta, eta, sigma2, X, Y, timeunit = 3600, u, timedist = "logno
             a_d = which(tau == min(tau))
             r_d = u[[d]][a_d,]
             t_d = min(tau) * timeunit
-            data[[d]] = list(a_d = a_d, r_d = r_d, t_d = t_d)
+            data[[d]] = list(a_d = a_d, r_d = r_d, t_d = t_d, w_d = w_d[d, ])
             d = d+1
         }
     }

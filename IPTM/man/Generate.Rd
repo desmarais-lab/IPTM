@@ -18,9 +18,9 @@ Generate(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support,
 
 \item{phi}{K x V matrix of topic-word weights}
 
-\item{beta}{P-length vector of coefficients for recipients}
+\item{beta}{C x P matrix of patern-specific coefficients for recipients}
 
-\item{eta}{Q-length vector of coefficients for timestamps}
+\item{eta}{C x Q matrix of patern-specific coefficients for timestamps}
 
 \item{sigma2}{variance parameter for the timestamps}
 

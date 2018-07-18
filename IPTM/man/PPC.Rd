@@ -4,10 +4,17 @@
 \alias{PPC}
 \title{PPC}
 \usage{
-PPC(D, beta, eta, sigma2, X, Y, timeunit = 3600, u, timedist = "lognormal")
+PPC(c_d, psi, theta, phi, beta, eta, sigma2, X, Y, timeunit = 3600, u,
+  timedist = "lognormal")
 }
 \arguments{
-\item{D}{number of events to be generated}
+\item{c_d}{interaction pattern assignments}
+
+\item{psi}{C-length vector of interaction pattern weights}
+
+\item{theta}{C x K matrix of pattern-topic weights}
+
+\item{phi}{K x V matrix of topic-word weights}
 
 \item{beta}{P-length vector of coefficients for recipients}
 
