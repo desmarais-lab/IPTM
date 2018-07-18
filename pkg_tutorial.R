@@ -37,30 +37,42 @@ P = 4
 Q = 3
 X = array(rnorm(D*A*A*P), dim = c(D,A,A,P))
 Y = array(rnorm(D*A*Q), dim = c(D,A,Q))
-psi = rgamma(C, 1, 1)
-theta = matrix(rgamma(C*K, 1, 1), C, K)
-phi = matrix(rgamma(K*V, 1, 1), K, V)
+prior.epsilon = 1
+psi = rgamma(C, prior.epsilon, prior.epsilon)
+theta = matrix(rgamma(C*K, prior.epsilon, prior.epsilon), C, K)
+phi = matrix(rgamma(K*V, prior.epsilon, prior.epsilon), K, V)
 support = gibbs.measure.support(A-1)
 prior.beta = list(mean = rep(0, P), var = diag(P))
 prior.eta = list(mean = rep(0, Q), var = diag(Q))
 prior.sigma2 = list(a = 4, b = 1)
 Nsamp = 2500
+outer = 10
+inner = c(5, 5, 5)
+burn = 0
 #Schein test
-result = matrix(NA, Nsamp, 2*(3+P+Q))
+result = matrix(NA, Nsamp, 2*(10+P+Q))
 for (n in 1:Nsamp) {
 	beta = rmvnorm(1, prior.beta$mean, prior.beta$var)
 	eta = rmvnorm(1, prior.eta$mean, prior.eta$var)
 	sigma2 = 1/rgamma(1, prior.sigma2$a, prior.sigma2$b)
-	initial = Generate(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support)
-	infer = Inference(initial$data, 5, c(5,5,5), prior.beta, prior.delta, prior.eta, prior.sigma2, initial,
-		  proposal.var = c(0.1, 0.1, 0.01, 0.1))
-	result[n, ] = c(mean(vapply(initial$u, function(x) rowSums(x), rep(0, A))),
-				initial$beta, initial$delta, initial$eta, initial$sigma2, 
-				 mean(vapply(infer$u, function(x) rowSums(x), rep(0, A))),
-				infer$beta, infer$delta, infer$eta, infer$sigma2)
+	initial = Generate(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, prior.epsilon=1)
+	infer =  Inference(initial$data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, prior.beta, prior.eta, prior.sigma2, 
+                    initial = initial, proposal.var = c(0.01, 0.1, 0.01, 0.5), lasttime = 0)
+    initial2 = Generate(D, A, infer$psi, infer$theta, infer$phi, infer$beta[outer,], infer$eta[outer,], infer$sigma2[outer,], X, Y, support, prior.epsilon=1)                  
+                
+	result[n, ] = c(mean(vapply(initial$data, function(x) sum(x$r_d), c(1))),
+                  var(vapply(initial$data, function(x) sum(x$r_d), c(1))),
+ 				 mean(vapply(2:D, function(d) initial$data[[d]]$t_d-initial$data[[d-1]]$t_d, c(1))),
+ 				var(vapply(2:D, function(d) initial$data[[d]]$t_d-initial$data[[d-1]]$t_d, c(1))),
+                  initial$beta, initial$eta, initial$sigma2, mean(initial$pi), mean(initial$psi), mean(initial$theta), mean(initial$phi), mean(initial$c_d),
+                 mean(vapply(initial2$data, function(x) sum(x$r_d), c(1))),
+ 			var(vapply(initial2$data, function(x) sum(x$r_d), c(1))),
+                  mean(vapply(2:D, function(d) initial2$data[[d]]$t_d-initial2$data[[d-1]]$t_d, c(1))),
+ 				var(vapply(2:D, function(d) initial2$data[[d]]$t_d-initial2$data[[d-1]]$t_d, c(1))),
+                  initial2$beta, initial2$eta, initial2$sigma2, mean(initial2$pi), mean(initial2$psi), mean(initial2$theta), mean(initial2$phi), mean(initial2$c_d))		
 }
-par(mfrow=c(2,6))
-GiR_PP_Plots(result[,c(1:(3+P+Q))], result[,c((4+P+Q):(2*(3+P+Q)))])
+par(mfrow=c(4,5))
+GiR_PP_Plots(result[1:(n-1),c(1:(10+P+Q))], result[1:(n-1),c((11+P+Q):(2*(10+P+Q)))])
 
 
 

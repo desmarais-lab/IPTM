@@ -5,7 +5,7 @@
 \title{Generate}
 \usage{
 Generate(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support,
-  timeunit = 3600, timedist = "lognormal")
+  timeunit = 3600, timedist = "lognormal", prior.epsilon)
 }
 \arguments{
 \item{D}{number of events to be generated}
@@ -33,6 +33,8 @@ Generate(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support,
 \item{timeunit}{hour (= 3600) or day (=3600*24) and so on}
 
 \item{timedist}{lognormal or exponential (will include others)}
+
+\item{prior.epsilon}{prior parameter in Gamma distribution}
 }
 \value{
 generated data including (sender, recipients, timestamp)

@@ -138,11 +138,12 @@ GiR_PP_Plots = function(Forward_stats, Backward_stats) {
 #' @param support support of latent recipients from Gibbs measure
 #' @param timeunit hour (= 3600) or day (=3600*24) and so on
 #' @param timedist lognormal or exponential (will include others)
+#' @param prior.epsilon prior parameter in Gamma distribution
 #'
 #' @return generated data including (sender, recipients, timestamp)
 #'
 #' @export
-Generate = function(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, timeunit = 3600, timedist = "lognormal") {
+Generate = function(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, timeunit = 3600, timedist = "lognormal", prior.epsilon) {
 	P = length(beta)
 	Q = length(eta)
 	C = length(psi)
@@ -159,7 +160,7 @@ Generate = function(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, tim
 	d = 1
 	while (d <= D) {
 		c_d[d] = sample(1:C, 1, prob = psi)
-		pi[d] = rgamma(1, 0.1, 0.1)
+		pi[d] = rgamma(1, prior.epsilon, prior.epsilon)
 		w_d[d, ] = rpois(V, pi[d]*(theta[c_d[d],]%*%phi))
 		u[[d]] = matrix(0, A, A)
 		for (a in 1:A) {
@@ -178,18 +179,22 @@ Generate = function(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, tim
 		d = d+1
 		}
 	}
-	return(list(data = data, u = u, beta = beta, eta = eta, sigma2 = sigma2, c_d = c_d, pi = pi))
+	return(list(data = data, u = u, beta = beta, eta = eta, sigma2 = sigma2, c_d = c_d, pi = pi, theta = theta, psi = psi, phi = phi))
 }
 
 #' @title Inference
 #' @description Iterate Markov Chain Monte Carlo (MCMC) algorithm to infer the parameters
 #'
-#' @param data list of tie data with 3 elements (1: sender, 2: recipient, 3: timestamp in unix.time format)
+#' @param data list of data with 4 elements (1: sender, 2: recipient, 3: timestamp in unix.time format, 4: words)
 #' @param X an array of dimension D x A x A x P for covariates used for Gibbs measure
 #' @param Y an array of dimension D x A x Q for covariates used for timestamps GLM
+#' @param C number of interaction patterns
+#' @param K number of topics
+#' @param V number of words
 #' @param outer size of outer iterations
 #' @param inner size of inner iteration for Metropolis-Hastings updates
 #' @param burn size of burn-in
+#' @param prior.epsilon prior parameter in Gamma distribution
 #' @param prior.beta prior mean and covariance of beta in multivariate Normal distribution
 #' @param prior.eta prior mean and covariance of eta in multivariate Normal distribution
 #' @param prior.sigma2 prior shape and scale parameter of sigma2 in inverse-Gamma distribution
@@ -202,7 +207,7 @@ Generate = function(D, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, tim
 #' @return generated data including (sender, recipients, timestamp)
 #'
 #' @export
-Inference = function(data, X, Y, outer, inner, burn, prior.beta, prior.eta, prior.sigma2, initialval = NULL, proposal.var, timeunit = 3600, lasttime, timedist = "lognormal") {
+Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, prior.beta, prior.eta, prior.sigma2, initialval = NULL, proposal.var, timeunit = 3600, lasttime, timedist = "lognormal") {
 	D = dim(X)[1]
 	A = dim(X)[2]
 	P = dim(X)[4]
@@ -213,11 +218,19 @@ Inference = function(data, X, Y, outer, inner, burn, prior.beta, prior.eta, prio
 		beta = matrix(initialval$beta, nrow = 1)
 		eta = matrix(initialval$eta, nrow = 1)
 		sigma2 = initialval$sigma2
+		psi = initialval$psi
+		theta = initialval$theta
+		phi = initialval$phi
+		pi = initialval$pi
 	} else {
 		u = lapply(1:D, function(d) matrix(0, A, A))
 		beta = matrix(prior.beta$mean, nrow = 1)
 		eta = matrix(prior.eta$mean, nrow = 1)
 		sigma2 = prior.sigma2$b / (prior.sigma2$a-1)
+		psi = rgamma(C, prior.epsilon, prior.epsilon)
+		theta = matrix(rgamma(C * K, prior.epsilon, prior.epsilon), C, K)
+		phi = matrix(rgamma(K * V, prior.epsilon, prior.epsilon), K, V)
+		pi = rgamma(D, prior.epsilon, prior.epsilon)
 	}
 	#output matrix
 	betamat = matrix(beta, nrow = outer-burn, ncol = P)
@@ -228,8 +241,25 @@ Inference = function(data, X, Y, outer, inner, burn, prior.beta, prior.eta, prio
 	timestamps = vapply(data, function(d) { d[[3]] }, c(1))
 	timeinc = c(timestamps[1]-lasttime, timestamps[-1]-timestamps[-length(timestamps)]) / timeunit
 	timeinc[timeinc == 0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
+	words = t(vapply(data, function(d) { d[[4]] }, rep(0, V)))
+	c_d = sample(1:C, D, replace = TRUE, prob = psi)
+	w_dkv = array(0, dim = c(D, K, V))
 	for (o in 1:outer) {
 		if (o %% 100 == 0) print(o)
+		psi = rgamma(C, tabulate(c_d, C) + prior.epsilon, prior.epsilon)
+		for (d in 1:D) {
+			pi[d] = rgamma(1, sum(words[d,])+ prior.epsilon, sum(theta[c_d[d], ] %*% phi)+ prior.epsilon)
+			w_dkv[d, , ] = vapply(1:V, function(v) {rmultinom(1, words[d,v], theta[c_d[d], ] * phi[,v])}, rep(0, K))
+		}
+		for (k in 1:K) {
+			for (v in 1:V) {
+				phi[k, v] = rgamma(1, sum(w_dkv[, k, v]) + prior.epsilon, sum(pi*theta[c_d,k])+ prior.epsilon)
+			}
+			for (c in 1:C) {
+				theta[c, k] = rgamma(1, sum(w_dkv[c_d==c, k, ]) + prior.epsilon, sum(pi[c_d==c]*sum(phi[k,]))+ prior.epsilon)
+			}
+		}
+				
 		lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta))
 		u = u_cpp(lambda, u)
 		for (d in 1:D) {
@@ -296,7 +326,7 @@ Inference = function(data, X, Y, outer, inner, burn, prior.beta, prior.eta, prio
 			loglike[o-burn, ] = post.old1 + post.old3
 		}		
 	}
-	return(list(u = u, beta = betamat, eta = etamat, sigma2 = sigma2mat, loglike = loglike))
+	return(list(pi = pi, psi = psi, theta = theta, phi = phi, c_d = c_d, u = u, beta = betamat, eta = etamat, sigma2 = sigma2mat, loglike = loglike))
 }
 
 

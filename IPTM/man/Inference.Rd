@@ -4,22 +4,30 @@
 \alias{Inference}
 \title{Inference}
 \usage{
-Inference(data, X, Y, outer, inner, burn, prior.beta, prior.eta, prior.sigma2,
-  initialval = NULL, proposal.var, timeunit = 3600, lasttime,
-  timedist = "lognormal")
+Inference(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, prior.beta,
+  prior.eta, prior.sigma2, initialval = NULL, proposal.var, timeunit = 3600,
+  lasttime, timedist = "lognormal")
 }
 \arguments{
-\item{data}{list of tie data with 3 elements (1: sender, 2: recipient, 3: timestamp in unix.time format)}
+\item{data}{list of data with 4 elements (1: sender, 2: recipient, 3: timestamp in unix.time format, 4: words)}
 
 \item{X}{an array of dimension D x A x A x P for covariates used for Gibbs measure}
 
 \item{Y}{an array of dimension D x A x Q for covariates used for timestamps GLM}
+
+\item{C}{number of interaction patterns}
+
+\item{K}{number of topics}
+
+\item{V}{number of words}
 
 \item{outer}{size of outer iterations}
 
 \item{inner}{size of inner iteration for Metropolis-Hastings updates}
 
 \item{burn}{size of burn-in}
+
+\item{prior.epsilon}{prior parameter in Gamma distribution}
 
 \item{prior.beta}{prior mean and covariance of beta in multivariate Normal distribution}
 
