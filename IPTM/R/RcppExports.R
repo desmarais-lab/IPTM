@@ -29,8 +29,16 @@ Timepartsum <- function(mumat, sigma_tau, senders, timestamps) {
     .Call('_IPTM_Timepartsum', PACKAGE = 'IPTM', mumat, sigma_tau, senders, timestamps)
 }
 
+Timepart_d <- function(muvec, sigma_tau, sender, timestamps) {
+    .Call('_IPTM_Timepart_d', PACKAGE = 'IPTM', muvec, sigma_tau, sender, timestamps)
+}
+
 Timepartsum2 <- function(mumat, senders, timestamps) {
     .Call('_IPTM_Timepartsum2', PACKAGE = 'IPTM', mumat, senders, timestamps)
+}
+
+Timepart2_d <- function(muvec, sigma_tau, sender, timestamps) {
+    .Call('_IPTM_Timepart2_d', PACKAGE = 'IPTM', muvec, sigma_tau, sender, timestamps)
 }
 
 Timepartindiv <- function(mu, sigma_tau, timestamp) {
@@ -51,6 +59,10 @@ normalizer <- function(lambda_da) {
 
 Edgepartsum <- function(lambda, u) {
     .Call('_IPTM_Edgepartsum', PACKAGE = 'IPTM', lambda, u)
+}
+
+Edgepart_d <- function(lambda_d, u_d) {
+    .Call('_IPTM_Edgepart_d', PACKAGE = 'IPTM', lambda_d, u_d)
 }
 
 mu_cpp <- function(Y, eta) {

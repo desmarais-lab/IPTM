@@ -102,6 +102,23 @@ double Timepartsum (NumericMatrix mumat, double sigma_tau,
 }
 
 // **********************************************************//
+//              Likelihood evaluation of Timepart            //
+// **********************************************************//
+// [[Rcpp::export]]
+double Timepart_d (NumericVector muvec, double sigma_tau,
+                    int sender, double timestamps){
+    double timesum = 0;
+    int a_d = sender - 1;
+    timesum += R::dlnorm(timestamps, muvec(a_d), sigma_tau, TRUE);
+        for (unsigned int i = 0; i < muvec.size(); i++) {
+            if (i != a_d) {
+                timesum += R::plnorm(timestamps, muvec(i), sigma_tau, FALSE, TRUE);
+            }
+        }
+    return timesum;
+}
+
+// **********************************************************//
 //           Likelihood evaluation of Timepart--exp          //
 // **********************************************************//
 // [[Rcpp::export]]
@@ -119,7 +136,22 @@ double Timepartsum2 (NumericMatrix mumat, IntegerVector senders, NumericVector t
     }
     return timesum;
 }
-
+// **********************************************************//
+//              Likelihood evaluation of Timepart            //
+// **********************************************************//
+// [[Rcpp::export]]
+double Timepart2_d (NumericVector muvec, double sigma_tau,
+                   int sender, double timestamps){
+    double timesum = 0;
+    int a_d = sender - 1;
+    timesum += R::dexp(timestamps, exp(muvec(a_d)), TRUE);
+    for (unsigned int i = 0; i < muvec.size(); i++) {
+        if (i != a_d) {
+            timesum += R::pexp(timestamps, exp(muvec(i)), FALSE, TRUE);
+        }
+    }
+    return timesum;
+}
 // **********************************************************//
 //              Likelihood evaluation of Timepart            //
 // **********************************************************//
@@ -206,6 +238,23 @@ double Edgepartsum (List lambda, List u) {
 		}
 	}
 	return out;
+}
+
+// **********************************************************//
+//                   Posterior for Edgepart                  //
+// **********************************************************//
+// [[Rcpp::export]]
+double Edgepart_d(NumericMatrix lambda_d, NumericMatrix u_d) {
+    double out = 0;
+    int A = u_d.nrow();
+        for (unsigned int a = 0; a < A; a++) {
+            double num = sum(lambda_d(a, _) * u_d(a, _));
+            NumericVector lambda_da = exp(lambda_d(a, _));
+            lambda_da[a] = 0;
+            double denom = normalizer(lambda_da);
+            out += num - denom;
+        }
+    return out;
 }
 
 // **********************************************************//

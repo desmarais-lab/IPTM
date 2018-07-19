@@ -93,6 +93,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Timepart_d
+double Timepart_d(NumericVector muvec, double sigma_tau, int sender, double timestamps);
+RcppExport SEXP _IPTM_Timepart_d(SEXP muvecSEXP, SEXP sigma_tauSEXP, SEXP senderSEXP, SEXP timestampsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type muvec(muvecSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma_tau(sigma_tauSEXP);
+    Rcpp::traits::input_parameter< int >::type sender(senderSEXP);
+    Rcpp::traits::input_parameter< double >::type timestamps(timestampsSEXP);
+    rcpp_result_gen = Rcpp::wrap(Timepart_d(muvec, sigma_tau, sender, timestamps));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Timepartsum2
 double Timepartsum2(NumericMatrix mumat, IntegerVector senders, NumericVector timestamps);
 RcppExport SEXP _IPTM_Timepartsum2(SEXP mumatSEXP, SEXP sendersSEXP, SEXP timestampsSEXP) {
@@ -103,6 +117,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type senders(sendersSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type timestamps(timestampsSEXP);
     rcpp_result_gen = Rcpp::wrap(Timepartsum2(mumat, senders, timestamps));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Timepart2_d
+double Timepart2_d(NumericVector muvec, double sigma_tau, int sender, double timestamps);
+RcppExport SEXP _IPTM_Timepart2_d(SEXP muvecSEXP, SEXP sigma_tauSEXP, SEXP senderSEXP, SEXP timestampsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type muvec(muvecSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma_tau(sigma_tauSEXP);
+    Rcpp::traits::input_parameter< int >::type sender(senderSEXP);
+    Rcpp::traits::input_parameter< double >::type timestamps(timestampsSEXP);
+    rcpp_result_gen = Rcpp::wrap(Timepart2_d(muvec, sigma_tau, sender, timestamps));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -162,6 +190,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< List >::type u(uSEXP);
     rcpp_result_gen = Rcpp::wrap(Edgepartsum(lambda, u));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Edgepart_d
+double Edgepart_d(NumericMatrix lambda_d, NumericMatrix u_d);
+RcppExport SEXP _IPTM_Edgepart_d(SEXP lambda_dSEXP, SEXP u_dSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type lambda_d(lambda_dSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type u_d(u_dSEXP);
+    rcpp_result_gen = Rcpp::wrap(Edgepart_d(lambda_d, u_d));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -247,12 +287,15 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IPTM_transpose", (DL_FUNC) &_IPTM_transpose, 1},
     {"_IPTM_tabulateC", (DL_FUNC) &_IPTM_tabulateC, 2},
     {"_IPTM_Timepartsum", (DL_FUNC) &_IPTM_Timepartsum, 4},
+    {"_IPTM_Timepart_d", (DL_FUNC) &_IPTM_Timepart_d, 4},
     {"_IPTM_Timepartsum2", (DL_FUNC) &_IPTM_Timepartsum2, 3},
+    {"_IPTM_Timepart2_d", (DL_FUNC) &_IPTM_Timepart2_d, 4},
     {"_IPTM_Timepartindiv", (DL_FUNC) &_IPTM_Timepartindiv, 3},
     {"_IPTM_Timepartindiv2", (DL_FUNC) &_IPTM_Timepartindiv2, 2},
     {"_IPTM_multinom_vec", (DL_FUNC) &_IPTM_multinom_vec, 1},
     {"_IPTM_normalizer", (DL_FUNC) &_IPTM_normalizer, 1},
     {"_IPTM_Edgepartsum", (DL_FUNC) &_IPTM_Edgepartsum, 2},
+    {"_IPTM_Edgepart_d", (DL_FUNC) &_IPTM_Edgepart_d, 2},
     {"_IPTM_mu_cpp", (DL_FUNC) &_IPTM_mu_cpp, 2},
     {"_IPTM_mu_cpp_d", (DL_FUNC) &_IPTM_mu_cpp_d, 2},
     {"_IPTM_lambda_cpp", (DL_FUNC) &_IPTM_lambda_cpp, 2},

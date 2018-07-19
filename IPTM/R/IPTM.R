@@ -147,7 +147,7 @@ Generate = function(c_d, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, t
 	D = length(c_d)
 	P = ncol(beta)
 	Q = ncol(eta)
-	C = length(psi)
+	nIP = length(psi)
 	K = ncol(theta)
 	V = ncol(phi)
 	u = list()
@@ -187,7 +187,7 @@ Generate = function(c_d, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, t
 #' @param data list of data with 4 elements (1: sender, 2: recipient, 3: timestamp in unix.time format, 4: words)
 #' @param X an array of dimension D x A x A x P for covariates used for Gibbs measure
 #' @param Y an array of dimension D x A x Q for covariates used for timestamps GLM
-#' @param C number of interaction patterns
+#' @param nIP number of interaction patterns
 #' @param K number of topics
 #' @param V number of words
 #' @param outer size of outer iterations
@@ -206,7 +206,7 @@ Generate = function(c_d, A, psi, theta, phi, beta, eta, sigma2, X, Y, support, t
 #' @return generated data including (sender, recipients, timestamp)
 #'
 #' @export
-Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, prior.beta, prior.eta, prior.sigma2, initialval = NULL, proposal.var, timeunit = 3600, lasttime, timedist = "lognormal") {
+Inference = function(data, X, Y, nIP, K, V, outer, inner, burn, prior.epsilon, prior.beta, prior.eta, prior.sigma2, initialval = NULL, proposal.var, timeunit = 3600, lasttime, timedist = "lognormal") {
 	D = dim(X)[1]
 	A = dim(X)[2]
 	P = dim(X)[4]
@@ -224,18 +224,18 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 		c_d = initialval$c_d
 	} else {
 		u = lapply(1:D, function(d) matrix(0, A, A))
-		beta = matrix(prior.beta$mean, nrow = C, ncol = P, byrow = TRUE)
-		eta = matrix(prior.eta$mean, nrow = C, ncol = Q, byrow = TRUE)
+		beta = matrix(prior.beta$mean, nrow = nIP, ncol = P, byrow = TRUE)
+		eta = matrix(prior.eta$mean, nrow = nIP, ncol = Q, byrow = TRUE)
 		sigma2 = prior.sigma2$b / (prior.sigma2$a-1)
-		psi = rgamma(C, prior.epsilon, prior.epsilon)
-		theta = matrix(rgamma(C * K, prior.epsilon, prior.epsilon), C, K, byrow = TRUE)
+		psi = rgamma(nIP, prior.epsilon, prior.epsilon)
+		theta = matrix(rgamma(nIP * K, prior.epsilon, prior.epsilon), nIP, K, byrow = TRUE)
 		phi = matrix(rgamma(K * V, prior.epsilon, prior.epsilon), K, V, byrow = TRUE)
 		pi = rgamma(D, prior.epsilon, prior.epsilon)
-		c_d = sample(1:C, D, replace = TRUE, prob = psi)
+		c_d = sample(1:nIP, D, replace = TRUE, prob = psi)
 	}
 	#output matrix
-	betamat = lapply(1:C, function(c) matrix(beta[c,], nrow = outer-burn, ncol = P, byrow = TRUE))
-	etamat = lapply(1:C, function(c) matrix(eta[c,], nrow = outer-burn, ncol = Q, byrow = TRUE))
+	betamat = lapply(1:nIP, function(IP) matrix(beta[IP,], nrow = outer-burn, ncol = P, byrow = TRUE))
+	etamat = lapply(1:nIP, function(IP) matrix(eta[IP,], nrow = outer-burn, ncol = Q, byrow = TRUE))
 	sigma2mat = matrix(sigma2, nrow = outer-burn, ncol = 1)
 	loglike = matrix(NA, nrow = outer-burn, ncol = 1)
 	senders = vapply(data, function(d) { d[[1]] }, c(1))
@@ -244,9 +244,10 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 	timeinc[timeinc == 0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
 	words = t(vapply(data, function(d) { d[[4]] }, rep(0, V)))
 	w_dkv = array(0, dim = c(D, K, V))
+	prop_c = rep(0, nIP)
 	for (o in 1:outer) {
 		if (o %% 100 == 0) print(o)
-		# psi = rgamma(C, tabulate(c_d, C) + prior.epsilon, prior.epsilon)
+		# psi = rgamma(nIP, tabulate(c_d, nIP) + prior.epsilon, prior.epsilon)
 		# for (d in 1:D) {
 			# pi[d] = rgamma(1, sum(words[d,])+ prior.epsilon, sum(theta[c_d[d], ] %*% phi)+ prior.epsilon)
 			# w_dkv[d, , ] = vapply(1:V, function(v) {rmultinom(1, words[d,v], theta[c_d[d], ] * phi[,v])}, rep(0, K))
@@ -255,8 +256,8 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 			# for (v in 1:V) {
 				# phi[k, v] = rgamma(1, sum(w_dkv[, k, v]) + prior.epsilon, sum(pi*theta[c_d,k])+ prior.epsilon)
 			# }
-			# for (c in 1:C) {
-				# theta[c, k] = rgamma(1, sum(w_dkv[c_d==c, k, ]) + prior.epsilon, sum(pi[c_d==c]*sum(phi[k,]))+ prior.epsilon)
+			# for (IP in 1:nIP) {
+				# theta[IP, k] = rgamma(1, sum(w_dkv[c_d==IP, k, ]) + prior.epsilon, sum(pi[c_d==c]*sum(phi[k,]))+ prior.epsilon)
 			# }
 		# }
 				
@@ -268,7 +269,7 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 		prior.old1 = sum(dmvnorm_arma(beta, prior.beta$mean, prior.beta$var))
     	post.old1 = Edgepartsum(lambda, u)
     	for (i1 in 1:inner[1]) {
-			beta.new = t(vapply(1:C, function(c) rmvnorm_arma(1, beta[c,], proposal.var[1]*diag(P)), rep(0, P)))
+			beta.new = t(vapply(1:nIP, function(IP) rmvnorm_arma(1, beta[IP,], proposal.var[1]*diag(P)), rep(0, P)))
      		prior.new1 = sum(dmvnorm_arma(beta.new, prior.beta$mean, prior.beta$var))
 			lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta.new[c_d[d],]))
 			post.new1 = Edgepartsum(lambda, u)
@@ -287,7 +288,7 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
             post.old2 = Timepartsum2(mu, senders, timeinc)
         }
 		for (i2 in 1:inner[2]) {
-			eta.new = t(vapply(1:C, function(c) rmvnorm_arma(1, eta[c,], proposal.var[2]*diag(Q)), rep(0, Q)))
+			eta.new = t(vapply(1:nIP, function(IP) rmvnorm_arma(1, eta[IP,], proposal.var[2]*diag(Q)), rep(0, Q)))
      	 	prior.new2 = sum(dmvnorm_arma(eta.new, prior.eta$mean, prior.eta$var))
       		mu = t(vapply(1:D, function(d) mu_cpp_d(Y[d,,], eta.new[c_d[d],]), rep(0, A)))
             if (timedist == "lognormal") {
@@ -319,10 +320,33 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 	      	}
         }
         }
+        
+        if (timedist == "lognormal") {
+        for (d in 1:D) {
+        	prop_c[c_d[d]] = Edgepart_d(lambda[[d]], u[[d]]) + Timepart_d(mu[d, ], sqrt(sigma2), senders[d], timeinc[d])
+        		for (IP in (1:nIP)[-c_d[d]]) {
+        			lambda[[d]] = lambda_cpp(X[d,,,], beta[IP, ])
+        			mu[d,] = mu_cpp_d(Y[d,,], eta[IP,])
+        			prop_c[IP] = Edgepart_d(lambda[[d]], u[[d]]) + Timepart_d(mu[d, ], sqrt(sigma2), senders[d], timeinc[d])  
+        		}
+        		c_d[d] = sample(1:nIP, 1, prob = exp(prop_c))
+        }
+        } else {
+        for (d in 1:D) {
+        	prop_c[c_d[d]] = Edgepart_d(lambda[[d]], u[[d]]) + Timepart2_d(mu[d, ], senders[d], timeinc[d])
+        	for (c in (1:nIP)[-c_d[d]]) {
+        		lambda[[d]] = lambda_cpp(X[d,,,], beta[IP, ])
+        		mu[d,] = mu_cpp_d(Y[d,,], eta[IP,])
+        		prop_c[IP] = Edgepart_d(lambda[[d]], u[[d]]) + Timepart2_d(mu[d, ], senders[d], timeinc[d])		
+        	}
+        	c_d[d] = sample(1:nIP, 1, prob = exp(prop_c))
+        }        	
+        }
+               
 		if (o > burn) {
-			for (c in 1:C) {
-			betamat[[c]][o-burn, ] = beta[c, ]
-			etamat[[c]][o-burn, ] = eta[c, ]
+			for (IP in 1:nIP) {
+			betamat[[IP]][o-burn, ] = beta[IP, ]
+			etamat[[IP]][o-burn, ] = eta[IP, ]
 			}
 			sigma2mat[o-burn, ] = sigma2	
 			loglike[o-burn, ] = post.old1 + post.old3
@@ -337,7 +361,7 @@ Inference = function(data, X, Y, C, K, V, outer, inner, burn, prior.epsilon, pri
 #'
 #' @param c_d interaction pattern assignments
 #' @param psi C-length vector of interaction pattern weights
-#' @param theta C x K matrix of pattern-topic weights
+#' @param theta nIP x K matrix of pattern-topic weights
 #' @param phi K x V matrix of topic-word weights
 #' @param beta P-length vector of coefficients for recipients
 #' @param eta Q-length vector of coefficients for timestamps
@@ -356,7 +380,7 @@ PPC = function(c_d, psi, theta, phi, beta, eta, sigma2, X, Y, timeunit = 3600, u
     P = ncol(beta)
     Q = ncol(eta)
     A = dim(X)[2]
-    C = length(psi)
+    nIP = length(psi)
 	K = ncol(theta)
 	V = ncol(phi)
     u = u
