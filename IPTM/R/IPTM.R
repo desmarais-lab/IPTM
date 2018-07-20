@@ -242,15 +242,15 @@ Inference = function(data, X, Y, nIP, K, V, outer, inner, burn, prior.epsilon, p
 	timestamps = vapply(data, function(d) { d[[3]] }, c(1))
 	timeinc = c(timestamps[1]-lasttime, timestamps[-1]-timestamps[-length(timestamps)]) / timeunit
 	timeinc[timeinc == 0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
-	words = t(vapply(data, function(d) { d[[4]] }, rep(0, V)))
+	w_d = t(vapply(data, function(d) { d[[4]] }, rep(0, V)))
 	w_dkv = array(0, dim = c(D, K, V))
 	prop_c = rep(0, nIP)
 	for (o in 1:outer) {
 		if (o %% 100 == 0) print(o)
 		# psi = rgamma(nIP, tabulate(c_d, nIP) + prior.epsilon, prior.epsilon)
 		# for (d in 1:D) {
-			# pi[d] = rgamma(1, sum(words[d,])+ prior.epsilon, sum(theta[c_d[d], ] %*% phi)+ prior.epsilon)
-			# w_dkv[d, , ] = vapply(1:V, function(v) {rmultinom(1, words[d,v], theta[c_d[d], ] * phi[,v])}, rep(0, K))
+			# pi[d] = rgamma(1, sum(w_d[d,])+ prior.epsilon, sum(theta[c_d[d], ] %*% phi)+ prior.epsilon)
+			# w_dkv[d, , ] = vapply(1:V, function(v) {rmultinom(1, w_d[d,v], theta[c_d[d], ] * phi[,v])}, rep(0, K))
 		# }
 		# for (k in 1:K) {
 			# for (v in 1:V) {
@@ -355,6 +355,259 @@ Inference = function(data, X, Y, nIP, K, V, outer, inner, burn, prior.epsilon, p
 	return(list(pi = pi, psi = psi, theta = theta, phi = phi, c_d = c_d, u = u, beta = betamat, eta = etamat, sigma2 = sigma2mat, loglike = loglike))
 }
 
+#' @title Generate2
+#' @description Generate a collection of events according to the generative process
+#'
+#' @param c_d interaction pattern assignments
+#' @param A vector of node id's (ID starting from 1)
+#' @param nIP number of interaction patterns
+#' @param K number of topics
+#' @param V number of words
+#' @param beta C x P matrix of patern-specific coefficients for recipients
+#' @param eta C x Q matrix of patern-specific coefficients for timestamps
+#' @param sigma2 variance parameter for the timestamps
+#' @param X an array of dimension D x A x A x P for covariates used for Gibbs measure
+#' @param Y an array of dimension D x A x Q for covariates used for timestamps GLM
+#' @param support support of latent recipients from Gibbs measure
+#' @param timeunit hour (= 3600) or day (=3600*24) and so on
+#' @param timedist lognormal or exponential (will include others)
+#' @param prior.epsilon prior parameter in Gamma distribution
+#'
+#' @return generated data including (sender, recipients, timestamp)
+#'
+#' @export
+Generate2 = function(c_d, A, nIP, K, V, beta, eta, sigma2, X, Y, support, timeunit = 3600, timedist = "lognormal", prior.epsilon) {
+	D = length(c_d)
+	P = ncol(beta)
+	Q = ncol(eta)
+	data = list()
+	psi = rgamma(nIP, prior.epsilon, prior.epsilon)
+	theta = matrix(rgamma(nIP*K, prior.epsilon, prior.epsilon), nIP, K)
+	phi = matrix(rgamma(K*V, prior.epsilon, prior.epsilon), K, V)
+	pi = rgamma(A, prior.epsilon, prior.epsilon)
+	u = list()
+	data = list()
+	t_d = 0
+	lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta[c_d[d],]))
+	mu = t(vapply(1:D, function(d) mu_cpp_d(Y[d,,], eta[c_d[d],]), rep(0, A)))
+	d = 1
+	w_kv = matrix(0, K, V)
+	w_ck = matrix(0, nIP, K)
+
+	while (d <= D) {
+		w_d = rep(0, V)
+		u[[d]] = matrix(0, A, A)
+		for (a in 1:A) {
+			u[[d]][a, -a] = r.gibbs.measure(lambda[[d]][a, -a], support) 
+		}
+		if (timedist == "lognormal") {
+            tau = rlnorm(A, mu[d, ], sqrt(sigma2))
+        } else {
+            tau = rexp(A, 1/exp(mu[d, ]))
+        }
+		for (n in 1:length(which(tau == min(tau)))) {
+		a_d = which(tau == min(tau))
+		r_d = u[[d]][a_d,]
+		t_d = t_d + min(tau) * timeunit
+		for (k in 1:K) {
+			w_dckv = rpois(V, pi[a_d] * (theta[c_d[d], k] * phi[k,]))
+			w_ck[c_d[d], k] = w_ck[c_d[d], k] + sum(w_dckv)
+			w_kv[k, ] = w_kv[k, ]+ w_dckv
+			w_d = w_d + w_dckv
+		}
+		#w_d = rpois(V, pi[a_d] * (theta[c_d[d],] %*% phi))
+		data[[d]] = list(a_d = a_d, r_d = r_d, t_d = t_d, w_d = w_d)
+		d = d+1
+		}
+	}
+	return(list(data = data, u = u, beta = beta, eta = eta, sigma2 = sigma2, c_d = c_d, pi = pi, theta = theta, psi = psi, phi = phi,
+	w_ck = w_ck, w_kv = w_kv))
+}
+
+#' @title Inference2
+#' @description Iterate Markov Chain Monte Carlo (MCMC) algorithm to infer the parameters
+#'
+#' @param data list of data with 4 elements (1: sender, 2: recipient, 3: timestamp in unix.time format, 4: words)
+#' @param X an array of dimension D x A x A x P for covariates used for Gibbs measure
+#' @param Y an array of dimension D x A x Q for covariates used for timestamps GLM
+#' @param nIP number of interaction patterns
+#' @param K number of topics
+#' @param V number of words
+#' @param outer size of outer iterations
+#' @param inner size of inner iteration for Metropolis-Hastings updates
+#' @param burn size of burn-in
+#' @param prior.epsilon prior parameter in Gamma distribution
+#' @param prior.beta prior mean and covariance of beta in multivariate Normal distribution
+#' @param prior.eta prior mean and covariance of eta in multivariate Normal distribution
+#' @param prior.sigma2 prior shape and scale parameter of sigma2 in inverse-Gamma distribution
+#' @param initialval initial value of the parameters (if speficied)
+#' @param proposal.var proposal variance for beta, eta, and sigma2
+#' @param timeunit hour (= 3600) or day (=3600*24) and so on
+#' @param lasttime last timestamp of the event used as initial history (in unix.time format)
+#' @param timedist lognormal or exponential (will include others)
+#'
+#' @return generated data including (sender, recipients, timestamp)
+#'
+#' @export
+Inference2 = function(data, X, Y, nIP, K, V, outer, inner, burn, prior.epsilon, prior.beta, prior.eta, prior.sigma2, initialval = NULL, proposal.var, timeunit = 3600, lasttime, timedist = "lognormal") {
+	D = dim(X)[1]
+	A = dim(X)[2]
+	P = dim(X)[4]
+	Q = dim(Y)[3]
+	
+	if (length(initialval) > 0) {
+		u = initialval$u
+		beta = initialval$beta
+		eta = initialval$eta
+		sigma2 = initialval$sigma2
+		psi = initialval$psi
+		theta = initialval$theta
+		phi = initialval$phi
+		pi = initialval$pi
+		c_d = initialval$c_d
+		#w_ck = initialval$w_ck
+		#w_kv = initialval$w_kv
+	} else {
+		u = lapply(1:D, function(d) matrix(0, A, A))
+		beta = matrix(prior.beta$mean, nrow = nIP, ncol = P, byrow = TRUE)
+		eta = matrix(prior.eta$mean, nrow = nIP, ncol = Q, byrow = TRUE)
+		sigma2 = prior.sigma2$b / (prior.sigma2$a-1)
+		psi = rgamma(nIP, prior.epsilon, prior.epsilon)
+		theta = matrix(rgamma(nIP * K, prior.epsilon, prior.epsilon), nIP, K, byrow = TRUE)
+		phi = matrix(rgamma(K * V, prior.epsilon, prior.epsilon), K, V, byrow = TRUE)
+		pi = rgamma(A, prior.epsilon, prior.epsilon)
+		c_d = sample(1:nIP, D, replace = TRUE, prob = psi)
+	}
+	#output matrix
+	betamat = lapply(1:nIP, function(IP) matrix(beta[IP,], nrow = outer-burn, ncol = P, byrow = TRUE))
+	etamat = lapply(1:nIP, function(IP) matrix(eta[IP,], nrow = outer-burn, ncol = Q, byrow = TRUE))
+	sigma2mat = matrix(sigma2, nrow = outer-burn, ncol = 1)
+	loglike = matrix(NA, nrow = outer-burn, ncol = 1)
+	senders = vapply(data, function(d) { d[[1]] }, c(1))
+	timestamps = vapply(data, function(d) { d[[3]] }, c(1))
+	timeinc = c(timestamps[1]-lasttime, timestamps[-1]-timestamps[-length(timestamps)]) / timeunit
+	timeinc[timeinc == 0] = runif(sum(timeinc==0), 0, min(timeinc[timeinc!=0]))
+	w_d = t(vapply(data, function(d) { d[[4]] }, rep(0, V)))
+	prop_c = rep(0, nIP)
+	for (o in 1:outer) {
+		if (o %% 100 == 0) print(o)
+		
+		#psi = rgamma(nIP, tabulate(c_d, nIP) + prior.epsilon, prior.epsilon)
+		w_kv = matrix(0, K, V)
+		w_ck = matrix(0, nIP, K)
+		for (d in 1:D) {
+			for (v in 1:V) {
+				if (w_d[d, v] > 0) {
+					w_dckv = rmultinom(1, w_d[d,v], theta[c_d[d], ] * phi[,v])
+					w_kv[,v] = w_kv[,v] + w_dckv
+					w_ck[c_d[d], ] = w_ck[c_d[d], ] + w_dckv
+				}
+			}
+		}
+		for (k in 1:K) {
+			for (v in 1:V) {
+				phi[k, v] = rgamma(1, w_kv[k, v] + prior.epsilon, sum(pi[senders] * theta[c_d, k]) + prior.epsilon)
+			}
+			for (IP in 1:nIP) {
+				theta[IP, k] = rgamma(1, w_ck[IP, k] + prior.epsilon, sum(pi[senders[c_d==IP]])*sum(phi[k,])+ prior.epsilon)
+			}
+		}
+		for (i in 1:A) {
+			pi[i] = rgamma(1, sum(w_d[senders==i,]) + prior.epsilon, sum(theta[c_d[senders==i],] %*% phi)+ prior.epsilon)
+		}	
+			
+		lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta[c_d[d], ]))
+		u = u_cpp(lambda, u)
+		for (d in 1:D) {
+		  u[[d]][senders[d],] = data[[d]][[2]]
+		}
+		# prior.old1 = sum(dmvnorm_arma(beta, prior.beta$mean, prior.beta$var))
+    	# post.old1 = Edgepartsum(lambda, u)
+    	# for (i1 in 1:inner[1]) {
+			# beta.new = t(vapply(1:nIP, function(IP) rmvnorm_arma(1, beta[IP,], proposal.var[1]*diag(P)), rep(0, P)))
+     		# prior.new1 = sum(dmvnorm_arma(beta.new, prior.beta$mean, prior.beta$var))
+			# lambda = lapply(1:D, function(d) lambda_cpp(X[d,,,], beta.new[c_d[d],]))
+			# post.new1 = Edgepartsum(lambda, u)
+      		# loglike.diff = prior.new1+post.new1-prior.old1-post.old1
+			# if (log(runif(1, 0, 1)) < loglike.diff) {
+        			# beta = beta.new
+        			# prior.old1 = prior.new1
+        			# post.old1 = post.new1
+	      	# }
+		# }
+		# prior.old2 = sum(dmvnorm_arma(eta, prior.eta$mean, prior.eta$var))
+    	mu = t(vapply(1:D, function(d) mu_cpp_d(Y[d,,], eta[c_d[d],]), rep(0, A)))
+        # if (timedist == "lognormal") {
+            # post.old2 = Timepartsum(mu, sqrt(sigma2), senders, timeinc)
+        # } else {
+            # post.old2 = Timepartsum2(mu, senders, timeinc)
+        # }
+		# for (i2 in 1:inner[2]) {
+			# eta.new = t(vapply(1:nIP, function(IP) rmvnorm_arma(1, eta[IP,], proposal.var[2]*diag(Q)), rep(0, Q)))
+     	 	# prior.new2 = sum(dmvnorm_arma(eta.new, prior.eta$mean, prior.eta$var))
+      		# mu = t(vapply(1:D, function(d) mu_cpp_d(Y[d,,], eta.new[c_d[d],]), rep(0, A)))
+            # if (timedist == "lognormal") {
+                # post.new2 = Timepartsum(mu, sqrt(sigma2), senders, timeinc)
+            # } else {
+                # post.new2 = Timepartsum2(mu, senders, timeinc)
+            # }
+    		# loglike.diff = prior.new2+post.new2-prior.old2-post.old2
+      		# if (log(runif(1, 0, 1)) < loglike.diff) {
+        			# eta = eta.new
+        			# prior.old2 = prior.new2
+        			# post.old2 = post.new2
+	      	# }
+		# }
+		# prior.old3 = dinvgamma(sigma2, prior.sigma2$a, prior.sigma2$b) 
+    	# post.old3 = post.old2
+    	# mu = t(vapply(1:D, function(d) mu_cpp_d(Y[d,,], eta[c_d[d],]), rep(0, A)))
+        
+        # if (timedist == "lognormal") {
+		# for (i3 in 1:inner[3]) {
+			# sigma2.new = exp(rnorm(1, log(sigma2), proposal.var[3]))
+      		# prior.new3 = dinvgamma(sigma2.new, prior.sigma2$a, prior.sigma2$b)
+            # post.new3 = Timepartsum(mu, sqrt(sigma2.new), senders, timeinc)
+    		# loglike.diff = prior.new3+post.new3-prior.old3-post.old3
+    		# if (log(runif(1, 0, 1)) < loglike.diff) {
+        			# sigma2 = sigma2.new
+        			# prior.old3 = prior.new3
+        			# post.old3 = post.new3
+	      	# }
+        # }
+        # }
+        
+        # if (timedist == "lognormal") {
+        # for (d in 1:D) {
+        	# prop_c[c_d[d]] = Edgepart_d(lambda[[d]], u[[d]]) + Timepart_d(mu[d, ], sqrt(sigma2), senders[d], timeinc[d])
+        		# for (IP in (1:nIP)[-c_d[d]]) {
+        			# lambda[[d]] = lambda_cpp(X[d,,,], beta[IP, ])
+        			# mu[d,] = mu_cpp_d(Y[d,,], eta[IP,])
+        			# prop_c[IP] = Edgepart_d(lambda[[d]], u[[d]]) + Timepart_d(mu[d, ], sqrt(sigma2), senders[d], timeinc[d])  
+        		# }
+        		# c_d[d] = sample(1:nIP, 1, prob = exp(prop_c))
+        # }
+        # } else {
+        # for (d in 1:D) {
+        	# prop_c[c_d[d]] = Edgepart_d(lambda[[d]], u[[d]]) + Timepart2_d(mu[d, ], senders[d], timeinc[d])
+        	# for (c in (1:nIP)[-c_d[d]]) {
+        		# lambda[[d]] = lambda_cpp(X[d,,,], beta[IP, ])
+        		# mu[d,] = mu_cpp_d(Y[d,,], eta[IP,])
+        		# prop_c[IP] = Edgepart_d(lambda[[d]], u[[d]]) + Timepart2_d(mu[d, ], senders[d], timeinc[d])		
+        	# }
+        	# c_d[d] = sample(1:nIP, 1, prob = exp(prop_c))
+        # }        	
+        # }
+               
+		if (o > burn) {
+			for (IP in 1:nIP) {
+			betamat[[IP]][o-burn, ] = beta[IP, ]
+			etamat[[IP]][o-burn, ] = eta[IP, ]
+			}
+			sigma2mat[o-burn, ] = sigma2	
+		}		
+	}
+	return(list(pi = pi, psi = psi, theta = theta, phi = phi, c_d = c_d, u = u, beta = betamat, eta = etamat, sigma2 = sigma2mat))
+}
 
 #' @title PPC
 #' @description Generate a collection of events according to the posterior predictive checks
