@@ -4,11 +4,11 @@
 \alias{Generate2}
 \title{Generate2}
 \usage{
-Generate2(c_d, A, nIP, K, V, beta, eta, sigma2, X, Y, support,
-  timeunit = 3600, timedist = "lognormal", prior.epsilon)
+Generate2(D, A, nIP, K, V, beta, eta, sigma2, X, Y, support, timeunit = 3600,
+  timedist = "lognormal", prior.epsilon)
 }
 \arguments{
-\item{c_d}{interaction pattern assignments}
+\item{D}{number of documents}
 
 \item{A}{vector of node id's (ID starting from 1)}
 

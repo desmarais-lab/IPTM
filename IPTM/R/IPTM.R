@@ -358,7 +358,7 @@ Inference = function(data, X, Y, nIP, K, V, outer, inner, burn, prior.epsilon, p
 #' @title Generate2
 #' @description Generate a collection of events according to the generative process
 #'
-#' @param c_d interaction pattern assignments
+#' @param D number of documents
 #' @param A vector of node id's (ID starting from 1)
 #' @param nIP number of interaction patterns
 #' @param K number of topics
@@ -376,12 +376,11 @@ Inference = function(data, X, Y, nIP, K, V, outer, inner, burn, prior.epsilon, p
 #' @return generated data including (sender, recipients, timestamp)
 #'
 #' @export
-Generate2 = function(c_d, A, nIP, K, V, beta, eta, sigma2, X, Y, support, timeunit = 3600, timedist = "lognormal", prior.epsilon) {
-	D = length(c_d)
+Generate2 = function(D, A, nIP, K, V, beta, eta, sigma2, X, Y, support, timeunit = 3600, timedist = "lognormal", prior.epsilon) {
 	P = ncol(beta)
 	Q = ncol(eta)
 	data = list()
-	psi = rgamma(nIP, prior.epsilon, prior.epsilon)
+	psi =  rdirichlet(1, rep(prior.epsilon, nIP))
 	theta = matrix(rgamma(nIP*K, prior.epsilon, prior.epsilon), nIP, K)
 	phi = matrix(rgamma(K*V, prior.epsilon, prior.epsilon), K, V)
 	pi = rgamma(A, prior.epsilon, prior.epsilon)
@@ -393,6 +392,7 @@ Generate2 = function(c_d, A, nIP, K, V, beta, eta, sigma2, X, Y, support, timeun
 	d = 1
 	w_kv = matrix(0, K, V)
 	w_ck = matrix(0, nIP, K)
+	c_d = sample(1:nIP, D, TRUE, prob = psi)
 
 	while (d <= D) {
 		w_d = rep(0, V)
@@ -409,19 +409,12 @@ Generate2 = function(c_d, A, nIP, K, V, beta, eta, sigma2, X, Y, support, timeun
 		a_d = which(tau == min(tau))
 		r_d = u[[d]][a_d,]
 		t_d = t_d + min(tau) * timeunit
-		for (k in 1:K) {
-			w_dckv = rpois(V, pi[a_d] * (theta[c_d[d], k] * phi[k,]))
-			w_ck[c_d[d], k] = w_ck[c_d[d], k] + sum(w_dckv)
-			w_kv[k, ] = w_kv[k, ]+ w_dckv
-			w_d = w_d + w_dckv
-		}
-		#w_d = rpois(V, pi[a_d] * (theta[c_d[d],] %*% phi))
+		w_d = rpois(V, pi[a_d] * (theta[c_d[d],] %*% phi))
 		data[[d]] = list(a_d = a_d, r_d = r_d, t_d = t_d, w_d = w_d)
 		d = d+1
 		}
 	}
-	return(list(data = data, u = u, beta = beta, eta = eta, sigma2 = sigma2, c_d = c_d, pi = pi, theta = theta, psi = psi, phi = phi,
-	w_ck = w_ck, w_kv = w_kv))
+	return(list(data = data, u = u, beta = beta, eta = eta, sigma2 = sigma2, c_d = c_d, pi = pi, theta = theta, psi = psi, phi = phi))
 }
 
 #' @title Inference2
@@ -465,8 +458,6 @@ Inference2 = function(data, X, Y, nIP, K, V, outer, inner, burn, prior.epsilon, 
 		phi = initialval$phi
 		pi = initialval$pi
 		c_d = initialval$c_d
-		#w_ck = initialval$w_ck
-		#w_kv = initialval$w_kv
 	} else {
 		u = lapply(1:D, function(d) matrix(0, A, A))
 		beta = matrix(prior.beta$mean, nrow = nIP, ncol = P, byrow = TRUE)
@@ -491,8 +482,7 @@ Inference2 = function(data, X, Y, nIP, K, V, outer, inner, burn, prior.epsilon, 
 	prop_c = rep(0, nIP)
 	for (o in 1:outer) {
 		if (o %% 100 == 0) print(o)
-		
-		#psi = rgamma(nIP, tabulate(c_d, nIP) + prior.epsilon, prior.epsilon)
+		psi = rdirichlet(1, tabulate(c_d, nIP)+ prior.epsilon)
 		w_kv = matrix(0, K, V)
 		w_ck = matrix(0, nIP, K)
 		for (d in 1:D) {
@@ -505,9 +495,9 @@ Inference2 = function(data, X, Y, nIP, K, V, outer, inner, burn, prior.epsilon, 
 			}
 		}
 		for (k in 1:K) {
-			for (v in 1:V) {
-				phi[k, v] = rgamma(1, w_kv[k, v] + prior.epsilon, sum(pi[senders] * theta[c_d, k]) + prior.epsilon)
-			}
+			# for (v in 1:V) {
+				# phi[k, v] = rgamma(1, w_kv[k, v] + prior.epsilon, sum(pi[senders] * theta[c_d, k]) + prior.epsilon)
+			# }
 			for (IP in 1:nIP) {
 				theta[IP, k] = rgamma(1, w_ck[IP, k] + prior.epsilon, sum(pi[senders[c_d==IP]])*sum(phi[k,])+ prior.epsilon)
 			}

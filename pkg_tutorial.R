@@ -82,7 +82,7 @@ GiR_PP_Plots(result[1:(n-1),c(1:(6+P+Q))], result[1:(n-1),c((7+P+Q):(2*(6+P+Q)))
 nIP = 2
 K = 4
 V = 6
-D = 100
+D = 50
 A = 5
 P = 4
 Q = 3
@@ -93,7 +93,7 @@ support = gibbs.measure.support(A-1)
 prior.beta = list(mean = rep(0, P), var = diag(P))
 prior.eta = list(mean = rep(0, Q), var = diag(Q))
 prior.sigma2 = list(a = 4, b = 1)
-Nsamp = 20000
+Nsamp = 5000
 outer = 5
 inner = c(5, 5, 5)
 burn = 0
@@ -103,16 +103,14 @@ for (n in 1:Nsamp) {
 	beta = rmvnorm(nIP, prior.beta$mean, prior.beta$var)
 	eta = rmvnorm(nIP, prior.eta$mean, prior.eta$var)
 	sigma2 = 1/rgamma(1, prior.sigma2$a, prior.sigma2$b)
-	c_d = sample(1:nIP, D, TRUE)
-	initial = Generate2(c_d, A, nIP, K, V, beta, eta, sigma2, X, Y, support, prior.epsilon=1)
+	initial = Generate2(D, A, nIP, K, V, beta, eta, sigma2, X, Y, support, prior.epsilon=1)
 	infer =  Inference2(initial$data, X, Y, nIP, K, V, outer, inner, burn, prior.epsilon, prior.beta, 
 				prior.eta, prior.sigma2, initial = initial, proposal.var = c(0.01, 0.1, 0.01, 0.5), lasttime = 0)
     #initial2 = Generate2(infer$c_d, A, infer$psi, infer$theta, infer$phi, t(sapply(1:nIP, function(IP) infer$beta[[IP]][outer,])),  t(sapply(1:nIP, function(IP) infer$eta[[IP]][outer,])), infer$sigma2[outer,], X, Y, support, prior.epsilon = prior.epsilon)                  
-                
-	result[n, ] = c(mean(initial$pi), mean(initial$psi), mean(initial$theta), mean(initial$phi),
-	var(initial$pi), var(initial$psi), var(c(initial$theta)), var(c(initial$phi)),
-	mean(infer$pi), mean(infer$psi), mean(infer$theta), mean(infer$phi),
-	var(infer$pi), var(infer$psi), var(c(infer$theta)), var(c(infer$phi)))		
+	result[n, ] = c(mean(initial$pi), initial$psi[1], mean(initial$theta), mean(initial$phi),
+	var(initial$pi), var(c(initial$psi)), var(c(initial$theta)), var(c(initial$phi)),
+	mean(infer$pi), infer$psi[1], mean(infer$theta), mean(infer$phi),
+	var(infer$pi), var(c(infer$psi)), var(c(infer$theta)), var(c(infer$phi)))		
 }
 par(mfrow=c(2,4))
 GiR_PP_Plots(result[1:(n-1),1:8], result[1:(n-1),c((9):(2*8))])
